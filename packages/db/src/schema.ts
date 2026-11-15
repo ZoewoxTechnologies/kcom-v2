@@ -160,34 +160,6 @@ export const books = pgTable("books", {
   updatedAt: updatedAt(),
 });
 
-export const galleryAlbums = pgTable("gallery_albums", {
-  id: id(),
-  title: text("title").notNull(),
-  slug: text("slug").notNull().unique(),
-  description: text("description"),
-  date: date("date", { mode: "string" }),
-  status: publishStatus("status").notNull().default("draft"),
-  publishAt: timestamp("publish_at", { withTimezone: true }),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
-});
-
-export const images = pgTable(
-  "images",
-  {
-    id: id(),
-    albumId: uuid("album_id")
-      .notNull()
-      .references(() => galleryAlbums.id, { onDelete: "cascade" }),
-    position: integer("position").notNull().default(0),
-    url: text("url").notNull(),
-    alt: text("alt").notNull().default(""),
-    caption: text("caption"),
-    createdAt: createdAt(),
-  },
-  (t) => [index("images_album_idx").on(t.albumId, t.position)],
-);
-
 export const siteSettings = pgTable(
   "site_settings",
   {
