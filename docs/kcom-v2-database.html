@@ -1,0 +1,105 @@
+<title>KCOM Database Hosting</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap">
+<style>
+/* Layout: single reading column; one comparison table, then the recommendation */
+:root{
+  --bg:#f6f7fb; --surface:#ffffff; --fg:#1b1f2e; --muted:#5b6178; --line:#dde1ec;
+  --accent:#2f4fb5; --accent-soft:#e6ebfa; --gold:#9a6b12; --good:#1f7a4d; --warn:#9a5b00;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11141f; --surface:#191d2b; --fg:#e7e9f2; --muted:#9aa1b8; --line:#2b3044;
+  --accent:#8ea6ff; --accent-soft:#232b4a; --gold:#e0b25a; --good:#5fd39a; --warn:#f0b45a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11141f; --surface:#191d2b; --fg:#e7e9f2; --muted:#9aa1b8; --line:#2b3044;
+  --accent:#8ea6ff; --accent-soft:#232b4a; --gold:#e0b25a; --good:#5fd39a; --warn:#f0b45a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+main{max-width:900px;margin:0 auto;display:grid;gap:32px}
+h1,h2{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:2rem} h2{font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--line)}
+p,li{max-width:70ch} p{margin:0}
+section{display:grid;gap:14px}
+.eyebrow{font:600 .75rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.lede{color:var(--muted);font-size:1.05rem}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:680px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+thead th:not(:first-child){color:var(--fg);font-family:var(--display);font-size:1rem;text-transform:none;letter-spacing:0}
+td:first-child{font-weight:600;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.g{color:var(--good)} .w{color:var(--warn)}
+.rec{background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:16px 18px;display:grid;gap:8px}
+.rec b{font-family:var(--display)}
+.note{color:var(--muted);font-size:.85rem}
+ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+</style>
+
+<main>
+<header style="display:grid;gap:10px">
+  <div class="eyebrow">KCOM v2 · Decision 1 of 10 · 14 Nov 2026</div>
+  <h1>KCOM Database Hosting</h1>
+  <p class="lede">Where the PostgreSQL database lives. All three run standard Postgres, so the Hono API and Drizzle work the same on each, and moving later is a dump-and-restore.</p>
+</header>
+
+<section>
+  <h2>How big is this site's data?</h2>
+  <ul>
+    <li>Possibly 3,000–4,000 capsules (one a day for 10+ years), 10 blog posts, a few dozen pages: still well under 100 MB of text.</li>
+    <li>Images live in Cloudinary, not the database.</li>
+    <li>Traffic is modest and read-heavy; the public site can cache pages, so the database sees light load.</li>
+  </ul>
+  <p>Any of the three handles this easily. The choice is about cost, convenience and where the API runs.</p>
+</section>
+
+<section>
+  <h2>Side by side</h2>
+  <div class="scroll"><table>
+    <thead><tr><th></th><th>Neon</th><th>Supabase</th><th>Railway</th></tr></thead>
+    <tr><td>What it is</td><td>Serverless Postgres only</td><td>Postgres plus auth, storage, realtime and an admin dashboard</td><td>General app host; Postgres is one service among your API, admin, etc.</td></tr>
+    <tr><td>Free tier</td><td class="g">Yes, 0.5 GB per project; enough for this site</td><td class="w">Yes, 500 MB, but free projects pause after a week without activity</td><td class="w">Trial credit only</td></tr>
+    <tr><td>Paid starting point</td><td>Usage-based, low single-digit to ~$20/month at this size</td><td>Pro $25/month (8 GB, daily backups)</td><td>Hobby $5/month incl. $5 of usage; a small Postgres plus API often fits ~$5–15</td></tr>
+    <tr><td>Speed</td><td class="w">Fast, but scales to zero when idle: first query after a quiet spell waits ~0.3–1 s (can be turned off on paid plans)</td><td class="g">Always on, no cold starts on Pro</td><td class="g">Always on; database sits on the same private network as the API, so lowest latency</td></tr>
+    <tr><td>Backups</td><td class="g">Point-in-time restore (history window depends on plan)</td><td class="g">Daily backups on Pro; point-in-time is an add-on</td><td class="w">Volume backups you schedule; less hands-off</td></tr>
+    <tr><td>Standout feature</td><td>Database branching: a copy per git branch for testing migrations</td><td>Built-in auth and file storage (we've chosen Better Auth and Cloudinary, so mostly unused)</td><td>One place and one bill for database, API and admin</td></tr>
+    <tr><td>Best when</td><td>API runs serverless (Cloudflare Workers, Vercel)</td><td>You want its extra features</td><td>API runs as a normal server on Railway</td></tr>
+  </table></div>
+  <p class="note">Prices are from my knowledge as of 2026 and change often; check each provider's pricing page before signing up.</p>
+</section>
+
+<section>
+  <h2>Neon vs Supabase, from their pricing pages (Nov 2026)</h2>
+  <div class="scroll"><table>
+    <thead><tr><th></th><th>Neon Free</th><th>Supabase Free</th></tr></thead>
+    <tr><td>Cost</td><td>$0, no card, no time limit</td><td>$0</td></tr>
+    <tr><td>Database size</td><td class="g">1 GB</td><td class="g">500 MB (plenty for ~50 MB)</td></tr>
+    <tr><td>When idle</td><td class="g">Sleeps after 5 min, wakes on its own in a few hundred ms</td><td class="w">Paused after 1 week of inactivity; someone must restore it by hand</td></tr>
+    <tr><td>Compute limit</td><td class="w">100 compute-hours a month; suspended until next month if exceeded</td><td class="g">No hourly cap (shared CPU, 500 MB RAM)</td></tr>
+    <tr><td>Backups</td><td class="w">6-hour restore window, 1 manual snapshot, no scheduled backups</td><td class="w">None</td></tr>
+    <tr><td>Data transfer</td><td>5 GB a month</td><td>5 GB a month</td></tr>
+    <tr><td>Projects</td><td>100</td><td>2 active</td></tr>
+    <tr><td>Extras</td><td>Managed Better Auth (60k users), branching</td><td>Auth (50k users), 1 GB file storage</td></tr>
+    <thead><tr><th></th><th>Neon Launch</th><th>Supabase Pro</th></tr></thead>
+    <tr><td>Cost</td><td>Usage-based, no minimum; ~$15 typical, ~$20 if always on</td><td>$25 a month flat</td></tr>
+    <tr><td>Backups</td><td>7-day restore window; scheduled daily/weekly/monthly at $0.09/GB-month</td><td class="g">Daily backups kept 7 days, included</td></tr>
+    <tr><td>Idle</td><td>Sleep can be turned off</td><td>Never pauses</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <div class="rec">
+    <b>Recommendation: Neon Free, with our own nightly backup.</b>
+    <p>Neon wakes up by itself; a paused Supabase project takes the site down until someone restores it. Neon's managed Better Auth also matches the login library we chose. Keep public pages cached so the database can sleep and stay inside 100 compute-hours. If we outgrow it, Neon Launch (~$15–20) costs a little less than Supabase Pro ($25), though Supabase includes daily backups in that price.</p>
+  </div>
+</section>
+
+<section>
+  <div class="rec">
+    <b>Earlier recommendation: Railway, if the API also runs there. Otherwise Neon.</b>
+    <p>This decision is tied to hosting. With Railway the database, Hono API and admin sit together on one private network with one bill, and cost stays around $5–15/month. If the API ends up on a serverless platform such as Cloudflare Workers, Neon fits better and its free tier likely covers this site.</p>
+    <p>Supabase is solid, but its main extras (auth, storage) overlap with what we already picked, so you'd pay $25/month for features you don't use.</p>
+  </div>
+</section>
+</main>

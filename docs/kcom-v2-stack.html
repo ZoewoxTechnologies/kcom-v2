@@ -1,0 +1,141 @@
+<title>KCOM v2 Stack Options</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: single reading column; comparison tables scroll inside their own frame */
+:root{
+  --bg:#f6f7fb; --surface:#ffffff; --fg:#1b1f2e; --muted:#5b6178; --line:#dde1ec;
+  --accent:#2f4fb5; --accent-soft:#e6ebfa; --gold:#9a6b12;
+  --good:#1f7a4d; --warn:#9a5b00; --bad:#b3261e;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11141f; --surface:#191d2b; --fg:#e7e9f2; --muted:#9aa1b8; --line:#2b3044;
+  --accent:#8ea6ff; --accent-soft:#232b4a; --gold:#e0b25a;
+  --good:#5fd39a; --warn:#f0b45a; --bad:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11141f; --surface:#191d2b; --fg:#e7e9f2; --muted:#9aa1b8; --line:#2b3044;
+  --accent:#8ea6ff; --accent-soft:#232b4a; --gold:#e0b25a;
+  --good:#5fd39a; --warn:#f0b45a; --bad:#ff8a80; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+main{max-width:860px;margin:0 auto;display:grid;gap:40px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:2.1rem}
+h2{font-size:1.35rem;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:1.05rem}
+p,li{max-width:68ch}
+p{margin:0}
+.eyebrow{font:600 .75rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.lede{color:var(--muted);font-size:1.05rem}
+section{display:grid;gap:14px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:640px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+td:first-child{font-weight:600;font-family:var(--display)}
+tr:last-child td{border-bottom:0}
+tr.pick td{background:var(--accent-soft)}
+.g{color:var(--good)} .w{color:var(--warn)} .b{color:var(--bad)}
+code{font-family:var(--mono);font-size:.85rem;color:var(--accent)}
+.rec{background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:16px 18px;display:grid;gap:8px}
+.rec b{font-family:var(--display)}
+ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:8px;align-content:start;min-width:0}
+pre.tree{margin:0;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow-x:auto;line-height:1.55;font-family:var(--mono);font-size:.85rem}
+.tree .c{color:var(--muted)}
+</style>
+
+<main>
+<header style="display:grid;gap:10px">
+  <div class="eyebrow">KCOM v2 · Draft, 14 Nov 2026</div>
+  <h1>KCOM v2 Stack Options</h1>
+  <p class="lede">Two separate choices: how staff edit content (the admin), and what renders the public site. Next.js is ruled out.</p>
+</header>
+
+<section>
+  <h2>1. The admin: three ways to do it</h2>
+  <p>A headless CMS isn't required. With about eight content types and a small editing team, building your own admin is realistic.</p>
+  <div class="scroll"><table>
+    <tr><th>Approach</th><th>What it is</th><th>Strengths</th><th>Costs</th></tr>
+    <tr class="pick"><td>Custom admin + own API</td><td>Your own API and database, plus an admin app you build, all in the monorepo</td>
+      <td class="g">Fits the devotional workflow exactly (daily scheduling, series, scripture fields). No vendor, no per-seat fees. One codebase, one data model.</td>
+      <td class="w">You build login, roles, rich-text editing, image uploads, drafts and preview yourself. Most effort up front; you own maintenance.</td></tr>
+    <tr><td>Headless CMS</td><td>Sanity (hosted) or Directus / Strapi (self-hosted) supplies the admin and API</td>
+      <td class="g">Editing UI, media library, roles and drafts ready on day one. Fastest to launch.</td>
+      <td class="w">Content shaped by the CMS's conventions. Hosted plans charge by usage and seats; self-hosted ones need upgrades. Lock-in at migration time.</td></tr>
+    <tr><td>Traditional CMS</td><td>WordPress or modern Drupal renders the site and the admin together</td>
+      <td class="g">Familiar to non-technical editors. Huge plugin ecosystem.</td>
+      <td class="b">Doesn't fit the monorepo / TypeScript direction. Plugin upkeep and security patching, which is what got the current site into trouble.</td></tr>
+  </table></div>
+
+  <div class="rec">
+    <b>Recommendation: custom admin with a separate API.</b>
+    <p>The content model is small and stable, and the daily devotional is the core of the site. A purpose-built editor ("write today's capsule", pick a series, paste a scripture reference) will be easier for staff than a generic CMS. The monorepo already has the shared content package, so the API, admin and migration scripts all use the same rules.</p>
+    <p>Choose a headless CMS instead if launch speed matters more than fit, or if nobody will maintain the code after launch.</p>
+  </div>
+</section>
+
+<section>
+  <h2>2. What the custom route looks like</h2>
+<pre class="tree">apps/
+  web/        <span class="c"># public site, reads from the API</span>
+  admin/      <span class="c"># staff editing app (login required)</span>
+  api/        <span class="c"># REST/JSON API: content, media, auth</span>
+packages/
+  content/    <span class="c"># schemas + types shared by all three</span>
+  db/         <span class="c"># database schema and migrations</span>
+  ui/  migrate/  config/</pre>
+  <div class="two">
+    <div class="card"><h3>Suggested pieces</h3><ul>
+      <li><b>API:</b> Hono (small, fast, TypeScript)</li>
+      <li><b>Database:</b> PostgreSQL with Drizzle ORM</li>
+      <li><b>Auth:</b> Better Auth (email login, roles)</li>
+      <li><b>Rich text:</b> Tiptap editor, stored as JSON</li>
+      <li><b>Media:</b> S3-compatible storage (Cloudflare R2)</li>
+      <li><b>Search:</b> Postgres full-text to start</li>
+    </ul></div>
+    <div class="card"><h3>Admin features to build</h3><ul>
+      <li>Capsule editor with scripture, decrees and prayer fields</li>
+      <li>Calendar view of scheduled capsules</li>
+      <li>Draft, schedule, publish</li>
+      <li>Series and topic management</li>
+      <li>Pages, blog, books, gallery editors</li>
+      <li>Users and roles (admin, editor)</li>
+    </ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>Monorepo tooling</h2>
+  <p>Two layers: the package manager that links the apps and packages together, and a task runner that builds, tests and caches across them. The repo is small: 3 apps and about 5 packages.</p>
+  <div class="scroll"><table>
+    <tr><th>Option</th><th>What it is</th><th>Strengths</th><th>Costs</th></tr>
+    <tr><td>pnpm workspaces alone</td><td>Package manager with built-in workspace commands (<code>pnpm -r</code>, <code>--filter</code>)</td><td class="g">Nothing extra to learn. Strict dependencies, fast installs, shared version "catalogs".</td><td class="w">No build caching; every build and test runs from scratch.</td></tr>
+    <tr class="pick"><td>pnpm + Turborepo</td><td>Task runner layered on pnpm; one small <code>turbo.json</code></td><td class="g">Caches builds and tests, runs only what changed, runs tasks in parallel. Can be added or removed in an afternoon. Large community.</td><td class="w">Owned by Vercel; its free remote cache is on Vercel (optional, can self-host or skip).</td></tr>
+    <tr><td>Nx</td><td>Full monorepo platform: task runner, code generators, project graph, plugins</td><td class="g">Very capable; "affected" builds, generators for new apps and packages.</td><td class="w">Heavier and more opinionated; more config and concepts than this repo needs.</td></tr>
+    <tr><td>Rush</td><td>Microsoft's monorepo manager, built for large enterprise repos (uses pnpm underneath)</td><td class="g">Very strict dependency rules, versioning and publishing policies, build cache.</td><td class="b">Built for hundreds of packages and big teams. Its own CLI and config (<code>rush.json</code>, <code>common/config</code>), smaller community, slower to set up. Overkill here.</td></tr>
+    <tr><td>moon</td><td>Rust-based task runner that also manages tool versions</td><td class="g">Fast, language-agnostic.</td><td class="w">Smaller community and fewer examples.</td></tr>
+  </table></div>
+  <div class="rec">
+    <b>Recommendation: pnpm workspaces with Turborepo.</b>
+    <p>Caching and "only rebuild what changed" pay off in CI and Cloud Run deploys, with very little setup. Rush's strengths (publishing many packages, strict policies for large teams) don't apply to a 3-app ministry site. If you'd rather keep things minimal, pnpm workspaces alone works; Turborepo can be added later without restructuring.</p>
+  </div>
+</section>
+
+<section>
+  <h2>3. The public site framework</h2>
+  <div class="scroll"><table>
+    <tr><th>Framework</th><th>Good at</th><th>Watch out for</th><th>Fit</th></tr>
+    <tr class="pick"><td>Astro</td><td>Content-heavy sites. Ships almost no JavaScript, so pages are very fast. Can pre-build all ~900 capsule pages or render on demand.</td><td>Less suited to app-like interactivity, but the public site barely needs any.</td><td class="g">Best for web</td></tr>
+    <tr><td>SvelteKit</td><td>Fast, simple full-stack framework. Good for both the site and an admin app.</td><td>Smaller ecosystem than React.</td><td class="g">Strong; also suits admin</td></tr>
+    <tr><td>React Router (Remix)</td><td>Solid data loading and forms. Large React ecosystem.</td><td>More JavaScript on public pages than Astro.</td><td class="w">Better for admin</td></tr>
+    <tr><td>Nuxt</td><td>Vue's full-stack framework, very capable.</td><td>Adds Vue to the team's skill set if you're React-leaning.</td><td class="w">Fine if you like Vue</td></tr>
+  </table></div>
+  <div class="rec">
+    <b>Suggested combination:</b>
+    <p>Astro for the public site, a React (Vite) or SvelteKit app for the admin, and Hono for the API. Pick React or Svelte for the admin based on what you're more comfortable maintaining.</p>
+  </div>
+</section>
+</main>

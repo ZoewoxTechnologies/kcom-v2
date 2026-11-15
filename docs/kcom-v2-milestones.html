@@ -1,0 +1,225 @@
+<title>KCOM v2 Milestones</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Nunito+Sans:wght@400;600;700&display=swap">
+<style>
+/* Layout: a vertical sequence of milestone blocks with a left timeline rail; post-launch milestones set apart below a divider */
+:root{
+  --bg:#f3f6f5; --surface:#ffffff; --fg:#1d2b2d; --muted:#5f6f70; --line:#d9e3e1;
+  --primary:#2b6178; --sky:#dde9ec; --sage:#7d9f86; --gold:#c4a15a; --gold-text:#8a6a24; --sand:#f6eedd;
+  --title:"Cormorant Garamond",Georgia,serif; --body:"Nunito Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1a1d; --surface:#16242a; --fg:#e4eeee; --muted:#9fb1b2; --line:#26383e;
+  --primary:#7fb6cc; --sky:#1b3038; --sage:#93b69c; --gold:#d6b36a; --gold-text:#e2c27e; --sand:#2a2618; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a1d; --surface:#16242a; --fg:#e4eeee; --muted:#9fb1b2; --line:#26383e;
+  --primary:#7fb6cc; --sky:#1b3038; --sage:#93b69c; --gold:#d6b36a; --gold-text:#e2c27e; --sand:#2a2618; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 72px}
+main{max-width:880px;margin:0 auto;display:grid;gap:28px}
+h1,h2{font-family:var(--title);font-weight:600;margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:2.6rem;color:var(--primary)}
+h2{font-size:1.6rem}
+p{margin:0;max-width:68ch}
+.eyebrow{font:700 .72rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--gold-text)}
+.lede{color:var(--muted);font-size:1.05rem}
+.flow{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;overflow-x:auto}
+.timeline{display:grid;gap:18px;position:relative;padding-left:26px}
+.timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.ms{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:grid;gap:10px;min-width:0}
+.ms::before{content:"";position:absolute;left:-24px;top:24px;width:12px;height:12px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px var(--bg)}
+.ms.later::before{background:var(--gold)}
+.ms-head{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.ms-head .num{font:700 .75rem var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ms-head .len{margin-left:auto;font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.goal{color:var(--muted)}
+ul{margin:0;padding-left:1.15em;display:grid;gap:3px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px 24px}
+.k{font:700 .7rem var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.done{background:var(--sand);border-left:3px solid var(--gold);border-radius:8px;padding:8px 12px;font-size:.92rem}
+.dep{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.78rem;border:1px solid var(--line);border-radius:999px;padding:1px 10px;color:var(--muted)}
+.divider{display:flex;align-items:center;gap:12px;color:var(--gold-text);font:700 .75rem var(--body);letter-spacing:.12em;text-transform:uppercase}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+.note{font-size:.85rem;color:var(--muted)}
+</style>
+
+<main>
+<header style="display:grid;gap:10px">
+  <div class="eyebrow">Kingdom Capstone Outreach Ministry · Draft, 14 Nov 2026</div>
+  <h1>KCOM v2 Milestones</h1>
+  <p class="lede">The rebuild in six milestones to launch, then three after. Each ends with something you can see and check.</p>
+</header>
+
+<section class="flow" aria-label="Order of milestones">
+<pre class="mermaid">
+flowchart LR
+  M0[M0 Foundations] --> M1[M1 Content migration]
+  M0 --> M2[M2 API and login]
+  M2 --> M3[M3 Admin]
+  M0 --> M4[M4 Public site]
+  M1 --> M4
+  M1 --> M5[M5 Launch]
+  M3 --> M5
+  M4 --> M5
+  M5 --> M6[M6 Daily delivery]
+  M5 --> M7[M7 Online giving]
+  M5 --> M8[M8 Later ideas]
+</pre>
+</section>
+<p class="note">M1 and M2 can run side by side after M0. M4 can start with sample data and switch to migrated content once M1 is done. Durations are rough, for one developer working part time with AI help.</p>
+
+<div class="timeline">
+
+<article class="ms">
+  <div class="ms-head"><span class="num">M0</span><h2>Foundations</h2><span class="len">~1 week</span></div>
+  <p class="goal">Everything the rest of the work stands on.</p>
+  <div class="cols">
+    <div><div class="k">Deliverables</div><ul>
+      <li>Monorepo: pnpm workspaces, Turborepo, shared lint, TypeScript and formatting</li>
+      <li>Empty apps: Astro site, Hono API, React + Vite admin</li>
+      <li><code>content</code> package with the content model; <code>db</code> package with Drizzle and Neon</li>
+      <li>Brand tokens and the three button types with all states</li>
+    </ul></div>
+    <div><div class="k">Infrastructure</div><ul>
+      <li>GitHub Actions: lint, tests, Cloud Run deploy (reusing the CGHSR workflow)</li>
+      <li>Staging on Cloud Run behind Cloudflare</li>
+      <li>Sentry, PostHog, uptime check, Neon usage alert</li>
+      <li>Nightly encrypted database backup</li>
+    </ul></div>
+  </div>
+  <div class="done">Done when: a "hello" page and API are live on staging, deployed automatically from the main branch, with errors showing in Sentry.</div>
+</article>
+
+<article class="ms">
+  <div class="ms-head"><span class="num">M1</span><h2>Content migration</h2><span class="len">~1–2 weeks</span></div>
+  <p class="goal">Every capsule, post and page from the Drupal site, cleaned and in the new database.</p>
+  <div class="cols">
+    <div><div class="k">Deliverables</div><ul>
+      <li>Load the Drupal export and files locally (kept out of git)</li>
+      <li>Extract, transform and validate scripts in <code>packages/migrate</code></li>
+      <li>Capsules split into scripture, body, decrees, prayer; series detected</li>
+      <li>Embedded images moved to Cloudinary</li>
+    </ul></div>
+    <div><div class="k">Checks</div><ul>
+      <li>Report of items that didn't parse cleanly</li>
+      <li>Manual review of ~50 sample capsules plus every flagged item</li>
+      <li>Real capsule count and oldest date confirmed</li>
+      <li>Redirect map from every old address to its new one</li>
+    </ul></div>
+  </div>
+  <div class="done">Done when: the import runs end to end, can be re-run safely, and the review sample reads correctly.</div>
+</article>
+
+<article class="ms">
+  <div class="ms-head"><span class="num">M2</span><h2>API and login</h2><span class="len">~1–2 weeks</span></div>
+  <p class="goal">The Hono API the site and admin both use.</p>
+  <div class="cols">
+    <div><div class="k">Deliverables</div><ul>
+      <li>Endpoints for capsules, series, blog, pages and sections, books, gallery, settings</li>
+      <li>Drafts, scheduling and publishing</li>
+      <li>Image uploads to Cloudinary</li>
+      <li>Subscriber signup with double opt-in, Turnstile and unsubscribe</li>
+    </ul></div>
+    <div><div class="k">Login and permissions</div><ul>
+      <li>Better Auth inside the API</li>
+      <li>Permission-based roles: Admin and Editor</li>
+      <li>Tests for permission checks</li>
+      <li>Publishing triggers a site rebuild</li>
+    </ul></div>
+  </div>
+  <div class="done">Done when: an editor can log in and create, schedule and publish a capsule through the API, and an editor is blocked from admin-only actions.</div>
+</article>
+
+<article class="ms">
+  <div class="ms-head"><span class="num">M3</span><h2>Admin</h2><span class="len">~2–3 weeks</span></div>
+  <p class="goal">The staff editing app.</p>
+  <div class="cols">
+    <div><div class="k">Content</div><ul>
+      <li>Capsule editor with scripture, body, decrees, prayer and series fields</li>
+      <li>Calendar of scheduled capsules</li>
+      <li>Blog, books, gallery and page editors</li>
+      <li>Homepage and pages built from sections that can be reordered</li>
+    </ul></div>
+    <div><div class="k">Management</div><ul>
+      <li>Users and roles</li>
+      <li>Subscribers list and CSV export</li>
+      <li>Site settings (giving details, social links)</li>
+      <li>Admin search (debounced), Motion for React animation</li>
+    </ul></div>
+  </div>
+  <div class="done">Done when: staff can run the site day to day without a developer.</div>
+</article>
+
+<article class="ms">
+  <div class="ms-head"><span class="num">M4</span><h2>Public site</h2><span class="len">~3 weeks</span></div>
+  <p class="goal">The new kingdomcapstone.org in the Still Waters brand.</p>
+  <div class="cols">
+    <div><div class="k">Pages</div><ul>
+      <li>Homepage from sections; today's capsule; capsule page</li>
+      <li>Archive by month and by series; blog</li>
+      <li>About pages, Ministry Team, Books, Gallery, Partnership, Contact</li>
+      <li>Email signup form; privacy policy</li>
+    </ul></div>
+    <div><div class="k">Quality</div><ul>
+      <li>Pagefind search, debounced</li>
+      <li>View transitions and Motion effects, reduced-motion respected</li>
+      <li>Dark mode, accessibility (WCAG AA), fast pages on phones</li>
+      <li>SEO: metadata, sitemap.xml, RSS, sharing images</li>
+    </ul></div>
+  </div>
+  <div class="done">Done when: the full site runs on staging with migrated content and passes accessibility and speed checks.</div>
+</article>
+
+<article class="ms">
+  <div class="ms-head"><span class="num">M5</span><h2>Launch</h2><span class="len">~1 week</span></div>
+  <p class="goal">Switch over without losing links or content.</p>
+  <div class="cols">
+    <div><div class="k">Before</div><ul>
+      <li>Full QA across browsers and phones</li>
+      <li>Redirects tested against old addresses</li>
+      <li>Editor training and a short how-to guide</li>
+      <li>WhatsApp Channel and Telegram channel set up</li>
+    </ul></div>
+    <div><div class="k">Switch and after</div><ul>
+      <li>Pause posting on the old site, final content sync</li>
+      <li>Move DNS to Cloudflare, go live</li>
+      <li>Watch 404s and errors for two weeks, add missing redirects</li>
+      <li>Submit sitemap to Google; keep the old site's export archived</li>
+    </ul></div>
+  </div>
+  <div class="done">Done when: kingdomcapstone.org serves the new site, old links redirect, and staff are publishing daily.</div>
+</article>
+
+<div class="divider">After the first release</div>
+
+<article class="ms later">
+  <div class="ms-head"><span class="num">M6</span><h2>Daily delivery</h2></div>
+  <ul>
+    <li>Automated daily capsule email to confirmed subscribers (service chosen then)</li>
+    <li>Automatic Telegram post on publish</li>
+    <li>Optional weekly digest; WhatsApp Business API only if needed</li>
+  </ul>
+</article>
+
+<article class="ms later">
+  <div class="ms-head"><span class="num">M7</span><h2>Online giving</h2></div>
+  <ul>
+    <li>Paystack one-off and monthly giving, reusing the CGHSR setup</li>
+    <li>Gold Give button; gifts recorded in the admin</li>
+    <li>Ministry's Paystack account and verification set up first</li>
+  </ul>
+</article>
+
+<article class="ms later">
+  <div class="ms-head"><span class="num">M8</span><h2>Later ideas</h2></div>
+  <ul>
+    <li>Simplified flat logo</li>
+    <li>Audio versions of capsules</li>
+    <li>Contributor role for guest writers</li>
+    <li>Topics and tags for capsules</li>
+  </ul>
+</article>
+
+</div>
+</main>
