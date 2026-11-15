@@ -17,7 +17,8 @@ Neon's free plan has a 6-hour restore window and no scheduled backups, so a GitH
    ```bash
    age-keygen -o kcom-backup.key
    ```
-   Copy the `age1...` public key it prints.
+   Copy the `age1...` public key it prints. The private key stays only with you (password manager);
+   never commit it or store it in GitHub, the bucket or CI. Without it the backups cannot be restored.
 2. **Bucket**: create a private bucket on Backblaze B2 or Cloudflare R2 and an application key limited to that bucket
    (read, write, list, delete). Do not enable bucket versioning/lifecycle rules; the workflow prunes itself.
 3. **Repository variables** (Settings → Secrets and variables → Actions → Variables):
