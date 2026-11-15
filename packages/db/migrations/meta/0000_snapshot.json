@@ -1,5 +1,5 @@
 {
-  "id": "04ee2b87-11b4-44cf-9fb6-9c38fdd9bb3a",
+  "id": "32aad7ee-604a-4882-814b-a4e0d1aea3bf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -123,6 +123,21 @@
             }
           ],
           "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "blog_posts_legacy_path_idx": {
+          "name": "blog_posts_legacy_path_idx",
+          "columns": [
+            {
+              "expression": "legacy_path",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -382,6 +397,21 @@
         }
       },
       "indexes": {
+        "capsules_legacy_path_idx": {
+          "name": "capsules_legacy_path_idx",
+          "columns": [
+            {
+              "expression": "legacy_path",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "capsules_status_date_idx": {
           "name": "capsules_status_date_idx",
           "columns": [
@@ -797,7 +827,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "pages_legacy_path_idx": {
+          "name": "pages_legacy_path_idx",
+          "columns": [
+            {
+              "expression": "legacy_path",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {

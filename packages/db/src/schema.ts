@@ -76,6 +76,7 @@ export const capsules = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [
+    uniqueIndex("capsules_legacy_path_idx").on(t.legacyPath),
     index("capsules_status_date_idx").on(t.status, t.date),
     index("capsules_series_idx").on(t.seriesId, t.partNumber),
     check("capsules_part_needs_series", sql`${t.partNumber} IS NULL OR ${t.seriesId} IS NOT NULL`),
@@ -104,21 +105,28 @@ export const blogPosts = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index("blog_posts_status_date_idx").on(t.status, t.date)],
+  (t) => [
+    index("blog_posts_status_date_idx").on(t.status, t.date),
+    uniqueIndex("blog_posts_legacy_path_idx").on(t.legacyPath),
+  ],
 );
 
-export const pages = pgTable("pages", {
-  id: id(),
-  title: text("title").notNull(),
-  slug: text("slug").notNull().unique(),
-  seoTitle: text("seo_title"),
-  seoDescription: text("seo_description"),
-  status: publishStatus("status").notNull().default("draft"),
-  publishAt: timestamp("publish_at", { withTimezone: true }),
-  legacyPath: text("legacy_path"),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
-});
+export const pages = pgTable(
+  "pages",
+  {
+    id: id(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull().unique(),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    status: publishStatus("status").notNull().default("draft"),
+    publishAt: timestamp("publish_at", { withTimezone: true }),
+    legacyPath: text("legacy_path"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex("pages_legacy_path_idx").on(t.legacyPath)],
+);
 
 export const pageSections = pgTable(
   "page_sections",

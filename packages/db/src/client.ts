@@ -14,7 +14,12 @@ export function createDb(connectionString = process.env.DATABASE_URL) {
     max: 5,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 15_000, // allow for a cold start
+    statement_timeout: 20_000,
+    query_timeout: 25_000,
+    allowExitOnIdle: true,
   });
+  // The host may drop idle connections (Neon scale-to-zero); don't crash on it.
+  pool.on("error", (err) => console.error("postgres pool error:", err.message));
   return Object.assign(drizzle(pool, { schema }), { pool });
 }
 

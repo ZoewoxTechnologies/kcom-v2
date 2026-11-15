@@ -24,7 +24,52 @@ describe("seed", () => {
   });
 });
 
+describe("latestCapsule visibility", () => {
+  const base = { body: {}, decrees: [] as string[] };
+  it("ignores drafts, scheduled, future publishAt and future-dated capsules", async () => {
+    const d = await createTestDb();
+    await d.insert(capsules).values([
+      { ...base, title: "draft", slug: "draft", date: "2026-01-01", status: "draft" },
+      { ...base, title: "sched", slug: "sched", date: "2026-01-02", status: "scheduled" },
+      {
+        ...base,
+        title: "future-publish",
+        slug: "future-publish",
+        date: "2026-01-03",
+        status: "published",
+        publishAt: new Date(Date.now() + 86_400_000),
+      },
+      {
+        ...base,
+        title: "future-date",
+        slug: "future-date",
+        date: "2999-01-01",
+        status: "published",
+      },
+    ]);
+    expect(await latestCapsule(d)).toBeNull();
+    await d
+      .insert(capsules)
+      .values({ ...base, title: "ok", slug: "ok", date: "2026-01-04", status: "published" });
+    expect((await latestCapsule(d))?.slug).toBe("ok");
+  });
+});
+
 describe("constraints", () => {
+  it("rejects duplicate slug and legacyNid", async () => {
+    await db
+      .insert(capsules)
+      .values({ title: "a", slug: "dup", date: "2026-03-01", body: {}, legacyNid: 99 });
+    await expect(
+      db.insert(capsules).values({ title: "b", slug: "dup", date: "2026-03-01", body: {} }),
+    ).rejects.toThrow();
+    await expect(
+      db
+        .insert(capsules)
+        .values({ title: "c", slug: "dup2", date: "2026-03-01", body: {}, legacyNid: 99 }),
+    ).rejects.toThrow();
+  });
+
   it("rejects a part number without a series", async () => {
     await expect(
       db

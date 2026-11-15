@@ -1,4 +1,5 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+import { capsules, type CapsuleDb } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
 import { seed } from "@kcom/db/seed-data";
 import { createApp } from "./app.js";
@@ -29,5 +30,33 @@ describe("GET /capsules/latest", () => {
 
   it("404s when there are no capsules", async () => {
     expect((await empty.request("/capsules/latest")).status).toBe(404);
+  });
+});
+
+describe("visibility and errors", () => {
+  it("does not return draft, scheduled or future capsules", async () => {
+    const db = await createTestDb();
+    const base = { body: {}, decrees: [] as string[], date: "2026-01-01" };
+    await db.insert(capsules).values([
+      { ...base, title: "d", slug: "d", status: "draft" },
+      { ...base, title: "s", slug: "s", status: "scheduled" },
+      { ...base, title: "f", slug: "f", status: "published", date: "2999-01-01" },
+    ]);
+    const res = await createApp(db).request("/capsules/latest");
+    expect(res.status).toBe(404);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("returns JSON 500 when the database fails", async () => {
+    const broken = {
+      select: () => {
+        throw new Error("boom");
+      },
+    } as unknown as CapsuleDb;
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await createApp(broken).request("/capsules/latest");
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: "internal error" });
+    spy.mockRestore();
   });
 });

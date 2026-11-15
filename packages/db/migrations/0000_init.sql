@@ -161,8 +161,11 @@ ALTER TABLE "capsules" ADD CONSTRAINT "capsules_series_id_series_id_fk" FOREIGN 
 ALTER TABLE "images" ADD CONSTRAINT "images_album_id_gallery_albums_id_fk" FOREIGN KEY ("album_id") REFERENCES "public"."gallery_albums"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "page_sections" ADD CONSTRAINT "page_sections_page_id_pages_id_fk" FOREIGN KEY ("page_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "blog_posts_status_date_idx" ON "blog_posts" USING btree ("status","date");--> statement-breakpoint
+CREATE UNIQUE INDEX "blog_posts_legacy_path_idx" ON "blog_posts" USING btree ("legacy_path");--> statement-breakpoint
+CREATE UNIQUE INDEX "capsules_legacy_path_idx" ON "capsules" USING btree ("legacy_path");--> statement-breakpoint
 CREATE INDEX "capsules_status_date_idx" ON "capsules" USING btree ("status","date");--> statement-breakpoint
 CREATE INDEX "capsules_series_idx" ON "capsules" USING btree ("series_id","part_number");--> statement-breakpoint
 CREATE INDEX "images_album_idx" ON "images" USING btree ("album_id","position");--> statement-breakpoint
 CREATE UNIQUE INDEX "page_sections_page_position_idx" ON "page_sections" USING btree ("page_id","position");--> statement-breakpoint
+CREATE UNIQUE INDEX "pages_legacy_path_idx" ON "pages" USING btree ("legacy_path");--> statement-breakpoint
 CREATE UNIQUE INDEX "subscribers_email_idx" ON "subscribers" USING btree (lower("email"));

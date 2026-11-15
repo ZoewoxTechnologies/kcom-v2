@@ -3,6 +3,9 @@ import { fileURLToPath } from "node:url";
 import { createDb } from "./client.js";
 
 const db = createDb();
-await migrate(db, { migrationsFolder: fileURLToPath(new URL("../migrations", import.meta.url)) });
-await db.pool.end();
-console.log("migrations applied");
+try {
+  await migrate(db, { migrationsFolder: fileURLToPath(new URL("../migrations", import.meta.url)) });
+  console.log("migrations applied");
+} finally {
+  await db.pool.end();
+}
