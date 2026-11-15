@@ -1,0 +1,67 @@
+name: Deploy staging
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+env:
+  REGION: ${{ vars.GCP_REGION }}
+  ARTIFACT_REPO: ${{ vars.GCP_ARTIFACT_REPO }}
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Workload Identity Federation
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web, api, admin]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - run: gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: true
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ matrix.app }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "kcom-${{ matrix.app }}-staging" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --image="$REGION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$ARTIFACT_REPO/${{ matrix.app }}:${{ github.sha }}" \
+            --region="$REGION" \
+            --platform=managed \
+            --allow-unauthenticated \
+            --min-instances=0 \
+            --max-instances=3 \
+            --cpu-throttling \
+            --memory=512Mi \
+            --set-env-vars="NODE_ENV=production"
+          # Re-assert public access (domain-restricted orgs skip the binding).
+          gcloud run services add-iam-policy-binding "kcom-${{ matrix.app }}-staging" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" --region="$REGION" \
+            --member=allUsers --role=roles/run.invoker
