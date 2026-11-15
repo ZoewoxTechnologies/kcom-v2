@@ -3,9 +3,7 @@ import { z } from "zod";
 /** Content model stubs. Fields will grow as the database schema lands. */
 
 const id = z.string().min(1);
-const slug = z
-  .string()
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase words separated by hyphens");
+const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase words separated by hyphens");
 const status = z.enum(["draft", "published", "archived"]);
 
 const base = {
@@ -68,19 +66,31 @@ export const bookSchema = z.object({
   authorId: id.optional(),
 });
 
-export const galleryAlbumSchema = z.object({
-  ...publishable,
-  description: z.string().optional(),
-  images: z
-    .array(z.object({ url: z.string().url(), alt: z.string(), caption: z.string().optional() }))
-    .default([]),
-});
+const optionalText = z.string().min(1).nullable().default(null);
+const optionalUrl = z
+  .string()
+  .url()
+  .refine((u) => /^https?:\/\//.test(u), "must be an http(s) URL")
+  .nullable()
+  .default(null);
 
 export const settingsSchema = z.object({
   siteName: z.string().min(1),
-  tagline: z.string().optional(),
-  contactEmail: z.string().email().optional(),
-  socialLinks: z.record(z.string().url()).default({}),
+  tagline: optionalText,
+  contactEmail: z.string().email().nullable().default(null),
+  copyrightText: optionalText,
+  footerTagline: optionalText,
+  postalAddress: optionalText,
+  facebookUrl: optionalUrl,
+  youtubeUrl: optionalUrl,
+  instagramUrl: optionalUrl,
+  xUrl: optionalUrl,
+  whatsappChannelUrl: optionalUrl,
+  telegramUrl: optionalUrl,
+  bankName: optionalText,
+  bankAccountName: optionalText,
+  bankAccountNumber: optionalText,
+  givingNote: optionalText,
 });
 
 export const subscriberSchema = z.object({
@@ -97,6 +107,5 @@ export type Capsule = z.infer<typeof capsuleSchema>;
 export type BlogPost = z.infer<typeof blogPostSchema>;
 export type Page = z.infer<typeof pageSchema>;
 export type Book = z.infer<typeof bookSchema>;
-export type GalleryAlbum = z.infer<typeof galleryAlbumSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 export type Subscriber = z.infer<typeof subscriberSchema>;
