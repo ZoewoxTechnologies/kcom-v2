@@ -51,6 +51,10 @@ psql kcom_restore -c '\dt'
 psql kcom_restore -c 'select count(*) from capsules'   # adjust to any table
 ```
 
+These steps were tested end to end (dump, gzip, age encrypt, decrypt, restore into a throwaway PostgreSQL 18
+cluster, row counts matched on every table). The dump must be taken with a `pg_dump` at least as new as the
+server (Neon runs 18).
+
 To restore into a new Neon branch or project, replace `kcom_restore` with its connection string
 (`--dbname "$NEW_DATABASE_URL"`), then point `DATABASE_URL` at it.
 
