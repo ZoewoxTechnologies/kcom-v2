@@ -14,7 +14,12 @@ const SAMPLE_AUTHOR = "Sample Author";
 export async function seed(db: CapsuleDb) {
   await db
     .insert(siteSettings)
-    .values({ id: 1, siteName: "Kingdom Capstone", tagline: "Sample tagline" })
+    .values({
+      id: 1,
+      siteName: "Kingdom Capstone",
+      tagline: "Sample tagline",
+      copyrightText: "Sample copyright",
+    })
     .onConflictDoNothing();
 
   let [author] = await db.select().from(people).where(eq(people.name, SAMPLE_AUTHOR));

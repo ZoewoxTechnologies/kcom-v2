@@ -168,12 +168,37 @@ export const siteSettings = pgTable(
     siteName: text("site_name").notNull(),
     tagline: text("tagline"),
     contactEmail: text("contact_email"),
-    footerText: text("footer_text"),
-    givingInfo: jsonb("giving_info").$type<Record<string, unknown>>().notNull().default({}),
-    socialLinks: jsonb("social_links").$type<Record<string, string>>().notNull().default({}),
+    copyrightText: text("copyright_text"),
+    footerTagline: text("footer_tagline"),
+    postalAddress: text("postal_address"),
+    facebookUrl: text("facebook_url"),
+    youtubeUrl: text("youtube_url"),
+    instagramUrl: text("instagram_url"),
+    xUrl: text("x_url"),
+    whatsappChannelUrl: text("whatsapp_channel_url"),
+    telegramUrl: text("telegram_url"),
+    bankName: text("bank_name"),
+    bankAccountName: text("bank_account_name"),
+    bankAccountNumber: text("bank_account_number"),
+    givingNote: text("giving_note"),
     updatedAt: updatedAt(),
   },
-  (t) => [check("site_settings_singleton", sql`${t.id} = 1`)],
+  (t) => {
+    const url = (c: typeof t.facebookUrl) => sql`${c} IS NULL OR ${c} ~ '^https?://[^\s]+$'`;
+    return [
+      check("site_settings_singleton", sql`${t.id} = 1`),
+      check(
+        "site_settings_email_format",
+        sql`${t.contactEmail} IS NULL OR ${t.contactEmail} ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'`,
+      ),
+      check("site_settings_facebook_url", url(t.facebookUrl)),
+      check("site_settings_youtube_url", url(t.youtubeUrl)),
+      check("site_settings_instagram_url", url(t.instagramUrl)),
+      check("site_settings_x_url", url(t.xUrl)),
+      check("site_settings_whatsapp_url", url(t.whatsappChannelUrl)),
+      check("site_settings_telegram_url", url(t.telegramUrl)),
+    ];
+  },
 );
 
 export const subscribers = pgTable(

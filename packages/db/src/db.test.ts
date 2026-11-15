@@ -95,6 +95,16 @@ describe("constraints", () => {
     await expect(db.insert(subscribers).values({ email: "a@example.com" })).rejects.toThrow();
   });
 
+  it("rejects malformed settings email and URLs", async () => {
+    await expect(db.update(siteSettings).set({ contactEmail: "not-an-email" })).rejects.toThrow();
+    await expect(
+      db.update(siteSettings).set({ facebookUrl: "javascript:alert(1)" }),
+    ).rejects.toThrow();
+    await db
+      .update(siteSettings)
+      .set({ facebookUrl: "https://facebook.com/x", contactEmail: "a@b.org" });
+  });
+
   it("keeps site settings a singleton", async () => {
     await expect(db.insert(siteSettings).values({ id: 2, siteName: "x" })).rejects.toThrow();
   });

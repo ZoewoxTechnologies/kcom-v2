@@ -66,11 +66,31 @@ export const bookSchema = z.object({
   authorId: id.optional(),
 });
 
+const optionalText = z.string().min(1).nullable().default(null);
+const optionalUrl = z
+  .string()
+  .url()
+  .refine((u) => /^https?:\/\//.test(u), "must be an http(s) URL")
+  .nullable()
+  .default(null);
+
 export const settingsSchema = z.object({
   siteName: z.string().min(1),
-  tagline: z.string().optional(),
-  contactEmail: z.string().email().optional(),
-  socialLinks: z.record(z.string().url()).default({}),
+  tagline: optionalText,
+  contactEmail: z.string().email().nullable().default(null),
+  copyrightText: optionalText,
+  footerTagline: optionalText,
+  postalAddress: optionalText,
+  facebookUrl: optionalUrl,
+  youtubeUrl: optionalUrl,
+  instagramUrl: optionalUrl,
+  xUrl: optionalUrl,
+  whatsappChannelUrl: optionalUrl,
+  telegramUrl: optionalUrl,
+  bankName: optionalText,
+  bankAccountName: optionalText,
+  bankAccountNumber: optionalText,
+  givingNote: optionalText,
 });
 
 export const subscriberSchema = z.object({

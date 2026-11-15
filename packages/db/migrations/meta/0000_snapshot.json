@@ -1,5 +1,5 @@
 {
-  "id": "0f2cf8b3-edfb-4e65-8332-f7fe83b834e9",
+  "id": "f8aafd1b-3276-4548-9bcd-7d42107433ca",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -833,25 +833,83 @@
           "primaryKey": false,
           "notNull": false
         },
-        "footer_text": {
-          "name": "footer_text",
+        "copyright_text": {
+          "name": "copyright_text",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "giving_info": {
-          "name": "giving_info",
-          "type": "jsonb",
+        "footer_tagline": {
+          "name": "footer_tagline",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::jsonb"
+          "notNull": false
         },
-        "social_links": {
-          "name": "social_links",
-          "type": "jsonb",
+        "postal_address": {
+          "name": "postal_address",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::jsonb"
+          "notNull": false
+        },
+        "facebook_url": {
+          "name": "facebook_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "youtube_url": {
+          "name": "youtube_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_url": {
+          "name": "instagram_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_url": {
+          "name": "x_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "whatsapp_channel_url": {
+          "name": "whatsapp_channel_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "telegram_url": {
+          "name": "telegram_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_name": {
+          "name": "bank_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_account_name": {
+          "name": "bank_account_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_account_number": {
+          "name": "bank_account_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "giving_note": {
+          "name": "giving_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "updated_at": {
           "name": "updated_at",
@@ -870,6 +928,34 @@
         "site_settings_singleton": {
           "name": "site_settings_singleton",
           "value": "\"site_settings\".\"id\" = 1"
+        },
+        "site_settings_email_format": {
+          "name": "site_settings_email_format",
+          "value": "\"site_settings\".\"contact_email\" IS NULL OR \"site_settings\".\"contact_email\" ~ '^[^@s]+@[^@s]+.[^@s]+$'"
+        },
+        "site_settings_facebook_url": {
+          "name": "site_settings_facebook_url",
+          "value": "\"site_settings\".\"facebook_url\" IS NULL OR \"site_settings\".\"facebook_url\" ~ '^https?://[^s]+$'"
+        },
+        "site_settings_youtube_url": {
+          "name": "site_settings_youtube_url",
+          "value": "\"site_settings\".\"youtube_url\" IS NULL OR \"site_settings\".\"youtube_url\" ~ '^https?://[^s]+$'"
+        },
+        "site_settings_instagram_url": {
+          "name": "site_settings_instagram_url",
+          "value": "\"site_settings\".\"instagram_url\" IS NULL OR \"site_settings\".\"instagram_url\" ~ '^https?://[^s]+$'"
+        },
+        "site_settings_x_url": {
+          "name": "site_settings_x_url",
+          "value": "\"site_settings\".\"x_url\" IS NULL OR \"site_settings\".\"x_url\" ~ '^https?://[^s]+$'"
+        },
+        "site_settings_whatsapp_url": {
+          "name": "site_settings_whatsapp_url",
+          "value": "\"site_settings\".\"whatsapp_channel_url\" IS NULL OR \"site_settings\".\"whatsapp_channel_url\" ~ '^https?://[^s]+$'"
+        },
+        "site_settings_telegram_url": {
+          "name": "site_settings_telegram_url",
+          "value": "\"site_settings\".\"telegram_url\" IS NULL OR \"site_settings\".\"telegram_url\" ~ '^https?://[^s]+$'"
         }
       },
       "isRLSEnabled": false

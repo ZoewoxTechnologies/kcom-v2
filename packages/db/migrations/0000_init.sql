@@ -109,11 +109,28 @@ CREATE TABLE "site_settings" (
 	"site_name" text NOT NULL,
 	"tagline" text,
 	"contact_email" text,
-	"footer_text" text,
-	"giving_info" jsonb DEFAULT '{}'::jsonb NOT NULL,
-	"social_links" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"copyright_text" text,
+	"footer_tagline" text,
+	"postal_address" text,
+	"facebook_url" text,
+	"youtube_url" text,
+	"instagram_url" text,
+	"x_url" text,
+	"whatsapp_channel_url" text,
+	"telegram_url" text,
+	"bank_name" text,
+	"bank_account_name" text,
+	"bank_account_number" text,
+	"giving_note" text,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "site_settings_singleton" CHECK ("site_settings"."id" = 1)
+	CONSTRAINT "site_settings_singleton" CHECK ("site_settings"."id" = 1),
+	CONSTRAINT "site_settings_email_format" CHECK ("site_settings"."contact_email" IS NULL OR "site_settings"."contact_email" ~ '^[^@s]+@[^@s]+.[^@s]+$'),
+	CONSTRAINT "site_settings_facebook_url" CHECK ("site_settings"."facebook_url" IS NULL OR "site_settings"."facebook_url" ~ '^https?://[^s]+$'),
+	CONSTRAINT "site_settings_youtube_url" CHECK ("site_settings"."youtube_url" IS NULL OR "site_settings"."youtube_url" ~ '^https?://[^s]+$'),
+	CONSTRAINT "site_settings_instagram_url" CHECK ("site_settings"."instagram_url" IS NULL OR "site_settings"."instagram_url" ~ '^https?://[^s]+$'),
+	CONSTRAINT "site_settings_x_url" CHECK ("site_settings"."x_url" IS NULL OR "site_settings"."x_url" ~ '^https?://[^s]+$'),
+	CONSTRAINT "site_settings_whatsapp_url" CHECK ("site_settings"."whatsapp_channel_url" IS NULL OR "site_settings"."whatsapp_channel_url" ~ '^https?://[^s]+$'),
+	CONSTRAINT "site_settings_telegram_url" CHECK ("site_settings"."telegram_url" IS NULL OR "site_settings"."telegram_url" ~ '^https?://[^s]+$')
 );
 --> statement-breakpoint
 CREATE TABLE "subscribers" (

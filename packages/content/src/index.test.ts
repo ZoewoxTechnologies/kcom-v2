@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { capsuleSchema } from "./index";
+import { capsuleSchema, settingsSchema } from "./index";
 
 describe("capsuleSchema", () => {
   const valid = {
@@ -20,5 +20,19 @@ describe("capsuleSchema", () => {
 
   it("rejects a bad slug", () => {
     expect(capsuleSchema.safeParse({ ...valid, slug: "Not A Slug" }).success).toBe(false);
+  });
+});
+
+describe("settingsSchema", () => {
+  it("defaults optional fields to null", () => {
+    expect(settingsSchema.parse({ siteName: "Site" }).facebookUrl).toBeNull();
+  });
+
+  it("rejects a bad email and non-http URLs", () => {
+    expect(() => settingsSchema.parse({ siteName: "S", contactEmail: "nope" })).toThrow();
+    expect(() => settingsSchema.parse({ siteName: "S", xUrl: "ftp://x.com" })).toThrow();
+    expect(() =>
+      settingsSchema.parse({ siteName: "S", telegramUrl: "https://t.me/x" }),
+    ).not.toThrow();
   });
 });
