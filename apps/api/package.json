@@ -23,6 +23,6 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
-    "@electric-sql/pglite": "^0.2.15"
+    "@electric-sql/pglite": "^0.5.16"
   }
 }
