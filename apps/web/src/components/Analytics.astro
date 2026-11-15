@@ -1,0 +1,19 @@
+---
+// Public site only. Renders nothing unless PUBLIC_POSTHOG_KEY is set at build time.
+const key = import.meta.env.PUBLIC_POSTHOG_KEY;
+---
+{key && <script>
+  import posthog from "posthog-js";
+  import { shouldTrack } from "../lib/analytics";
+
+  const key = import.meta.env.PUBLIC_POSTHOG_KEY;
+  const nav = navigator as Navigator & { globalPrivacyControl?: boolean };
+  if (shouldTrack({ key }, nav)) {
+    posthog.init(key, {
+      api_host: import.meta.env.PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
+      respect_dnt: true,
+      disable_session_recording: true,
+      person_profiles: "identified_only",
+    });
+  }
+</script>}

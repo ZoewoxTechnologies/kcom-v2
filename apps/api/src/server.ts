@@ -1,6 +1,9 @@
+import { initSentry } from "./instrument.js";
 import { serve } from "@hono/node-server";
 import { createDb } from "@kcom/db";
 import { createApp } from "./app.js";
+
+initSentry();
 
 const port = Number(process.env.PORT ?? 8787);
 const app = createApp(createDb());

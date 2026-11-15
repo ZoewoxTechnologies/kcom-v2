@@ -1,0 +1,94 @@
+name: nightly-backup
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-backup
+  cancel-in-progress: false
+
+env:
+  PG_MAJOR: "18"
+  KEEP_DAILY: "14"
+  KEEP_WEEKLY: "8"
+  KEEP_MONTHLY: "12"
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      AGE_RECIPIENT: ${{ vars.BACKUP_AGE_PUBLIC_KEY }}
+      S3_ENDPOINT: ${{ vars.BACKUP_S3_ENDPOINT }}
+      S3_BUCKET: ${{ vars.BACKUP_S3_BUCKET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.BACKUP_S3_REGION || 'auto' }}
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+    steps:
+      - name: Check configuration
+        id: cfg
+        run: |
+          missing=""
+          for v in DATABASE_URL AGE_RECIPIENT S3_ENDPOINT S3_BUCKET AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+            [ -n "${!v}" ] || missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then
+            echo "::notice::Backup skipped, not configured. Missing:$missing"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install pg_dump and age
+        if: steps.cfg.outputs.enabled == 'true'
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq "postgresql-client-${PG_MAJOR}" age
+
+      - name: Dump, compress, encrypt
+        if: steps.cfg.outputs.enabled == 'true'
+        run: |
+          set -euo pipefail
+          stamp="$(date -u +%Y-%m-%d)"
+          echo "STAMP=$stamp" >> "$GITHUB_ENV"
+          "/usr/lib/postgresql/${PG_MAJOR}/bin/pg_dump" --format=custom --no-owner --no-privileges --compress=0 "$DATABASE_URL" \
+            | gzip -9 \
+            | age -r "$AGE_RECIPIENT" -o "kcom-${stamp}.dump.gz.age"
+          # An empty or truncated file means a failed dump.
+          size=$(stat -c %s "kcom-${stamp}.dump.gz.age")
+          [ "$size" -gt 1024 ] || { echo "::error::Backup is suspiciously small ($size bytes)"; exit 1; }
+
+      - name: Upload and rotate
+        if: steps.cfg.outputs.enabled == 'true'
+        run: |
+          set -euo pipefail
+          file="kcom-${STAMP}.dump.gz.age"
+          s3() { aws --endpoint-url "$S3_ENDPOINT" "$@"; }
+
+          s3 s3 cp "$file" "s3://${S3_BUCKET}/daily/${file}"
+          # Sunday -> weekly, 1st of the month -> monthly
+          [ "$(date -u +%u)" = "7" ] && s3 s3 cp "$file" "s3://${S3_BUCKET}/weekly/${file}"
+          [ "$(date -u +%d)" = "01" ] && s3 s3 cp "$file" "s3://${S3_BUCKET}/monthly/${file}"
+
+          prune() { # prefix keep
+            s3 s3api list-objects-v2 --bucket "$S3_BUCKET" --prefix "$1/" --query 'Contents[].Key' --output text \
+              | tr '\t' '\n' | { grep -E '\.age$' || true; } | sort -r | tail -n +"$(($2 + 1))" \
+              | while read -r key; do
+                  echo "pruning $key"
+                  s3 s3api delete-object --bucket "$S3_BUCKET" --key "$key"
+                done
+          }
+          prune daily "$KEEP_DAILY"
+          prune weekly "$KEEP_WEEKLY"
+          prune monthly "$KEEP_MONTHLY"

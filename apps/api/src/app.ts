@@ -1,9 +1,11 @@
 import { Hono } from "hono";
+import * as Sentry from "@sentry/node";
 import { latestCapsule, type CapsuleDb } from "@kcom/db";
 
 export function createApp(db: CapsuleDb) {
   const app = new Hono();
   app.onError((err, c) => {
+    Sentry.captureException(err);
     console.error("unhandled error:", err);
     return c.json({ error: "internal error" }, 500);
   });

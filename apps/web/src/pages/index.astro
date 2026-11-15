@@ -1,5 +1,6 @@
 ---
 import "@kcom/ui/tokens.css";
+import Analytics from "../components/Analytics.astro";
 import { pageTitle } from "../lib/site";
 ---
 <html lang="en">
@@ -7,6 +8,7 @@ import { pageTitle } from "../lib/site";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle()}</title>
+    <Analytics />
   </head>
   <body>
     <main>
