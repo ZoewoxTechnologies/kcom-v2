@@ -1,0 +1,42 @@
+/* KCOM brand tokens: "Still Waters, with Old Gold" */
+:root {
+  /* Color */
+  --color-deep-water: #2b6178;   /* primary: buttons, links */
+  --color-sky: #dde9ec;          /* hero and header washes */
+  --color-sage: #7d9f86;         /* secondary accent */
+  --color-mist: #f3f6f5;         /* page background */
+  --color-slate: #1d2b2d;        /* text */
+  --color-muted: #5f6f70;        /* secondary text */
+  --color-line: #d9e3e1;         /* borders */
+  --color-old-gold: #c4a15a;     /* small accents: scripture rule, decree edge, focus */
+  --color-old-gold-text: #8a6a24;/* gold used as text (readable contrast) */
+  --color-sandstone: #f6eedd;    /* decree and highlight backgrounds */
+
+  /* Type, by role */
+  --font-title: "Cormorant Garamond", Georgia, serif;   /* titles, pull quotes (large sizes) */
+  --font-body: "Nunito Sans", system-ui, sans-serif;    /* body, buttons, decrees, references */
+  --font-scripture: "Lora", Georgia, serif;             /* scripture text, italic */
+
+  /* Buttons: three variants
+     primary   = filled deep water, white text (one main action per screen)
+     secondary = deep water outline, transparent fill
+     tertiary  = text-only, link style, old-gold underline that turns deep water on hover
+     giving    = sandstone fill, old-gold border (giving only, later milestone)
+
+     Every variant has these states:
+     hover    = primary darkens to --color-deep-water-hover; secondary gets a light sky fill;
+                tertiary underline turns from old gold to deep water
+     pressed  = one step darker again (--color-deep-water-active)
+     focus    = keyboard only (:focus-visible): 2px gap + 2px old-gold ring
+     disabled = 45% opacity, not-allowed cursor, no hover change
+     loading  = label hidden, spinner shown, aria-busy="true", clicks ignored
+     Transitions 150ms; none when prefers-reduced-motion is set. */
+  --color-deep-water-hover: #224e61;
+  --color-deep-water-active: #1a3e4d;
+  --color-secondary-hover: #e7f0f2;
+  --color-secondary-active: #d5e5e9;
+  --focus-ring: 0 0 0 2px var(--color-mist), 0 0 0 4px var(--color-old-gold);
+
+  /* Shape */
+  --radius: 14px;
+}

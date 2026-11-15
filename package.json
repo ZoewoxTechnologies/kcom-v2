@@ -1,0 +1,20 @@
+{
+  "name": "kcom-v2",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@kcom/config": "workspace:*",
+    "prettier": "^3.3.3",
+    "turbo": "^2.3.3"
+  },
+  "prettier": "@kcom/config/prettier"
+}

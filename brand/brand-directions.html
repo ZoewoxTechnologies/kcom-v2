@@ -1,0 +1,380 @@
+<title>KCOM Brand Directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito+Sans:wght@400;600&family=Cinzel:wght@500;700&family=Libre+Franklin:wght@400;600&display=swap">
+<style>
+/* Layout: page chrome is neutral and theme-aware; each direction is a self-contained brand sample with its own fixed colors */
+:root{
+  --bg:#f5f6f9; --surface:#ffffff; --fg:#1c2030; --muted:#5d6377; --line:#dfe2ea; --accent:#2a5bc4;
+  --ui:"Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12141c; --surface:#1a1d28; --fg:#e8eaf1; --muted:#9ca2b6; --line:#2c3040; --accent:#8fb0ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12141c; --surface:#1a1d28; --fg:#e8eaf1; --muted:#9ca2b6; --line:#2c3040; --accent:#8fb0ff; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--ui);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:36px 64px}
+main{max-width:1080px;margin:0 auto;display:grid;gap:36px}
+header.top{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+header.top img{width:120px;height:auto;background:#fff;border-radius:8px;padding:6px;border:1px solid var(--line)}
+header.top div{display:grid;gap:6px;min-width:0;flex:1}
+h1{font:600 1.9rem/1.2 var(--ui);margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:68ch}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.8rem;color:var(--muted)}
+
+/* Direction samples */
+.dir{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--d-bg);color:var(--d-fg)}
+.dir-head{padding:28px clamp(18px,4vw,40px) 22px;display:grid;gap:8px;background:var(--d-hero);color:var(--d-hero-fg)}
+.dir-head .tag{font:600 .72rem var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--d-accent)}
+.dir-head h2{font-family:var(--d-display);font-weight:var(--d-dw);font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.15;margin:0;letter-spacing:var(--d-track,0)}
+.dir-head p{margin:0;max-width:62ch;opacity:.9;font-family:var(--d-body)}
+.dir-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:28px;padding:26px clamp(18px,4vw,40px) 32px;font-family:var(--d-body)}
+@media (max-width:760px){.dir-body{grid-template-columns:1fr}}
+.col{display:grid;gap:18px;align-content:start;min-width:0}
+.label{font:600 .7rem var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--d-muted)}
+.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.sw{display:grid;gap:4px;font:400 .68rem/1.3 var(--ui);color:var(--d-muted);min-width:0}
+.sw i{display:block;aspect-ratio:1;border-radius:8px;border:1px solid rgba(0,0,0,.08)}
+.type-spec{display:grid;gap:4px}
+.type-spec .big{font-family:var(--d-display);font-weight:var(--d-dw);font-size:1.9rem;line-height:1.1;letter-spacing:var(--d-track,0)}
+.type-spec .small{font-size:.95rem;color:var(--d-muted)}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font:600 .9rem var(--d-body);padding:10px 18px;border-radius:var(--d-radius);border:1.5px solid var(--d-primary);cursor:pointer}
+.btn.p{background:var(--d-primary);color:var(--d-on-primary)}
+.btn.s{background:transparent;color:var(--d-primary)}
+.btn:focus-visible{outline:3px solid var(--d-accent);outline-offset:2px}
+.mood{font-size:.92rem;color:var(--d-muted);margin:0}
+
+/* Capsule sample */
+.capsule{background:var(--d-card);border:1px solid var(--d-line);border-radius:var(--d-radius);padding:22px 24px;display:grid;gap:12px}
+.capsule .date{font:600 .72rem var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--d-accent-text)}
+.capsule h3{font-family:var(--d-display);font-weight:var(--d-dw);font-size:1.6rem;line-height:1.2;margin:0;letter-spacing:var(--d-track,0)}
+.verse{border-left:3px solid var(--d-accent);padding-left:14px;font-family:var(--d-verse);font-style:italic;font-size:1.05rem;line-height:1.5}
+.verse b{display:block;font-style:normal;font:600 .78rem var(--ui);letter-spacing:.06em;color:var(--d-muted);margin-top:4px}
+.capsule p{margin:0;line-height:1.65}
+.decree{background:var(--d-soft);border-radius:calc(var(--d-radius) - 2px);padding:12px 14px;font-weight:600}
+.series{font-size:.8rem;color:var(--d-muted)}
+
+/* Refined: Still Waters with gold */
+.r{--d-bg:#f3f6f5;--d-fg:#1d2b2d;--d-muted:#5f6f70;--d-line:#d9e3e1;--d-card:#ffffff;--d-soft:#f6eedd;
+   --d-hero:#dde9ec;--d-hero-fg:#163a4c;--d-primary:#2b6178;--d-on-primary:#ffffff;--d-accent:#c4a15a;--d-accent-text:#8a6a24;
+   --d-display:"Cormorant Garamond",Georgia,serif;--d-dw:600;--d-body:"Nunito Sans",system-ui,sans-serif;--d-verse:"Lora",Georgia,serif;--d-radius:14px}
+.r .verse{font-size:1.05rem}
+.r .verse b{color:var(--d-accent-text);text-transform:uppercase;letter-spacing:.08em;font-size:.72rem}
+.r .decree{border-left:3px solid var(--d-accent)}
+.r .btn.g{background:var(--d-soft);color:#5a4412;border-color:var(--d-accent)}
+.r .btn.t{background:transparent;border-color:transparent;color:var(--d-primary);padding-inline:4px;text-decoration:underline;text-decoration-color:var(--d-accent);text-underline-offset:4px;text-decoration-thickness:1.5px}
+.r .btn.t:hover{text-decoration-color:var(--d-primary)}
+.r .btn{transition:background-color .15s,color .15s,border-color .15s,box-shadow .15s}
+.r .btn.p:hover{background:#224e61;border-color:#224e61}
+.r .btn.p:active{background:#1a3e4d;border-color:#1a3e4d}
+.r .btn.s:hover{background:#e7f0f2}
+.r .btn.s:active{background:#d5e5e9}
+.r .btn.t:active{color:#1a3e4d}
+.r .btn.g:hover{background:#efe1c2}
+.r .btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--d-bg),0 0 0 4px var(--d-accent)}
+.r .btn:disabled{opacity:.45;cursor:not-allowed}
+.r .btn.loading{color:transparent;position:relative;pointer-events:none}
+.r .btn.loading::after{content:"";position:absolute;inset:0;margin:auto;width:16px;height:16px;border-radius:50%;border:2px solid var(--d-on-primary);border-right-color:transparent;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.r .btn{transition:none}.r .btn.loading::after{animation-duration:2.4s}}
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 12px;font-size:.78rem;color:var(--d-muted)}
+.states div{display:grid;gap:6px;justify-items:start}
+.force-hover.p{background:#224e61!important;border-color:#224e61!important}
+.force-hover.s{background:#e7f0f2!important}
+.force-hover.t{text-decoration-color:var(--d-primary)!important}
+.force-active.p{background:#1a3e4d!important;border-color:#1a3e4d!important}
+.force-focus{box-shadow:0 0 0 2px var(--d-bg),0 0 0 4px var(--d-accent)!important}
+.btn-legend{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:.85rem;color:var(--d-muted);align-items:center}
+.roles{display:grid;gap:0;border:1px solid var(--d-line);border-radius:10px;overflow:hidden;background:var(--d-card)}
+.role{display:grid;grid-template-columns:minmax(110px,150px) 1fr;gap:12px;padding:10px 14px;border-bottom:1px solid var(--d-line);align-items:baseline}
+.role:last-child{border-bottom:0}
+.role span{font:600 .72rem var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--d-muted)}
+.role .s1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:1.35rem;line-height:1.2}
+.role .s2{font-family:"Nunito Sans",system-ui,sans-serif;font-size:.98rem}
+.role .s3{font-family:"Lora",Georgia,serif;font-style:italic;font-size:1rem}
+.role .s4{font-family:"Nunito Sans",system-ui,sans-serif;font-weight:600;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:#8a6a24}
+.role .s5{font-family:"Nunito Sans",system-ui,sans-serif;font-weight:600;font-size:.95rem}
+.role .s6{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:1.15rem}
+@media (max-width:520px){.role{grid-template-columns:1fr;gap:2px}}
+.why{display:grid;gap:6px;font-size:.92rem}
+.why p{margin:0;color:var(--d-muted)}
+/* Direction A: Morning Light — warm, pastoral */
+.a{--d-bg:#fbf8f3;--d-fg:#22283a;--d-muted:#6a6f80;--d-line:#ebe3d6;--d-card:#ffffff;--d-soft:#fdf1dc;
+   --d-hero:#1f4fa3;--d-hero-fg:#fdf9f1;--d-primary:#1f4fa3;--d-on-primary:#ffffff;--d-accent:#e2a23b;--d-accent-text:#a86a10;
+   --d-display:"Lora",Georgia,serif;--d-dw:600;--d-body:"Source Sans 3",system-ui,sans-serif;--d-verse:"Lora",Georgia,serif;--d-radius:10px}
+/* Direction B: Still Waters — calm, contemplative */
+.b{--d-bg:#f3f6f5;--d-fg:#1d2b2d;--d-muted:#5f6f70;--d-line:#d9e3e1;--d-card:#ffffff;--d-soft:#e4efec;
+   --d-hero:#dde9ec;--d-hero-fg:#163a4c;--d-primary:#2b6178;--d-on-primary:#ffffff;--d-accent:#7d9f86;--d-accent-text:#4d7258;
+   --d-display:"Cormorant Garamond",Georgia,serif;--d-dw:600;--d-body:"Nunito Sans",system-ui,sans-serif;--d-verse:"Cormorant Garamond",Georgia,serif;--d-radius:14px}
+.b .verse{font-size:1.2rem}
+/* Direction C: Watchman — prophetic, carved stone */
+.c{--d-bg:#f7f4ee;--d-fg:#1b1d2b;--d-muted:#666878;--d-line:#e3ddd0;--d-card:#ffffff;--d-soft:#f3ead6;
+   --d-hero:#141a3a;--d-hero-fg:#efe6d2;--d-primary:#1d2a6b;--d-on-primary:#f6efe0;--d-accent:#c9952e;--d-accent-text:#946410;
+   --d-display:"Cinzel","Times New Roman",serif;--d-dw:700;--d-track:.02em;--d-body:"Libre Franklin",system-ui,sans-serif;--d-verse:"Lora",Georgia,serif;--d-radius:4px}
+.c .capsule h3{font-size:1.35rem}
+.c .type-spec .big{font-size:1.6rem}
+
+/* Motion demos */
+.motion{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;padding:0 clamp(18px,4vw,40px) 32px}
+.demo{background:var(--d-card);border:1px solid var(--d-line);border-radius:var(--d-radius);padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.demo h4{margin:0;font:600 .95rem var(--d-body)}
+.demo p.hint{margin:0;font-size:.82rem;color:var(--d-muted)}
+.play{justify-self:start}
+.list{display:grid;gap:8px}
+.list div{background:var(--d-bg);border:1px solid var(--d-line);border-radius:10px;padding:10px 12px;font-family:var(--d-display);font-weight:600;font-size:1.1rem}
+.list small{display:block;font:600 .7rem var(--d-body);letter-spacing:.08em;text-transform:uppercase;color:var(--d-accent-text)}
+.lines{font-family:var(--d-verse);font-style:italic;font-size:1.05rem;line-height:1.55;border-left:3px solid var(--d-accent);padding-left:14px}
+.lines span{display:block}
+.count{font-family:var(--d-display);font-weight:600;font-size:2.6rem;line-height:1;color:var(--d-primary);font-variant-numeric:tabular-nums}
+.stage{position:relative;min-height:150px;border:1px solid var(--d-line);border-radius:10px;overflow:hidden;background:var(--d-bg)}
+.view{position:absolute;inset:0;padding:14px;display:grid;gap:6px;align-content:start}
+.view .t{font-family:var(--d-display);font-weight:600;font-size:1.3rem}
+.view .m{font-size:.85rem;color:var(--d-muted)}
+.next{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.next b{font-weight:600}
+</style>
+
+<main>
+<header class="top">
+  <img src="logo.png" alt="Kingdom Capstone Outreach Ministry logo: a globe resting on an open Bible">
+  <div>
+    <h1>KCOM Brand Directions</h1>
+    <p class="lede">Three ways to refresh the colors and type around the existing logo. Each keeps the logo's blue as an anchor and aims for warm, pastoral, calm and prophetic, with a different emphasis.</p>
+    <div class="chips"><span class="chip">Logo kept as is</span><span class="chip">Blue taken from the globe</span><span class="chip">Sample: Romans 12:2 (KJV)</span></div>
+  </div>
+</header>
+
+<!-- Refined -->
+<section class="dir r" aria-label="Refined direction">
+  <div class="dir-head">
+    <span class="tag">Chosen base · Still Waters, refined with gold</span>
+    <h2>Still Waters, with Old Gold</h2>
+    <p>Direction B's calm blues and sage, with a muted old gold for small accents and a soft sandstone for highlighted blocks. Each kind of text gets its own role.</p>
+  </div>
+  <div class="dir-body">
+    <div class="col">
+      <div class="label">Palette</div>
+      <div class="swatches">
+        <div class="sw"><i style="background:#2b6178"></i>Deep water</div>
+        <div class="sw"><i style="background:#7d9f86"></i>Sage</div>
+        <div class="sw"><i style="background:#c4a15a"></i>Old gold</div>
+        <div class="sw"><i style="background:#f6eedd"></i>Sandstone</div>
+        <div class="sw"><i style="background:#f3f6f5"></i>Mist</div>
+      </div>
+      <div class="why">
+        <p><b>Why old gold:</b> it sits between Watchman's flame gold and Morning Light's sunrise, desaturated so it stays calm next to the blues. It's used sparingly: scripture rules, references, the decree marker, focus rings.</p>
+        <p><b>Why sandstone:</b> a warm wash for the decree and highlighted blocks, softer than gold as a background. Dawn was close, but slightly too peach beside sage.</p>
+        <p><b>Text in gold</b> uses a darker shade so it stays readable.</p>
+      </div>
+      <div class="label">Buttons</div>
+      <div class="btn-legend">
+        <button class="btn p" id="r-p">Read today's capsule</button><span><b>Primary:</b> the one main action on a screen</span>
+        <button class="btn s" id="r-s">Subscribe</button><span><b>Secondary:</b> other actions beside it</span>
+        <button class="btn t" id="r-t">Browse the archive →</button><span><b>Tertiary:</b> looks like a link; low-emphasis actions</span>
+        <button class="btn g" id="r-g">Give</button><span><b>Giving (special case):</b> gold primary, used only for giving, later milestone</span>
+      </div>
+    </div>
+    <article class="capsule">
+      <span class="date" style="color:var(--d-muted)">Saturday, 14 November 2026</span>
+      <h3>Renewed Mind</h3>
+      <div class="verse">"And be not conformed to this world: but be ye transformed by the renewing of your mind…"<b>Romans 12:2 · KJV</b></div>
+      <p>Transformation begins where the mind yields. Today, bring every thought before the Lord and let His Word reshape what you expect, what you fear and what you pursue.</p>
+      <div class="decree">I decree that my mind is renewed by the Word, and I walk in God's good, acceptable and perfect will.</div>
+      <span class="series">Series: Peak Performance · Part 3</span>
+    </article>
+  </div>
+  <div style="padding:0 clamp(18px,4vw,40px) 24px;display:grid;gap:10px">
+    <div class="label">Button states (hover and tab to the live buttons above to try them)</div>
+    <div class="states">
+      <div>Default<button class="btn p" id="st1">Primary</button><button class="btn s" id="st2">Secondary</button><button class="btn t" id="st3">Tertiary →</button></div>
+      <div>Hover<button class="btn p force-hover" id="st4">Primary</button><button class="btn s force-hover" id="st5">Secondary</button><button class="btn t force-hover" id="st6">Tertiary →</button></div>
+      <div>Pressed<button class="btn p force-active" id="st7">Primary</button><button class="btn s" id="st8" style="background:#d5e5e9">Secondary</button><button class="btn t" id="st9" style="color:#1a3e4d">Tertiary →</button></div>
+      <div>Keyboard focus<button class="btn p force-focus" id="st10">Primary</button><button class="btn s force-focus" id="st11">Secondary</button><button class="btn t force-focus" id="st12">Tertiary →</button></div>
+      <div>Disabled<button class="btn p" id="st13" disabled>Primary</button><button class="btn s" id="st14" disabled>Secondary</button><button class="btn t" id="st15" disabled>Tertiary →</button></div>
+      <div>Loading<button class="btn p loading" id="st16" aria-busy="true">Saving</button></div>
+    </div>
+  </div>
+  <div style="padding:0 clamp(18px,4vw,40px) 12px"><div class="label">Motion samples (press Play; reduced-motion settings are respected)</div></div>
+  <div class="motion">
+    <div class="demo">
+      <h4>Capsules fade up as you scroll</h4>
+      <div class="list" id="m-list">
+        <div><small>13 Nov</small>Peak Performance 10</div>
+        <div><small>12 Nov</small>Control Room</div>
+        <div><small>11 Nov</small>Gateway of Peace</div>
+      </div>
+      <button class="btn s play" id="play-list">Play</button>
+    </div>
+    <div class="demo">
+      <h4>Today's verse reveals line by line</h4>
+      <div class="lines" id="m-lines"><span>"And be not conformed to this world:</span><span>but be ye transformed</span><span>by the renewing of your mind…"</span></div>
+      <button class="btn s play" id="play-lines">Play</button>
+    </div>
+    <div class="demo">
+      <h4>Gentle counter</h4>
+      <div class="count" id="m-count">3,600+</div>
+      <p class="hint">Daily devotionals since the ministry began (example figure)</p>
+      <button class="btn s play" id="play-count">Play</button>
+    </div>
+    <div class="demo">
+      <h4>Page change: archive to capsule</h4>
+      <div class="stage">
+        <div class="view" id="v1"><span class="m">Archive · November 2026</span><span class="t">Renewed Mind</span><span class="m">Romans 12:1-8</span></div>
+        <div class="view" id="v2" hidden><span class="m">Saturday, 14 November 2026</span><span class="t" style="font-size:1.7rem">Renewed Mind</span><span class="m">Transformation begins where the mind yields…</span></div>
+      </div>
+      <button class="btn s play" id="play-page">Open capsule</button>
+    </div>
+  </div>
+  <div style="padding:0 clamp(18px,4vw,40px) 32px;display:grid;gap:10px">
+    <div class="label">Type by role</div>
+    <div class="roles">
+      <div class="role"><span>Titles</span><div class="s1">Renewed Mind · Cormorant Garamond</div></div>
+      <div class="role"><span>Body text</span><div class="s2">Transformation begins where the mind yields. Nunito Sans, comfortable on phones.</div></div>
+      <div class="role"><span>Scripture text</span><div class="s3">"Be ye transformed by the renewing of your mind." Lora italic, sturdier than Cormorant at reading size.</div></div>
+      <div class="role"><span>References and dates</span><div class="s4">Romans 12:2 · KJV · 14 November 2026</div></div>
+      <div class="role"><span>Decrees and buttons</span><div class="s5">I decree that my mind is renewed by the Word. Nunito Sans semibold</div></div>
+      <div class="role"><span>Pull quotes</span><div class="s6">"Peace I leave with you." Cormorant italic, large sizes only</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- A -->
+<section class="dir a" aria-label="Direction A">
+  <div class="dir-head">
+    <span class="tag">Direction A · Warm and pastoral</span>
+    <h2>Morning Light</h2>
+    <p>The logo's sapphire blue with a sunrise gold, on soft linen. Feels like an early-morning devotional: welcoming, steady, hopeful.</p>
+  </div>
+  <div class="dir-body">
+    <div class="col">
+      <div class="label">Palette</div>
+      <div class="swatches">
+        <div class="sw"><i style="background:#1f4fa3"></i>Sapphire</div>
+        <div class="sw"><i style="background:#e2a23b"></i>Sunrise gold</div>
+        <div class="sw"><i style="background:#fbf8f3"></i>Linen</div>
+        <div class="sw"><i style="background:#fdf1dc"></i>Dawn</div>
+        <div class="sw"><i style="background:#22283a"></i>Ink</div>
+      </div>
+      <div class="label">Type</div>
+      <div class="type-spec"><span class="big">Lora</span><span class="small">Headings and verses in Lora, a gentle book serif. Body in Source Sans 3 for easy reading on phones.</span></div>
+      <div class="label">Buttons</div>
+      <div class="btns"><button class="btn p" id="a-p">Read today's capsule</button><button class="btn s" id="a-s">Subscribe</button></div>
+      <p class="mood">Mood: pastoral warmth with a note of hope.</p>
+    </div>
+    <article class="capsule">
+      <span class="date">Saturday, 14 November 2026</span>
+      <h3>Renewed Mind</h3>
+      <div class="verse">"And be not conformed to this world: but be ye transformed by the renewing of your mind…"<b>Romans 12:2 · KJV</b></div>
+      <p>Transformation begins where the mind yields. Today, bring every thought before the Lord and let His Word reshape what you expect, what you fear and what you pursue.</p>
+      <div class="decree">I decree that my mind is renewed by the Word, and I walk in God's good, acceptable and perfect will.</div>
+      <span class="series">Series: Peak Performance · Part 3</span>
+    </article>
+  </div>
+</section>
+
+<!-- B -->
+<section class="dir b" aria-label="Direction B">
+  <div class="dir-head">
+    <span class="tag">Direction B · Calm and contemplative</span>
+    <h2>Still Waters</h2>
+    <p>A softened, deeper version of the logo blue with sage and mist. Quiet and spacious, built for slow reading and reflection.</p>
+  </div>
+  <div class="dir-body">
+    <div class="col">
+      <div class="label">Palette</div>
+      <div class="swatches">
+        <div class="sw"><i style="background:#2b6178"></i>Deep water</div>
+        <div class="sw"><i style="background:#7d9f86"></i>Sage</div>
+        <div class="sw"><i style="background:#f3f6f5"></i>Mist</div>
+        <div class="sw"><i style="background:#dde9ec"></i>Morning sky</div>
+        <div class="sw"><i style="background:#1d2b2d"></i>Slate</div>
+      </div>
+      <div class="label">Type</div>
+      <div class="type-spec"><span class="big">Cormorant Garamond</span><span class="small">Elegant, classical headings and verses. Body in Nunito Sans, soft and rounded.</span></div>
+      <div class="label">Buttons</div>
+      <div class="btns"><button class="btn p" id="b-p">Read today's capsule</button><button class="btn s" id="b-s">Subscribe</button></div>
+      <p class="mood">Mood: peace, rest and quiet strength.</p>
+    </div>
+    <article class="capsule">
+      <span class="date">Saturday, 14 November 2026</span>
+      <h3>Renewed Mind</h3>
+      <div class="verse">"And be not conformed to this world: but be ye transformed by the renewing of your mind…"<b>Romans 12:2 · KJV</b></div>
+      <p>Transformation begins where the mind yields. Today, bring every thought before the Lord and let His Word reshape what you expect, what you fear and what you pursue.</p>
+      <div class="decree">I decree that my mind is renewed by the Word, and I walk in God's good, acceptable and perfect will.</div>
+      <span class="series">Series: Peak Performance · Part 3</span>
+    </article>
+  </div>
+</section>
+
+<!-- C -->
+<section class="dir c" aria-label="Direction C">
+  <div class="dir-head">
+    <span class="tag">Direction C · Prophetic</span>
+    <h2>Watchman</h2>
+    <p>Midnight indigo with a gold flame and carved, inscription-style capitals that nod to the name "Capstone". Bold and authoritative, softened by warm parchment pages.</p>
+  </div>
+  <div class="dir-body">
+    <div class="col">
+      <div class="label">Palette</div>
+      <div class="swatches">
+        <div class="sw"><i style="background:#141a3a"></i>Midnight</div>
+        <div class="sw"><i style="background:#1d2a6b"></i>Royal indigo</div>
+        <div class="sw"><i style="background:#c9952e"></i>Flame gold</div>
+        <div class="sw"><i style="background:#f7f4ee"></i>Parchment</div>
+        <div class="sw"><i style="background:#efe6d2"></i>Sandstone</div>
+      </div>
+      <div class="label">Type</div>
+      <div class="type-spec"><span class="big">Cinzel</span><span class="small">Roman inscription capitals for headings, like letters cut in stone. Body in Libre Franklin; verses in Lora italic.</span></div>
+      <div class="label">Buttons</div>
+      <div class="btns"><button class="btn p" id="c-p">Read today's capsule</button><button class="btn s" id="c-s">Subscribe</button></div>
+      <p class="mood">Mood: a watchman's voice, weighty and sure.</p>
+    </div>
+    <article class="capsule">
+      <span class="date">Saturday, 14 November 2026</span>
+      <h3>Renewed Mind</h3>
+      <div class="verse">"And be not conformed to this world: but be ye transformed by the renewing of your mind…"<b>Romans 12:2 · KJV</b></div>
+      <p>Transformation begins where the mind yields. Today, bring every thought before the Lord and let His Word reshape what you expect, what you fear and what you pursue.</p>
+      <div class="decree">I decree that my mind is renewed by the Word, and I walk in God's good, acceptable and perfect will.</div>
+      <span class="series">Series: Peak Performance · Part 3</span>
+    </article>
+  </div>
+</section>
+
+<div class="next">
+  <b>Mixing is fine.</b>
+  <span>For example: Direction A's colors with Direction C's headings, or Direction B's calm layout with A's gold. The capsule text above is sample copy written for this page, not taken from the site.</span>
+</div>
+</main>
+<script>
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var ease = 'cubic-bezier(.22,.61,.36,1)';
+  function rise(el, delay){
+    var kf = reduce ? [{opacity:.4},{opacity:1}] : [{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}];
+    return el.animate(kf,{duration:reduce?200:560,delay:delay||0,easing:ease,fill:'backwards'});
+  }
+  document.getElementById('play-list').addEventListener('click',function(){
+    [].forEach.call(document.querySelectorAll('#m-list div'),function(el,i){rise(el,i*120)});
+  });
+  document.getElementById('play-lines').addEventListener('click',function(){
+    [].forEach.call(document.querySelectorAll('#m-lines span'),function(el,i){rise(el,i*260)});
+  });
+  document.getElementById('play-count').addEventListener('click',function(){
+    var el=document.getElementById('m-count'), end=3600, start=null, dur=reduce?0:1400;
+    if(!dur){el.textContent='3,600+';return}
+    function step(t){ if(start===null) start=t; var p=Math.min((t-start)/dur,1); var e=1-Math.pow(1-p,3);
+      el.textContent=Math.round(end*e).toLocaleString('en-US')+(p===1?'+':''); if(p<1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  });
+  var open=false, btn=document.getElementById('play-page'), v1=document.getElementById('v1'), v2=document.getElementById('v2');
+  btn.addEventListener('click',function(){
+    var from=open?v2:v1, to=open?v1:v2; open=!open;
+    btn.textContent=open?'Back to archive':'Open capsule';
+    to.hidden=false;
+    if(reduce){from.hidden=true;return}
+    from.animate([{opacity:1},{opacity:0}],{duration:280,easing:ease}).onfinish=function(){from.hidden=true};
+    to.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:420,delay:120,easing:ease,fill:'backwards'});
+  });
+})();
+</script>

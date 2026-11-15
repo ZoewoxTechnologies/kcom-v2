@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.astro/
+.turbo/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+# Drupal export with personal data: never commit
+data/legacy/
+.DS_Store
+*.log

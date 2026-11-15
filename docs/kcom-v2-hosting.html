@@ -1,0 +1,107 @@
+<title>KCOM App Hosting</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap">
+<style>
+/* Layout: single reading column; one comparison table, then the recommendation */
+:root{
+  --bg:#f6f7fb; --surface:#ffffff; --fg:#1b1f2e; --muted:#5b6178; --line:#dde1ec;
+  --accent:#2f4fb5; --accent-soft:#e6ebfa; --gold:#9a6b12; --good:#1f7a4d; --warn:#9a5b00;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11141f; --surface:#191d2b; --fg:#e7e9f2; --muted:#9aa1b8; --line:#2b3044;
+  --accent:#8ea6ff; --accent-soft:#232b4a; --gold:#e0b25a; --good:#5fd39a; --warn:#f0b45a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11141f; --surface:#191d2b; --fg:#e7e9f2; --muted:#9aa1b8; --line:#2b3044;
+  --accent:#8ea6ff; --accent-soft:#232b4a; --gold:#e0b25a; --good:#5fd39a; --warn:#f0b45a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+main{max-width:920px;margin:0 auto;display:grid;gap:32px}
+h1,h2{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:2rem} h2{font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--line)}
+p,li{max-width:70ch} p{margin:0}
+section{display:grid;gap:14px}
+.eyebrow{font:600 .75rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.lede{color:var(--muted);font-size:1.05rem}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:760px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+thead th:not(:first-child){color:var(--fg);font-family:var(--display);font-size:1rem;text-transform:none;letter-spacing:0}
+td:first-child{font-weight:600;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.g{color:var(--good)} .w{color:var(--warn)}
+.rec{background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:16px 18px;display:grid;gap:8px}
+.rec b{font-family:var(--display)}
+.note{color:var(--muted);font-size:.85rem}
+ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+code{font-size:.85rem}
+</style>
+
+<main>
+<header style="display:grid;gap:10px">
+  <div class="eyebrow">KCOM v2 · Next decision · 14 Nov 2026</div>
+  <h1>KCOM App Hosting</h1>
+  <p class="lede">Where the three apps run: the Astro public site, the Hono API and the React admin. The database stays on Neon and images on Cloudinary.</p>
+</header>
+
+<section>
+  <h2>What each app needs</h2>
+  <ul>
+    <li><b>Public site (Astro):</b> mostly pre-built pages served from a CDN; a few server-rendered routes (today's capsule, search).</li>
+    <li><b>API (Hono):</b> a small server or serverless functions that talk to Neon. Light traffic, mostly from the admin.</li>
+    <li><b>Admin (React + Vite):</b> plain static files; any static host works.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Side by side</h2>
+  <div class="scroll"><table>
+    <thead><tr><th></th><th>Cloudflare</th><th>Vercel</th><th>Netlify</th><th>Render / Fly.io</th></tr></thead>
+    <tr><td>Type</td><td>CDN + serverless (Workers)</td><td>CDN + serverless functions</td><td>CDN + serverless functions</td><td>Always-on servers (containers)</td></tr>
+    <tr><td>Astro site</td><td class="g">First-class adapter</td><td class="g">First-class adapter</td><td class="g">First-class adapter</td><td>Works; you run Node yourself</td></tr>
+    <tr><td>Hono API</td><td class="g">Hono was built for Workers</td><td>Supported</td><td>Supported</td><td class="g">Runs as a normal Node server</td></tr>
+    <tr><td>Free plan</td><td class="g">Unlimited static bandwidth; 100k API requests a day</td><td class="w">Hobby plan is for non-commercial use only; a ministry taking donations is a grey area</td><td class="w">Credit-based free plan; overages pause the site</td><td class="w">Render free servers sleep after 15 min idle (slow first load); Fly has no real free plan</td></tr>
+    <tr><td>Paid starting point</td><td>$5 a month (Workers Paid)</td><td>$20 per user a month (Pro)</td><td>~$19 a month (Pro)</td><td>~$5–7 a month per always-on server</td></tr>
+    <tr><td>Speed for visitors</td><td class="g">Global edge network, fastest for static pages</td><td class="g">Global edge</td><td class="g">Global edge</td><td>One region unless you pay for more</td></tr>
+    <tr><td>Fit with Neon sleeping</td><td class="g">Good: no server holds connections open</td><td class="g">Good</td><td class="g">Good</td><td class="w">An always-on server's connection pool can keep Neon awake; needs tuning</td></tr>
+    <tr><td>Watch out for</td><td>Workers aren't full Node; some libraries need checking. Database access via Hyperdrive or an HTTP driver.</td><td>Cost jumps per team member</td><td>Pricing model changed recently</td><td>More server upkeep</td></tr>
+  </table></div>
+  <p class="note">Plan details are from my knowledge as of 2026, not checked against the providers' pages today. I'll verify the one you lean towards.</p>
+</section>
+
+<section>
+  <h2>Option: Google Cloud Run, as on the CGHSR site</h2>
+  <p>The CGHSR site already runs on Cloud Run: a Docker image built and deployed by a GitHub Actions workflow, with Sentry, PostHog, Better Auth, Cloudinary and Drizzle. Most of that pipeline can be reused here.</p>
+  <div class="scroll"><table>
+    <thead><tr><th></th><th>Cloud Run</th></tr></thead>
+    <tr><td>Free allowance (monthly)</td><td class="g">About 2 million requests, 180,000 vCPU-seconds and 360,000 GiB-seconds; plenty for this API</td></tr>
+    <tr><td>Idle</td><td class="g">Scales to zero, so you pay nothing while idle and Neon can sleep too</td></tr>
+    <tr><td>Cold start</td><td class="w">First request after idle takes ~1–3 s for a Node container (Hono is light, so nearer 1 s)</td></tr>
+    <tr><td>Runtime</td><td class="g">Full Node.js: no compatibility questions for Better Auth or the Postgres driver</td></tr>
+    <tr><td>Data transfer</td><td class="w">Free allowance is small (about 1 GB a month in North America). Fine for an API, not ideal for serving the whole public site</td></tr>
+    <tr><td>Known to you</td><td class="g">Same deploy workflow, secrets setup and monitoring as CGHSR</td></tr>
+  </table></div>
+  <p class="note">Free allowances are from my knowledge; I'll confirm on Google's pricing page.</p>
+</section>
+
+<section>
+  <div class="rec">
+    <b>Updated recommendation: Cloudflare in front, Cloud Run for the API.</b>
+    <ul>
+      <li><b>Cloudflare (free):</b> DNS for the domain, the pre-built Astro site, and the admin's static files. Unlimited bandwidth and a global CDN, so visitors never wait on a cold start.</li>
+      <li><b>Cloud Run (free tier):</b> the Hono API in a Docker container, deployed the same way as CGHSR. Full Node removes the Workers compatibility checks.</li>
+      <li><b>Monitoring:</b> reuse Sentry and PostHog from CGHSR.</li>
+    </ul>
+    <p>The only visible cost is the API cold start, which the admin sees after idle periods. Public pages are unaffected because they're served from Cloudflare. Astro's few server-rendered routes (today's capsule, search) can be pre-built on a schedule or call the API.</p>
+  </div>
+</section>
+
+<section>
+  <div class="rec">
+    <b>Earlier recommendation: Cloudflare for all three apps.</b>
+    <p>One account for the site, API and admin. The free plan likely covers this site, with $5 a month as the upgrade. Hono runs natively on Workers, Astro has an official Cloudflare adapter, and serverless requests let Neon sleep between visits, which protects the 100 compute-hour allowance. Cloudflare also handles DNS, so the domain can move there too.</p>
+    <p>The one thing to check during setup: Workers run a trimmed-down runtime, so Better Auth and the Postgres driver need to be confirmed working there. Both are known to support it.</p>
+  </div>
+</section>
+</main>
