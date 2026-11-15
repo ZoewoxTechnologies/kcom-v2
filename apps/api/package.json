@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@kcom/config": "workspace:*",
-    "@types/node": "^22.10.2",
+    "@types/node": "^24.0.0",
     "eslint": "^10.14.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
