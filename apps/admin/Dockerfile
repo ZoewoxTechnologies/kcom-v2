@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Build from the repo root: docker build -f apps/admin/Dockerfile .
-FROM node:22-slim AS build
+FROM node:24-slim AS build
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH
 RUN corepack enable
 WORKDIR /repo

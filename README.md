@@ -14,7 +14,7 @@ Rebuild of kingdomcapstone.org as a pnpm + Turborepo monorepo.
 
 ## Setup
 
-Requires Node >=22.22.1 (`.nvmrc`) and pnpm via Corepack.
+Requires Node >=24 (`.nvmrc`) and pnpm via Corepack.
 
 ```bash
 nvm use
