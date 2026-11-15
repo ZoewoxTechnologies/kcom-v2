@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.astro
+**/.turbo
+**/coverage
+.git
+.github
+.env
+.env.*
+data
+docs
+brand
