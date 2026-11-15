@@ -76,5 +76,7 @@ All optional; every integration is a no-op when its variable is unset.
 | web | `SENTRY_DSN` (server, runtime), `PUBLIC_SENTRY_DSN` (browser, build time), `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`, `PUBLIC_SENTRY_*`, `SENTRY_AUTH_TOKEN`/`SENTRY_ORG`/`SENTRY_PROJECT` (source maps), `PUBLIC_POSTHOG_KEY`, `PUBLIC_POSTHOG_HOST` |
 | admin | `VITE_SENTRY_DSN`, `VITE_SENTRY_ENVIRONMENT`, `VITE_SENTRY_RELEASE` (all build time) |
 
+Set the Sentry and PostHog keys only on the production services and the production build, never in local `.env` files.
+
 PostHog runs on the public site only, skips visitors with Do Not Track or Global Privacy Control, and has
 session recording disabled. Set `SENTRY_RELEASE` to the git SHA at deploy time.
