@@ -28,3 +28,16 @@ pnpm typecheck
 ```
 
 `data/legacy/` holds the Drupal export with personal data. It is gitignored: never commit it.
+
+## Database
+
+PostgreSQL via Drizzle (`packages/db`). Copy `.env.example` to `.env` and set `DATABASE_URL`, then:
+
+```bash
+pnpm --filter @kcom/db db:migrate   # apply migrations
+pnpm --filter @kcom/db db:seed      # insert sample capsules
+pnpm --filter @kcom/db db:generate  # create a migration after editing schema.ts
+pnpm --filter @kcom/db db:studio
+```
+
+Tests use in-memory Postgres (pglite); no local database needed.

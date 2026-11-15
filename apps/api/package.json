@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
-    "hono": "^4.6.14"
+    "hono": "^4.6.14",
+    "@kcom/db": "workspace:*"
   },
   "devDependencies": {
     "@kcom/config": "workspace:*",
@@ -21,6 +22,7 @@
     "eslint": "^9.17.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "@electric-sql/pglite": "^0.2.15"
   }
 }
