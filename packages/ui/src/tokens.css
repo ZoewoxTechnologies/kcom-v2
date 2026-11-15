@@ -1,21 +1,21 @@
 /* KCOM brand tokens: "Still Waters, with Old Gold" */
 :root {
   /* Color */
-  --color-deep-water: #2b6178; /* primary: buttons, links */
-  --color-sky: #dde9ec; /* hero and header washes */
-  --color-sage: #7d9f86; /* secondary accent */
-  --color-mist: #f3f6f5; /* page background */
-  --color-slate: #1d2b2d; /* text */
-  --color-muted: #5f6f70; /* secondary text */
-  --color-line: #d9e3e1; /* borders */
-  --color-old-gold: #c4a15a; /* small accents: scripture rule, decree edge, focus */
-  --color-old-gold-text: #8a6a24; /* gold used as text (readable contrast) */
-  --color-sandstone: #f6eedd; /* decree and highlight backgrounds */
+  --color-deep-water: #2b6178;   /* primary: buttons, links */
+  --color-sky: #dde9ec;          /* hero and header washes */
+  --color-sage: #7d9f86;         /* secondary accent */
+  --color-mist: #f3f6f5;         /* page background */
+  --color-slate: #1d2b2d;        /* text */
+  --color-muted: #5f6f70;        /* secondary text */
+  --color-line: #d9e3e1;         /* borders */
+  --color-old-gold: #c4a15a;     /* small accents: scripture rule, decree edge, focus */
+  --color-old-gold-text: #8a6a24;/* gold used as text (readable contrast) */
+  --color-sandstone: #f6eedd;    /* decree and highlight backgrounds */
 
   /* Type, by role */
-  --font-title: "Cormorant Garamond", Georgia, serif; /* titles, pull quotes (large sizes) */
-  --font-body: "Nunito Sans", system-ui, sans-serif; /* body, buttons, decrees, references */
-  --font-scripture: "Lora", Georgia, serif; /* scripture text, italic */
+  --font-title: "Cormorant Garamond", Georgia, serif;   /* titles, pull quotes (large sizes) */
+  --font-body: "Nunito Sans", system-ui, sans-serif;    /* body, buttons, decrees, references */
+  --font-scripture: "Lora", Georgia, serif;             /* scripture text, italic */
 
   /* Buttons: three variants
      primary   = filled deep water, white text (one main action per screen)

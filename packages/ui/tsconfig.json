@@ -1,5 +1,1 @@
-{
-  "extends": "@kcom/config/tsconfig.strict.json",
-  "compilerOptions": { "jsx": "react-jsx" },
-  "include": ["src"]
-}
+{ "extends": "@kcom/config/tsconfig.strict.json", "compilerOptions": { "jsx": "react-jsx" }, "include": ["src"] }

@@ -22,12 +22,8 @@
     color 150ms ease,
     text-decoration-color 150ms ease;
 }
-.kc-btn:focus {
-  outline: none;
-}
-.kc-btn:focus-visible {
-  box-shadow: var(--focus-ring);
-}
+.kc-btn:focus { outline: none; }
+.kc-btn:focus-visible { box-shadow: var(--focus-ring); }
 
 .kc-btn--primary {
   --kc-btn-bg: var(--color-deep-water);
@@ -43,15 +39,9 @@
   --kc-btn-border: var(--color-deep-water-active);
 }
 
-.kc-btn--secondary {
-  --kc-btn-border: var(--color-deep-water);
-}
-.kc-btn--secondary:hover:not(:disabled, [aria-busy="true"]) {
-  --kc-btn-bg: var(--color-secondary-hover);
-}
-.kc-btn--secondary:active:not(:disabled, [aria-busy="true"]) {
-  --kc-btn-bg: var(--color-secondary-active);
-}
+.kc-btn--secondary { --kc-btn-border: var(--color-deep-water); }
+.kc-btn--secondary:hover:not(:disabled, [aria-busy="true"]) { --kc-btn-bg: var(--color-secondary-hover); }
+.kc-btn--secondary:active:not(:disabled, [aria-busy="true"]) { --kc-btn-bg: var(--color-secondary-active); }
 
 .kc-btn--tertiary {
   min-height: auto;
@@ -62,23 +52,12 @@
   text-decoration-thickness: 2px;
   text-underline-offset: 0.25em;
 }
-.kc-btn--tertiary:hover:not(:disabled, [aria-busy="true"]) {
-  text-decoration-color: var(--color-deep-water);
-}
-.kc-btn--tertiary:active:not(:disabled, [aria-busy="true"]) {
-  color: var(--color-deep-water-active);
-}
+.kc-btn--tertiary:hover:not(:disabled, [aria-busy="true"]) { text-decoration-color: var(--color-deep-water); }
+.kc-btn--tertiary:active:not(:disabled, [aria-busy="true"]) { color: var(--color-deep-water-active); }
 
-.kc-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.kc-btn[aria-busy="true"] {
-  cursor: progress;
-}
-.kc-btn[aria-busy="true"] .kc-btn__label {
-  visibility: hidden;
-}
+.kc-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.kc-btn[aria-busy="true"] { cursor: progress; }
+.kc-btn[aria-busy="true"] .kc-btn__label { visibility: hidden; }
 
 .kc-btn__spinner {
   position: absolute;
@@ -89,17 +68,9 @@
   border-radius: 50%;
   animation: kc-spin 0.8s linear infinite;
 }
-@keyframes kc-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+@keyframes kc-spin { to { transform: rotate(360deg); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .kc-btn {
-    transition: none;
-  }
-  .kc-btn__spinner {
-    animation-duration: 2.4s;
-  }
+  .kc-btn { transition: none; }
+  .kc-btn__spinner { animation-duration: 2.4s; }
 }
