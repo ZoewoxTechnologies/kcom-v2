@@ -1,7 +1,9 @@
 name: Deploy staging
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch: {}
 
@@ -16,6 +18,8 @@ concurrency:
 jobs:
   deploy:
     name: ${{ matrix.app }}
+    # Skip cleanly until cloud setup exists (see docs/deploy.md) and only after green CI.
+    if: ${{ vars.GCP_PROJECT_ID != '' && vars.GCP_REGION != '' && vars.GCP_ARTIFACT_REPO != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,6 +30,8 @@ jobs:
         app: [web, api, admin]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - uses: google-github-actions/auth@v2
         with:
@@ -44,15 +50,15 @@ jobs:
           context: .
           file: apps/${{ matrix.app }}/Dockerfile
           push: true
-          tags: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ matrix.app }}:${{ github.sha }}
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ matrix.app }}:${{ github.event.workflow_run.head_sha || github.sha }}
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy "kcom-${{ matrix.app }}-staging" \
-            --project="${{ secrets.GCP_PROJECT_ID }}" \
-            --image="$REGION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$ARTIFACT_REPO/${{ matrix.app }}:${{ github.sha }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --image="$REGION-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/$ARTIFACT_REPO/${{ matrix.app }}:${{ github.event.workflow_run.head_sha || github.sha }}" \
             --region="$REGION" \
             --platform=managed \
             --allow-unauthenticated \
@@ -60,8 +66,9 @@ jobs:
             --max-instances=3 \
             --cpu-throttling \
             --memory=512Mi \
+            --service-account="kcom-run@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
             --set-env-vars="NODE_ENV=production"
           # Re-assert public access (domain-restricted orgs skip the binding).
           gcloud run services add-iam-policy-binding "kcom-${{ matrix.app }}-staging" \
-            --project="${{ secrets.GCP_PROJECT_ID }}" --region="$REGION" \
+            --project="${{ vars.GCP_PROJECT_ID }}" --region="$REGION" \
             --member=allUsers --role=roles/run.invoker

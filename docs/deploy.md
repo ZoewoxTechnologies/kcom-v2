@@ -1,7 +1,7 @@
 # Deploy
 
 CI runs on every PR (`.github/workflows/ci.yml`): install, lint, typecheck, test, build via Turborepo, plus a Docker build of each app.
-On merge to `main`, `.github/workflows/deploy.yml` builds three images, pushes them to Artifact Registry and deploys three Cloud Run services (`kcom-web-staging`, `kcom-api-staging`, `kcom-admin-staging`, min instances 0). GitHub authenticates to GCP with Workload Identity Federation (no keys).
+After CI passes on `main`, `.github/workflows/deploy.yml` (also runnable manually) builds three images, pushes them to Artifact Registry and deploys three Cloud Run services (`kcom-web-staging`, `kcom-api-staging`, `kcom-admin-staging`, min instances 0). GitHub authenticates to GCP with Workload Identity Federation (no keys). The deploy job skips cleanly until the repo variables below are set.
 
 Images: `apps/<app>/Dockerfile`, built from the repo root (`docker build -f apps/web/Dockerfile .`). All listen on `$PORT` (Cloud Run sets 8080).
 
@@ -25,20 +25,29 @@ gcloud services enable run.googleapis.com artifactregistry.googleapis.com \
 
 gcloud artifacts repositories create $REPO --repository-format=docker --location=$REGION
 
-# Deployer service account
+# Runtime service account (what the services run as) and deployer service account
+gcloud iam service-accounts create kcom-run
 gcloud iam service-accounts create $SA
 SA_EMAIL=$SA@$PROJECT_ID.iam.gserviceaccount.com
-for ROLE in roles/run.admin roles/artifactregistry.writer roles/iam.serviceAccountUser; do
-  gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:$SA_EMAIL --role=$ROLE
-done
+RUN_SA=kcom-run@$PROJECT_ID.iam.gserviceaccount.com
 
-# Workload Identity Federation, restricted to this repo
+gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:$SA_EMAIL \
+  --role=roles/artifactregistry.writer
+# run.admin only on services named kcom-*
+gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:$SA_EMAIL \
+  --role=roles/run.admin \
+  --condition="title=kcom-services-only,expression=resource.name.startsWith('projects/$PROJECT_ID/locations/$REGION/services/kcom-')"
+# act-as only the runtime service account
+gcloud iam service-accounts add-iam-policy-binding $RUN_SA \
+  --member=serviceAccount:$SA_EMAIL --role=roles/iam.serviceAccountUser
+
+# Workload Identity Federation, restricted to this repo's main branch
 gcloud iam workload-identity-pools create github --location=global
 gcloud iam workload-identity-pools providers create-oidc github-oidc \
   --location=global --workload-identity-pool=github \
   --issuer-uri=https://token.actions.githubusercontent.com \
   --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
-  --attribute-condition="assertion.repository=='$GH_REPO'"
+  --attribute-condition="assertion.repository=='$GH_REPO' && assertion.ref=='refs/heads/main'"
 
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
 gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
@@ -58,13 +67,13 @@ Repo → Settings → Secrets and variables → Actions.
 
 | Kind     | Name                             | Value                                  |
 | -------- | -------------------------------- | -------------------------------------- |
-| Secret   | `GCP_PROJECT_ID`                 | `$PROJECT_ID`                          |
 | Secret   | `GCP_WORKLOAD_IDENTITY_PROVIDER` | provider path printed above            |
 | Secret   | `GCP_SERVICE_ACCOUNT`            | `$SA_EMAIL`                            |
+| Variable | `GCP_PROJECT_ID`                 | `$PROJECT_ID`                          |
 | Variable | `GCP_REGION`                     | `europe-west1`                         |
 | Variable | `GCP_ARTIFACT_REPO`              | `kcom`                                 |
 
-Or: `gh secret set GCP_PROJECT_ID --repo $GH_REPO` (prompts for the value).
+Or: `gh variable set GCP_PROJECT_ID --repo $GH_REPO` / `gh secret set ... --repo $GH_REPO`.
 
 Runtime config (database URL, etc.) is not set by the workflow yet. Add it with `gcloud run services update ... --set-secrets` (Secret Manager) once the database is wired.
 
