@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>About pages</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=Lora:ital,wght@1,400&amp;family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2b6178}
+</style>
+</helmet>
+<div style="background:#e9eeed;color:#1d2b2d;font-family:'Nunito Sans',system-ui,sans-serif;font-size:17px;line-height:1.7;padding:48px 40px;display:flex;flex-direction:column;gap:48px">
+<p style="margin:0;max-width:900px;font-size:15px;color:#5f6f70">These four pages share the Who We Are template (sky-wash title band, About side menu, 720px reading column). Only the title band and body are shown here.</p>
+
+<section aria-label="Ministry Team" style="background:#f3f6f5;border-radius:14px;overflow:hidden">
+<div style="background:#dde9ec;padding:40px 48px"><span style="font-size:13px;letter-spacing:.1em;font-variant:small-caps;font-weight:700;color:#8a6a24">About KCOM</span><h1 style="margin:4px 0 0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:52px;line-height:1.05">Team and Arms</h1></div>
+<div style="padding:40px 48px;display:flex;flex-direction:column;gap:24px">
+<p style="margin:0;max-width:720px">Kingdom Capstone Outreach Ministries is served by a vibrant team. Here are some of its members.</p><p style="margin:0;font-size:13px;color:#8a6a24">Design note: both grids wrap onto new rows, so team members and arms can be added in the admin with no layout change.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(max(220px,calc((100% - 72px) / 4)),1fr));gap:24px">
+<sc-for list="{{team}}" as="p" hint-placeholder-count="4">
+<article style="background:#fff;border:1px solid #d9e3e1;border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+<div style="aspect-ratio:4/5;background:linear-gradient(170deg,#dde9ec,#9fbcc6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.1em;color:#5f6f70">PLACEHOLDER PORTRAIT</div>
+<div style="padding:18px 20px;display:flex;flex-direction:column;gap:4px;line-height:1.4"><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:24px">{{p.name}}</span><span style="font-size:13px;letter-spacing:.1em;font-variant:small-caps;font-weight:700;color:#8a6a24">{{p.role}}</span><span style="font-size:15px;color:#5f6f70">{{p.bio}}</span></div>
+</article>
+</sc-for>
+</div>
+</div>
+<h2 style="margin:16px 48px 0;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:40px">Ministry Arms</h2>
+<div style="padding:40px 48px;display:flex;flex-direction:column;gap:24px">
+<p style="margin:0;max-width:720px">KCOM is made up of several arms, each carrying out a part of the work: the perfecting of the church and the equipping of the saints for the work of the ministry.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(max(260px,calc((100% - 48px) / 3)),1fr));gap:24px">
+<sc-for list="{{arms}}" as="a" hint-placeholder-count="3">
+<article style="background:#fff;border:1px solid #d9e3e1;border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:10px">
+<span style="width:48px;height:48px;border-radius:12px;background:#dde9ec;color:#2b6178;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:20px">{{a.abbr}}</span>
+<h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:26px;line-height:1.15">{{a.name}}</h2>
+<p style="margin:0;font-size:16px;color:#3c4b4d">{{a.text}}</p>
+</article>
+</sc-for>
+</div>
+</div>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3400}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+team:[
+{name:'Dr. Adetokunbo O. Ilesanmi',role:'President',bio:'Prophet and teacher; pastored for about eighteen years before being released to serve the wider Body of Christ.'},
+{name:'Dr. Oluwatoyin O. Ilesanmi',role:'Vice President',bio:'[SHORT BIO FROM CURRENT PAGE]'},
+{name:'Dr. Faith I. Ilesanmi',role:'[ROLE] · Faith-Feast',bio:'[SHORT BIO FROM CURRENT PAGE]'},
+{name:'Brother Samuel Emmanuel',role:'[ROLE]',bio:'[SHORT BIO FROM CURRENT PAGE]'}
+],
+arms:[
+{abbr:'SALTI',name:'KCOM Salt and Light Training Institute',text:'A Bible-based, interdenominational institute training Christian leaders and godly achievers to activate their visions and actualise their missions.'},
+{abbr:'FIRE',name:'Faith-Intercession Revival Force (F-I-R-E Force)',text:'The intercessory arm, including the FIRE Force Conventions.'},
+{abbr:'IPSI',name:'Intensive Prophetic Strategic Intercession',text:'Focused seasons of prophetic, strategic prayer. [DESCRIPTION FROM CURRENT PAGE]'}
+]
+};
+}
+}
+</script>
+</body>
+</html>

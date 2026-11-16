@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Group 4 phone views</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=Lora:ital,wght@1,400&amp;family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2b6178}
+</style>
+</helmet>
+<div style="width:2240px;box-sizing:border-box;padding:40px;background:#e9eeed;font-family:'Nunito Sans',system-ui,sans-serif;color:#1d2b2d;display:flex;gap:40px;align-items:flex-start">
+<sc-for list="{{screens}}" as="sc" hint-placeholder-count="5">
+<div style="display:flex;flex-direction:column;gap:10px">
+<span style="font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5f6f70">{{sc.label}}</span>
+<div style="width:390px;height:1560px;overflow:hidden;background:#f3f6f5;border-radius:24px;border:1px solid #d9e3e1;font-size:16px;line-height:1.6;display:flex;flex-direction:column">
+<header style="background:#fff;border-bottom:1px solid #d9e3e1;padding:10px 16px;display:flex;align-items:center;gap:10px">
+<img src="/_blob/3f552b983184c0be2e5c16618e8fed67" alt="" style="width:38px;height:38px;object-fit:contain">
+<span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:17px;line-height:1.05">Kingdom Capstone<span style="display:block">Outreach Ministries</span></span>
+<button aria-label="Open menu" style="margin-left:auto;width:44px;height:44px;border:0;background:transparent;color:#1d2b2d;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+</header>
+<div style="background:#dde9ec;padding:24px 16px;display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;letter-spacing:.1em;font-variant:small-caps;font-weight:700;color:#8a6a24">{{sc.kicker}}</span><h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:38px;line-height:1.05">{{sc.title}}</h1></div>
+
+<sc-if value="{{sc.about}}" hint-placeholder-val="{{ false }}">
+<div style="padding:12px 16px;display:flex;gap:8px;overflow-x:auto;white-space:nowrap;font-size:14px;font-weight:600;border-bottom:1px solid #d9e3e1"><span style="padding:8px 14px;border-radius:999px;background:#2b6178;color:#fff">Who We Are</span><span style="padding:8px 14px;border-radius:999px;border:1px solid #d9e3e1;background:#fff">Team and Arms</span></div>
+<div style="padding:20px 16px;display:flex;flex-direction:column;gap:14px;font-size:17px;line-height:1.7">
+<p style="margin:0">KCOM is a prophetic, teaching and intercessory outreach with a mandate to encourage, equip and motivate individuals and churches to operate in the realms of grace and glory.</p>
+<blockquote style="margin:0;border-top:2px solid #c4a15a;padding-top:12px;font-family:'Lora',serif;font-style:italic;font-size:19px">Thy kingdom come. Thy will be done in earth, as it is in heaven.<span style="display:block;font-family:'Nunito Sans',sans-serif;font-style:normal;font-size:12px;letter-spacing:.1em;font-variant:small-caps;font-weight:700;color:#5f6f70">Matthew 6:10</span></blockquote>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="background:#fff;border:1px solid #d9e3e1;border-radius:12px;padding:12px;text-align:center;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px">Revelation</span><span style="background:#fff;border:1px solid #d9e3e1;border-radius:12px;padding:12px;text-align:center;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px">Restoration</span><span style="background:#fff;border:1px solid #d9e3e1;border-radius:12px;padding:12px;text-align:center;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px">Revival</span></div>
+</div>
+</sc-if>
+
+<sc-if value="{{sc.books}}" hint-placeholder-val="{{ false }}">
+<div style="padding:20px 16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 14px">
+<sc-for list="{{books}}" as="b" hint-placeholder-count="6">
+<a href="#" style="text-decoration:none;color:#1d2b2d;display:flex;flex-direction:column;gap:6px"><span style="aspect-ratio:2/3;border-radius:8px;background:#dde9ec;border:1px solid #d9e3e1;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#5f6f70">PLACEHOLDER COVER</span><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:19px;line-height:1.15">{{b}}</span></a>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{sc.partner}}" hint-placeholder-val="{{ false }}">
+<div style="padding:20px 16px;display:flex;flex-direction:column;gap:12px">
+<div style="background:#fff;border:1px solid #d9e3e1;border-radius:14px;padding:18px"><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:24px">Prayer Partners</span><p style="margin:4px 0 0;font-size:15px;color:#3c4b4d">Consistent prayer support and part of KCOM events.</p></div>
+<div style="background:#fff;border:1px solid #d9e3e1;border-radius:14px;padding:18px"><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:24px">Prosperity Partners</span><p style="margin:4px 0 0;font-size:15px;color:#3c4b4d">Regular financial and material support.</p></div>
+<div style="background:#fff;border:1px solid #d9e3e1;border-radius:14px;padding:18px"><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:24px">Project Partners</span><p style="margin:4px 0 0;font-size:15px;color:#3c4b4d">Support for special events and projects.</p></div>
+<div style="background:#f6eedd;border:1px solid #e3cf9f;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px">
+<span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:24px">Bank details</span>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e3cf9f;padding-top:10px"><span><span style="display:block;font-size:12px;font-weight:700;color:#5f6f70">Account name</span>Kingdom Capstone Outreach Ministries</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e3cf9f;padding-top:10px"><span><span style="display:block;font-size:12px;font-weight:700;color:#5f6f70">Account number</span><span style="font-size:19px;font-weight:700">[ACCOUNT NO.]</span></span><button type="button" style="font:600 14px 'Nunito Sans';padding:10px 14px;border-radius:999px;border:1px solid #c4a15a;background:#fffaf0;color:#8a6a24">Copy</button></div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e3cf9f;padding-top:10px"><span><span style="display:block;font-size:12px;font-weight:700;color:#5f6f70">Bank</span>[BANK NAME]</span></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{sc.contact}}" hint-placeholder-val="{{ false }}">
+<form style="padding:20px 16px;display:flex;flex-direction:column;gap:14px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">I’m writing about<select style="font:16px 'Nunito Sans';padding:12px;border-radius:10px;border:1px solid #a9bab8;background:#fff"><option>A prayer request</option></select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Your name<input type="text" style="font:16px 'Nunito Sans';padding:12px;border-radius:10px;border:1px solid #a9bab8"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Email address<input type="email" style="font:16px 'Nunito Sans';padding:12px;border-radius:10px;border:1px solid #a9bab8"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Your prayer request<textarea rows="6" style="font:16px 'Nunito Sans';padding:12px;border-radius:10px;border:1px solid #a9bab8"></textarea></label>
+<label style="display:flex;gap:10px;align-items:center;font-size:15px"><input type="checkbox" checked="checked" style="width:20px;height:20px;accent-color:#2b6178">Keep it private to the prayer team</label>
+<button type="button" style="font:600 16px 'Nunito Sans';padding:14px;border-radius:999px;border:0;background:#2b6178;color:#fff">Send message</button>
+</form>
+</sc-if>
+
+<sc-if value="{{sc.events}}" hint-placeholder-val="{{ false }}">
+<div style="padding:20px 16px;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{events}}" as="e" hint-placeholder-count="3">
+<article style="background:#fff;border:1px solid #d9e3e1;border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start">
+<span style="width:60px;flex:none;border-radius:10px;background:#2b6178;color:#fff;display:flex;flex-direction:column;align-items:center;padding:8px 0;line-height:1.1"><span style="font-size:11px;font-weight:700;color:#e3c88a">{{e.mon}}</span><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:28px">{{e.day}}</span></span>
+<span style="display:flex;flex-direction:column;gap:2px;line-height:1.35"><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:21px">{{e.t}}</span><span style="font-size:13px;color:#5f6f70">{{e.meta}}</span><a href="#" style="font-size:14px;font-weight:600;margin-top:4px">Add to calendar</a></span>
+</article>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2240,"height":1700}}'>
+class Component extends DCLogic {
+renderVals() {
+const s=(label,kicker,title,k)=>({label,kicker,title,about:k==='a',books:k==='b',partner:k==='p',contact:k==='c',events:k==='e'});
+return {
+screens:[s('About · Who We Are','About KCOM','Who We Are','a'),s('Books','Kingdom Capstone Publications','Books','b'),s('Partner With Us','Networking visions to reach generations','Partner With Us','p'),s('Contact','We read every message','Contact Us','c'),s('Events','Join us','Events','e')],
+books:['Holistic Growth','The Renewed Mind','Peak Performance Gateway','Power of Peak Thinking','The Control Room','52 Prophetic Pillars'],
+events:[{mon:'DEC',day:'06',t:'End-of-Year Thanksgiving',meta:'Sat · 10:00 a.m. · [VENUE]'},{mon:'JAN',day:'01',t:'New Year Prophetic Message 2027',meta:'Fri · 9:00 a.m. · online'},{mon:'MAR',day:'12',t:'Kingdom Capstone Conference 2027',meta:'12–14 March · [VENUE]'}]
+};
+}
+}
+</script>
+</body>
+</html>
