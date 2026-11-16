@@ -21,6 +21,8 @@ export interface DateTimePickerProps {
   label?: string;
   id?: string;
   disabled?: boolean;
+  /** Start with the popover open. */
+  defaultOpen?: boolean;
 }
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -51,6 +53,7 @@ export function DateTimePicker({
   label = "Publish date",
   id,
   disabled,
+  defaultOpen = false,
 }: DateTimePickerProps) {
   const autoId = useId();
   const triggerId = id ?? autoId;
@@ -60,7 +63,7 @@ export function DateTimePicker({
   const fallback = defaultNextMidnight ? nextLagosMidnight(current) : current;
   const shown = toLagosParts(value ?? fallback);
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [view, setView] = useState({ year: shown.year, month: shown.month });
   const [focusDay, setFocusDay] = useState(shown.day);
   const gridRef = useRef<HTMLDivElement>(null);

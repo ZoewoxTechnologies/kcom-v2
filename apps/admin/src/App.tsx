@@ -1,4 +1,5 @@
 import { Button } from "@kcom/ui";
+import { DateTimePickerDemo } from "./demo/DateTimePickerDemo";
 
 export function App() {
   return (
@@ -13,6 +14,7 @@ export function App() {
         <Button loading>Saving</Button>
         <Button disabled>Disabled</Button>
       </div>
+      <DateTimePickerDemo />
     </main>
   );
 }
