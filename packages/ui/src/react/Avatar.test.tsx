@@ -19,7 +19,7 @@ describe("Avatar", () => {
 
 describe("Badge and Tag", () => {
   it("renders the status class", () => {
-    expect(renderToStaticMarkup(<Badge status="pending">Pending</Badge>)).toContain(
+    expect(renderToStaticMarkup(<Badge variant="pending">Pending</Badge>)).toContain(
       "kc-badge--pending",
     );
   });

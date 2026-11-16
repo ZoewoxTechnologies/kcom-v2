@@ -1,7 +1,7 @@
 import { Avatar, Badge, Tag } from "@kcom/ui";
-import type { BadgeStatus } from "@kcom/ui";
+import type { BadgeVariant } from "@kcom/ui";
 
-const statuses: BadgeStatus[] = [
+const variants: BadgeVariant[] = [
   "draft",
   "scheduled",
   "published",
@@ -24,9 +24,9 @@ export function AvatarBadgeTagDemo() {
         <Avatar name="Broken Image" src="/missing.jpg" size="lg" />
       </div>
       <div style={row}>
-        {statuses.map((s) => (
-          <Badge key={s} status={s}>
-            {s[0]!.toUpperCase() + s.slice(1)}
+        {variants.map((v) => (
+          <Badge key={v} variant={v}>
+            {v[0]!.toUpperCase() + v.slice(1)}
           </Badge>
         ))}
       </div>

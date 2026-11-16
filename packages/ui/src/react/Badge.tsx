@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from "react";
 
-export type BadgeStatus =
+export type BadgeVariant =
   | "draft"
   | "scheduled"
   | "published"
@@ -9,13 +9,13 @@ export type BadgeStatus =
   | "unsubscribed";
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  status: BadgeStatus;
+  variant: BadgeVariant;
 }
 
-/** Status badge. Each status has its own marker shape as well as colour.
+/** Status badge; `variant` is the status. Each status has its own marker shape as well as colour.
     Import "@kcom/ui/badge.css". */
-export function Badge({ status, className, children, ...rest }: BadgeProps) {
-  const classes = ["kc-badge", `kc-badge--${status}`, className].filter(Boolean).join(" ");
+export function Badge({ variant, className, children, ...rest }: BadgeProps) {
+  const classes = ["kc-badge", `kc-badge--${variant}`, className].filter(Boolean).join(" ");
   return (
     <span {...rest} className={classes}>
       {children}
