@@ -228,17 +228,23 @@ export const subscribers = pgTable(
 
 // Auth tables (Better Auth). Ids are text because Better Auth generates them.
 
-export const users = pgTable("users", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: boolean("email_verified").notNull().default(false),
-  image: text("image"),
-  /** Reserved for the roles work; nothing reads it yet. */
-  role: text("role"),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
-});
+export const userRoles = ["admin", "editor"] as const;
+export type UserRole = (typeof userRoles)[number];
+
+export const users = pgTable(
+  "users",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    emailVerified: boolean("email_verified").notNull().default(false),
+    image: text("image"),
+    role: text("role").$type<UserRole>().notNull().default("editor"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [check("users_role_valid", sql`${t.role} IN ('admin', 'editor')`)],
+);
 
 export const sessions = pgTable(
   "sessions",

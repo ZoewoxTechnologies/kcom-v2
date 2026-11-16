@@ -4,6 +4,7 @@ import "@kcom/ui/tokens.css";
 import "@kcom/ui/button.css";
 import "@kcom/ui/avatar.css";
 import "@kcom/ui/badge.css";
+import "@kcom/ui/forms.css";
 import { App } from "./App";
 import { initSentry } from "./sentry";
 

@@ -9,6 +9,7 @@
     "./button.css": "./src/components/button.css",
     "./avatar.css": "./src/components/avatar.css",
     "./badge.css": "./src/components/badge.css",
+    "./forms.css": "./src/components/forms.css",
     "./styles.css": "./src/styles.css",
     "./reset.css": "./src/reset.css",
     "./base.css": "./src/base.css"
