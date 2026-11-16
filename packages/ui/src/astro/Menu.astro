@@ -1,0 +1,34 @@
+---
+/* Dropdown menu on the native Popover API; same markup as the React Menu.
+   Slots: "trigger" (button content) and the default slot (menu items:
+   <a class="kc-menu__item" role="menuitem">, <div class="kc-menu__separator" role="separator">).
+   Import "@kcom/ui/menu.css" once per page. Works without JS; the script adds keyboard behaviour. */
+interface Props {
+  id: string;
+  class?: string;
+  triggerClass?: string;
+  triggerLabel?: string;
+}
+const { id, class: className, triggerClass, triggerLabel } = Astro.props;
+---
+
+<div class:list={["kc-menu-wrap", className]} data-kc-menu>
+  <button
+    type="button"
+    class:list={["kc-menu-trigger", triggerClass]}
+    popovertarget={id}
+    aria-haspopup="menu"
+    aria-expanded="false"
+    aria-label={triggerLabel}
+  >
+    <slot name="trigger" />
+  </button>
+  <div id={id} popover="auto" class="kc-menu" role="menu">
+    <slot />
+  </div>
+</div>
+
+<script>
+  import { initMenus } from "../menu/menu";
+  initMenus();
+</script>

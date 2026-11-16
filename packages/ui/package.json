@@ -8,6 +8,9 @@
     "./tokens.css": "./src/tokens.css",
     "./button.css": "./src/components/button.css",
     "./menu.css": "./src/components/menu.css",
+    "./menu": "./src/menu/menu.ts",
+    "./astro/Menu.astro": "./src/astro/Menu.astro",
+    "./forms.css": "./src/components/forms.css",
     "./styles.css": "./src/styles.css",
     "./reset.css": "./src/reset.css",
     "./base.css": "./src/base.css"
@@ -25,12 +28,10 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "eslint": "^10.14.0",
+    "jsdom": "^27.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "typescript": "^5.7.2",
     "vitest": "^5.1.0"
-  },
-  "dependencies": {
-    "@radix-ui/react-dropdown-menu": "^2.2.1"
   }
 }

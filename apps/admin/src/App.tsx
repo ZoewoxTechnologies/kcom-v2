@@ -1,5 +1,6 @@
 import { Button } from "@kcom/ui";
-import { DropdownMenuDemo } from "./demo/DropdownMenuDemo";
+import { MenuDemo } from "./demo/MenuDemo";
+import { FormFieldsDemo } from "./demo/FormFieldsDemo";
 
 export function App() {
   return (
@@ -14,7 +15,8 @@ export function App() {
         <Button loading>Saving</Button>
         <Button disabled>Disabled</Button>
       </div>
-      <DropdownMenuDemo />
+      <MenuDemo />
+      <FormFieldsDemo />
     </main>
   );
 }
