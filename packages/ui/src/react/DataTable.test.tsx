@@ -75,7 +75,9 @@ describe("DataTable", () => {
         rowAction={(r) => <button>Edit {r.name}</button>}
       />,
     );
-    expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
+    expect(html.match(/data-selected="true"/g)).toHaveLength(1);
+    expect(html).toContain("Selected: ");
+    expect(html).not.toContain("aria-selected");
     expect(html).toContain('tabindex="0"');
     expect(html).toContain("Edit Ada");
   });

@@ -239,17 +239,19 @@ export function DataTable<T>({
           ) : (
             rows.map((row) => {
               const id = getRowId(row);
+              const selected = selectedRowId === id;
               return (
                 <tr
                   key={id}
-                  aria-selected={selectedRowId === id ? true : undefined}
+                  data-selected={selected ? "true" : undefined}
                   className={onRowClick ? "kc-table__row--click" : undefined}
                   tabIndex={onRowClick ? 0 : undefined}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                   onKeyDown={onRowClick ? (e) => onKey(e, row) : undefined}
                 >
-                  {columns.map((col) => (
+                  {columns.map((col, i) => (
                     <td key={col.key} className={alignClass(col)}>
+                      {selected && i === 0 && <span className="kc-table__sr">Selected: </span>}
                       {cell(col, row)}
                     </td>
                   ))}

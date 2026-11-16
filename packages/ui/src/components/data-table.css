@@ -1,7 +1,7 @@
 /* Data table for admin lists. Wrap a semantic <table class="kc-table"> in
    .kc-table-wrap (scrolls sideways on narrow screens). Sortable headers are
    <th aria-sort> holding a .kc-table__sort button. Selected rows use
-   aria-selected="true". Pagination is .kc-pager. Import after tokens.css. */
+   data-selected="true" (announced by a hidden label in the first cell). Pagination is .kc-pager. Import after tokens.css. */
 @layer components {
   .kc-table-wrap {
     overflow-x: auto;
@@ -43,7 +43,7 @@
         background: var(--color-hover);
       }
 
-      &:is([aria-selected="true"]) {
+      &[data-selected="true"] {
         background: var(--color-secondary-active);
       }
     }
