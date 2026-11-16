@@ -21,4 +21,10 @@ export type {
 } from "./react/Field";
 export { DateTimePicker } from "./react/DateTimePicker";
 export type { DateTimePickerProps } from "./react/DateTimePicker";
-export { LAGOS_TIME_ZONE, formatLagos, lagosDateKey, nextLagosMidnight } from "./lib/lagos";
+export {
+  DEFAULT_TIME_ZONE,
+  formatInZone,
+  nextZoneMidnight,
+  zoneDateKey,
+  zoneLabel,
+} from "./lib/timezone";

@@ -11,25 +11,14 @@
     color: var(--color-text);
   }
 
+  /* Looks like the shared .kc-input; only the layout differs. */
   .kc-datetime__trigger {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    block-size: var(--btn-height-md);
-    padding: 0 var(--space-4);
-    border: 1px solid var(--color-field);
-    border-radius: var(--radius-field);
-    background: var(--color-surface);
-    color: var(--color-text);
-    font: 500 var(--text-base) / 1.2 var(--font-body);
     text-align: start;
     cursor: pointer;
-
-    &:focus-visible {
-      outline: none;
-      box-shadow: var(--focus-ring);
-    }
 
     &:disabled {
       opacity: 0.45;
@@ -162,18 +151,7 @@
     font-weight: 700;
 
     input {
-      block-size: var(--btn-height-md);
-      padding: 0 var(--space-3);
-      border: 1px solid var(--color-field);
-      border-radius: var(--radius-field);
-      background: var(--color-surface);
-      color: var(--color-text);
-      font: 500 var(--text-base) var(--font-body);
-
-      &:focus-visible {
-        outline: none;
-        box-shadow: var(--focus-ring);
-      }
+      inline-size: auto;
     }
   }
 }

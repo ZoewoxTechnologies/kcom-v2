@@ -2,21 +2,25 @@ import * as Popover from "@radix-ui/react-popover";
 import { Button } from "./Button";
 import { useId, useRef, useState, type KeyboardEvent } from "react";
 import {
-  formatLagos,
-  fromLagosParts,
-  lagosDateKey,
-  nextLagosMidnight,
-  toLagosParts,
-} from "../lib/lagos";
+  DEFAULT_TIME_ZONE,
+  formatInZone,
+  fromZoneParts,
+  nextZoneMidnight,
+  toZoneParts,
+  zoneDateKey,
+  zoneLabel,
+} from "../lib/timezone";
 
 export interface DateTimePickerProps {
-  /** Selected instant, or null for none. Shown and edited in Africa/Lagos. */
+  /** Selected instant, or null for none. Shown and edited in `timeZone`. */
   value: Date | null;
   onChange: (value: Date | null) => void;
-  /** When true and value is null, the picker opens on (and "Next midnight" sets) the next Lagos midnight. */
+  /** When true and value is null, the picker opens on (and "Next midnight" sets) the next midnight in `timeZone`. */
   defaultNextMidnight?: boolean;
-  /** Lagos days ("YYYY-MM-DD") that already have a scheduled item. */
+  /** Days ("YYYY-MM-DD", in `timeZone`) that already have a scheduled item. */
   scheduledDates?: readonly string[];
+  /** IANA time zone the picker shows and edits in. */
+  timeZone?: string;
   /** Current time; override in tests. */
   now?: Date;
   label?: string;
@@ -50,6 +54,7 @@ export function DateTimePicker({
   onChange,
   defaultNextMidnight = true,
   scheduledDates = [],
+  timeZone = DEFAULT_TIME_ZONE,
   now,
   label = "Date and time",
   id,
@@ -59,10 +64,10 @@ export function DateTimePicker({
   const autoId = useId();
   const triggerId = id ?? autoId;
   const current = now ?? new Date();
-  const today = toLagosParts(current);
+  const today = toZoneParts(current, timeZone);
   const todayKey = key(today.year, today.month, today.day);
-  const fallback = defaultNextMidnight ? nextLagosMidnight(current) : current;
-  const shown = toLagosParts(value ?? fallback);
+  const fallback = defaultNextMidnight ? nextZoneMidnight(current, timeZone) : current;
+  const shown = toZoneParts(value ?? fallback, timeZone);
 
   const [open, setOpen] = useState(defaultOpen);
   const [view, setView] = useState({ year: shown.year, month: shown.month });
@@ -73,7 +78,7 @@ export function DateTimePicker({
   const clamp = (date: Date) => (date.getTime() < current.getTime() ? nextMinute(current) : date);
 
   const commit = (parts: Partial<typeof shown>) => {
-    const next = fromLagosParts({ ...shown, ...parts });
+    const next = fromZoneParts({ ...shown, ...parts }, timeZone);
     onChange(clamp(next));
   };
 
@@ -140,8 +145,13 @@ export function DateTimePicker({
         }}
       >
         <Popover.Trigger asChild>
-          <button type="button" id={triggerId} className="kc-datetime__trigger" disabled={disabled}>
-            <span>{value ? formatLagos(value) : "Choose date and time"}</span>
+          <button
+            type="button"
+            id={triggerId}
+            className="kc-input kc-datetime__trigger"
+            disabled={disabled}
+          >
+            <span>{value ? formatInZone(value, timeZone) : "Choose date and time"}</span>
             <span aria-hidden="true" className="kc-datetime__icon">
               ▾
             </span>
@@ -152,7 +162,7 @@ export function DateTimePicker({
             className="kc-datetime__panel"
             align="start"
             sideOffset={6}
-            aria-label={`${label}, Lagos time`}
+            aria-label={`${label}, ${zoneLabel(timeZone)} time`}
           >
             <div className="kc-datetime__head">
               <button
@@ -194,7 +204,7 @@ export function DateTimePicker({
                     if (day === null) return <span role="gridcell" key={c} />;
                     const k = key(view.year, view.month, day);
                     const past = isPast(day);
-                    const selected = value !== null && lagosDateKey(value) === k;
+                    const selected = value !== null && zoneDateKey(value, timeZone) === k;
                     const has = scheduled.has(k);
                     return (
                       <span role="gridcell" key={c} aria-selected={selected}>
@@ -219,9 +229,10 @@ export function DateTimePicker({
             </div>
             <div className="kc-datetime__foot">
               <label className="kc-datetime__time">
-                <span>Time (Lagos)</span>
+                <span>Time ({zoneLabel(timeZone)})</span>
                 <input
                   type="time"
+                  className="kc-input"
                   value={timeValue}
                   min={minTime}
                   onChange={(e) => {
@@ -235,7 +246,7 @@ export function DateTimePicker({
                 <Button
                   variant="tertiary"
                   size="sm"
-                  onClick={() => onChange(nextLagosMidnight(current))}
+                  onClick={() => onChange(nextZoneMidnight(current, timeZone))}
                 >
                   Next midnight
                 </Button>
