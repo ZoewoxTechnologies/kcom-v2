@@ -1,4 +1,5 @@
 import { Button, ToastProvider } from "@kcom/ui";
+import { FormFieldsDemo } from "./demo/FormFieldsDemo";
 import { ToastDemo } from "./demo/ToastDemo";
 
 export function App() {
@@ -15,6 +16,7 @@ export function App() {
           <Button loading>Saving</Button>
           <Button disabled>Disabled</Button>
         </div>
+        <FormFieldsDemo />
         <ToastDemo />
       </main>
     </ToastProvider>

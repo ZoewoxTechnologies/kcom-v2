@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 
 /** Every toast variant. Add ?toasts to the URL to open all three on load. */
 export function ToastDemo() {
-  const { toast } = useToast();
+  const { toast, update } = useToast();
   const opened = useRef(false);
 
   useEffect(() => {
@@ -53,6 +53,18 @@ export function ToastDemo() {
           }
         >
           Error (stays)
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            const id = toast({ variant: "info", title: "Saving…", duration: 60000 });
+            setTimeout(
+              () => update(id, { variant: "success", title: "Saved", duration: 4000 }),
+              1500,
+            );
+          }}
+        >
+          Saving → Saved
         </Button>
       </div>
     </section>

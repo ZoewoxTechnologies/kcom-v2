@@ -8,6 +8,7 @@
     "./tokens.css": "./src/tokens.css",
     "./button.css": "./src/components/button.css",
     "./toast.css": "./src/components/toast.css",
+    "./forms.css": "./src/components/forms.css",
     "./styles.css": "./src/styles.css",
     "./reset.css": "./src/reset.css",
     "./base.css": "./src/base.css"
@@ -25,6 +26,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "eslint": "^10.14.0",
+    "jsdom": "^31.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "typescript": "^5.7.2",

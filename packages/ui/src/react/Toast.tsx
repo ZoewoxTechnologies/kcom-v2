@@ -21,6 +21,8 @@ export interface ToastOptions {
 
 interface ToastItem extends ToastOptions {
   id: number;
+  /** Bumped by update so the toast remounts and its timer restarts. */
+  rev: number;
   variant: ToastVariant;
   open: boolean;
 }
@@ -28,6 +30,8 @@ interface ToastItem extends ToastOptions {
 interface ToastApi {
   /** Shows a toast and returns its id. */
   toast: (options: ToastOptions) => number;
+  /** Changes a toast in place. Omitted fields keep their value; the timer restarts. */
+  update: (id: number, options: Partial<ToastOptions>) => void;
   dismiss: (id: number) => void;
 }
 
@@ -49,8 +53,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const toast = useCallback((options: ToastOptions) => {
     const id = nextId.current++;
-    setItems((prev) => [...prev, { ...options, id, variant: options.variant ?? "info", open: true }]);
+    setItems((prev) => [
+      ...prev,
+      { ...options, id, rev: 0, variant: options.variant ?? "info", open: true },
+    ]);
     return id;
+  }, []);
+
+  const update = useCallback((id: number, options: Partial<ToastOptions>) => {
+    setItems((prev) =>
+      prev.map((t) => {
+        if (t.id !== id || !t.open) return t;
+        // An explicit new variant resets the default duration unless one is given.
+        const next = { ...t, ...options, rev: t.rev + 1 };
+        if (options.variant && options.duration === undefined) next.duration = undefined;
+        return next;
+      }),
+    );
   }, []);
 
   const dismiss = useCallback((id: number) => {
@@ -61,7 +80,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const api = useMemo(() => ({ toast, dismiss }), [toast, dismiss]);
+  const api = useMemo(() => ({ toast, update, dismiss }), [toast, update, dismiss]);
 
   return (
     <ToastContext.Provider value={api}>
@@ -69,7 +88,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {children}
         {items.map((t) => (
           <RadixToast.Root
-            key={t.id}
+            key={`${t.id}-${t.rev}`}
             className="kc-toast"
             data-variant={t.variant}
             type={t.variant === "error" ? "foreground" : "background"}
