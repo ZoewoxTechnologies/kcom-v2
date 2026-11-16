@@ -1,24 +1,7 @@
 ---
-import "@kcom/ui/styles.css";
-import Analytics from "../components/Analytics.astro";
-import { pageTitle } from "../lib/site";
+import BaseLayout from "../layouts/BaseLayout.astro";
 ---
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{pageTitle()}</title>
-    <Analytics />
-  </head>
-  <body>
-    <main>
-      <h1>Kingdom Capstone</h1>
-      <p>New site coming soon.</p>
-    </main>
-  </body>
-</html>
-<style>
-  body { margin: 0; background: var(--color-mist); color: var(--color-slate); font-family: var(--font-body); }
-  main { max-width: 40rem; margin: 4rem auto; padding: 0 1rem; }
-  h1 { font-family: var(--font-title); color: var(--color-deep-water); }
-</style>
+<BaseLayout>
+  <h1>Kingdom Capstone</h1>
+  <p>New site coming soon.</p>
+</BaseLayout>
