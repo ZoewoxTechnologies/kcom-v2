@@ -6,14 +6,19 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens.css": "./src/tokens.css",
-    "./button.css": "./src/button.css"
+    "./button.css": "./src/button.css",
+    "./styles.css": "./src/styles.css",
+    "./reset.css": "./src/reset.css",
+    "./base.css": "./src/base.css"
   },
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc",
     "test": "vitest run"
   },
-  "peerDependencies": { "react": "^19.2.0" },
+  "peerDependencies": {
+    "react": "^19.2.0"
+  },
   "devDependencies": {
     "@kcom/config": "workspace:*",
     "@types/react": "^19.2.0",

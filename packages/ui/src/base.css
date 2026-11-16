@@ -1,0 +1,81 @@
+@layer reset, tokens, base, components, utilities;
+
+@layer base {
+  html {
+    color-scheme: light dark;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--color-page);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-title);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+  }
+  h1 {
+    font-size: var(--text-3xl);
+    font-weight: 500;
+  }
+  h2 {
+    font-size: var(--text-2xl);
+  }
+  h3 {
+    font-size: var(--text-xl);
+  }
+
+  p + p {
+    margin-block-start: var(--space-4);
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-underline-offset: 3px;
+    transition: color var(--dur-fast) var(--ease-out);
+
+    &:hover {
+      text-decoration-color: var(--color-primary);
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  blockquote,
+  .scripture {
+    font-family: var(--font-scripture);
+    font-style: italic;
+  }
+
+  ::selection {
+    background: var(--color-ring);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

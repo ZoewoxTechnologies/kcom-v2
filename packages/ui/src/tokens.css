@@ -1,42 +1,197 @@
-/* KCOM brand tokens: "Still Waters, with Old Gold" */
-:root {
-  /* Color */
-  --color-deep-water: #2b6178;   /* primary: buttons, links */
-  --color-sky: #dde9ec;          /* hero and header washes */
-  --color-sage: #7d9f86;         /* secondary accent */
-  --color-mist: #f3f6f5;         /* page background */
-  --color-slate: #1d2b2d;        /* text */
-  --color-muted: #5f6f70;        /* secondary text */
-  --color-line: #d9e3e1;         /* borders */
-  --color-old-gold: #c4a15a;     /* small accents: scripture rule, decree edge, focus */
-  --color-old-gold-text: #8a6a24;/* gold used as text (readable contrast) */
-  --color-sandstone: #f6eedd;    /* decree and highlight backgrounds */
+/* KCOM brand tokens: "Still Waters, with Old Gold".
+   Light is the default. Dark follows prefers-color-scheme unless the page sets
+   data-theme="light"; data-theme="dark" forces dark. Names are semantic, so
+   components never hard-code a palette value. */
+@layer reset, tokens, base, components, utilities;
 
-  /* Type, by role */
-  --font-title: "Cormorant Garamond", Georgia, serif;   /* titles, pull quotes (large sizes) */
-  --font-body: "Nunito Sans", system-ui, sans-serif;    /* body, buttons, decrees, references */
-  --font-scripture: "Lora", Georgia, serif;             /* scripture text, italic */
+@layer tokens {
+  :root {
+    color-scheme: light;
 
-  /* Buttons: three variants
-     primary   = filled deep water, white text (one main action per screen)
-     secondary = deep water outline, transparent fill
-     tertiary  = text-only, link style, old-gold underline that turns deep water on hover
-     giving    = sandstone fill, old-gold border (giving only, later milestone)
+    /* Surfaces and text */
+    --color-page: #f3f6f5;
+    --color-surface: #ffffff;
+    --color-wash: #dde9ec; /* hero and header washes */
+    --color-text: #1d2b2d;
+    --color-muted: #5f6f70;
+    --color-line: #d9e3e1;
+    --color-field: #7d9090; /* form field borders */
+    --color-hover: #e7f0f2; /* menu item hover */
+    --color-raised: #ffffff; /* menus, popovers */
 
-     Every variant has these states:
-     hover    = primary darkens to --color-deep-water-hover; secondary gets a light sky fill;
-                tertiary underline turns from old gold to deep water
-     pressed  = one step darker again (--color-deep-water-active)
-     focus    = keyboard only (:focus-visible): 2px gap + 2px old-gold ring
-     disabled = 45% opacity, not-allowed cursor, no hover change
-     loading  = label hidden, spinner shown, aria-busy="true", clicks ignored
-     Transitions 150ms; none when prefers-reduced-motion is set. */
-  --color-deep-water-hover: #224e61;
-  --color-deep-water-active: #1a3e4d;
-  --color-secondary-hover: #e7f0f2;
-  --color-secondary-active: #d5e5e9;
-  --focus-ring: 0 0 0 2px var(--color-mist), 0 0 0 4px var(--color-old-gold);
+    /* Primary (deep water) */
+    --color-primary: #2b6178;
+    --color-primary-hover: #224e61;
+    --color-primary-active: #1a3e4d;
+    --color-on-primary: #ffffff;
+    --color-secondary-hover: #e7f0f2;
+    --color-secondary-active: #d5e5e9;
 
-  /* Shape */
-  --radius: 14px;
+    /* Accents */
+    --color-focus: #7f6020; /* focus ring: 3:1 against page */
+    --color-sage: #7d9f86;
+    --color-gold: #c4a15a; /* rules, underlines, focus ring: never body text */
+    --color-gold-text: #7f6020; /* gold used as text */
+    --color-sandstone: #f6eedd;
+    --color-sandstone-hover: #efe2c6;
+    --color-sandstone-active: #e8d7b2;
+    --color-error: #a3402e;
+    --color-ring: rgba(43, 97, 120, 0.18);
+
+    /* Chrome */
+    --color-bar: #2b6178; /* verse bar */
+    --color-on-bar: #f3f6f5;
+    --color-bar-gold: #efd9a3;
+    --color-header: #ffffff;
+    --color-footer: #2b6178;
+    --color-on-footer: #f3f6f5;
+    --color-footer-gold: #efd9a3;
+    --color-footer-button: #f6eedd;
+    --color-on-footer-button: #1d2b2d;
+
+    --focus-ring: 0 0 0 2px var(--color-page), 0 0 0 4px var(--color-focus);
+    --focus-ring-on-gold: 0 0 0 2px var(--color-page), 0 0 0 4px var(--color-primary);
+
+    /* Type, by role */
+    --font-title: "Cormorant Garamond", Georgia, serif;
+    --font-body: "Nunito Sans", system-ui, sans-serif;
+    --font-scripture: "Lora", Georgia, serif;
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.625rem;
+    --text-2xl: 2rem;
+    --text-3xl: 3.25rem;
+    --leading-tight: 1.1;
+    --leading-body: 1.6;
+
+    /* Spacing (4px scale) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 3rem;
+    --space-8: 4.5rem;
+    --gutter: 1rem;
+    --page-max: 80rem;
+
+    /* Shape */
+    --radius: 14px; /* cards, menus, panels */
+    --radius-field: 10px;
+    --radius-pill: 999px; /* buttons */
+
+    /* Shadow */
+    --shadow-card: 0 8px 24px rgba(20, 50, 62, 0.12);
+    --shadow-menu: 0 12px 32px rgba(10, 30, 40, 0.14);
+
+    /* Motion */
+    --dur-fast: 120ms; /* hover, press */
+    --dur-base: 200ms; /* menus, fades */
+    --dur-slow: 320ms; /* panels */
+    --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  @media (min-width: 48rem) {
+    :root {
+      --gutter: 2.5rem;
+    }
+  }
+
+  /* Reduced motion: no movement; opacity fades only, 120ms at most. */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --dur-base: 120ms;
+      --dur-slow: 120ms;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --color-page: #10191d;
+      --color-surface: #17242a;
+      --color-wash: #16303a;
+      --color-text: #e6eeec;
+      --color-muted: #9fb1b2;
+      --color-line: #2c3f45;
+      --color-field: #6a858c;
+      --color-hover: #24404b;
+      --color-raised: #1e2f36;
+      --color-primary: #8cc0d4;
+      --color-primary-hover: #a6d0e0;
+      --color-primary-active: #bfdde8;
+      --color-on-primary: #0f1c21;
+      --color-secondary-hover: #1b3540;
+      --color-secondary-active: #21404c;
+      --color-gold: #d4b46e;
+      --color-focus: #d4b46e;
+      --color-gold-text: #d9bc7a;
+      --color-sandstone: #2a2519;
+      --color-sandstone-hover: #342d1e;
+      --color-sandstone-active: #3d3523;
+      --color-error: #e59a88;
+      --color-ring: rgba(140, 192, 212, 0.25);
+      --color-bar: #0b1316;
+      --color-header: #17242a;
+      --color-footer: #0b1316;
+      --color-on-footer: #dfe8e6;
+      --color-footer-gold: #d9bc7a;
+      --color-footer-button: #8cc0d4;
+      --color-on-footer-button: #0f1c21;
+      --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.4);
+      --shadow-menu: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-page: #10191d;
+    --color-surface: #17242a;
+    --color-wash: #16303a;
+    --color-text: #e6eeec;
+    --color-muted: #9fb1b2;
+    --color-line: #2c3f45;
+    --color-field: #6a858c;
+    --color-hover: #24404b;
+    --color-raised: #1e2f36;
+    --color-primary: #8cc0d4;
+    --color-primary-hover: #a6d0e0;
+    --color-primary-active: #bfdde8;
+    --color-on-primary: #0f1c21;
+    --color-secondary-hover: #1b3540;
+    --color-secondary-active: #21404c;
+    --color-gold: #d4b46e;
+    --color-focus: #d4b46e;
+    --color-gold-text: #d9bc7a;
+    --color-sandstone: #2a2519;
+    --color-sandstone-hover: #342d1e;
+    --color-sandstone-active: #3d3523;
+    --color-error: #e59a88;
+    --color-ring: rgba(140, 192, 212, 0.25);
+    --color-bar: #0b1316;
+    --color-header: #17242a;
+    --color-footer: #0b1316;
+    --color-on-footer: #dfe8e6;
+    --color-footer-gold: #d9bc7a;
+    --color-footer-button: #8cc0d4;
+    --color-on-footer-button: #0f1c21;
+    --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-menu: 0 12px 32px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Legacy names, kept so existing consumers keep working until they move to the semantic names. */
+  :root {
+    --color-deep-water: var(--color-primary);
+    --color-deep-water-hover: var(--color-primary-hover);
+    --color-deep-water-active: var(--color-primary-active);
+    --color-mist: var(--color-page);
+    --color-slate: var(--color-text);
+    --color-sky: var(--color-wash);
+    --color-old-gold: var(--color-gold);
+    --color-old-gold-text: var(--color-gold-text);
+  }
 }
