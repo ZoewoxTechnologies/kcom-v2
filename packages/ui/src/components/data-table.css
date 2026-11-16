@@ -1,0 +1,160 @@
+/* Data table for admin lists. Wrap a semantic <table class="kc-table"> in
+   .kc-table-wrap (scrolls sideways on narrow screens). Sortable headers are
+   <th aria-sort> holding a .kc-table__sort button. Selected rows use
+   data-selected="true" (announced by a hidden label in the first cell). Pagination is .kc-pager. Import after tokens.css. */
+@layer components {
+  .kc-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  .kc-table {
+    inline-size: 100%;
+    min-inline-size: 36rem;
+    border-collapse: collapse;
+    color: var(--color-text);
+    font: 400 var(--text-base) / 1.4 var(--font-body);
+
+    th,
+    td {
+      padding: var(--space-3);
+      text-align: start;
+      vertical-align: middle;
+    }
+
+    thead {
+      background: var(--color-page);
+    }
+
+    th {
+      color: var(--color-muted);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-block-start: 1px solid var(--color-line);
+      transition: background-color var(--dur-fast) var(--ease-out);
+
+      &:hover {
+        background: var(--color-hover);
+      }
+
+      &[data-selected="true"] {
+        background: var(--color-secondary-active);
+      }
+    }
+
+    td:is(.kc-table__strong, :first-child:not(:only-child)) {
+      font-weight: 600;
+    }
+  }
+
+  .kc-table :is(td, th).kc-table__num {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kc-table__caption,
+  .kc-table__sr {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .kc-table tbody tr.kc-table__row--click {
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset var(--focus-ring);
+    }
+  }
+
+  .kc-table__sort {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-text);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    &::after {
+      content: "↕";
+      opacity: 0.4;
+    }
+  }
+
+  th[aria-sort="ascending"] .kc-table__sort,
+  th[aria-sort="descending"] .kc-table__sort {
+    color: var(--color-text);
+  }
+  th[aria-sort="ascending"] .kc-table__sort::after {
+    content: "↑";
+    opacity: 1;
+  }
+  th[aria-sort="descending"] .kc-table__sort::after {
+    content: "↓";
+    opacity: 1;
+  }
+
+  .kc-table td.kc-table__empty {
+    padding: var(--space-7) var(--space-4);
+    text-align: center;
+    color: var(--color-muted);
+
+    strong {
+      display: block;
+      color: var(--color-text);
+      font-size: var(--text-lg);
+    }
+  }
+
+  .kc-table__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-block-start: 1px solid var(--color-line);
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+  }
+
+  .kc-pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .kc-pager__gap {
+    padding: 0 var(--space-1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kc-table tbody tr {
+      transition-duration: 0.01ms;
+    }
+  }
+}

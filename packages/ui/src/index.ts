@@ -23,5 +23,21 @@ export type {
   ChoiceProps,
   FieldsetProps,
 } from "./react/Field";
+export {
+  DataTable,
+  SortableTh,
+  TableEmpty,
+  TablePagination,
+  TableWrap,
+  pageItems,
+} from "./react/DataTable";
+export type {
+  DataTableColumn,
+  DataTableProps,
+  DataTableSort,
+  SortDirection,
+  SortableThProps,
+  TablePaginationProps,
+} from "./react/DataTable";
 export { ConfirmDialog } from "./react/ConfirmDialog";
 export type { ConfirmAction, ConfirmDialogProps } from "./react/ConfirmDialog";
