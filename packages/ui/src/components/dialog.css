@@ -1,0 +1,102 @@
+/* Dialog: .kc-dialog (centered modal) and .kc-dialog--panel (side panel).
+   Pair with .kc-dialog-overlay. Import after tokens.css. */
+@layer components {
+  .kc-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(29, 43, 45, 0.45);
+
+    &[data-state="open"] {
+      animation: kc-dialog-fade var(--dur-base) var(--ease-out);
+    }
+  }
+
+  .kc-dialog {
+    position: fixed;
+    z-index: 101;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    translate: -50% -50%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    inline-size: min(440px, calc(100vw - 2 * var(--space-4)));
+    max-block-size: calc(100dvh - 2 * var(--space-4));
+    overflow: auto;
+    padding: var(--space-6);
+    border-radius: var(--radius);
+    background: var(--color-raised);
+    font-family: var(--font-body);
+    color: var(--color-text);
+    box-shadow: var(--shadow-card);
+
+    &:focus-visible {
+      outline: none;
+    }
+
+    &[data-state="open"] {
+      animation: kc-dialog-fade var(--dur-base) var(--ease-out);
+    }
+  }
+
+  .kc-dialog--md {
+    inline-size: min(560px, calc(100vw - 2 * var(--space-4)));
+  }
+
+  .kc-dialog--lg {
+    inline-size: min(720px, calc(100vw - 2 * var(--space-4)));
+  }
+
+  /* Panels ignore size and keep their own width. */
+  .kc-dialog--panel {
+    inset-block: 0;
+    inset-inline: auto 0;
+    translate: none;
+    inline-size: min(480px, 100vw);
+    max-block-size: none;
+    block-size: 100dvh;
+    border-radius: var(--radius) 0 0 var(--radius);
+
+    &[data-state="open"] {
+      animation: kc-dialog-slide var(--dur-slow) var(--ease-out);
+    }
+  }
+
+  .kc-dialog__title {
+    margin: 0;
+    font: 600 1.75rem / 1.15 var(--font-title);
+  }
+
+  .kc-dialog__description {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  .kc-dialog__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+    margin-block-start: var(--space-2);
+  }
+
+  /* Pushes the destructive action to the far end of the row. */
+  .kc-dialog__actions-end {
+    margin-inline-start: auto;
+    color: var(--color-error);
+  }
+
+  @keyframes kc-dialog-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes kc-dialog-slide {
+    from {
+      translate: 100% 0;
+    }
+  }
+}
