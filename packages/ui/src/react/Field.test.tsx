@@ -2,6 +2,20 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Checkbox, Fieldset, Radio, SelectField, TextField, TextareaField } from "./Field";
 
+describe("control size", () => {
+  it("defaults to md and adds a modifier class for other sizes", () => {
+    expect(renderToStaticMarkup(<TextField label="A" />)).toContain('class="kc-input"');
+    expect(renderToStaticMarkup(<TextField label="A" size="sm" />)).toContain("kc-input--sm");
+    expect(
+      renderToStaticMarkup(
+        <SelectField label="A" size="lg">
+          <option>x</option>
+        </SelectField>,
+      ),
+    ).toContain("kc-select__control--lg");
+  });
+});
+
 describe("TextField", () => {
   it("associates the label with the input", () => {
     const html = renderToStaticMarkup(<TextField label="Name" />);

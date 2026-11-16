@@ -64,10 +64,12 @@ describe("initMenu keyboard behaviour", () => {
     // jsdom has no Popover API: stub it.
     panel.showPopover = () => {
       open = true;
+      panel.style.display = "block";
       panel.dispatchEvent(Object.assign(new Event("toggle"), { newState: "open" }));
     };
     panel.hidePopover = () => {
       open = false;
+      panel.style.display = "";
       panel.dispatchEvent(Object.assign(new Event("toggle"), { newState: "closed" }));
     };
     const matches = panel.matches.bind(panel);

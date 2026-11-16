@@ -48,7 +48,6 @@
   .kc-select__control {
     box-sizing: border-box;
     width: 100%;
-    min-height: 44px;
     padding: 0.75rem 0.875rem;
     border: 1px solid var(--color-field);
     border-radius: var(--radius-field);
@@ -123,6 +122,25 @@
     &:disabled {
       cursor: not-allowed;
     }
+  }
+
+  /* Single-line controls share the button heights; textarea keeps its own. */
+  .kc-input,
+  .kc-select__control {
+    --kc-control-height: var(--control-height-md);
+
+    block-size: var(--kc-control-height);
+    padding-block: 0;
+  }
+
+  .kc-input--sm,
+  .kc-select__control--sm {
+    --kc-control-height: var(--control-height-sm);
+  }
+
+  .kc-input--lg,
+  .kc-select__control--lg {
+    --kc-control-height: var(--control-height-lg);
   }
 
   /* Checkbox and radio stay native; the label supplies the hit area. */

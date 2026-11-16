@@ -77,10 +77,10 @@
     --space-8: 4.5rem;
     --gutter: 1rem;
 
-    /* Button sizes: fixed height and inline padding per size */
-    --btn-height-sm: 2.25rem;
-    --btn-height-md: 2.75rem;
-    --btn-height-lg: 3.25rem;
+    /* Control sizes: fixed heights shared by buttons and text inputs; inline padding per button size */
+    --control-height-sm: 2.25rem;
+    --control-height-md: 2.75rem;
+    --control-height-lg: 3.25rem;
     --btn-pad-sm: var(--space-4);
     --btn-pad-md: var(--space-5);
     --btn-pad-lg: var(--space-6);
