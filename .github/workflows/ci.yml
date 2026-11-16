@@ -13,11 +13,84 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Classifies the change. Pushes to main always run everything.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code: ${{ steps.out.outputs.code }}
+      css: ${{ steps.out.outputs.css }}
+      infra: ${{ steps.out.outputs.infra }}
+      apps: ${{ steps.out.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: f
+        with:
+          predicate-quantifier: every
+          filters: |
+            code:
+              - '**'
+              - '!docs/**'
+              - '!brand/**'
+              - '!**/*.md'
+              - '!**/*.css'
+              - '!.github/**'
+              - '!**/Dockerfile'
+              - '!.dockerignore'
+            css:
+              - '**/*.css'
+              - '!brand/**'
+            infra:
+              - '{.github/**,**/Dockerfile,.dockerignore}'
+            web:
+              - '{apps/web/**,packages/ui/**,packages/config/**,package.json,pnpm-lock.yaml,pnpm-workspace.yaml,turbo.json}'
+              - '!**/*.css'
+              - '!**/*.md'
+            api:
+              - '{apps/api/**,packages/db/**,packages/config/**,package.json,pnpm-lock.yaml,pnpm-workspace.yaml,turbo.json}'
+              - '!**/*.css'
+              - '!**/*.md'
+            admin:
+              - '{apps/admin/**,packages/ui/**,packages/config/**,package.json,pnpm-lock.yaml,pnpm-workspace.yaml,turbo.json}'
+              - '!**/*.css'
+              - '!**/*.md'
+      - id: out
+        env:
+          PUSH: ${{ github.event_name == 'push' }}
+          CODE: ${{ steps.f.outputs.code }}
+          CSS: ${{ steps.f.outputs.css }}
+          INFRA: ${{ steps.f.outputs.infra }}
+          WEB: ${{ steps.f.outputs.web }}
+          API: ${{ steps.f.outputs.api }}
+          ADMIN: ${{ steps.f.outputs.admin }}
+        run: |
+          if [ "$PUSH" = "true" ]; then
+            CODE=true CSS=true INFRA=true WEB=true API=true ADMIN=true
+          fi
+          apps=""
+          [ "$WEB" = "true" ] && apps="$apps\"web\","
+          [ "$API" = "true" ] && apps="$apps\"api\","
+          [ "$ADMIN" = "true" ] && apps="$apps\"admin\","
+          {
+            echo "code=$CODE"
+            echo "css=$CSS"
+            echo "infra=$INFRA"
+            echo "apps=[${apps%,}]"
+          } >> "$GITHUB_OUTPUT"
+
   check:
+    needs: changes
+    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.css == 'true' || needs.changes.outputs.infra == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v6 # version from packageManager
       - uses: actions/setup-node@v7
         with:
@@ -29,15 +102,35 @@ jobs:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-
-      - run: pnpm turbo run lint typecheck test build --cache-dir=.turbo
+      - name: Run affected tasks
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          CODE: ${{ needs.changes.outputs.code }}
+          CSS: ${{ needs.changes.outputs.css }}
+        run: |
+          tasks="lint typecheck test build"
+          filter="--filter=...[$BASE]"
+          if [ "$EVENT" = "push" ]; then
+            filter=""
+          elif [ "$CODE" != "true" ] && [ "$CSS" = "true" ]; then
+            tasks="lint build"
+          elif [ "$CODE" != "true" ]; then
+            # Workflow/deploy files only: nothing to lint or test, prove the build still works.
+            tasks="build"
+            filter=""
+          fi
+          pnpm turbo run $tasks $filter --cache-dir=.turbo
 
   docker:
+    needs: changes
+    if: needs.changes.outputs.apps != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        app: [web, api, admin]
+        app: ${{ fromJSON(needs.changes.outputs.apps) }}
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v4
@@ -48,3 +141,17 @@ jobs:
           push: false
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+  # Single required check: passes when jobs were skipped, fails if any failed.
+  ci-ok:
+    if: always()
+    needs: [changes, check, docker]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          case " $RESULTS " in
+            *" failure "*|*" cancelled "*) exit 1 ;;
+          esac
