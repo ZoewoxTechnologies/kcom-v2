@@ -54,6 +54,10 @@ export function createAuth(db: CapsuleDb, opts: AuthOptions = {}) {
         rateLimit: rateLimits,
       },
     }),
+    user: {
+      // Read-only to clients: only the seed script and admin tools assign roles.
+      additionalFields: { role: { type: "string", required: false, input: false } },
+    },
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,
