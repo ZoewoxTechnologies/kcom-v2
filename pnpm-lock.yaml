@@ -78,9 +78,15 @@ importers:
       '@sentry/node':
         specifier: ^11.12.0
         version: 11.12.0(rollup@4.68.3)
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@electric-sql/pglite@0.5.16)(@opentelemetry/api@1.10.0)(@types/pg@8.23.1)(gel@2.2.1)(pg@8.23.1)
       hono:
         specifier: ^4.6.14
         version: 4.13.18
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       '@electric-sql/pglite':
         specifier: ^0.5.16
