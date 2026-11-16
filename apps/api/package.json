@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "lint": "eslint .",
     "typecheck": "tsc",
+    "seed:admin": "tsx src/seed-admin.ts",
     "test": "vitest run"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "@kcom/content": "workspace:*",
     "@kcom/db": "workspace:*",
     "@sentry/node": "^11.12.0",
+    "better-auth": "^1.7.25",
     "drizzle-orm": "^0.45.4",
     "hono": "^4.6.14",
     "zod": "^4.6.7"
