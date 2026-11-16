@@ -58,8 +58,10 @@ export function Menu({
   );
 }
 
+export type MenuItemVariant = "default" | "danger";
+
 interface ItemCommon {
-  danger?: boolean;
+  variant?: MenuItemVariant;
 }
 export type MenuItemProps = ItemCommon &
   (
@@ -68,11 +70,10 @@ export type MenuItemProps = ItemCommon &
   );
 
 export function MenuItem(props: MenuItemProps) {
-  const { danger, className, ...rest } = props;
+  const { variant = "default", className, ...rest } = props;
   const common = {
     role: "menuitem",
-    className: cx("kc-menu__item", className),
-    "data-danger": danger || undefined,
+    className: cx("kc-menu__item", variant !== "default" && `kc-menu__item--${variant}`, className),
   };
   if (props.href !== undefined) {
     return (

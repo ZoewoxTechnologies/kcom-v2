@@ -11,7 +11,7 @@ export function MenuDemo() {
           <MenuItem>Duplicate</MenuItem>
           <MenuItem disabled>Archive</MenuItem>
           <MenuSeparator />
-          <MenuItem danger>Delete</MenuItem>
+          <MenuItem variant="danger">Delete</MenuItem>
         </Menu>
 
         <Menu trigger="Capstone Capsules">

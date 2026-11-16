@@ -88,7 +88,7 @@
       pointer-events: none;
     }
 
-    &[data-danger] {
+    &.kc-menu__item--danger {
       color: var(--color-error);
     }
   }

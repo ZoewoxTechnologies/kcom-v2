@@ -19,5 +19,5 @@ export type {
   FieldsetProps,
 } from "./react/Field";
 export { Menu, MenuItem, MenuLabel, MenuSeparator } from "./react/Menu";
-export type { MenuProps, MenuItemProps } from "./react/Menu";
+export type { MenuProps, MenuItemProps, MenuItemVariant } from "./react/Menu";
 export { initMenu, initMenus } from "./menu/menu";

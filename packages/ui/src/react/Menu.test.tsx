@@ -12,7 +12,7 @@ const markup = () =>
       <MenuItem href="/x">Open</MenuItem>
       <MenuItem disabled>Archive</MenuItem>
       <MenuSeparator />
-      <MenuItem danger>Delete</MenuItem>
+      <MenuItem variant="danger">Delete</MenuItem>
     </Menu>,
   );
 
@@ -30,10 +30,11 @@ describe("Menu markup", () => {
     expect(html).toContain('role="menuitem"');
   });
 
-  it("renders links for href items and a danger flag", () => {
+  it("renders links for href items and the danger variant", () => {
     const html = markup();
     expect(html).toContain('<a href="/x"');
-    expect(html).toContain('data-danger="true"');
+    expect(html).toContain("kc-menu__item kc-menu__item--danger");
+    expect(html).not.toContain("kc-menu__item--default");
   });
 });
 
