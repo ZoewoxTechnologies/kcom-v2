@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, lte, sql } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import * as schema from "./schema.js";
 
@@ -12,11 +12,10 @@ export async function latestCapsule(db: CapsuleDb) {
     .where(
       and(
         eq(schema.capsules.status, "published"),
-        or(isNull(schema.capsules.publishAt), lte(schema.capsules.publishAt, sql`now()`)),
-        lte(schema.capsules.date, sql`current_date`),
+        lte(schema.capsules.publishAt, sql`now()`),
       ),
     )
-    .orderBy(desc(schema.capsules.date), desc(schema.capsules.createdAt))
+    .orderBy(desc(schema.capsules.publishAt), desc(schema.capsules.createdAt))
     .limit(1);
   return row ?? null;
 }

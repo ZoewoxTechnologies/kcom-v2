@@ -33,13 +33,14 @@ export async function seed(db: CapsuleDb) {
   const samples = [1, 2, 3].map((n) => ({
     title: `[SAMPLE] Capstone Capsule ${n}`,
     slug: `sample-capsule-${n}`,
-    date: `2026-01-0${n}`,
+    publishAt: new Date(`2026-01-0${n}T00:00:00+01:00`),
     scriptureRef: "Romans 12:1-2",
     scriptureText: doc("Sample scripture text."),
     body: doc(`This is sample capsule ${n}. Not real content.`),
     decrees: ["I decree this is sample data."],
     prayer: doc("Sample prayer."),
-    authorId: author!.id,
+    authorSource: SAMPLE_AUTHOR,
+    bibleMeditation: "Romans 12:1-2",
     status: "published" as const,
   }));
   await db.insert(capsules).values(samples).onConflictDoNothing({ target: capsules.slug });

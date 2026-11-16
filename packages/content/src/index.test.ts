@@ -8,18 +8,32 @@ describe("capsuleSchema", () => {
     updatedAt: "2026-01-01T00:00:00Z",
     slug: "peace-be-still",
     title: "Peace, be still",
-    status: "published",
-    publishedAt: "2026-01-01T00:00:00Z",
-    date: "2026-01-01",
-    body: "…",
+    status: "scheduled",
+    publishAt: "2026-01-01T23:00:00Z",
+    body: {},
   };
 
-  it("accepts a valid capsule", () => {
-    expect(capsuleSchema.parse(valid).date).toBe("2026-01-01");
+  it("accepts a valid capsule and defaults optional fields", () => {
+    const c = capsuleSchema.parse(valid);
+    expect(c.publishAt).toEqual(new Date("2026-01-01T23:00:00Z"));
+    expect(c.decrees).toEqual([]);
+    expect(c.seriesId).toBeNull();
+    expect(c.bibleMeditation).toBeNull();
   });
 
-  it("rejects a bad slug", () => {
+  it("treats decrees as optional: omitted or empty both validate", () => {
+    expect(capsuleSchema.parse(valid).decrees).toEqual([]);
+    expect(capsuleSchema.parse({ ...valid, decrees: [] }).decrees).toEqual([]);
+    expect(capsuleSchema.parse({ ...valid, decrees: ["I decree peace"] }).decrees).toEqual([
+      "I decree peace",
+    ]);
+  });
+
+  it("rejects a bad slug, blank title, unknown status and missing publishAt", () => {
     expect(capsuleSchema.safeParse({ ...valid, slug: "Not A Slug" }).success).toBe(false);
+    expect(capsuleSchema.safeParse({ ...valid, title: "  " }).success).toBe(false);
+    expect(capsuleSchema.safeParse({ ...valid, status: "archived" }).success).toBe(false);
+    expect(capsuleSchema.safeParse({ ...valid, publishAt: undefined }).success).toBe(false);
   });
 });
 

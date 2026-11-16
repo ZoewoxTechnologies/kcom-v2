@@ -1,0 +1,32 @@
+/**
+ * Africa/Lagos is UTC+1 all year (no daylight saving), so local midnight is
+ * always 23:00 UTC the previous day.
+ */
+const LAGOS_OFFSET_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** The next midnight in Africa/Lagos strictly after `now`. */
+export function nextLagosMidnight(now: Date = new Date()): Date {
+  const local = now.getTime() + LAGOS_OFFSET_MS;
+  const nextLocalMidnight = (Math.floor(local / DAY_MS) + 1) * DAY_MS;
+  return new Date(nextLocalMidnight - LAGOS_OFFSET_MS);
+}
+
+/** The calendar day (YYYY-MM-DD) of an instant in Africa/Lagos. */
+export function lagosDate(at: Date): string {
+  return new Date(at.getTime() + LAGOS_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * Turns a title or legacy path segment into a valid capsule slug: lowercase
+ * ASCII words separated by hyphens. Accents are stripped; returns "" when
+ * nothing usable remains (the caller must then supply a fallback).
+ */
+export function slugify(input: string): string {
+  return input
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

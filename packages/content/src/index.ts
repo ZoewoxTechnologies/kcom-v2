@@ -32,17 +32,31 @@ export const seriesSchema = z.object({
   description: z.string().optional(),
 });
 
+export const capsuleStatus = z.enum(["draft", "scheduled", "published"]);
+
+/** Rich text is a JSON document (editor-agnostic). */
+const richText = z.record(z.string(), z.unknown());
+
 export const capsuleSchema = z.object({
-  ...publishable,
-  /** Day the devotional is for (YYYY-MM-DD). */
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  scripture: z.string().optional(),
-  scriptureReference: z.string().optional(),
-  body: z.string(),
-  decree: z.string().optional(),
-  authorId: id.optional(),
-  seriesId: id.optional(),
-  legacyNodeId: z.number().int().optional(),
+  ...base,
+  slug,
+  title: z.string().trim().min(1),
+  status: capsuleStatus,
+  /** Go-live instant. Defaults to the next midnight Africa/Lagos (see nextLagosMidnight). */
+  publishAt: z.coerce.date(),
+  scriptureRef: z.string().nullable().default(null),
+  scriptureText: richText.nullable().default(null),
+  body: richText,
+  decrees: z.array(z.string()).default([]),
+  prayer: richText.nullable().default(null),
+  /** Passages to read and meditate on today. */
+  bibleMeditation: z.string().nullable().default(null),
+  /** Display credit, e.g. "Adetokunbo O. Ilesanmi (Meditations)". */
+  authorSource: z.string().nullable().default(null),
+  seriesId: id.nullable().default(null),
+  partNumber: z.number().int().positive().nullable().default(null),
+  legacyNid: z.number().int().nullable().default(null),
+  legacyPath: z.string().nullable().default(null),
 });
 
 export const blogPostSchema = z.object({
@@ -109,3 +123,5 @@ export type Page = z.infer<typeof pageSchema>;
 export type Book = z.infer<typeof bookSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 export type Subscriber = z.infer<typeof subscriberSchema>;
+
+export { lagosDate, nextLagosMidnight, slugify } from "./publish.js";

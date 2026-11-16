@@ -56,7 +56,6 @@ export const capsules = pgTable(
     id: id(),
     title: text("title").notNull(),
     slug: text("slug").notNull().unique(),
-    date: date("date", { mode: "string" }).notNull(),
     scriptureRef: text("scripture_ref"),
     scriptureText: jsonb("scripture_text").$type<RichText>(),
     body: jsonb("body").$type<RichText>().notNull(),
@@ -65,11 +64,15 @@ export const capsules = pgTable(
       .notNull()
       .default(sql`'{}'::text[]`),
     prayer: jsonb("prayer").$type<RichText>(),
-    authorId: uuid("author_id").references(() => people.id, { onDelete: "set null" }),
+    /** Passages to read and meditate on today (free text, e.g. "Romans 12:1-8; Philippians 4:4-9"). */
+    bibleMeditation: text("bible_meditation"),
+    /** Display credit, e.g. "Adetokunbo O. Ilesanmi (Meditations)". Changed when a capsule is by someone else. */
+    authorSource: text("author_source"),
     seriesId: uuid("series_id").references(() => series.id, { onDelete: "set null" }),
     partNumber: integer("part_number"),
     status: publishStatus("status").notNull().default("draft"),
-    publishAt: timestamp("publish_at", { withTimezone: true }),
+    /** Go-live instant. The app defaults it to the next midnight Africa/Lagos. */
+    publishAt: timestamp("publish_at", { withTimezone: true }).notNull(),
     legacyNid: integer("legacy_nid").unique(),
     legacyPath: text("legacy_path"),
     createdAt: createdAt(),
@@ -77,7 +80,9 @@ export const capsules = pgTable(
   },
   (t) => [
     uniqueIndex("capsules_legacy_path_idx").on(t.legacyPath),
-    index("capsules_status_date_idx").on(t.status, t.date),
+    index("capsules_status_publish_at_idx").on(t.status, t.publishAt),
+    check("capsules_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
+    check("capsules_title_not_blank", sql`btrim(${t.title}) <> ''`),
     index("capsules_series_idx").on(t.seriesId, t.partNumber),
     check("capsules_part_needs_series", sql`${t.partNumber} IS NULL OR ${t.seriesId} IS NOT NULL`),
   ],

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import * as Sentry from "@sentry/node";
+import { lagosDate } from "@kcom/content";
 import { latestCapsule, type CapsuleDb } from "@kcom/db";
 
 export function createApp(db: CapsuleDb) {
@@ -17,7 +18,8 @@ export function createApp(db: CapsuleDb) {
       return c.json({ error: "not found" }, 404);
     }
     c.header("Cache-Control", "public, max-age=60");
-    return c.json(capsule);
+    /** The capsule's day is its publish_at in Africa/Lagos, not UTC. */
+    return c.json({ ...capsule, displayDate: lagosDate(capsule.publishAt) });
   });
   return app;
 }
