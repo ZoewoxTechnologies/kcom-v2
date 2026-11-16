@@ -63,7 +63,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const wanted: SeedUser[] = [
     { email: ADMIN_EMAIL, role: "admin", password: ADMIN_PASSWORD || undefined },
     {
-      email: EDITOR_EMAIL || "aoikcom@gmail.com",
+      email: EDITOR_EMAIL,
       role: "editor",
       password: EDITOR_PASSWORD || undefined,
     },
