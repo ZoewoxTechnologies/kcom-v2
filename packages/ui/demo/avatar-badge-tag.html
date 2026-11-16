@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Avatar, badge, tag</title>
+    <link rel="stylesheet" href="../src/styles.css" />
+    <link rel="stylesheet" href="../src/components/avatar.css" />
+    <link rel="stylesheet" href="../src/components/badge.css" />
+    <script>
+      const t = new URLSearchParams(location.search).get("theme");
+      if (t) document.documentElement.dataset.theme = t;
+    </script>
+    <style>
+      main { max-width: 48rem; margin: 0 auto; padding: var(--space-6) var(--gutter); }
+      .row { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; margin-block: var(--space-4); }
+      h2 { margin-top: var(--space-6); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Avatar, badge, tag</h1>
+
+      <h2>Avatar sizes (initials fallback)</h2>
+      <div class="row">
+        <span class="kc-avatar kc-avatar--sm"><span class="kc-avatar__fallback">AL</span></span>
+        <span class="kc-avatar"><span class="kc-avatar__fallback">AL</span></span>
+        <span class="kc-avatar kc-avatar--lg"><span class="kc-avatar__fallback">AL</span></span>
+        <span class="kc-avatar kc-avatar--xl"><span class="kc-avatar__fallback">AL</span></span>
+      </div>
+
+      <h2>Avatar with image</h2>
+      <div class="row">
+        <span class="kc-avatar kc-avatar--lg"><img class="kc-avatar__image" alt="Sample" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%237d9f86'/%3E%3Ccircle cx='32' cy='25' r='11' fill='%23f6eedd'/%3E%3Cpath d='M10 64c2-18 12-24 22-24s20 6 22 24z' fill='%23f6eedd'/%3E%3C/svg%3E" /></span>
+        <span class="kc-avatar kc-avatar--xl"><img class="kc-avatar__image" alt="Sample" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%237d9f86'/%3E%3Ccircle cx='32' cy='25' r='11' fill='%23f6eedd'/%3E%3Cpath d='M10 64c2-18 12-24 22-24s20 6 22 24z' fill='%23f6eedd'/%3E%3C/svg%3E" /></span>
+      </div>
+
+      <h2>Status badges</h2>
+      <div class="row">
+        <span class="kc-badge kc-badge--draft">Draft</span>
+        <span class="kc-badge kc-badge--scheduled">Scheduled</span>
+        <span class="kc-badge kc-badge--published">Published</span>
+        <span class="kc-badge kc-badge--confirmed">Confirmed</span>
+        <span class="kc-badge kc-badge--pending">Pending</span>
+        <span class="kc-badge kc-badge--unsubscribed">Unsubscribed</span>
+      </div>
+
+      <h2>Tags and series chips</h2>
+      <div class="row">
+        <span class="kc-tag">New Year Message</span>
+        <a class="kc-tag" href="#">Prophetic</a>
+        <a class="kc-tag" href="#" style="box-shadow: var(--focus-ring)">Focused link</a>
+      </div>
+    </main>
+  </body>
+</html>
