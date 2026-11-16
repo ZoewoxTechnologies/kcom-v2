@@ -7,7 +7,10 @@ initSentry();
 
 const port = Number(process.env.PORT ?? 8787);
 const app = createApp(createDb(), {
-  corsOrigins: (process.env.CORS_ORIGINS ?? "").split(",").map((o) => o.trim()).filter(Boolean),
+  corsOrigins: (process.env.CORS_ORIGINS ?? "")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean),
   auth: {
     cookies: {
       secure: process.env.COOKIE_SECURE !== "false",
