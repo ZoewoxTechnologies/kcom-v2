@@ -1,0 +1,28 @@
+/* KCOM dark mode: "Night Water" (approved). Additions to the light set are at the bottom. */
+:root[data-theme="dark"] {
+  --color-page: #10191d;
+  --color-surface: #17242a;
+  --color-raised: #1e2f36;
+  --color-wash: #16303a;          /* hero and header */
+  --color-text: #e6eeec;
+  --color-muted: #9fb1b2;
+  --color-line: #2c3f45;
+  --color-field-border: #4a6168;
+  --color-primary: #8cc0d4;       /* buttons, links */
+  --color-primary-hover: #a6d0e0;
+  --color-primary-active: #bfdde8;
+  --color-on-primary: #0f1c21;
+  --color-secondary-hover: #1b3540;
+  --color-secondary-active: #21404c;
+  --color-sage: #9dbfa5;
+  --color-old-gold: #d4b46e;
+  --color-old-gold-text: #d9bc7a;
+  --color-sandstone: #2a2519;     /* decree blocks */
+  --color-error: #e59a88;
+  --color-success: #93c59f;
+  --color-footer: #0b1316;
+  --focus-ring: 0 0 0 2px var(--color-page), 0 0 0 4px var(--color-old-gold);
+}
+
+/* Light-mode additions proposed alongside: surface #ffffff, field border #a9bab8,
+   error #a3402e, success #3f6e4c, Give hover #efe2c6 / pressed #e8d7b2. */

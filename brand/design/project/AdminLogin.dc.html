@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin · sign in</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=Lora:ital,wght@1,400&amp;family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&amp;display=swap">
+<style>body{margin:0}a{color:#2b6178}</style>
+</helmet>
+<div style="min-height:900px;background:linear-gradient(170deg,#dde9ec,#f3f6f5);display:flex;align-items:center;justify-content:center;font-family:'Nunito Sans',sans-serif;color:#1d2b2d">
+<form style="width:420px;background:#fff;border:1px solid #d9e3e1;border-radius:14px;padding:40px;display:flex;flex-direction:column;gap:18px;box-shadow:0 18px 40px rgba(20,50,62,.12)">
+<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center"><img src="/_blob/3f552b983184c0be2e5c16618e8fed67" alt="" style="width:64px;height:64px;object-fit:contain"><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;line-height:1.1">Kingdom Capstone<br>Outreach Ministries</span><h1 style="margin:6px 0 0;font-size:18px;font-weight:700">Sign in to manage the site</h1></div>
+<div role="alert" style="background:#f6e1dc;border:1px solid #e0b3a8;border-radius:10px;padding:12px 14px;font-size:15px;color:#7a2f22">The email or password is incorrect. Please try again.</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Email address<input type="email" value="admin@" style="font:16px 'Nunito Sans';padding:11px 14px;border-radius:10px;border:1px solid #a9bab8;background:#fff;color:#1d2b2d"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Password<input type="password" value="••••••••" style="font:16px 'Nunito Sans';padding:11px 14px;border-radius:10px;border:1px solid #a9bab8;background:#fff;color:#1d2b2d"></label>
+<button type="button" style="font:600 15px 'Nunito Sans';padding:10px 18px;border-radius:999px;border:0;background:#2b6178;color:#fff;text-decoration:none;white-space:nowrap;padding:13px">Sign in</button>
+<a href="#" style="text-align:center;font-size:14px">Forgot password?</a>
+</form></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

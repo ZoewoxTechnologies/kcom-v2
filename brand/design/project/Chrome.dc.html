@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KCOM navigation and footer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2b6178}a:hover{color:#224e61}
+</style>
+</helmet>
+<div style="width:1440px;box-sizing:border-box;padding:72px 80px;background:#e9eeed;color:#1d2b2d;font-family:'Nunito Sans',system-ui,sans-serif;display:flex;flex-direction:column;gap:40px">
+<h1 style="margin:0;font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:56px">Navigation &amp; footer</h1>
+
+<sc-for list="{{modes}}" as="m" hint-placeholder-count="2">
+<div style="display:flex;gap:40px;align-items:flex-start">
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5f6f70">Desktop · {{m.name}}</div>
+<div style="background:{{m.page}};color:{{m.text}};border-radius:14px;overflow:hidden;border:1px solid {{m.line}}">
+<div style="background:{{m.bar}};color:#f3f6f5;padding:9px 40px;display:flex;align-items:center;gap:16px;font-size:14px">
+<span style="font-variant:small-caps;letter-spacing:.1em;font-weight:700;color:{{m.footgold}}">Saturday, 14 November</span>
+<span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px">Today: “Be ye transformed by the renewing of your mind.” Romans 12:2</span>
+<a href="#" style="margin-left:auto;color:#f3f6f5;text-decoration:underline;text-decoration-color:{{m.gold}};text-underline-offset:4px">Get it by email</a>
+</div>
+<header style="background:{{m.hbar}};padding:16px 40px;display:flex;align-items:center;gap:24px;border-bottom:1px solid {{m.line}}">
+<a href="#" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:{{m.text}}">
+<img src="/_blob/3f552b983184c0be2e5c16618e8fed67" alt="" style="width:48px;height:48px;object-fit:contain">
+<span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;line-height:1.05">Kingdom Capstone<span style="display:block">Outreach Ministries</span></span>
+</a>
+<nav aria-label="Main" style="display:flex;gap:20px;white-space:nowrap;margin-left:auto;font-size:15px;font-weight:600">
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:8px 0;border-bottom:2px solid {{m.gold}}">Home</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:8px 0">About ▾</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:8px 0">Capstone Capsules ▾</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:8px 0">Blog</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:8px 0">Events</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:8px 0">Books</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:8px 0">Partner With Us</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:8px 0">Contact</a>
+</nav>
+<button aria-label="Search" style="width:44px;height:44px;border-radius:999px;border:1px solid {{m.line}};background:transparent;color:{{m.text}};display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></button>
+<a href="#" style="font:600 15px 'Nunito Sans';padding:12px 20px;border-radius:999px;background:{{m.p}};color:{{m.onp}};text-decoration:none;white-space:nowrap">Today’s Capsule</a>
+</header>
+<div style="padding:0 40px;display:flex;justify-content:flex-end">
+<div style="width:300px;margin-top:-6px;background:{{m.raised}};border:1px solid {{m.line}};border-radius:14px;padding:10px;box-shadow:0 12px 32px rgba(10,30,40,.14);display:flex;flex-direction:column;font-size:15px;margin-right:640px">
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 14px;border-radius:10px;background:{{m.hover}}">Who We Are</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 14px">Ministry Team</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 14px">Ministry Arms</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 14px">Mandate and Message</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 14px">Vision and Mission</a>
+</div>
+</div>
+<footer style="margin-top:32px;background:{{m.foot}};color:{{m.foottext}};padding:48px 40px 28px;display:flex;flex-direction:column;gap:32px">
+<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1.4fr;gap:32px;font-size:15px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:12px"><img src="/_blob/3f552b983184c0be2e5c16618e8fed67" alt="" style="width:44px;height:44px;object-fit:contain"><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;line-height:1.05">Kingdom Capstone<span style="display:block">Outreach Ministries</span></span></div>
+<div style="width:40px;height:2px;background:{{m.gold}}"></div>
+<div style="font-size:15px;line-height:1.6;opacity:.9">He leadeth me beside the still waters.<span style="display:block;font-size:12px;letter-spacing:.1em;font-variant:small-caps;font-weight:700;color:{{m.footgold}};margin-top:4px">Psalm 23:2</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px"><strong style="font-size:12px;letter-spacing:.12em;color:{{m.footgold}}">READ</strong><a href="#" style="color:inherit;text-decoration:none">Today’s Capsule</a><a href="#" style="color:inherit;text-decoration:none">Archive</a><a href="#" style="color:inherit;text-decoration:none">Blog</a><a href="#" style="color:inherit;text-decoration:none">Events</a></div>
+<div style="display:flex;flex-direction:column;gap:8px"><strong style="font-size:12px;letter-spacing:.12em;color:{{m.footgold}}">MINISTRY</strong><a href="#" style="color:inherit;text-decoration:none">About</a><a href="#" style="color:inherit;text-decoration:none">Partner With Us</a><a href="#" style="color:inherit;text-decoration:none">Contact</a></div>
+<form style="display:flex;flex-direction:column;gap:10px"><label for="fe" style="font-size:12px;letter-spacing:.12em;font-weight:700;color:{{m.footgold}}">THE DAILY CAPSULE, BY EMAIL</label>
+<div style="display:flex;gap:8px"><input id="fe" type="email" placeholder="you@example.com" style="flex:1;min-width:0;font:16px 'Nunito Sans';padding:11px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:inherit"><button type="button" style="font:600 15px 'Nunito Sans';padding:0 18px;border-radius:999px;border:0;background:{{m.footbtn}};color:{{m.footbtntext}}">Subscribe</button></div></form>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;opacity:.85;border-top:1px solid rgba(255,255,255,.15);padding-top:20px">
+<span>© 2026 Kingdom Capstone Outreach Ministries</span>
+<span style="display:flex;gap:20px;align-items:center"><a href="#" style="color:inherit">Facebook</a><a href="#" style="color:inherit">YouTube</a><button type="button" aria-label="Switch colour theme" style="font:600 13px 'Nunito Sans';padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:transparent;color:inherit">{{m.toggle}}</button></span>
+</div>
+</footer>
+</div>
+</div>
+
+<div style="width:340px;flex:none;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5f6f70">Phone · menu open</div>
+<div style="width:340px;height:640px;background:{{m.page}};color:{{m.text}};border-radius:28px;overflow:hidden;border:1px solid {{m.line}};display:flex;flex-direction:column">
+<header style="background:{{m.hbar}};border-bottom:1px solid {{m.line}};padding:12px 16px;display:flex;align-items:center;gap:10px">
+<img src="/_blob/3f552b983184c0be2e5c16618e8fed67" alt="" style="width:38px;height:38px;object-fit:contain">
+<span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:18px;line-height:1.05">Kingdom Capstone<span style="display:block">Outreach Ministries</span></span>
+<button aria-label="Close menu" style="margin-left:auto;width:44px;height:44px;border-radius:999px;border:0;background:transparent;color:{{m.text}};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</header>
+<nav aria-label="Main" style="padding:12px 16px;display:flex;flex-direction:column;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500">
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 0;border-bottom:1px solid {{m.line}}">Home</a>
+<div style="padding:10px 0;border-bottom:1px solid {{m.line}}">About<div style="font-family:'Nunito Sans',sans-serif;font-size:15px;display:flex;flex-direction:column;gap:10px;padding:10px 0 4px 12px;color:{{m.muted}}"><a href="#" style="color:inherit;text-decoration:none">Who We Are</a><a href="#" style="color:inherit;text-decoration:none">Ministry Team</a><a href="#" style="color:inherit;text-decoration:none">Ministry Arms</a><a href="#" style="color:inherit;text-decoration:none">Mandate and Message</a><a href="#" style="color:inherit;text-decoration:none">Vision and Mission</a></div></div>
+<div style="padding:10px 0;border-bottom:1px solid {{m.line}}">Capstone Capsules<div style="font-family:'Nunito Sans',sans-serif;font-size:15px;display:flex;flex-direction:column;gap:10px;padding:10px 0 4px 12px;color:{{m.muted}}"><a href="#" style="color:inherit;text-decoration:none">Today’s Capsule</a><a href="#" style="color:inherit;text-decoration:none">Browse by month</a><a href="#" style="color:inherit;text-decoration:none">Browse by series</a></div></div>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 0;border-bottom:1px solid {{m.line}}">Blog</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 0;border-bottom:1px solid {{m.line}}">Events</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 0;border-bottom:1px solid {{m.line}}">Books</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 0;border-bottom:1px solid {{m.line}}">Partner With Us</a>
+<a href="#" style="color:{{m.text}};text-decoration:none;padding:10px 0">Contact</a>
+</nav>
+<div style="margin-top:auto;padding:16px"><a href="#" style="display:block;text-align:center;font:600 16px 'Nunito Sans';padding:13px;border-radius:999px;background:{{m.p}};color:{{m.onp}};text-decoration:none">Read today’s capsule</a></div>
+</div>
+</div>
+</div>
+</sc-for>
+<p style="margin:0;font-size:15px;color:#5f6f70;max-width:900px">Header (H1): the verse bar scrolls away; the white bar below sticks. The verse bar on phone shows the reference only, and tapping it opens today’s capsule. Phone footer stacks to one column with the email form first. Give appears in the header only once giving launches (milestone 2).</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1700}}'>
+class Component extends DCLogic {
+renderVals() {
+return { modes: [
+{name:'light',hbar:'#ffffff',bar:'#2b6178',toggle:'☾ Dark',page:'#f3f6f5',wash:'#dde9ec',raised:'#ffffff',hover:'#e7f0f2',text:'#1d2b2d',muted:'#5f6f70',line:'#d9e3e1',gold:'#c4a15a',goldt:'#8a6a24',p:'#2b6178',onp:'#ffffff',foot:'#2b6178',foottext:'#f3f6f5',footgold:'#e3c88a',footbtn:'#f6eedd',footbtntext:'#1d2b2d'},
+{name:'dark',hbar:'#17242a',bar:'#0b1316',toggle:'☀ Light',page:'#10191d',wash:'#16303a',raised:'#1e2f36',hover:'#24404b',text:'#e6eeec',muted:'#9fb1b2',line:'#2c3f45',gold:'#d4b46e',goldt:'#d9bc7a',p:'#8cc0d4',onp:'#0f1c21',foot:'#0b1316',foottext:'#dfe8e6',footgold:'#d9bc7a',footbtn:'#8cc0d4',footbtntext:'#0f1c21'}
+]};
+}
+}
+</script>
+</body>
+</html>
