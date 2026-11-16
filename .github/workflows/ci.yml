@@ -45,9 +45,7 @@ jobs:
               - '**/*.css'
               - '!brand/**'
             infra:
-              - '.github/**'
-              - '**/Dockerfile'
-              - '.dockerignore'
+              - '{.github/**,**/Dockerfile,.dockerignore}'
             web:
               - '{apps/web/**,packages/ui/**,packages/config/**,package.json,pnpm-lock.yaml,pnpm-workspace.yaml,turbo.json}'
               - '!**/*.css'
