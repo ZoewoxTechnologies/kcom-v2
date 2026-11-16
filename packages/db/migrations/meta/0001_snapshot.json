@@ -1,5 +1,5 @@
 {
-  "id": "a00efaf5-b635-4d8d-aeae-dfba09f1b880",
+  "id": "0096aa32-1c80-4614-ba91-e793a8a3e983",
   "prevId": "f8aafd1b-3276-4548-9bcd-7d42107433ca",
   "version": "7",
   "dialect": "postgresql",
@@ -351,12 +351,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "author_id": {
-          "name": "author_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "author_source": {
           "name": "author_source",
           "type": "text",
@@ -476,19 +470,6 @@
         }
       },
       "foreignKeys": {
-        "capsules_author_id_people_id_fk": {
-          "name": "capsules_author_id_people_id_fk",
-          "tableFrom": "capsules",
-          "tableTo": "people",
-          "columnsFrom": [
-            "author_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
         "capsules_series_id_series_id_fk": {
           "name": "capsules_series_id_series_id_fk",
           "tableFrom": "capsules",

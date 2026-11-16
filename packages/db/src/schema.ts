@@ -66,7 +66,6 @@ export const capsules = pgTable(
     prayer: jsonb("prayer").$type<RichText>(),
     /** Passages to read and meditate on today (free text, e.g. "Romans 12:1-8; Philippians 4:4-9"). */
     bibleMeditation: text("bible_meditation"),
-    authorId: uuid("author_id").references(() => people.id, { onDelete: "set null" }),
     /** Display credit, e.g. "Adetokunbo O. Ilesanmi (Meditations)". Changed when a capsule is by someone else. */
     authorSource: text("author_source"),
     seriesId: uuid("series_id").references(() => series.id, { onDelete: "set null" }),

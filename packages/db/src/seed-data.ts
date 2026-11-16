@@ -39,7 +39,6 @@ export async function seed(db: CapsuleDb) {
     body: doc(`This is sample capsule ${n}. Not real content.`),
     decrees: ["I decree this is sample data."],
     prayer: doc("Sample prayer."),
-    authorId: author!.id,
     authorSource: SAMPLE_AUTHOR,
     bibleMeditation: "Romans 12:1-2",
     status: "published" as const,

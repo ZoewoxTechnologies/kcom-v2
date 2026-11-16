@@ -51,7 +51,6 @@ export const capsuleSchema = z.object({
   prayer: richText.nullable().default(null),
   /** Passages to read and meditate on today. */
   bibleMeditation: z.string().nullable().default(null),
-  authorId: id.nullable().default(null),
   /** Display credit, e.g. "Adetokunbo O. Ilesanmi (Meditations)". */
   authorSource: z.string().nullable().default(null),
   seriesId: id.nullable().default(null),
