@@ -14,6 +14,7 @@ export {
 export type {
   FieldProps,
   ControlProps,
+  ControlSize,
   TextFieldProps,
   TextareaFieldProps,
   SelectFieldProps,
