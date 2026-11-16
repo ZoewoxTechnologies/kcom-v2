@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Form fields</title>
+    <link rel="stylesheet" href="../src/styles.css" />
+    <link rel="stylesheet" href="../src/components/forms.css" />
+    <script>
+      // ?theme=dark or ?theme=light forces a theme; otherwise follows the system.
+      const t = new URLSearchParams(location.search).get("theme");
+      if (t) document.documentElement.dataset.theme = t;
+    </script>
+    <style>
+      main {
+        max-width: 64rem;
+        margin: 0 auto;
+        padding: var(--space-6) var(--gutter);
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+        gap: var(--space-6);
+      }
+      .col {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+      h2 {
+        margin: 0;
+        font-size: var(--text-lg);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="cols">
+        <div class="col">
+          <h2>Text fields</h2>
+          <div class="kc-field">
+            <label class="kc-label" for="n">Your name <span aria-hidden="true">*</span></label>
+            <input class="kc-input" id="n" placeholder="Default (required)" aria-required="true" />
+          </div>
+          <div class="kc-field">
+            <label class="kc-label" for="f">Focused</label>
+            <input class="kc-input" id="f" value="Grace Adeyemi" />
+          </div>
+          <div class="kc-field">
+            <label class="kc-label" for="h"
+              >Phone <span class="kc-field__marker">(optional)</span></label
+            >
+            <input class="kc-input" id="h" aria-describedby="h-help" />
+            <p class="kc-field__help" id="h-help">Only used if you ask us to call.</p>
+          </div>
+          <div class="kc-field">
+            <label class="kc-label" for="e">Email address</label>
+            <input
+              class="kc-input"
+              id="e"
+              value="grace@"
+              aria-invalid="true"
+              aria-describedby="e-err"
+            />
+            <p class="kc-field__error" id="e-err" role="alert">
+              Please enter a full email address.
+            </p>
+          </div>
+          <div class="kc-field">
+            <label class="kc-label" for="d">Disabled</label>
+            <input class="kc-input" id="d" value="Locked" disabled />
+          </div>
+          <div class="kc-field">
+            <label class="kc-label" for="m">Message</label>
+            <textarea
+              class="kc-textarea"
+              id="m"
+              placeholder="I'd like to request prayer for…"
+            ></textarea>
+          </div>
+        </div>
+        <div class="col">
+          <h2>Select, checkbox, radio</h2>
+          <div class="kc-field">
+            <label class="kc-label" for="s">Topic</label>
+            <div class="kc-select">
+              <select class="kc-select__control" id="s">
+                <option>Prayer request</option>
+                <option>Question</option>
+              </select>
+            </div>
+          </div>
+          <div class="kc-field">
+            <label class="kc-label" for="se">Select with error</label>
+            <div class="kc-select">
+              <select
+                class="kc-select__control"
+                id="se"
+                aria-invalid="true"
+                aria-describedby="se-err"
+              >
+                <option>Choose…</option>
+              </select>
+            </div>
+            <p class="kc-field__error" id="se-err" role="alert">Pick a topic.</p>
+          </div>
+          <div class="kc-field">
+            <label class="kc-label" for="sd">Select disabled</label>
+            <div class="kc-select">
+              <select class="kc-select__control" id="sd" disabled>
+                <option>Prayer request</option>
+              </select>
+            </div>
+          </div>
+          <label class="kc-choice"><input type="checkbox" checked />Keep my request private</label>
+          <label class="kc-choice"><input type="checkbox" />Send me the daily capsule</label>
+          <label class="kc-choice"><input type="checkbox" disabled />Disabled option</label>
+          <fieldset class="kc-fieldset">
+            <legend>Radio</legend>
+            <label class="kc-choice"><input type="radio" name="r" checked />Email</label>
+            <label class="kc-choice"><input type="radio" name="r" />Phone</label>
+            <label class="kc-choice"><input type="radio" name="r" disabled />Post</label>
+          </fieldset>
+          <fieldset class="kc-fieldset">
+            <legend>I'm writing about (pill)</legend>
+            <label class="kc-choice kc-choice--pill"
+              ><input type="radio" name="p" />A question</label
+            >
+            <label class="kc-choice kc-choice--pill"
+              ><input type="radio" name="p" checked />A prayer request</label
+            >
+            <label class="kc-choice kc-choice--pill"
+              ><input type="radio" name="p" disabled />Other</label
+            >
+          </fieldset>
+        </div>
+      </div>
+    </main>
+    <script>
+      document.getElementById("f").focus();
+    </script>
+  </body>
+</html>
