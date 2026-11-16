@@ -1,45 +1,41 @@
 import { useMemo, useState } from "react";
-import { SortableTh, TableEmpty, TablePagination, TableWrap } from "@kcom/ui";
-import type { SortDirection } from "@kcom/ui";
+import { Button, DataTable } from "@kcom/ui";
+import type { DataTableColumn, DataTableSort } from "@kcom/ui";
 
-type Row = { id: number; name: string; email: string; joined: string; status: string };
+type Subscriber = { id: number; name: string; email: string; joined: string; status: string };
 type Key = "name" | "email" | "joined" | "status";
 
 const STATUSES = ["Active", "Active", "Pending", "Unsubscribed"];
-const ROWS: Row[] = Array.from({ length: 1312 }, (_, i) => {
-  const day = (i % 28) + 1;
-  return {
-    id: i,
-    name: `Subscriber ${String(i + 1).padStart(4, "0")}`,
-    email: `subscriber${i + 1}@example.com`,
-    joined: `2026-11-${String(day).padStart(2, "0")}`,
-    status: STATUSES[i % STATUSES.length]!,
-  };
-});
+const ROWS: Subscriber[] = Array.from({ length: 1312 }, (_, i) => ({
+  id: i,
+  name: `Subscriber ${String(i + 1).padStart(4, "0")}`,
+  email: `subscriber${i + 1}@example.com`,
+  joined: `2026-11-${String((i % 28) + 1).padStart(2, "0")}`,
+  status: STATUSES[i % STATUSES.length]!,
+}));
 const PAGE_SIZE = 6;
 
+const COLUMNS: DataTableColumn<Subscriber>[] = [
+  { key: "name", header: "Name", sortable: true },
+  { key: "email", header: "Email", sortable: true },
+  { key: "joined", header: "Joined", sortable: true },
+  { key: "status", header: "Status", sortable: true },
+];
+
 export function DataTableDemo() {
-  const [sort, setSort] = useState<{ key: Key; dir: "ascending" | "descending" }>({
-    key: "name",
-    dir: "ascending",
-  });
+  const [sort, setSort] = useState<DataTableSort | null>({ key: "name", direction: "ascending" });
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<number | null>(1);
 
-  const sorted = useMemo(() => {
-    const factor = sort.dir === "ascending" ? 1 : -1;
-    return [...ROWS].sort((a, b) => a[sort.key].localeCompare(b[sort.key]) * factor);
-  }, [sort]);
-  const rows = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const dirFor = (key: Key): SortDirection => (sort.key === key ? sort.dir : "none");
-  const toggle = (key: Key) => {
-    setSort((s) => ({
-      key,
-      dir: s.key === key && s.dir === "ascending" ? "descending" : "ascending",
-    }));
-    setPage(1);
-  };
+  const pageRows = useMemo(() => {
+    const sorted = [...ROWS];
+    if (sort) {
+      const factor = sort.direction === "ascending" ? 1 : -1;
+      const key = sort.key as Key;
+      sorted.sort((a, b) => a[key].localeCompare(b[key]) * factor);
+    }
+    return sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  }, [sort, page]);
 
   return (
     <section
@@ -52,59 +48,35 @@ export function DataTableDemo() {
       }}
     >
       <h2 id="data-table-demo">Data table</h2>
-      <TableWrap>
-        <table className="kc-table">
-          <thead>
-            <tr>
-              <SortableTh direction={dirFor("name")} onSort={() => toggle("name")}>
-                Name
-              </SortableTh>
-              <SortableTh direction={dirFor("email")} onSort={() => toggle("email")}>
-                Email
-              </SortableTh>
-              <SortableTh direction={dirFor("joined")} onSort={() => toggle("joined")}>
-                Joined
-              </SortableTh>
-              <SortableTh direction={dirFor("status")} onSort={() => toggle("status")}>
-                Status
-              </SortableTh>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} aria-selected={selected === r.id} onClick={() => setSelected(r.id)}>
-                <td>{r.name}</td>
-                <td>{r.email}</td>
-                <td>{r.joined}</td>
-                <td>{r.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <TablePagination
-          page={page}
-          pageSize={PAGE_SIZE}
-          total={ROWS.length}
-          onPageChange={setPage}
-        />
-      </TableWrap>
+      <DataTable
+        caption="Subscribers"
+        columns={COLUMNS}
+        rows={pageRows}
+        getRowId={(r) => r.id}
+        sort={sort}
+        onSortChange={(s) => {
+          setSort(s);
+          setPage(1);
+        }}
+        pagination={{ page, pageSize: PAGE_SIZE, total: ROWS.length, onPageChange: setPage }}
+        selectedRowId={selected}
+        onRowClick={(r) => setSelected(r.id)}
+        rowAction={(r) => (
+          <Button variant="tertiary" aria-label={`Edit ${r.name}`}>
+            Edit
+          </Button>
+        )}
+      />
 
       <h3>Empty</h3>
-      <TableWrap>
-        <table className="kc-table">
-          <thead>
-            <tr>
-              <th scope="col">Name</th>
-              <th scope="col">Email</th>
-            </tr>
-          </thead>
-          <tbody>
-            <TableEmpty colSpan={2} title="No subscribers match">
-              Try a different search or filter.
-            </TableEmpty>
-          </tbody>
-        </table>
-      </TableWrap>
+      <DataTable
+        caption="No results"
+        columns={COLUMNS.slice(0, 2)}
+        rows={[]}
+        getRowId={(r: Subscriber) => r.id}
+        emptyTitle="No subscribers match"
+        emptyMessage="Try a different search or filter."
+      />
     </section>
   );
 }

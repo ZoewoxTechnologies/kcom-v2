@@ -9,12 +9,7 @@ export async function latestCapsule(db: CapsuleDb) {
   const [row] = await db
     .select()
     .from(schema.capsules)
-    .where(
-      and(
-        eq(schema.capsules.status, "published"),
-        lte(schema.capsules.publishAt, sql`now()`),
-      ),
-    )
+    .where(and(eq(schema.capsules.status, "published"), lte(schema.capsules.publishAt, sql`now()`)))
     .orderBy(desc(schema.capsules.publishAt), desc(schema.capsules.createdAt))
     .limit(1);
   return row ?? null;

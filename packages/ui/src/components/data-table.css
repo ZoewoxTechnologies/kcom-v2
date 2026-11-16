@@ -58,6 +58,25 @@
     font-variant-numeric: tabular-nums;
   }
 
+  .kc-table__caption,
+  .kc-table__sr {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .kc-table tbody tr.kc-table__row--click {
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset var(--focus-ring);
+    }
+  }
+
   .kc-table__sort {
     display: inline-flex;
     align-items: center;

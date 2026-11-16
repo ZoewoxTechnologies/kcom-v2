@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { sessions } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
-import { seedAdmin } from "./seed-admin.js";
+import { seedUser } from "./seed-users.js";
 import type { Mailer } from "./auth.js";
 
 const EMAIL = "admin@example.test";
@@ -15,7 +15,7 @@ let resets: string[];
 
 beforeEach(async () => {
   db = await createTestDb();
-  await seedAdmin(db, { email: EMAIL, password: PASSWORD });
+  await seedUser(db, { email: EMAIL, password: PASSWORD, role: "admin" });
   resets = [];
   const mailer: Mailer = { sendPasswordReset: async (_to, url) => void resets.push(url) };
   app = createApp(db, {
@@ -33,7 +33,10 @@ const post = (path: string, body: unknown, cookie = "", ip = "10.0.0.1") =>
 const get = (path: string, cookie = "") =>
   app.request(`/api/auth${path}`, { headers: { origin: ORIGIN, cookie } });
 const cookieOf = (res: Response) =>
-  res.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
+  res.headers
+    .getSetCookie()
+    .map((c) => c.split(";")[0])
+    .join("; ");
 
 async function signIn() {
   const res = await post("/sign-in/email", { email: EMAIL, password: PASSWORD });
@@ -48,7 +51,9 @@ describe("auth", () => {
     expect(set).toMatch(/HttpOnly/i);
     expect(set).toMatch(/Secure/i);
     expect(set).toMatch(/SameSite=None/i);
-    const session = (await (await get("/get-session", cookie)).json()) as { user: { email: string } };
+    const session = (await (await get("/get-session", cookie)).json()) as {
+      user: { email: string };
+    };
     expect(session.user.email).toBe(EMAIL);
   });
 
@@ -113,4 +118,3 @@ describe("auth", () => {
     expect(resets).toHaveLength(0);
   });
 });
-
