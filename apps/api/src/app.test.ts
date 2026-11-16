@@ -42,7 +42,45 @@ describe("GET /capsules/latest", () => {
   });
 
   it("404s when there are no capsules", async () => {
-    expect((await empty.request("/capsules/latest")).status).toBe(404);
+    const res = await empty.request("/capsules/latest");
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: { code: "not_found", message: "not found" } });
+  });
+});
+
+describe("GET /capsules/:slug", () => {
+  it("returns a published capsule", async () => {
+    const res = await app.request("/capsules/sample-capsule-3");
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { slug: string }).slug).toBe("sample-capsule-3");
+  });
+
+  it("400s on an invalid slug with details", async () => {
+    const res = await app.request("/capsules/Bad_Slug");
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: { code: string; details: unknown[] } };
+    expect(body.error.code).toBe("invalid_request");
+    expect(body.error.details).toHaveLength(1);
+  });
+
+  it("404s for an unknown slug", async () => {
+    expect((await app.request("/capsules/nope")).status).toBe(404);
+  });
+});
+
+describe("cross-cutting", () => {
+  it("404s unknown routes in the error shape", async () => {
+    const res = await app.request("/nope");
+    expect(res.status).toBe(404);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe("not_found");
+  });
+
+  it("sets CORS only for allowed origins", async () => {
+    const cors = createApp(await createTestDb(), { corsOrigins: ["http://localhost:4321"] });
+    const ok = await cors.request("/health", { headers: { Origin: "http://localhost:4321" } });
+    expect(ok.headers.get("access-control-allow-origin")).toBe("http://localhost:4321");
+    const bad = await cors.request("/health", { headers: { Origin: "https://evil.example" } });
+    expect(bad.headers.get("access-control-allow-origin")).toBeNull();
   });
 });
 
@@ -69,7 +107,7 @@ describe("visibility and errors", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await createApp(broken).request("/capsules/latest");
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: "internal error" });
+    expect(await res.json()).toEqual({ error: { code: "internal_error", message: "internal error" } });
     spy.mockRestore();
   });
 });

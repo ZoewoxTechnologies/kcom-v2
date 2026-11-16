@@ -19,3 +19,18 @@ export async function latestCapsule(db: CapsuleDb) {
     .limit(1);
   return row ?? null;
 }
+
+export async function capsuleBySlug(db: CapsuleDb, slug: string) {
+  const [row] = await db
+    .select()
+    .from(schema.capsules)
+    .where(
+      and(
+        eq(schema.capsules.slug, slug),
+        eq(schema.capsules.status, "published"),
+        lte(schema.capsules.publishAt, sql`now()`),
+      ),
+    )
+    .limit(1);
+  return row ?? null;
+}
