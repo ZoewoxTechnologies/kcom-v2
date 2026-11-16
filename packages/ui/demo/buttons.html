@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Buttons</title>
+    <link rel="stylesheet" href="../src/styles.css" />
+    <link rel="stylesheet" href="../src/components/button.css" />
+    <script>
+      // ?theme=dark or ?theme=light forces a theme; otherwise follows the system.
+      const t = new URLSearchParams(location.search).get("theme");
+      if (t) document.documentElement.dataset.theme = t;
+    </script>
+    <style>
+      main { max-width: 64rem; margin: 0 auto; padding: var(--space-6) var(--gutter); }
+      .grid { display: grid; grid-template-columns: 6rem repeat(6, 1fr); gap: var(--space-4); align-items: center; overflow-x: auto; }
+      .h { color: var(--color-muted); font-size: var(--text-sm); font-weight: 700; }
+      .r { font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Buttons</h1>
+      <p>Tab through the rows to see the real focus ring. Hover, pressed and focus columns are pinned with inline overrides for review.</p>
+      <div class="grid">
+        <span></span>
+        <span class="h">Default</span><span class="h">Hover</span><span class="h">Pressed</span>
+        <span class="h">Focus</span><span class="h">Disabled</span><span class="h">Loading</span>
+
+        <span class="r">Primary</span>
+        <button class="kc-btn kc-btn--primary">Read today</button>
+        <button class="kc-btn kc-btn--primary" style="--kc-btn-bg: var(--color-primary-hover); --kc-btn-border: var(--color-primary-hover)">Read today</button>
+        <button class="kc-btn kc-btn--primary" style="--kc-btn-bg: var(--color-primary-active); --kc-btn-border: var(--color-primary-active)">Read today</button>
+        <button class="kc-btn kc-btn--primary" style="box-shadow: var(--focus-ring)">Read today</button>
+        <button class="kc-btn kc-btn--primary" disabled>Read today</button>
+        <button class="kc-btn kc-btn--primary" aria-busy="true"><span class="kc-btn__spinner" aria-hidden="true"></span><span class="kc-btn__label">Read today</span></button>
+
+        <span class="r">Secondary</span>
+        <button class="kc-btn kc-btn--secondary">Browse archive</button>
+        <button class="kc-btn kc-btn--secondary" style="--kc-btn-bg: var(--color-secondary-hover)">Browse archive</button>
+        <button class="kc-btn kc-btn--secondary" style="--kc-btn-bg: var(--color-secondary-active)">Browse archive</button>
+        <button class="kc-btn kc-btn--secondary" style="box-shadow: var(--focus-ring)">Browse archive</button>
+        <button class="kc-btn kc-btn--secondary" disabled>Browse archive</button>
+        <button class="kc-btn kc-btn--secondary" aria-busy="true"><span class="kc-btn__spinner" aria-hidden="true"></span><span class="kc-btn__label">Browse archive</span></button>
+
+        <span class="r">Tertiary</span>
+        <a class="kc-btn kc-btn--tertiary" href="#">Read more →</a>
+        <a class="kc-btn kc-btn--tertiary" href="#" style="text-decoration-color: var(--color-primary)">Read more →</a>
+        <a class="kc-btn kc-btn--tertiary" href="#" style="--kc-btn-fg: var(--color-primary-active); text-decoration-color: var(--color-primary-active)">Read more →</a>
+        <a class="kc-btn kc-btn--tertiary" href="#" style="box-shadow: var(--focus-ring)">Read more →</a>
+        <a class="kc-btn kc-btn--tertiary" aria-disabled="true">Read more →</a>
+        <span></span>
+
+        <span class="r">Give</span>
+        <button class="kc-btn kc-btn--give">Give</button>
+        <button class="kc-btn kc-btn--give" style="--kc-btn-bg: var(--color-sandstone-hover); --kc-btn-border: var(--color-gold-text)">Give</button>
+        <button class="kc-btn kc-btn--give" style="--kc-btn-bg: var(--color-sandstone-active); --kc-btn-border: var(--color-gold-text)">Give</button>
+        <button class="kc-btn kc-btn--give" style="box-shadow: var(--focus-ring-on-gold)">Give</button>
+        <button class="kc-btn kc-btn--give" disabled>Give</button>
+        <button class="kc-btn kc-btn--give" aria-busy="true"><span class="kc-btn__spinner" aria-hidden="true"></span><span class="kc-btn__label">Give</span></button>
+      </div>
+    </main>
+  </body>
+</html>

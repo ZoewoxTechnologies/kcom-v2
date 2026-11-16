@@ -1,0 +1,154 @@
+/* Buttons: .kc-btn plus a variant (primary, secondary, tertiary, give).
+   Works on <button> and <a>. Loading is aria-busy="true"; disabled is :disabled
+   or aria-disabled="true". Import after tokens.css. */
+@layer components {
+  .kc-btn {
+    --kc-btn-bg: transparent;
+    --kc-btn-fg: var(--color-primary);
+    --kc-btn-border: transparent;
+    --kc-btn-ring: var(--focus-ring);
+
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: 0.7em 1.4em;
+    border: 1px solid var(--kc-btn-border);
+    border-radius: var(--radius-pill);
+    background: var(--kc-btn-bg);
+    color: var(--kc-btn-fg);
+    font: 600 var(--text-base) / 1.2 var(--font-body);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      text-decoration-color var(--dur-fast) var(--ease-out);
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--kc-btn-ring);
+    }
+
+    &:is(:disabled, [aria-disabled="true"]) {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    &[aria-busy="true"] {
+      cursor: progress;
+
+      .kc-btn__label {
+        visibility: hidden;
+      }
+    }
+  }
+
+  .kc-btn__spinner {
+    position: absolute;
+    inline-size: 1em;
+    block-size: 1em;
+    border: 2px solid currentColor;
+    border-inline-end-color: transparent;
+    border-radius: 50%;
+    animation: kc-spin 0.9s linear infinite;
+  }
+
+  /* Hover and pressed apply only when the button is interactive. */
+  .kc-btn--primary {
+    --kc-btn-bg: var(--color-primary);
+    --kc-btn-fg: var(--color-on-primary);
+    --kc-btn-border: var(--color-primary);
+
+    &:not(:is(:disabled, [aria-disabled="true"], [aria-busy="true"])) {
+      &:hover {
+        --kc-btn-bg: var(--color-primary-hover);
+        --kc-btn-border: var(--color-primary-hover);
+      }
+      &:active {
+        --kc-btn-bg: var(--color-primary-active);
+        --kc-btn-border: var(--color-primary-active);
+      }
+    }
+  }
+
+  .kc-btn--secondary {
+    --kc-btn-border: var(--color-primary);
+
+    &:not(:is(:disabled, [aria-disabled="true"], [aria-busy="true"])) {
+      &:hover {
+        --kc-btn-bg: var(--color-secondary-hover);
+      }
+      &:active {
+        --kc-btn-bg: var(--color-secondary-active);
+      }
+    }
+  }
+
+  .kc-btn--give {
+    --kc-btn-bg: var(--color-sandstone);
+    --kc-btn-fg: var(--color-gold-text);
+    --kc-btn-border: var(--color-gold);
+    --kc-btn-ring: var(--focus-ring-on-gold);
+
+    font-weight: 700;
+
+    &:not(:is(:disabled, [aria-disabled="true"], [aria-busy="true"])) {
+      &:hover {
+        --kc-btn-bg: var(--color-sandstone-hover);
+        --kc-btn-border: var(--color-gold-text);
+      }
+      &:active {
+        --kc-btn-bg: var(--color-sandstone-active);
+        --kc-btn-border: var(--color-gold-text);
+      }
+    }
+  }
+
+  /* Text link styled as a button: gold underline, deep water on hover. */
+  .kc-btn--tertiary {
+    min-height: 0;
+    padding: var(--space-1) 0;
+    border: 0;
+    border-radius: 4px;
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+
+    &:not(:is(:disabled, [aria-disabled="true"], [aria-busy="true"])) {
+      &:hover {
+        text-decoration-color: var(--color-primary);
+      }
+      &:active {
+        --kc-btn-fg: var(--color-primary-active);
+        text-decoration-color: var(--color-primary-active);
+      }
+    }
+  }
+
+  @keyframes kc-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes kc-pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  /* No rotation under reduced motion: the spinner becomes a slow fade. */
+  @media (prefers-reduced-motion: reduce) {
+    .kc-btn {
+      transition-duration: 0.01ms;
+    }
+    .kc-btn__spinner {
+      animation: kc-pulse 1.6s ease-in-out infinite;
+    }
+  }
+}
