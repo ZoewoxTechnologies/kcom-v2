@@ -28,6 +28,19 @@ describe("GET /capsules/latest", () => {
     expect(((await res.json()) as { slug: string }).slug).toBe("sample-capsule-3");
   });
 
+  it("exposes the Lagos display day (23:00 UTC is the next day)", async () => {
+    const db = await createTestDb();
+    await db.insert(capsules).values({
+      title: "t",
+      slug: "t",
+      body: {},
+      status: "published",
+      publishAt: new Date("2026-01-01T23:00:00Z"),
+    });
+    const res = await createApp(db).request("/capsules/latest");
+    expect(((await res.json()) as { displayDate: string }).displayDate).toBe("2026-01-02");
+  });
+
   it("404s when there are no capsules", async () => {
     expect((await empty.request("/capsules/latest")).status).toBe(404);
   });

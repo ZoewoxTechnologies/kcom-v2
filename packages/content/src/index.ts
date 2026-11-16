@@ -125,4 +125,4 @@ export type Book = z.infer<typeof bookSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 export type Subscriber = z.infer<typeof subscriberSchema>;
 
-export { nextLagosMidnight } from "./publish";
+export { lagosDate, nextLagosMidnight, slugify } from "./publish.js";

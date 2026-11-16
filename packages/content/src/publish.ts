@@ -11,3 +11,22 @@ export function nextLagosMidnight(now: Date = new Date()): Date {
   const nextLocalMidnight = (Math.floor(local / DAY_MS) + 1) * DAY_MS;
   return new Date(nextLocalMidnight - LAGOS_OFFSET_MS);
 }
+
+/** The calendar day (YYYY-MM-DD) of an instant in Africa/Lagos. */
+export function lagosDate(at: Date): string {
+  return new Date(at.getTime() + LAGOS_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * Turns a title or legacy path segment into a valid capsule slug: lowercase
+ * ASCII words separated by hyphens. Accents are stripped; returns "" when
+ * nothing usable remains (the caller must then supply a fallback).
+ */
+export function slugify(input: string): string {
+  return input
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
