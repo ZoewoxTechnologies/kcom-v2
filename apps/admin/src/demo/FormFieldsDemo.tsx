@@ -1,4 +1,4 @@
-import { Checkbox, Fieldset, Radio, SelectField, TextField, TextareaField } from "@kcom/ui";
+import { Button, Checkbox, Fieldset, Radio, SelectField, TextField, TextareaField } from "@kcom/ui";
 
 const columns = {
   display: "grid",
@@ -25,6 +25,15 @@ export function FormFieldsDemo() {
         <TextareaField label="Message" placeholder="I'd like to request prayer for…" />
       </div>
       <div style={column}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+          <TextField label="Medium input" placeholder="Same height as the button" />
+          <Button style={{ marginBlockStart: "1.75rem" }}>Medium button</Button>
+        </div>
+        <TextField label="Small input" size="sm" placeholder="Small" />
+        <TextField label="Large input" size="lg" placeholder="Large" />
+        <SelectField label="Small select" size="sm">
+          <option>Prayer request</option>
+        </SelectField>
         <SelectField label="Topic">
           <option>Prayer request</option>
           <option>Question</option>
