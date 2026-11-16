@@ -27,6 +27,7 @@
     padding: var(--space-6);
     border-radius: var(--radius);
     background: var(--color-raised);
+    font-family: var(--font-body);
     color: var(--color-text);
     box-shadow: var(--shadow-card);
 
