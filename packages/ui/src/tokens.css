@@ -76,6 +76,16 @@
     --space-7: 3rem;
     --space-8: 4.5rem;
     --gutter: 1rem;
+
+    /* Button sizes: fixed height and inline padding per size */
+    --btn-height-sm: 2.25rem;
+    --btn-height-md: 2.75rem;
+    --btn-height-lg: 3.25rem;
+    --btn-pad-sm: var(--space-4);
+    --btn-pad-md: var(--space-5);
+    --btn-pad-lg: var(--space-6);
+    --btn-gap: var(--space-2);
+    --touch-target: 2.75rem;
     --page-max: 80rem;
 
     /* Shape */
