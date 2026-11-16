@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Data table</title>
+    <link rel="stylesheet" href="../src/styles.css" />
+    <link rel="stylesheet" href="../src/components/data-table.css" />
+    <link rel="stylesheet" href="../src/components/button.css" />
+    <script>
+      const t = new URLSearchParams(location.search).get("theme");
+      if (t) document.documentElement.dataset.theme = t;
+    </script>
+    <style>
+      main {
+        max-width: 64rem;
+        margin: 0 auto;
+        padding: var(--space-6) var(--gutter);
+        display: grid;
+        gap: var(--space-6);
+      }
+      h2 {
+        font-size: var(--text-lg);
+        margin: 0 0 var(--space-3);
+      }
+      .pill {
+        background: var(--color-line) !important;
+        font-size: var(--text-xs);
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: var(--radius-pill);
+        background: var(--color-hover);
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Data table</h1>
+
+      <section>
+        <h2>Sorted, one row selected, paged (1,312 rows)</h2>
+        <div class="kc-table-wrap">
+          <table class="kc-table">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col" aria-sort="none">
+                  <button type="button" class="kc-table__sort">Email</button>
+                </th>
+                <th scope="col" aria-sort="descending">
+                  <button type="button" class="kc-table__sort">Joined</button>
+                </th>
+                <th scope="col" aria-sort="ascending">
+                  <button type="button" class="kc-table__sort">Status</button>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Grace Adeyemi</td>
+                <td>grace@example.com</td>
+                <td>14 Nov 2026</td>
+                <td><span class="pill">Active</span></td>
+              </tr>
+              <tr aria-selected="true">
+                <td>Samuel Okon</td>
+                <td>s.okon@example.com</td>
+                <td>12 Nov 2026</td>
+                <td><span class="pill">Active</span></td>
+              </tr>
+              <tr>
+                <td>Ruth Bello</td>
+                <td>ruthb@example.com</td>
+                <td>11 Nov 2026</td>
+                <td><span class="pill">Pending</span></td>
+              </tr>
+              <tr>
+                <td>David Mensah</td>
+                <td>dmensah@example.com</td>
+                <td>2 Nov 2026</td>
+                <td><span class="pill">Active</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="kc-table__foot">
+            <span>Showing 1–25 of 1,312</span>
+            <nav class="kc-pager" aria-label="Pages">
+              <button type="button" class="kc-pager__btn" disabled aria-label="Previous page">
+                ‹
+              </button>
+              <button type="button" class="kc-pager__btn" aria-current="page">1</button>
+              <button type="button" class="kc-pager__btn">2</button>
+              <span class="kc-pager__gap" aria-hidden="true">…</span>
+              <button type="button" class="kc-pager__btn">53</button>
+              <button type="button" class="kc-pager__btn" aria-label="Next page">›</button>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Empty</h2>
+        <div class="kc-table-wrap">
+          <table class="kc-table">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Joined</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="3" class="kc-table__empty">
+                  <strong>No subscribers match</strong>Try a different search or filter.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
