@@ -4,9 +4,9 @@ import { DateTimePicker } from "@kcom/ui";
 // Fixed "now" (14 Nov 2026, 10:00 Lagos) so the demo is stable.
 const now = new Date("2026-11-14T09:00:00Z");
 const scheduledDates = ["2026-11-17", "2026-11-20", "2026-11-25"];
-const params = new URLSearchParams(location.search);
 
 export function DateTimePickerDemo() {
+  const params = new URLSearchParams(window.location.search);
   const [value, setValue] = useState<Date | null>(new Date("2026-11-20T05:00:00Z"));
   const [empty, setEmpty] = useState<Date | null>(null);
   return (
