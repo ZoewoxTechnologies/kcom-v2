@@ -1,4 +1,5 @@
 import { ButtonsDemo } from "./demo/ButtonsDemo";
+import { DialogDemo } from "./demo/DialogDemo";
 import { FormFieldsDemo } from "./demo/FormFieldsDemo";
 
 export function App() {
@@ -8,6 +9,7 @@ export function App() {
         KCOM Admin
       </h1>
       <ButtonsDemo />
+      <DialogDemo />
       <FormFieldsDemo />
     </main>
   );
