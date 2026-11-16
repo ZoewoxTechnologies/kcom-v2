@@ -1,4 +1,5 @@
 import * as Popover from "@radix-ui/react-popover";
+import { Button } from "./Button";
 import { useId, useRef, useState, type KeyboardEvent } from "react";
 import {
   formatLagos,
@@ -12,9 +13,9 @@ export interface DateTimePickerProps {
   /** Selected instant, or null for none. Shown and edited in Africa/Lagos. */
   value: Date | null;
   onChange: (value: Date | null) => void;
-  /** When true and value is null, the picker opens on (and "Use default" sets) the next Lagos midnight. */
+  /** When true and value is null, the picker opens on (and "Next midnight" sets) the next Lagos midnight. */
   defaultNextMidnight?: boolean;
-  /** Lagos days ("YYYY-MM-DD") that already have a scheduled capsule. */
+  /** Lagos days ("YYYY-MM-DD") that already have a scheduled item. */
   scheduledDates?: readonly string[];
   /** Current time; override in tests. */
   now?: Date;
@@ -50,7 +51,7 @@ export function DateTimePicker({
   defaultNextMidnight = true,
   scheduledDates = [],
   now,
-  label = "Publish date",
+  label = "Date and time",
   id,
   disabled,
   defaultOpen = false,
@@ -205,7 +206,7 @@ export function DateTimePicker({
                           aria-current={k === todayKey ? "date" : undefined}
                           data-selected={selected || undefined}
                           data-scheduled={has || undefined}
-                          aria-label={`${day} ${MONTHS[view.month - 1]} ${view.year}${has ? ", has a scheduled capsule" : ""}${past ? ", unavailable" : ""}`}
+                          aria-label={`${day} ${MONTHS[view.month - 1]} ${view.year}${has ? ", has a scheduled item" : ""}${past ? ", unavailable" : ""}`}
                           onClick={() => pickDay(day)}
                         >
                           {day}
@@ -231,13 +232,13 @@ export function DateTimePicker({
                 />
               </label>
               {defaultNextMidnight && (
-                <button
-                  type="button"
-                  className="kc-datetime__default"
+                <Button
+                  variant="tertiary"
+                  size="sm"
                   onClick={() => onChange(nextLagosMidnight(current))}
                 >
                   Next midnight
-                </button>
+                </Button>
               )}
             </div>
           </Popover.Content>

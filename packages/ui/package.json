@@ -8,6 +8,7 @@
     "./tokens.css": "./src/tokens.css",
     "./button.css": "./src/components/button.css",
     "./datetime-picker.css": "./src/components/datetime-picker.css",
+    "./forms.css": "./src/components/forms.css",
     "./styles.css": "./src/styles.css",
     "./reset.css": "./src/reset.css",
     "./base.css": "./src/base.css"

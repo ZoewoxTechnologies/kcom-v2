@@ -16,7 +16,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    min-height: 44px;
+    block-size: var(--btn-height-md);
     padding: 0 var(--space-4);
     border: 1px solid var(--color-field);
     border-radius: var(--radius-field);
@@ -131,7 +131,7 @@
       color: var(--color-on-primary);
     }
 
-    /* A gold dot marks days that already have a capsule scheduled. */
+    /* A gold dot marks days that already have a scheduled item. */
     &[data-scheduled]::after {
       content: "";
       position: absolute;
@@ -162,7 +162,7 @@
     font-weight: 700;
 
     input {
-      min-block-size: 44px;
+      block-size: var(--btn-height-md);
       padding: 0 var(--space-3);
       border: 1px solid var(--color-field);
       border-radius: var(--radius-field);
@@ -174,23 +174,6 @@
         outline: none;
         box-shadow: var(--focus-ring);
       }
-    }
-  }
-
-  .kc-datetime__default {
-    min-block-size: 44px;
-    padding: 0 var(--space-3);
-    border: 0;
-    background: transparent;
-    color: var(--color-primary);
-    font: 700 var(--text-sm) var(--font-body);
-    text-decoration: underline;
-    cursor: pointer;
-
-    &:focus-visible {
-      outline: none;
-      box-shadow: var(--focus-ring);
-      border-radius: var(--radius-field);
     }
   }
 }

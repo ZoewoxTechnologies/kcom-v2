@@ -14,16 +14,16 @@ export function DateTimePickerDemo() {
       <h2>Date and time picker</h2>
       {/* ?picker=open opens this one on load, for screenshots. */}
       <DateTimePicker
-        label="Publish date (selected)"
+        label="Date and time (selected)"
         value={value}
         onChange={setValue}
         now={now}
         scheduledDates={scheduledDates}
         defaultOpen={params.get("picker") === "open"}
       />
-      <DateTimePicker label="Publish date (empty)" value={empty} onChange={setEmpty} now={now} />
+      <DateTimePicker label="Date and time (empty)" value={empty} onChange={setEmpty} now={now} />
       <DateTimePicker
-        label="Publish date (disabled)"
+        label="Date and time (disabled)"
         value={value}
         onChange={setValue}
         now={now}
