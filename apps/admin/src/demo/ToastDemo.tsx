@@ -27,10 +27,11 @@ export function ToastDemo() {
     <section>
       <h2>Toasts</h2>
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-        <Button onClick={() => toast({ variant: "success", title: "Saved as draft" })}>
+        <Button size="sm" onClick={() => toast({ variant: "success", title: "Saved as draft" })}>
           Success
         </Button>
         <Button
+          size="sm"
           variant="secondary"
           onClick={() =>
             toast({
@@ -43,6 +44,7 @@ export function ToastDemo() {
           Info
         </Button>
         <Button
+          size="sm"
           variant="tertiary"
           onClick={() =>
             toast({
@@ -55,6 +57,7 @@ export function ToastDemo() {
           Error (stays)
         </Button>
         <Button
+          size="sm"
           variant="secondary"
           onClick={() => {
             const id = toast({ variant: "info", title: "Saving…", duration: 60000 });
