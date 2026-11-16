@@ -1,5 +1,6 @@
 ---
-import { footerColumns, socialLinks, contactPlaceholder } from "../lib/site";
+import { footerColumns, socialLinks, contactPlaceholder, siteName } from "../lib/site";
+const year = new Date().getFullYear();
 ---
 <footer class="site-footer">
   <div class="cols">
@@ -26,7 +27,7 @@ import { footerColumns, socialLinks, contactPlaceholder } from "../lib/site";
     </form>
   </div>
   <div class="base">
-    <span>© 2026 Kingdom Capstone Outreach Ministries · {contactPlaceholder}</span>
+    <span>© {year} {siteName} · {contactPlaceholder}</span>
     <span class="social">
       {socialLinks.map((l) => <a href={l.href}>{l.label}</a>)}
       <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary kc-btn--sm" aria-label="Switch colour theme">Theme</button>

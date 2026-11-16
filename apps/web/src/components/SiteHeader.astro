@@ -1,5 +1,5 @@
 ---
-import { navLinks, ministryName } from "../lib/site";
+import { navLinks, siteName } from "../lib/site";
 const { current = "" } = Astro.props;
 ---
 <div class="verse-bar">
@@ -11,7 +11,7 @@ const { current = "" } = Astro.props;
   <a class="brand" href="/">
     <img src="/logo.png" alt="" width="48" height="48" />
     <span>Kingdom Capstone<span class="line2">Outreach Ministries</span></span>
-    <span class="sr-only">{ministryName}</span>
+    <span class="sr-only">{siteName}</span>
   </a>
   <nav class="main-nav" aria-label="Main">
     {navLinks.map((l) => <a href={l.href} aria-current={current === l.href ? "page" : undefined}>{l.label}</a>)}
