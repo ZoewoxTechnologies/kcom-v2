@@ -106,6 +106,19 @@ describe("constraints", () => {
     });
   });
 
+  it("allows capsules without decrees (defaults to empty list)", async () => {
+    const [row] = await db
+      .insert(capsules)
+      .values({
+        title: "nd",
+        slug: "no-decrees",
+        body: {},
+        publishAt: new Date("2026-02-01T00:00:00Z"),
+      })
+      .returning();
+    expect(row!.decrees).toEqual([]);
+  });
+
   it("rejects a part number without a series", async () => {
     await expect(
       db

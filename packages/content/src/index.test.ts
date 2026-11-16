@@ -21,6 +21,14 @@ describe("capsuleSchema", () => {
     expect(c.bibleMeditation).toBeNull();
   });
 
+  it("treats decrees as optional: omitted or empty both validate", () => {
+    expect(capsuleSchema.parse(valid).decrees).toEqual([]);
+    expect(capsuleSchema.parse({ ...valid, decrees: [] }).decrees).toEqual([]);
+    expect(capsuleSchema.parse({ ...valid, decrees: ["I decree peace"] }).decrees).toEqual([
+      "I decree peace",
+    ]);
+  });
+
   it("rejects a bad slug, blank title, unknown status and missing publishAt", () => {
     expect(capsuleSchema.safeParse({ ...valid, slug: "Not A Slug" }).success).toBe(false);
     expect(capsuleSchema.safeParse({ ...valid, title: "  " }).success).toBe(false);
