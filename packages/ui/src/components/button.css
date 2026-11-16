@@ -7,7 +7,7 @@
     --kc-btn-fg: var(--color-primary);
     --kc-btn-border: transparent;
     --kc-btn-ring: var(--focus-ring);
-    --kc-btn-height: var(--btn-height-md);
+    --kc-btn-height: var(--control-height-md);
     --kc-btn-pad: var(--btn-pad-md);
     --kc-btn-text: var(--text-base);
 
@@ -61,13 +61,13 @@
   }
 
   .kc-btn--sm {
-    --kc-btn-height: var(--btn-height-sm);
+    --kc-btn-height: var(--control-height-sm);
     --kc-btn-pad: var(--btn-pad-sm);
     --kc-btn-text: var(--text-sm);
   }
 
   .kc-btn--lg {
-    --kc-btn-height: var(--btn-height-lg);
+    --kc-btn-height: var(--control-height-lg);
     --kc-btn-pad: var(--btn-pad-lg);
     --kc-btn-text: var(--text-lg);
   }

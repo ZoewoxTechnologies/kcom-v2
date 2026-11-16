@@ -62,7 +62,10 @@ export function Field({ label, help, error, required, optional, className, child
 
 type FieldChrome = Pick<FieldProps, "label" | "help" | "error" | "optional">;
 
-export type TextFieldProps = FieldChrome & InputHTMLAttributes<HTMLInputElement>;
+export type ControlSize = "sm" | "md" | "lg";
+
+export type TextFieldProps = FieldChrome &
+  Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & { size?: ControlSize };
 
 export function TextField({
   label,
@@ -71,6 +74,7 @@ export function TextField({
   optional,
   className,
   required,
+  size = "md",
   ...rest
 }: TextFieldProps) {
   return (
@@ -83,7 +87,13 @@ export function TextField({
       className={className}
     >
       {(control) => (
-        <input type="text" {...rest} {...control} required={required} className="kc-input" />
+        <input
+          type="text"
+          {...rest}
+          {...control}
+          required={required}
+          className={cx("kc-input", size !== "md" && `kc-input--${size}`)}
+        />
       )}
     </Field>
   );
@@ -114,7 +124,8 @@ export function TextareaField({
   );
 }
 
-export type SelectFieldProps = FieldChrome & SelectHTMLAttributes<HTMLSelectElement>;
+export type SelectFieldProps = FieldChrome &
+  Omit<SelectHTMLAttributes<HTMLSelectElement>, "size"> & { size?: ControlSize };
 
 export function SelectField({
   label,
@@ -123,6 +134,7 @@ export function SelectField({
   optional,
   className,
   required,
+  size = "md",
   children,
   ...rest
 }: SelectFieldProps) {
@@ -137,7 +149,12 @@ export function SelectField({
     >
       {(control) => (
         <div className="kc-select">
-          <select {...rest} {...control} required={required} className="kc-select__control">
+          <select
+            {...rest}
+            {...control}
+            required={required}
+            className={cx("kc-select__control", size !== "md" && `kc-select__control--${size}`)}
+          >
             {children}
           </select>
         </div>
