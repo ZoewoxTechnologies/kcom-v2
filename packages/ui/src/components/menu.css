@@ -8,32 +8,36 @@
     display: inline-block;
   }
 
-  .kc-menu-trigger {
+  /* Plain text trigger. Add .kc-btn and a variant to use the shared button instead. */
+  .kc-menu-trigger:not(.kc-btn) {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
     padding: var(--space-2) 0;
+    border: 0;
     border-radius: var(--radius-field);
+    background: none;
     color: inherit;
     font: inherit;
     text-decoration: none;
-    background: none;
-    border: 0;
     cursor: pointer;
 
     &:focus-visible {
       outline: none;
       box-shadow: var(--focus-ring);
     }
+  }
 
-    &::after {
-      content: "";
-      inline-size: 0.4em;
-      block-size: 0.4em;
-      border-inline-end: 2px solid currentColor;
-      border-block-end: 2px solid currentColor;
-      transform: translateY(-0.1em) rotate(45deg);
-    }
+  /* ::before, ordered last, because .kc-btn uses ::after for its hit area. */
+  .kc-menu-trigger::before {
+    content: "";
+    order: 1;
+    flex: none;
+    inline-size: 0.4em;
+    block-size: 0.4em;
+    border-inline-end: 2px solid currentColor;
+    border-block-end: 2px solid currentColor;
+    transform: translateY(-0.1em) rotate(45deg);
   }
 
   .kc-menu {

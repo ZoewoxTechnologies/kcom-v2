@@ -20,6 +20,19 @@ export function MenuDemo() {
           <MenuItem href="#series">Browse by series</MenuItem>
         </Menu>
       </div>
+      <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBlockEnd: "12rem" }}>
+        {(["sm", "md", "lg"] as const).map((size) => (
+          <Menu
+            key={size}
+            trigger={`Actions (${size})`}
+            triggerVariant="secondary"
+            triggerSize={size}
+          >
+            <MenuItem>Edit</MenuItem>
+            <MenuItem>Duplicate</MenuItem>
+          </Menu>
+        ))}
+      </div>
     </section>
   );
 }

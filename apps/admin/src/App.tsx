@@ -1,4 +1,4 @@
-import { Button } from "@kcom/ui";
+import { ButtonsDemo } from "./demo/ButtonsDemo";
 import { MenuDemo } from "./demo/MenuDemo";
 import { FormFieldsDemo } from "./demo/FormFieldsDemo";
 
@@ -8,13 +8,7 @@ export function App() {
       <h1 style={{ fontFamily: "var(--font-title)", color: "var(--color-deep-water)" }}>
         KCOM Admin
       </h1>
-      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-        <Button>Primary</Button>
-        <Button variant="secondary">Secondary</Button>
-        <Button variant="tertiary">Tertiary</Button>
-        <Button loading>Saving</Button>
-        <Button disabled>Disabled</Button>
-      </div>
+      <ButtonsDemo />
       <MenuDemo />
       <FormFieldsDemo />
     </main>

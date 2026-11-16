@@ -37,6 +37,17 @@ describe("Menu markup", () => {
   });
 });
 
+describe("Menu button trigger", () => {
+  it("uses the shared button classes with size", () => {
+    const html = renderToStaticMarkup(
+      <Menu trigger="Go" triggerVariant="secondary" triggerSize="lg">
+        <MenuItem>One</MenuItem>
+      </Menu>,
+    );
+    expect(html).toContain("kc-menu-trigger kc-btn kc-btn--secondary kc-btn--lg");
+  });
+});
+
 describe("initMenu keyboard behaviour", () => {
   let wrap: HTMLElement;
   let trigger: HTMLElement;

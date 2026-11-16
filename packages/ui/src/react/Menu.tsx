@@ -1,12 +1,16 @@
 import { useEffect, useId, useRef } from "react";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 import { initMenu } from "../menu/menu";
+import type { ButtonSize, ButtonVariant } from "./Button";
 
 const cx = (...parts: (string | undefined | false)[]) => parts.filter(Boolean).join(" ");
 
 export interface MenuProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
   /** Content of the trigger button: text, an icon, anything. */
   trigger: ReactNode;
+  /** Render the trigger as the shared button (omit for a plain text trigger). */
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
   /** Extra classes for the trigger button. */
   triggerClassName?: string;
   /** Accessible name for the trigger when it has no text. */
@@ -17,6 +21,8 @@ export interface MenuProps extends Omit<HTMLAttributes<HTMLDivElement>, "childre
 /** Dropdown menu on the native Popover API. Import "@kcom/ui/menu.css" once per app. */
 export function Menu({
   trigger,
+  triggerVariant,
+  triggerSize = "md",
   triggerClassName,
   triggerLabel,
   className,
@@ -32,7 +38,12 @@ export function Menu({
     <div {...rest} ref={ref} className={cx("kc-menu-wrap", className)} data-kc-menu>
       <button
         type="button"
-        className={cx("kc-menu-trigger", triggerClassName)}
+        className={cx(
+          "kc-menu-trigger",
+          triggerVariant && `kc-btn kc-btn--${triggerVariant}`,
+          triggerVariant && triggerSize !== "md" && `kc-btn--${triggerSize}`,
+          triggerClassName,
+        )}
         popoverTarget={id}
         aria-haspopup="menu"
         aria-expanded="false"

@@ -6,16 +6,26 @@
 interface Props {
   id: string;
   class?: string;
+  /** Render the trigger as the shared button (omit for a plain text trigger). */
+  triggerVariant?: "primary" | "secondary" | "tertiary" | "give";
+  triggerSize?: "sm" | "md" | "lg";
   triggerClass?: string;
   triggerLabel?: string;
 }
-const { id, class: className, triggerClass, triggerLabel } = Astro.props;
+const { id, class: className, triggerVariant, triggerSize = "md", triggerClass, triggerLabel } =
+  Astro.props;
+const triggerClasses = [
+  "kc-menu-trigger",
+  triggerVariant && `kc-btn kc-btn--${triggerVariant}`,
+  triggerVariant && triggerSize !== "md" && `kc-btn--${triggerSize}`,
+  triggerClass,
+];
 ---
 
 <div class:list={["kc-menu-wrap", className]} data-kc-menu>
   <button
     type="button"
-    class:list={["kc-menu-trigger", triggerClass]}
+    class:list={triggerClasses}
     popovertarget={id}
     aria-haspopup="menu"
     aria-expanded="false"
