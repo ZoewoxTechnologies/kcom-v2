@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 
@@ -87,35 +88,68 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <RadixToast.Provider swipeDirection="right" label="Notifications">
         {children}
         {items.map((t) => (
-          <RadixToast.Root
+          <ToastView
             key={`${t.id}-${t.rev}`}
-            className="kc-toast"
-            data-variant={t.variant}
-            type={t.variant === "error" ? "foreground" : "background"}
-            duration={t.duration ?? (t.variant === "error" ? Infinity : DEFAULT_TOAST_DURATION)}
-            open={t.open}
+            item={t}
             onOpenChange={(open) => {
               if (!open) dismiss(t.id);
             }}
-            onAnimationEnd={() => {
-              if (!t.open) remove(t.id);
-            }}
-          >
-            <div className="kc-toast__body">
-              <RadixToast.Title className="kc-toast__title">{t.title}</RadixToast.Title>
-              {t.description && (
-                <RadixToast.Description className="kc-toast__description">
-                  {t.description}
-                </RadixToast.Description>
-              )}
-            </div>
-            <RadixToast.Close className="kc-toast__close" aria-label="Dismiss">
-              <span aria-hidden="true">×</span>
-            </RadixToast.Close>
-          </RadixToast.Root>
+            onExited={() => remove(t.id)}
+          />
         ))}
         <RadixToast.Viewport className="kc-toast-viewport" />
       </RadixToast.Provider>
     </ToastContext.Provider>
+  );
+}
+
+function ToastView({
+  item: t,
+  onOpenChange,
+  onExited,
+}: {
+  item: ToastItem;
+  onOpenChange: (open: boolean) => void;
+  onExited: () => void;
+}) {
+  // Radix pauses its timer on hover and focus; the progress bar follows it.
+  const [paused, setPaused] = useState(false);
+  const duration = t.duration ?? (t.variant === "error" ? Infinity : DEFAULT_TOAST_DURATION);
+  const timed = Number.isFinite(duration);
+
+  return (
+    <RadixToast.Root
+      className="kc-toast"
+      data-variant={t.variant}
+      data-paused={paused || undefined}
+      type={t.variant === "error" ? "foreground" : "background"}
+      duration={duration}
+      open={t.open}
+      onOpenChange={onOpenChange}
+      onPause={() => setPaused(true)}
+      onResume={() => setPaused(false)}
+      onAnimationEnd={(event) => {
+        if (!t.open && event.target === event.currentTarget) onExited();
+      }}
+    >
+      <div className="kc-toast__body">
+        <RadixToast.Title className="kc-toast__title">{t.title}</RadixToast.Title>
+        {t.description && (
+          <RadixToast.Description className="kc-toast__description">
+            {t.description}
+          </RadixToast.Description>
+        )}
+      </div>
+      <RadixToast.Close className="kc-toast__close" aria-label="Dismiss">
+        <span aria-hidden="true">×</span>
+      </RadixToast.Close>
+      {timed && (
+        <span
+          className="kc-toast__progress"
+          aria-hidden="true"
+          style={{ "--kc-toast-duration": `${duration}ms` } as CSSProperties}
+        />
+      )}
+    </RadixToast.Root>
   );
 }

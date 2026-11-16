@@ -25,6 +25,8 @@
   .kc-toast {
     --kc-toast-accent: var(--color-sage);
 
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: flex-start;
     gap: var(--space-3);
@@ -107,6 +109,31 @@
     }
   }
 
+  /* Empties over the toast's duration; paused in step with Radix's timer. */
+  .kc-toast__progress {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: 3px;
+    background: var(--kc-toast-accent);
+    transform-origin: left center;
+    animation: kc-toast-progress var(--kc-toast-duration) linear forwards;
+
+    &:dir(rtl) {
+      transform-origin: right center;
+    }
+
+    .kc-toast[data-paused] & {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes kc-toast-progress {
+    to {
+      transform: scaleX(0);
+    }
+  }
+
   @keyframes kc-toast-in {
     from {
       opacity: 0;
@@ -121,6 +148,10 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .kc-toast__progress {
+      display: none;
+    }
+
     .kc-toast[data-state="open"] {
       animation-name: kc-toast-fade;
     }
