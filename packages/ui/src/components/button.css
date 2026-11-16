@@ -7,19 +7,24 @@
     --kc-btn-fg: var(--color-primary);
     --kc-btn-border: transparent;
     --kc-btn-ring: var(--focus-ring);
+    --kc-btn-height: var(--btn-height-md);
+    --kc-btn-pad: var(--btn-pad-md);
+    --kc-btn-text: var(--text-base);
 
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-2);
-    min-height: 44px;
-    padding: 0.7em 1.4em;
+    gap: var(--btn-gap);
+    block-size: var(--kc-btn-height);
+    padding-block: 0;
+    padding-inline: var(--kc-btn-pad);
+    white-space: nowrap;
     border: 1px solid var(--kc-btn-border);
     border-radius: var(--radius-pill);
     background: var(--kc-btn-bg);
     color: var(--kc-btn-fg);
-    font: 600 var(--text-base) / 1.2 var(--font-body);
+    font: 600 var(--kc-btn-text) / 1 var(--font-body);
     text-decoration: none;
     cursor: pointer;
     transition:
@@ -27,6 +32,14 @@
       border-color var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out),
       text-decoration-color var(--dur-fast) var(--ease-out);
+
+    /* Hit area grows to the touch target when the visible button is shorter. */
+    &::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      inset-block: min(0px, calc((var(--kc-btn-height) - var(--touch-target)) / 2));
+    }
 
     &:focus-visible {
       outline: none;
@@ -45,6 +58,18 @@
         visibility: hidden;
       }
     }
+  }
+
+  .kc-btn--sm {
+    --kc-btn-height: var(--btn-height-sm);
+    --kc-btn-pad: var(--btn-pad-sm);
+    --kc-btn-text: var(--text-sm);
+  }
+
+  .kc-btn--lg {
+    --kc-btn-height: var(--btn-height-lg);
+    --kc-btn-pad: var(--btn-pad-lg);
+    --kc-btn-text: var(--text-lg);
   }
 
   .kc-btn__spinner {
@@ -110,7 +135,7 @@
 
   /* Text link styled as a button: gold underline, deep water on hover. */
   .kc-btn--tertiary {
-    min-height: 0;
+    block-size: auto;
     padding: var(--space-1) 0;
     border: 0;
     border-radius: 4px;
