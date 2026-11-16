@@ -1,19 +1,30 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { CapsuleDb } from "@kcom/db";
+import { createAuth, type AuthOptions } from "./auth.js";
 import { errorHandler, notFoundHandler } from "./errors.js";
 import { health } from "./routes/health.js";
 import { capsuleRoutes } from "./routes/capsules.js";
+import { authRoutes } from "./routes/auth.js";
 
-export type AppOptions = { corsOrigins?: string[] };
+export type AppOptions = { corsOrigins?: string[]; auth?: AuthOptions };
 
-export function createApp(db: CapsuleDb, { corsOrigins = [] }: AppOptions = {}) {
+export function createApp(db: CapsuleDb, { corsOrigins = [], auth = {} }: AppOptions = {}) {
+  const publicCors = cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] });
+  // Auth endpoints take credentialed cross-origin calls from the admin UI only.
+  const authCors = cors({
+    origin: corsOrigins,
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowHeaders: ["Content-Type"],
+    credentials: true,
+  });
   return new Hono()
-    .use(cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] }))
+    .use((c, next) => (c.req.path.startsWith("/api/auth/") ? authCors(c, next) : publicCors(c, next)))
     .onError(errorHandler)
     .notFound(notFoundHandler)
     .route("/", health)
-    .route("/capsules", capsuleRoutes(db));
+    .route("/capsules", capsuleRoutes(db))
+    .route("/api/auth", authRoutes(createAuth(db, { trustedOrigins: corsOrigins, ...auth })));
 }
 
 export type App = ReturnType<typeof createApp>;
