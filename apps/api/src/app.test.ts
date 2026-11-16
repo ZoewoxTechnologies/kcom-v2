@@ -36,11 +36,11 @@ describe("GET /capsules/latest", () => {
 describe("visibility and errors", () => {
   it("does not return draft, scheduled or future capsules", async () => {
     const db = await createTestDb();
-    const base = { body: {}, decrees: [] as string[], date: "2026-01-01" };
+    const base = { body: {}, decrees: [] as string[], publishAt: new Date("2026-01-01T00:00:00Z") };
     await db.insert(capsules).values([
       { ...base, title: "d", slug: "d", status: "draft" },
       { ...base, title: "s", slug: "s", status: "scheduled" },
-      { ...base, title: "f", slug: "f", status: "published", date: "2999-01-01" },
+      { ...base, title: "f", slug: "f", status: "published", publishAt: new Date("2999-01-01T00:00:00Z") },
     ]);
     const res = await createApp(db).request("/capsules/latest");
     expect(res.status).toBe(404);

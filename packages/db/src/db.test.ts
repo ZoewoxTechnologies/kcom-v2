@@ -26,31 +26,31 @@ describe("seed", () => {
 
 describe("latestCapsule visibility", () => {
   const base = { body: {}, decrees: [] as string[] };
-  it("ignores drafts, scheduled, future publishAt and future-dated capsules", async () => {
+  const past = new Date("2026-01-01T00:00:00Z");
+  it("ignores drafts, scheduled and future publishAt", async () => {
     const d = await createTestDb();
     await d.insert(capsules).values([
-      { ...base, title: "draft", slug: "draft", date: "2026-01-01", status: "draft" },
-      { ...base, title: "sched", slug: "sched", date: "2026-01-02", status: "scheduled" },
+      { ...base, title: "draft", slug: "draft", publishAt: past, status: "draft" },
+      { ...base, title: "sched", slug: "sched", publishAt: past, status: "scheduled" },
       {
         ...base,
         title: "future-publish",
         slug: "future-publish",
-        date: "2026-01-03",
         status: "published",
         publishAt: new Date(Date.now() + 86_400_000),
       },
-      {
-        ...base,
-        title: "future-date",
-        slug: "future-date",
-        date: "2999-01-01",
-        status: "published",
-      },
     ]);
     expect(await latestCapsule(d)).toBeNull();
-    await d
-      .insert(capsules)
-      .values({ ...base, title: "ok", slug: "ok", date: "2026-01-04", status: "published" });
+    await d.insert(capsules).values([
+      { ...base, title: "old", slug: "old", status: "published", publishAt: past },
+      {
+        ...base,
+        title: "ok",
+        slug: "ok",
+        status: "published",
+        publishAt: new Date("2026-01-04T00:00:00Z"),
+      },
+    ]);
     expect((await latestCapsule(d))?.slug).toBe("ok");
   });
 });
@@ -59,22 +59,58 @@ describe("constraints", () => {
   it("rejects duplicate slug and legacyNid", async () => {
     await db
       .insert(capsules)
-      .values({ title: "a", slug: "dup", date: "2026-03-01", body: {}, legacyNid: 99 });
+      .values({ title: "a", slug: "dup", publishAt: new Date("2026-03-01T00:00:00Z"), body: {}, legacyNid: 99 });
     await expect(
-      db.insert(capsules).values({ title: "b", slug: "dup", date: "2026-03-01", body: {} }),
+      db.insert(capsules).values({ title: "b", slug: "dup", publishAt: new Date("2026-03-01T00:00:00Z"), body: {} }),
     ).rejects.toThrow();
     await expect(
       db
         .insert(capsules)
-        .values({ title: "c", slug: "dup2", date: "2026-03-01", body: {}, legacyNid: 99 }),
+        .values({ title: "c", slug: "dup2", publishAt: new Date("2026-03-01T00:00:00Z"), body: {}, legacyNid: 99 }),
     ).rejects.toThrow();
+  });
+
+  it("requires publishAt", async () => {
+    await expect(
+      db.insert(capsules).values({ title: "n", slug: "no-publish", body: {} } as never),
+    ).rejects.toThrow();
+  });
+
+  it("rejects bad slugs and blank titles", async () => {
+    const ok = { body: {}, publishAt: new Date("2026-02-01T00:00:00Z") };
+    await expect(
+      db.insert(capsules).values({ ...ok, title: "t", slug: "Bad Slug" }),
+    ).rejects.toThrow();
+    await expect(
+      db.insert(capsules).values({ ...ok, title: "  ", slug: "blank-title" }),
+    ).rejects.toThrow();
+  });
+
+  it("defaults status to draft and stores the new fields", async () => {
+    const [row] = await db
+      .insert(capsules)
+      .values({
+        title: "z",
+        slug: "z-fields",
+        body: {},
+        publishAt: new Date("2026-02-01T00:00:00Z"),
+        bibleMeditation: "Romans 12:1-8",
+        authorSource: "Someone Else",
+      })
+      .returning();
+    expect(row).toMatchObject({
+      status: "draft",
+      bibleMeditation: "Romans 12:1-8",
+      authorSource: "Someone Else",
+      decrees: [],
+    });
   });
 
   it("rejects a part number without a series", async () => {
     await expect(
       db
         .insert(capsules)
-        .values({ title: "x", slug: "x", date: "2026-02-01", body: {}, partNumber: 1 }),
+        .values({ title: "x", slug: "x", publishAt: new Date("2026-02-01T00:00:00Z"), body: {}, partNumber: 1 }),
     ).rejects.toThrow();
   });
 
@@ -83,7 +119,7 @@ describe("constraints", () => {
     await db.insert(capsules).values({
       title: "y",
       slug: "y",
-      date: "2026-02-01",
+      publishAt: new Date("2026-02-01T00:00:00Z"),
       body: {},
       seriesId: s!.id,
       partNumber: 2,
