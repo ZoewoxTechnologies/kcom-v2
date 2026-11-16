@@ -1,4 +1,4 @@
-export const siteName = "Kingdom Capstone";
+export const siteName = "Kingdom Capstone Outreach Ministries";
 export const ministryName = "Kingdom Capstone Outreach Ministries";
 
 export function pageTitle(title?: string): string {

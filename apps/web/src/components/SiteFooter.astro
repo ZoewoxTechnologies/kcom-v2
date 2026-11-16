@@ -48,7 +48,7 @@ import { footerColumns, socialLinks, contactPlaceholder } from "../lib/site";
   .site-footer { margin-top: var(--space-6); background: var(--color-footer); color: var(--color-on-footer); padding: var(--space-7) var(--gutter) var(--space-5); display: flex; flex-direction: column; gap: var(--space-6); }
   .cols { display: grid; gap: var(--space-6); font-size: 0.9375rem; grid-template-columns: 1fr; }
   .brand { display: flex; align-items: center; gap: var(--space-3); font-family: var(--font-title); font-weight: 600; font-size: 1.375rem; line-height: 1.05; }
-  .brand img { width: 44px; height: 44px; object-fit: contain; }
+  .brand :global(img) { width: 44px; height: 44px; object-fit: contain; }
   .line2 { display: block; }
   .rule { width: 40px; height: 2px; background: var(--color-gold); margin-block: var(--space-3); }
   .about p { margin: 0; opacity: 0.9; }
