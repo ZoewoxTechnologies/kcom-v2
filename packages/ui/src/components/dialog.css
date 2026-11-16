@@ -40,10 +40,15 @@
     }
   }
 
-  .kc-dialog--wide {
+  .kc-dialog--md {
+    inline-size: min(560px, calc(100vw - 2 * var(--space-4)));
+  }
+
+  .kc-dialog--lg {
     inline-size: min(720px, calc(100vw - 2 * var(--space-4)));
   }
 
+  /* Panels ignore size and keep their own width. */
   .kc-dialog--panel {
     inset-block: 0;
     inset-inline: auto 0;

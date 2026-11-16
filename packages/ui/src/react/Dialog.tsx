@@ -1,21 +1,24 @@
 import * as RadixDialog from "@radix-ui/react-dialog";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
+export type DialogVariant = "modal" | "panel";
+export type DialogSize = "sm" | "md" | "lg";
+
 export interface DialogProps {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   title: ReactNode;
   description?: ReactNode;
-  /** Side panel instead of a centered modal. */
-  panel?: boolean;
-  /** Wider centered modal. */
-  wide?: boolean;
+  /** Centered modal or a panel docked to the inline end. */
+  variant?: DialogVariant;
+  /** Width of a modal; panels have a fixed width. */
+  size?: DialogSize;
   /**
-   * Editor container: Esc and clicks outside never close it. Closing happens
-   * only through controls inside, usually behind an unsaved-changes prompt.
+   * When false, Esc and clicks outside never close the dialog; only controls
+   * inside do. Use it for editors that guard closing behind a confirmation.
    */
-  editor?: boolean;
+  dismissible?: boolean;
   /** Element that opens the dialog; focus returns to it on close. */
   trigger?: ReactNode;
   className?: string;
@@ -27,17 +30,17 @@ export function Dialog({
   trigger,
   title,
   description,
-  panel = false,
-  wide = false,
-  editor = false,
+  variant = "modal",
+  size = "sm",
+  dismissible = true,
   className,
   children,
   ...root
 }: DialogProps) {
-  const classes = ["kc-dialog", panel && "kc-dialog--panel", wide && "kc-dialog--wide", className]
+  const classes = ["kc-dialog", `kc-dialog--${variant}`, `kc-dialog--${size}`, className]
     .filter(Boolean)
     .join(" ");
-  const lock = editor
+  const lock = !dismissible
     ? {
         onEscapeKeyDown: (event: Event) => event.preventDefault(),
         onPointerDownOutside: (event: Event) => event.preventDefault(),

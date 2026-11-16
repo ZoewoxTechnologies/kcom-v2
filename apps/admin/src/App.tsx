@@ -1,5 +1,6 @@
 import { Button } from "@kcom/ui";
 import { DialogDemo } from "./demo/DialogDemo";
+import { FormFieldsDemo } from "./demo/FormFieldsDemo";
 
 export function App() {
   return (
@@ -15,6 +16,7 @@ export function App() {
         <Button disabled>Disabled</Button>
       </div>
       <DialogDemo />
+      <FormFieldsDemo />
     </main>
   );
 }

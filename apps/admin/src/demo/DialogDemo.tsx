@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
-import { Button, Dialog, DialogActions, DialogClose, UnsavedChangesPrompt } from "@kcom/ui";
+import {
+  Button,
+  ConfirmDialog,
+  Dialog,
+  DialogActions,
+  DialogClose,
+  UnsavedChangesPrompt,
+} from "@kcom/ui";
 
-// ?dialog=modal|panel|editor opens that state on load; ?theme=light|dark forces a theme.
+// ?dialog=modal|panel|editor|confirm opens that state on load; ?theme=light|dark forces a theme.
 // Both exist for review screenshots.
 const initialDialog = () =>
   typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("dialog");
@@ -20,6 +27,7 @@ export function DialogDemo() {
   }, []);
   const [editorOpen, setEditorOpen] = useState(initial === "editor");
   const [promptOpen, setPromptOpen] = useState(initial === "editor");
+  const [confirmOpen, setConfirmOpen] = useState(initial === "confirm");
   const close = () => {
     setPromptOpen(false);
     setEditorOpen(false);
@@ -45,7 +53,7 @@ export function DialogDemo() {
         </Dialog>
 
         <Dialog
-          panel
+          variant="panel"
           defaultOpen={initial === "panel"}
           title="Event details"
           description="Side panel for longer editing flows."
@@ -59,7 +67,7 @@ export function DialogDemo() {
         </Dialog>
 
         <Dialog
-          editor
+          dismissible={false}
           open={editorOpen}
           onOpenChange={setEditorOpen}
           title="Edit event"
@@ -72,6 +80,18 @@ export function DialogDemo() {
             </Button>
           </DialogActions>
         </Dialog>
+        <Button variant="secondary" onClick={() => setConfirmOpen(true)}>
+          Delete capsule
+        </Button>
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          tone="danger"
+          title="Delete this capsule?"
+          message="This removes the capsule and its scripture references. You can't undo it."
+          confirmLabel="Delete"
+          onConfirm={() => setConfirmOpen(false)}
+        />
         <UnsavedChangesPrompt
           open={promptOpen}
           onOpenChange={setPromptOpen}
