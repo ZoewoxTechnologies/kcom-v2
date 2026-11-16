@@ -3,7 +3,7 @@ import { z } from "zod";
 /** Content model stubs. Fields will grow as the database schema lands. */
 
 const id = z.string().min(1);
-const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase words separated by hyphens");
+export const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase words separated by hyphens");
 const status = z.enum(["draft", "published", "archived"]);
 
 const base = {
