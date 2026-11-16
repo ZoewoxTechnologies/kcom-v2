@@ -7,13 +7,18 @@
     "extract": "node --experimental-strip-types src/cli.ts",
     "lint": "eslint .",
     "typecheck": "tsc",
-    "test": "vitest run"
+    "test": "vitest run",
+    "transform": "tsx src/transform-cli.ts"
   },
   "devDependencies": {
     "@kcom/config": "workspace:*",
     "@types/node": "^24.0.0",
     "eslint": "^10.14.0",
     "typescript": "^5.7.2",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "tsx": "^4.19.2"
+  },
+  "dependencies": {
+    "@kcom/content": "workspace:*"
   }
 }

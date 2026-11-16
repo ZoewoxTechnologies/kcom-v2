@@ -10,3 +10,24 @@ Writes one JSON file per published node to `data/legacy/extract/<type>/<nid>.jso
 (override with `EXTRACT_DIR`) and prints counts per type plus the real capsule
 count and date range. The dump is parsed directly, so no MySQL or Docker is needed.
 `data/legacy/` is gitignored: the dump and its output contain personal data.
+
+## Transform
+
+```bash
+pnpm --filter @kcom/migrate transform
+```
+
+Reads the extract output and maps every `daily_digest` node onto the capsule model
+(`@kcom/content`), writing `data/legacy/transform/{capsules,series,report}.json`:
+
+- Scripture is split from the first paragraph (`text – Ref` or `text (Ref)`); the prayer, Bible
+  meditation and author credit come from their fields; the rest is the body.
+- Bodies are converted from legacy HTML to the editor's JSON document format.
+- Series come from numbered titles (`Name 3`, `Name (3)`) shared by two or more capsules.
+- `publishAt` is the capsule date at Africa/Lagos midnight; slugs and legacy paths come from the
+  Drupal alias.
+- Every record is validated against the shared capsule schema. `report.json` lists skipped
+  records, warnings (no scripture, prayer or author credit; slug collisions; repeated series
+  parts), images to move to Cloudinary, and files that are not on disk (the private files folder).
+
+Capsule authorship (the Editor account) is assigned when loading, not here.
