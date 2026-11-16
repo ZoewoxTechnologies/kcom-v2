@@ -6,6 +6,7 @@ import { errorHandler, notFoundHandler } from "./errors.js";
 import { health } from "./routes/health.js";
 import { capsuleRoutes } from "./routes/capsules.js";
 import { authRoutes } from "./routes/auth.js";
+import { userRoutes } from "./routes/users.js";
 
 export type AppOptions = { corsOrigins?: string[]; auth?: AuthOptions };
 
@@ -18,13 +19,17 @@ export function createApp(db: CapsuleDb, { corsOrigins = [], auth = {} }: AppOpt
     allowHeaders: ["Content-Type"],
     credentials: true,
   });
+  const authInstance = createAuth(db, { trustedOrigins: corsOrigins, ...auth });
   return new Hono()
-    .use((c, next) => (c.req.path.startsWith("/api/auth/") ? authCors(c, next) : publicCors(c, next)))
+    .use((c, next) =>
+      c.req.path.startsWith("/api/auth/") ? authCors(c, next) : publicCors(c, next),
+    )
     .onError(errorHandler)
     .notFound(notFoundHandler)
     .route("/", health)
     .route("/capsules", capsuleRoutes(db))
-    .route("/api/auth", authRoutes(createAuth(db, { trustedOrigins: corsOrigins, ...auth })));
+    .route("/users", userRoutes(db, authInstance))
+    .route("/api/auth", authRoutes(authInstance));
 }
 
 export type App = ReturnType<typeof createApp>;
