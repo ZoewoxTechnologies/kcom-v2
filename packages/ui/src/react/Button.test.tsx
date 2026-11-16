@@ -9,6 +9,12 @@ describe("Button", () => {
     );
   });
 
+  it("supports the give variant and defaults to type=button", () => {
+    const html = renderToStaticMarkup(<Button variant="give">Give</Button>);
+    expect(html).toContain("kc-btn--give");
+    expect(html).toContain('type="button"');
+  });
+
   it("marks loading buttons busy and shows a spinner", () => {
     const html = renderToStaticMarkup(<Button loading>Save</Button>);
     expect(html).toContain('aria-busy="true"');
