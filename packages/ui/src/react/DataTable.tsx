@@ -1,3 +1,4 @@
+import { Button } from "./Button";
 import type { KeyboardEvent, ReactNode, ThHTMLAttributes } from "react";
 
 export type SortDirection = "ascending" | "descending" | "none";
@@ -75,42 +76,42 @@ export function TablePagination({ page, pageSize, total, onPageChange }: TablePa
         Showing {fmt(from)}–{fmt(to)} of {fmt(total)}
       </span>
       <nav className="kc-pager" aria-label="Pages">
-        <button
-          type="button"
-          className="kc-pager__btn"
+        <Button
+          variant="secondary"
+          size="sm"
           aria-label="Previous page"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
         >
           ‹
-        </button>
+        </Button>
         {pageItems(page, pageCount).map((item, i) =>
           item === "gap" ? (
             <span key={`gap-${i}`} className="kc-pager__gap" aria-hidden="true">
               …
             </span>
           ) : (
-            <button
+            <Button
               key={item}
-              type="button"
-              className="kc-pager__btn"
+              variant={item === page ? "primary" : "secondary"}
+              size="sm"
               aria-current={item === page ? "page" : undefined}
               aria-label={`Page ${item}`}
               onClick={() => onPageChange(item)}
             >
               {fmt(item)}
-            </button>
+            </Button>
           ),
         )}
-        <button
-          type="button"
-          className="kc-pager__btn"
+        <Button
+          variant="secondary"
+          size="sm"
           aria-label="Next page"
           disabled={page >= pageCount}
           onClick={() => onPageChange(page + 1)}
         >
           ›
-        </button>
+        </Button>
       </nav>
     </div>
   );

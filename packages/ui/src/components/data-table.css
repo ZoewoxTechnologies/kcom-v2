@@ -148,38 +148,6 @@
     gap: 6px;
   }
 
-  .kc-pager__btn {
-    min-inline-size: 36px;
-    block-size: 36px;
-    padding: 0 var(--space-3);
-    border: 1px solid var(--color-line);
-    border-radius: 8px;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font: 600 var(--text-sm) / 1 var(--font-body);
-    cursor: pointer;
-
-    &:hover:not(:disabled) {
-      background: var(--color-hover);
-    }
-
-    &:focus-visible {
-      outline: none;
-      box-shadow: var(--focus-ring);
-    }
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    &[aria-current="page"] {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
-      color: var(--color-on-primary);
-    }
-  }
-
   .kc-pager__gap {
     padding: 0 var(--space-1);
   }

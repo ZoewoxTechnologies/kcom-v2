@@ -62,7 +62,7 @@ export function DataTableDemo() {
         selectedRowId={selected}
         onRowClick={(r) => setSelected(r.id)}
         rowAction={(r) => (
-          <Button variant="tertiary" aria-label={`Edit ${r.name}`}>
+          <Button variant="secondary" size="sm" aria-label={`Edit ${r.name}`}>
             Edit
           </Button>
         )}
