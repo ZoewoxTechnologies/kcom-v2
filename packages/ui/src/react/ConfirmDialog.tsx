@@ -16,7 +16,7 @@ export interface ConfirmDialogProps {
   confirmLabel?: ReactNode;
   cancelLabel?: ReactNode;
   /** "danger" styles the confirm action as destructive and moves it to the end of the row. */
-  tone?: "default" | "danger";
+  variant?: "default" | "danger";
   onConfirm: () => void;
   onCancel?: () => void;
   /** Extra actions shown before cancel and confirm; each closes the dialog. */
@@ -34,7 +34,7 @@ export function ConfirmDialog({
   message,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
-  tone = "default",
+  variant = "default",
   onConfirm,
   onCancel,
   actions = [],
@@ -44,7 +44,7 @@ export function ConfirmDialog({
   if (open && !returnFocus.current && typeof document !== "undefined") {
     returnFocus.current = document.activeElement as HTMLElement | null;
   }
-  const danger = tone === "danger";
+  const danger = variant === "danger";
   const confirm = (
     <AlertDialog.Action asChild key="confirm">
       <Button

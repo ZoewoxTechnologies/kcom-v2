@@ -138,7 +138,7 @@ describe("UnsavedChangesPrompt", () => {
 });
 
 describe("ConfirmDialog", () => {
-  function Host({ tone }: { tone?: "default" | "danger" }) {
+  function Host({ variant }: { variant?: "default" | "danger" }) {
     const [open, setOpen] = useState(true);
     const [log, setLog] = useState<string[]>([]);
     const add = (e: string) => setLog((l) => [...l, e]);
@@ -148,7 +148,7 @@ describe("ConfirmDialog", () => {
         <ConfirmDialog
           open={open}
           onOpenChange={setOpen}
-          tone={tone}
+          variant={variant}
           title="Delete this capsule?"
           message="Gone for good."
           confirmLabel="Delete"
@@ -183,8 +183,8 @@ describe("ConfirmDialog", () => {
     }
   });
 
-  it("danger tone pushes confirm to the end", () => {
-    render(<Host tone="danger" />);
+  it("danger variant pushes confirm to the end", () => {
+    render(<Host variant="danger" />);
     expect(screen.getByRole("button", { name: "Delete" })).toHaveClass("kc-dialog__actions-end");
   });
 });

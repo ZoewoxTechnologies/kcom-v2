@@ -86,7 +86,7 @@ export function DialogDemo() {
         <ConfirmDialog
           open={confirmOpen}
           onOpenChange={setConfirmOpen}
-          tone="danger"
+          variant="danger"
           title="Delete this capsule?"
           message="This removes the capsule and its scripture references. You can't undo it."
           confirmLabel="Delete"

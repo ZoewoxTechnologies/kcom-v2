@@ -24,7 +24,7 @@ export function UnsavedChangesPrompt({
     <ConfirmDialog
       open={open}
       onOpenChange={onOpenChange}
-      tone="danger"
+      variant="danger"
       title="Discard your changes?"
       message={
         <>
