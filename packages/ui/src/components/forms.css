@@ -1,0 +1,211 @@
+/* Form fields. Import "@kcom/ui/forms.css" once per app, after the tokens.
+   Works with plain HTML (Astro) or the React components: the classes are the API. */
+@layer components {
+  .kc-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+
+    & > .kc-label {
+      font-size: var(--text-sm);
+      font-weight: 700;
+    }
+
+    &:has(:disabled) > .kc-label {
+      color: var(--color-muted);
+    }
+  }
+
+  .kc-label {
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .kc-field__marker {
+    color: var(--color-muted);
+    font-weight: 400;
+  }
+
+  .kc-field__help {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+
+  .kc-field__error {
+    margin: 0;
+    color: var(--color-error);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+
+  .kc-input,
+  .kc-textarea,
+  .kc-select__control {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid var(--color-field);
+    border-radius: var(--radius-field);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: 400 var(--text-base) / 1.4 var(--font-body);
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+
+    &::placeholder {
+      color: var(--color-muted);
+      opacity: 1;
+    }
+
+    &:hover:not(:disabled, :focus-visible) {
+      border-color: color-mix(in srgb, var(--color-field), var(--color-text) 40%);
+    }
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-ring);
+    }
+
+    &[aria-invalid="true"] {
+      border-width: 1.5px;
+      border-color: var(--color-error);
+      padding: calc(0.75rem - 0.5px) calc(0.875rem - 0.5px);
+
+      &:focus-visible {
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error), transparent 75%);
+      }
+    }
+
+    &:disabled {
+      background: var(--color-page);
+      color: var(--color-muted);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+  }
+
+  .kc-textarea {
+    min-height: 7rem;
+    resize: vertical;
+  }
+
+  .kc-select {
+    position: relative;
+    display: block;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 1.1rem;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-right: 2px solid var(--color-muted);
+      border-bottom: 2px solid var(--color-muted);
+      pointer-events: none;
+      transform: translateY(-70%) rotate(45deg);
+    }
+  }
+
+  .kc-select__control {
+    padding-right: 2.5rem;
+    appearance: none;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  /* Checkbox and radio stay native; the label supplies the hit area. */
+  .kc-choice {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 44px;
+    color: var(--color-text);
+    font-size: 0.9375rem;
+    cursor: pointer;
+
+    & input {
+      flex: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      margin: 0;
+      accent-color: var(--color-primary);
+      cursor: inherit;
+
+      &:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring);
+        border-radius: 4px;
+      }
+
+      &[type="radio"]:focus-visible {
+        border-radius: 50%;
+      }
+    }
+
+    &:has(:disabled) {
+      color: var(--color-muted);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+  }
+
+  .kc-choice--pill {
+    min-height: 0;
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-pill);
+
+    &:hover:not(:has(:disabled)) {
+      background: var(--color-hover);
+    }
+
+    &:has(:checked) {
+      border: 2px solid var(--color-primary);
+      padding: calc(0.625rem - 1px) calc(1rem - 1px);
+      background: var(--color-hover);
+      font-weight: 700;
+    }
+  }
+
+  .kc-fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+
+    & > legend {
+      margin-bottom: var(--space-2);
+      padding: 0;
+      font-size: var(--text-sm);
+      font-weight: 700;
+    }
+
+    & > .kc-field__help,
+    & > .kc-field__error {
+      flex-basis: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kc-input,
+    .kc-textarea,
+    .kc-select__control {
+      transition: none;
+    }
+  }
+}

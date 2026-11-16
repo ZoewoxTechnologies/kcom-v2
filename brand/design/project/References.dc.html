@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reference sites</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=Nunito+Sans:opsz,wght@6..12,400;6..12,700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:1440px;box-sizing:border-box;padding:64px 80px;background:#f3f6f5;color:#1d2b2d;font-family:'Nunito Sans',system-ui,sans-serif;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<h1 style="margin:0;font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:52px">Reference sites</h1>
+<p style="margin:0;font-size:17px;color:#5f6f70;max-width:860px">Which of these feel right for the homepage and Today’s Capsule? Comment on any card with what you like or don’t. Screenshots taken 14 November 2026; Lectio 365 and BibleProject wouldn’t dismiss their cookie banners.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px">
+<sc-for list="{{refs}}" as="r" hint-placeholder-count="5">
+<figure style="margin:0;background:#ffffff;border:1px solid #d9e3e1;border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+<img src="{{r.src}}" alt="{{r.alt}}" style="width:100%;aspect-ratio:1456/827;object-fit:cover;object-position:top;display:block;border-bottom:1px solid #d9e3e1">
+<figcaption style="padding:20px 24px;display:flex;flex-direction:column;gap:6px">
+<span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:26px">{{r.name}}</span>
+<span style="font-size:15px;line-height:1.6"><strong>What we’d borrow:</strong> {{r.take}}</span>
+<span style="font-size:15px;line-height:1.6;color:#5f6f70"><strong>Less of:</strong> {{r.skip}}</span>
+</figcaption>
+</figure>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+renderVals() {
+return { refs: [
+{name:'Our Daily Bread · today’s devotional',src:'/_blob/45da31cb9db93545679313b026d721e8',alt:'Our Daily Bread devotional page',take:'centred reading column; date, title, key verse and reference stacked above the body; audio player.',skip:'bright link blue; small cramped header.'},
+{name:'Desiring God · homepage',src:'/_blob/b2ea79b03795c53e76b78cc80cde2f8b',alt:'Desiring God homepage',take:'one big featured piece; a “current theme” series list with dated parts; generous white space; a thin announcement bar on top (like our H1 verse bar).',skip:'heavy sans headlines.'},
+{name:'She Reads Truth · homepage',src:'/_blob/5ea9cf867fe69e32647b82ced6fa487b',alt:'She Reads Truth homepage',take:'elegant serif headlines; warm cream sections; numbered “how it works” steps.',skip:'shop promotions and stock-photo hero.'},
+{name:'BibleProject · homepage',src:'/_blob/bb0dc1ef13eb8e21427af5f93b32f95e',alt:'BibleProject homepage',take:'a full-bleed, still-water atmosphere that echoes Psalm 23.',skip:'needs custom illustration we don’t have.'},
+{name:'Lectio 365 · homepage',src:'/_blob/e8864a53fc8b2014659756d16cbaef94',alt:'Lectio 365 homepage behind a cookie banner',take:'morning / midday / night rhythm; prayer as a clear step.',skip:'app-download focus.'}
+]};
+}
+}
+</script>
+</body>
+</html>

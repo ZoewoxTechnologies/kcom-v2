@@ -59,14 +59,28 @@ describe("constraints", () => {
   it("rejects duplicate slug and legacyNid", async () => {
     await db
       .insert(capsules)
-      .values({ title: "a", slug: "dup", publishAt: new Date("2026-03-01T00:00:00Z"), body: {}, legacyNid: 99 });
+      .values({
+        title: "a",
+        slug: "dup",
+        publishAt: new Date("2026-03-01T00:00:00Z"),
+        body: {},
+        legacyNid: 99,
+      });
     await expect(
-      db.insert(capsules).values({ title: "b", slug: "dup", publishAt: new Date("2026-03-01T00:00:00Z"), body: {} }),
+      db
+        .insert(capsules)
+        .values({ title: "b", slug: "dup", publishAt: new Date("2026-03-01T00:00:00Z"), body: {} }),
     ).rejects.toThrow();
     await expect(
       db
         .insert(capsules)
-        .values({ title: "c", slug: "dup2", publishAt: new Date("2026-03-01T00:00:00Z"), body: {}, legacyNid: 99 }),
+        .values({
+          title: "c",
+          slug: "dup2",
+          publishAt: new Date("2026-03-01T00:00:00Z"),
+          body: {},
+          legacyNid: 99,
+        }),
     ).rejects.toThrow();
   });
 
@@ -123,7 +137,13 @@ describe("constraints", () => {
     await expect(
       db
         .insert(capsules)
-        .values({ title: "x", slug: "x", publishAt: new Date("2026-02-01T00:00:00Z"), body: {}, partNumber: 1 }),
+        .values({
+          title: "x",
+          slug: "x",
+          publishAt: new Date("2026-02-01T00:00:00Z"),
+          body: {},
+          partNumber: 1,
+        }),
     ).rejects.toThrow();
   });
 

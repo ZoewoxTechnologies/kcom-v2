@@ -15,6 +15,20 @@
       "when": 1794831906503,
       "tag": "0001_capsule_model",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794839961150,
+      "tag": "0002_auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794861219701,
+      "tag": "0003_roles",
+      "breakpoints": true
     }
   ]
 }

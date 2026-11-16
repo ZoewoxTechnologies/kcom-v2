@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Group 3 phone views</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=Lora:ital,wght@1,400&amp;family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2b6178}
+mark{background:#f6eedd;color:#1d2b2d;border-bottom:2px solid #c4a15a}
+</style>
+</helmet>
+<div style="width:1800px;box-sizing:border-box;padding:40px;background:#e9eeed;font-family:'Nunito Sans',system-ui,sans-serif;color:#1d2b2d;display:flex;gap:40px;align-items:flex-start">
+
+<sc-for list="{{screens}}" as="sc" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;gap:10px">
+<span style="font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5f6f70">{{sc.label}}</span>
+<div style="width:390px;height:1560px;overflow:hidden;background:#f3f6f5;border-radius:24px;border:1px solid #d9e3e1;font-size:16px;line-height:1.6;display:flex;flex-direction:column">
+<header style="background:#fff;border-bottom:1px solid #d9e3e1;padding:10px 16px;display:flex;align-items:center;gap:10px">
+<img src="/_blob/3f552b983184c0be2e5c16618e8fed67" alt="" style="width:38px;height:38px;object-fit:contain">
+<span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:17px;line-height:1.05">Kingdom Capstone<span style="display:block">Outreach Ministries</span></span>
+<button aria-label="Open menu" style="margin-left:auto;width:44px;height:44px;border:0;background:transparent;color:#1d2b2d;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+</header>
+
+<sc-if value="{{sc.capsule}}" hint-placeholder-val="{{ false }}">
+<article style="padding:20px 16px;display:flex;flex-direction:column;gap:18px">
+<nav aria-label="Breadcrumb" style="font-size:13px;color:#5f6f70">Capsules › The Renewed Mind › Day 9</nav>
+<span style="font-size:13px;letter-spacing:.1em;font-variant:small-caps;font-weight:700;color:#8a6a24">Thu · 12 November 2026</span>
+<h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:40px;line-height:1.05">Thoughts Taken Captive</h1>
+<section style="background:#fff;border:1px solid #d9e3e1;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:8px">
+<span style="font-size:11px;letter-spacing:.14em;font-weight:700;color:#5f6f70">BIBLE MEDITATION</span>
+<p style="margin:0;font-family:'Lora',serif;font-style:italic;font-size:18px">Casting down imaginations, and every high thing that exalteth itself against the knowledge of God, and bringing into captivity every thought to the obedience of Christ.</p>
+<span style="font-size:12px;letter-spacing:.1em;font-variant:small-caps;font-weight:700;color:#8a6a24">2 Corinthians 10:5 · KJV</span>
+</section>
+<p style="margin:0;font-size:17px;line-height:1.7">Not every thought that visits us deserves a place to stay. Paul speaks the language of a battlefield: strongholds, imaginations, captives.</p>
+<section style="background:#f6eedd;border-radius:14px;padding:20px"><h2 style="margin:0 0 6px;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:24px">Decrees</h2><p style="margin:0">✦ My thoughts are obedient to Christ.</p></section>
+<section style="border-top:1px solid #d9e3e1;padding-top:16px"><h2 style="margin:0 0 6px;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:24px">Prayer</h2><p style="margin:0;font-style:italic">Lord Jesus, I bring every thought to You today. Amen.</p></section>
+<div style="background:#dde9ec;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px"><span style="font-weight:700">In this series</span><span style="font-size:15px">Day 10 · Whatsoever Things Are Pure →</span></div>
+</article>
+</sc-if>
+
+<sc-if value="{{sc.month}}" hint-placeholder-val="{{ false }}">
+<div style="background:#dde9ec;padding:20px 16px 0;display:flex;flex-direction:column;gap:12px">
+<h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:36px">Capstone Capsules</h1>
+<input type="search" aria-label="Search capsules" placeholder="Search by word, verse or title" style="font:16px 'Nunito Sans';padding:12px 14px;border-radius:10px;border:1px solid #a9bab8;background:#fff">
+<div role="tablist" style="display:flex;gap:24px;font-weight:700"><a role="tab" href="#" style="text-decoration:none;color:#1d2b2d;padding:10px 0;border-bottom:3px solid #c4a15a">By month</a><a role="tab" href="#" style="text-decoration:none;color:#5f6f70;padding:10px 0">By series</a></div>
+</div>
+<div style="padding:16px;display:flex;gap:8px;overflow-x:auto;white-space:nowrap;font-size:14px;font-weight:600">
+<span style="padding:8px 14px;border-radius:999px;border:1px solid #d9e3e1;background:#fff">2026 ▾</span><span style="padding:8px 14px;border-radius:999px;background:#2b6178;color:#fff">Nov</span><span style="padding:8px 14px;border-radius:999px;border:1px solid #d9e3e1;background:#fff">Oct</span><span style="padding:8px 14px;border-radius:999px;border:1px solid #d9e3e1;background:#fff">Sep</span><span style="padding:8px 14px;border-radius:999px;border:1px solid #d9e3e1;background:#fff">Aug</span>
+</div>
+<div style="padding:0 16px;display:flex;flex-direction:column">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="6">
+<a href="#" style="text-decoration:none;color:#1d2b2d;display:flex;gap:14px;align-items:center;padding:12px 0;border-top:1px solid #d9e3e1"><span style="width:40px;flex:none;text-align:center;line-height:1.1"><span style="display:block;font-size:11px;font-weight:700;color:#5f6f70">{{d.dow}}</span><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:26px">{{d.n}}</span></span><span style="display:flex;flex-direction:column;line-height:1.3"><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:21px">{{d.t}}</span><span style="font-size:13px;color:#5f6f70">{{d.r}}</span></span></a>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{sc.series}}" hint-placeholder-val="{{ false }}">
+<div style="background:#dde9ec;padding:20px 16px 0;display:flex;flex-direction:column;gap:12px">
+<h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:36px">Capstone Capsules</h1>
+<div role="tablist" style="display:flex;gap:24px;font-weight:700"><a role="tab" href="#" style="text-decoration:none;color:#5f6f70;padding:10px 0">By month</a><a role="tab" href="#" style="text-decoration:none;color:#1d2b2d;padding:10px 0;border-bottom:3px solid #c4a15a">By series</a></div>
+</div>
+<div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{series}}" as="s" hint-placeholder-count="5">
+<a href="#" style="text-decoration:none;color:#1d2b2d;background:#fff;border:1px solid #d9e3e1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px;{{s.ring}}"><span style="font-size:12px;letter-spacing:.08em;font-variant:small-caps;font-weight:700;color:#8a6a24">{{s.when}} · {{s.days}} days</span><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:23px;line-height:1.15">{{s.t}}</span><span style="font-size:13px;font-weight:700;color:#2b6178">{{s.status}}</span></a>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{sc.search}}" hint-placeholder-val="{{ false }}">
+<div style="background:#dde9ec;padding:16px;display:flex;flex-direction:column;gap:8px">
+<input type="search" aria-label="Search the site" value="renew mind" style="font:18px 'Nunito Sans';padding:12px 14px;border-radius:12px;border:1px solid #2b6178;background:#fff">
+<div style="display:flex;justify-content:space-between;align-items:center;font-size:14px"><span style="color:#5f6f70">48 results</span><button type="button" style="font:600 14px 'Nunito Sans';padding:8px 14px;border-radius:999px;border:1px solid #2b6178;background:#fff;color:#2b6178">Filters · 3</button></div>
+</div>
+<div style="padding:0 16px;display:flex;flex-direction:column">
+<sc-for list="{{results}}" as="r" hint-placeholder-count="5">
+<a href="#" style="text-decoration:none;color:#1d2b2d;display:flex;flex-direction:column;gap:4px;padding:16px 0;border-top:1px solid #d9e3e1"><span style="font-size:12px;font-weight:700;color:#8a6a24">{{r.type}} · {{r.date}}</span><span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;line-height:1.2">{{r.t}}</span><span style="font-size:15px;color:#3c4b4d">{{r.pre}}<mark>{{r.hit}}</mark>{{r.post}}</span></a>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1800,"height":1700}}'>
+class Component extends DCLogic {
+renderVals() {
+const s=(label,k)=>({label,capsule:k==='c',month:k==='m',series:k==='s',search:k==='q'});
+return {
+screens:[s('Capsule page','c'),s('Archive · by month','m'),s('Archive · by series','s'),s('Search results','q')],
+days:[{dow:'SAT',n:14,t:'Be Ye Transformed',r:'Romans 12:2'},{dow:'FRI',n:13,t:'Whatsoever Things Are Pure',r:'Philippians 4:8'},{dow:'THU',n:12,t:'Thoughts Taken Captive',r:'2 Corinthians 10:5'},{dow:'WED',n:11,t:'A Sound Mind',r:'2 Timothy 1:7'},{dow:'TUE',n:10,t:'Renewed Day by Day',r:'2 Corinthians 4:16'},{dow:'MON',n:9,t:'Set Your Affection',r:'Colossians 3:2'}],
+series:[{when:'Nov 2026',days:12,t:'The Renewed Mind',status:'In progress · Day 11 of 12',ring:'border:2px solid #c4a15a'},{when:'Oct 2026',days:14,t:'Walking in Dominion',status:'Start at Day 1 →',ring:''},{when:'Sep 2026',days:10,t:'The Fear of the Lord',status:'Start at Day 1 →',ring:''},{when:'Aug 2026',days:21,t:'Psalms for the Weary',status:'Start at Day 1 →',ring:''},{when:'Jul 2026',days:7,t:'The Names of God',status:'Start at Day 1 →',ring:''}],
+results:[{type:'Capsule',date:'14 Nov 2026',t:'Be Ye Transformed',pre:'…be ye transformed by the ',hit:'renewing of your mind',post:'…'},{type:'Capsule',date:'10 Nov 2026',t:'Renewed Day by Day',pre:'…the inward man is ',hit:'renewed',post:' day by day…'},{type:'Blog',date:'1 Jan 2026',t:'2026: Our Year of Divine Performance',pre:'…a year to ',hit:'renew the mind',post:'…'},{type:'Capsule',date:'3 Mar 2024',t:'A New Heart and a New Mind',pre:'…God promises to ',hit:'renew',post:' a right spirit…'},{type:'Page',date:'About',t:'Mandate and Message',pre:'…teaching that will ',hit:'renew the mind',post:'…'}]
+};
+}
+}
+</script>
+</body>
+</html>
