@@ -53,9 +53,9 @@ export async function seedUser(
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const { ADMIN_EMAIL, ADMIN_PASSWORD, EDITOR_EMAIL, EDITOR_PASSWORD } = process.env;
-  if (!ADMIN_EMAIL) {
+  if (!ADMIN_EMAIL || !EDITOR_EMAIL) {
     console.error(
-      "Set ADMIN_EMAIL (and optionally ADMIN_PASSWORD, EDITOR_EMAIL, EDITOR_PASSWORD).",
+      "Set ADMIN_EMAIL and EDITOR_EMAIL (passwords optional: ADMIN_PASSWORD, EDITOR_PASSWORD).",
     );
     process.exit(1);
   }
