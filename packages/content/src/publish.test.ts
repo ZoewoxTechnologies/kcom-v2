@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lagosDate, nextLagosMidnight, slugify } from "./publish";
+import { formatLagosDate, lagosDate, nextLagosMidnight, slugify } from "./publish";
 
 const next = (iso: string) => nextLagosMidnight(new Date(iso)).toISOString();
 
@@ -42,5 +42,12 @@ describe("slugify", () => {
   });
   it("returns empty when nothing usable remains", () => {
     expect(slugify("日本語")).toBe("");
+  });
+});
+
+describe("formatLagosDate", () => {
+  it("formats a Lagos calendar day with weekday", () => {
+    expect(formatLagosDate("2026-11-14")).toBe("Saturday, 14 November");
+    expect(formatLagosDate("2026-01-01")).toBe("Thursday, 1 January");
   });
 });
