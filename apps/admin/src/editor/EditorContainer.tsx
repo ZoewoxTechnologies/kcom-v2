@@ -66,14 +66,6 @@ export function EditorContainer({
         onOpenChange={() => {}}
         onClose={requestClose}
       >
-        <button
-          type="button"
-          className="kc-dialog__close"
-          aria-label="Close"
-          onClick={requestClose}
-        >
-          ×
-        </button>
         {children}
         <DialogActions>
           {actions}
