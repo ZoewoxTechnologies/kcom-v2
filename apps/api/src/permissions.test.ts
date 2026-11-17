@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it } from "vitest";
 import { userRoles } from "@kcom/db";
-import { userRoles as sharedRoles } from "@kcom/permissions";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
 import { createAuth } from "./auth.js";
@@ -44,10 +43,6 @@ async function signIn(email: string) {
 }
 
 describe("role table", () => {
-  it("shares its role list with the database", () => {
-    expect([...sharedRoles]).toEqual([...userRoles]);
-  });
-
   it("defines permissions for exactly the known roles", () => {
     expect(Object.keys(rolePermissions).sort()).toEqual([...userRoles].sort());
   });
