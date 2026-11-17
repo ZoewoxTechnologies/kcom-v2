@@ -1,34 +1,30 @@
 import { lagosDate } from "@kcom/content";
 import type { CapsuleListItem, SeriesSummary } from "./types";
 
-export interface SeriesInfo {
+/** A series as the public API returns it, with its live-capsule summary. */
+export interface ApiSeries {
   slug: string;
   title: string;
   description: string | null;
+  capsuleCount: number;
+  firstDate: string;
+  lastDate: string;
+  latestPart: number | null;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Summarises a series from its live capsules (any order); null when it has none. */
-export function summarizeSeries(
-  info: SeriesInfo,
-  capsules: readonly Pick<CapsuleListItem, "displayDate" | "partNumber">[],
-  now: Date = new Date(),
-): SeriesSummary | null {
-  if (capsules.length === 0) return null;
-  const days = capsules.map((c) => c.displayDate).sort();
-  const lastDate = days[days.length - 1]!;
-  const yesterday = lagosDate(new Date(now.getTime() - DAY_MS));
-  const highest = Math.max(0, ...capsules.map((c) => c.partNumber ?? 0));
+/** The API's series figures plus whether the series is still running (latest part today or yesterday, Lagos). */
+export function toSeriesSummary(s: ApiSeries, now: Date = new Date()): SeriesSummary {
   return {
-    slug: info.slug,
-    title: info.title,
-    description: info.description,
-    count: capsules.length,
-    firstDate: days[0]!,
-    lastDate,
-    inProgress: lastDate >= yesterday,
-    latestPart: highest || capsules.length,
+    slug: s.slug,
+    title: s.title,
+    description: s.description,
+    count: s.capsuleCount,
+    firstDate: s.firstDate,
+    lastDate: s.lastDate,
+    inProgress: s.lastDate >= lagosDate(new Date(now.getTime() - DAY_MS)),
+    latestPart: s.latestPart ?? s.capsuleCount,
   };
 }
 

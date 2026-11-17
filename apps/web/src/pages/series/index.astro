@@ -1,10 +1,11 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArchiveHeader from "../../components/ArchiveHeader.astro";
-import Pagination from "../../components/Pagination.astro";
+import Pagination from "@kcom/ui/astro/Pagination.astro";
+import { paginate } from "@kcom/ui/pagination";
 import SeriesCard from "../../components/SeriesCard.astro";
 import { data } from "../../lib/data";
-import { SERIES_PAGE_SIZE, paginate, parseSort, plural, seriesSorts, sortSeries } from "../../lib/archive";
+import { SERIES_PAGE_SIZE, parseSort, plural, seriesSorts, sortSeries } from "../../lib/archive";
 
 const sort = parseSort(Astro.url.searchParams.get("sort"));
 const all = sortSeries(await data.listSeries(), sort);

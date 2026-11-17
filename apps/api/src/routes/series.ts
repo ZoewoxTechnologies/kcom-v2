@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { asc, count, eq } from "drizzle-orm";
 import { z } from "zod";
-import { slug } from "@kcom/content";
+import { lagosDate, slug } from "@kcom/content";
 import { capsules, listLiveSeries, liveSeriesBySlug, series, type CapsuleDb } from "@kcom/db";
 import {
   findById,
@@ -31,15 +31,26 @@ const updateBody = z
 
 const listQuery = z.object(pagination());
 
+type LiveSeries = NonNullable<Awaited<ReturnType<typeof liveSeriesBySlug>>>;
+
+/** Series fields plus its live-capsule summary; days are Africa/Lagos calendar days. */
+const present = ({ capsuleCount, firstPublishAt, lastPublishAt, latestPart, ...row }: LiveSeries) => ({
+  ...row,
+  capsuleCount,
+  firstDate: lagosDate(firstPublishAt!),
+  lastDate: lagosDate(lastPublishAt!),
+  latestPart,
+});
+
 /** Public, read-only: only series that have at least one live capsule. */
 export function seriesRoutes(db: CapsuleDb) {
   return new Hono()
     .use(publicCache)
-    .get("/", async (c) => c.json(await listLiveSeries(db)))
+    .get("/", async (c) => c.json((await listLiveSeries(db)).map(present)))
     .get("/:slug", validate("param", slugParam), async (c) => {
       const row = await liveSeriesBySlug(db, c.req.valid("param").slug);
       if (!row) throw notFound("series");
-      return c.json(row);
+      return c.json(present(row));
     });
 }
 

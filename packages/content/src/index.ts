@@ -127,10 +127,18 @@ export type Settings = z.infer<typeof settingsSchema>;
 export type Subscriber = z.infer<typeof subscriberSchema>;
 
 export {
+  dayParts,
   formatLagosDate,
   lagosDate,
   lagosDayRange,
+  lagosMonth,
   lagosMonthRange,
+  monthKey,
+  monthLabel,
+  monthName,
+  monthShort,
   nextLagosMidnight,
+  shiftMonth,
+  shortMonthYear,
   slugify,
 } from "./publish.js";

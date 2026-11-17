@@ -3,15 +3,13 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import ArchiveHeader from "../../../components/ArchiveHeader.astro";
 import CapsuleRow from "../../../components/CapsuleRow.astro";
 import { data } from "../../../lib/data";
-import {
-  archiveYears, capsulePath, dayParts, lagosMonth, monthKey, monthLabel, monthPath, monthShort,
-  parseMonth, plural, shiftMonth, ARCHIVE_START_YEAR,
-} from "../../../lib/archive";
+import { dayParts, lagosMonth, monthKey, monthLabel, monthShort, shiftMonth } from "@kcom/content";
+import { archiveYears, capsulePath, monthPath, parseMonth, plural, ARCHIVE_START_YEAR } from "../../../lib/archive";
 
 const current = lagosMonth();
 const month = parseMonth(Astro.params.month, current);
 if (!month) return new Response(null, { status: 404 });
-const capsules = await data.capsulesInMonth(month.key);
+const capsules = await data.listCapsulesInMonth(month.key);
 const label = monthLabel(month.key);
 const prev = month.key > monthKey(ARCHIVE_START_YEAR, 1) ? shiftMonth(month.key, -1) : null;
 const next = month.key < current ? shiftMonth(month.key, 1) : null;

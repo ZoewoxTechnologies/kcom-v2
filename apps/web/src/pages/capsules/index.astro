@@ -1,5 +1,6 @@
 ---
-import { lagosMonth, monthForYear, monthPath } from "../../lib/archive";
+import { lagosMonth } from "@kcom/content";
+import { monthForYear, monthPath } from "../../lib/archive";
 
 const current = lagosMonth();
 const year = Number(Astro.url.searchParams.get("year"));

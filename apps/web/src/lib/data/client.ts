@@ -1,20 +1,25 @@
 import { hc } from "hono/client";
 import type { App } from "@kcom/api/app";
-import { inSeriesOrder, summarizeSeries } from "./series";
-import type { CapsuleListItem, CapsuleSummary, DataSource, SeriesSummary } from "./types";
+import { inSeriesOrder, toSeriesSummary } from "./series";
+import type { CapsuleListItem, CapsuleSummary, DataSource } from "./types";
 
-/** Plain text of a rich-text document (concatenated text nodes). */
+const BLOCKS = new Set(["paragraph", "heading", "blockquote", "listItem", "bulletList", "orderedList", "codeBlock", "doc"]);
+
+/** Plain text of a rich-text document: inline text joins with no separator, blocks with a space. */
 export function richTextToPlain(node: unknown): string {
-  if (!node || typeof node !== "object") return "";
-  const n = node as { text?: unknown; content?: unknown };
-  if (typeof n.text === "string") return n.text;
-  const kids = Array.isArray(n.content) ? n.content : [];
-  return kids.map(richTextToPlain).join(" ").replace(/\s+/g, " ").trim();
+  const walk = (n: unknown): string => {
+    if (!n || typeof n !== "object") return "";
+    const o = n as { text?: unknown; content?: unknown; type?: unknown };
+    if (typeof o.text === "string") return o.text;
+    const kids = Array.isArray(o.content) ? o.content : [];
+    const blockKids = kids.some((k) => k && typeof k === "object" && BLOCKS.has((k as { type?: string }).type ?? ""));
+    return kids.map(walk).join(blockKids ? " " : "");
+  };
+  return walk(node).replace(/\s+/g, " ").trim();
 }
 
 type Fetch = typeof fetch;
 const PAGE = 100;
-const CACHE_MS = 5 * 60 * 1000;
 
 /**
  * Reads the public API through its own route types, so response shapes cannot drift.
@@ -54,16 +59,6 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
     return res.json();
   }
 
-  // The series list needs a count for every series, so it reads the whole archive once and
-  // keeps the result briefly. Failures are never cached.
-  let cached: { at: number; value: Promise<SeriesSummary[]> } | null = null;
-  async function buildSeriesList(): Promise<SeriesSummary[]> {
-    const [series, capsules] = await Promise.all([allSeries(), allCapsules({})]);
-    const bySeries = new Map<string, typeof capsules>();
-    for (const c of capsules) if (c.seriesId) bySeries.set(c.seriesId, [...(bySeries.get(c.seriesId) ?? []), c]);
-    return series.flatMap((s) => summarizeSeries(s, bySeries.get(s.id) ?? [], now()) ?? []);
-  }
-
   return {
     async latestCapsule(): Promise<CapsuleSummary | null> {
       const res = await client.capsules.latest.$get(undefined, { init: { signal: AbortSignal.timeout(3000) } });
@@ -78,21 +73,13 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
         scriptureText: richTextToPlain(c.scriptureText) || null,
       };
     },
-    async capsulesInMonth(month) {
+    async listCapsulesInMonth(month) {
       const [rows, series] = await Promise.all([allCapsules({ month }), allSeries()]);
       const titleOf = new Map(series.map((s) => [s.id, s.title]));
       return rows.map((c) => toItem(c, titleOf));
     },
     async listSeries() {
-      if (!cached || now().getTime() - cached.at > CACHE_MS) {
-        const value = buildSeriesList();
-        const entry = { at: now().getTime(), value };
-        cached = entry;
-        value.catch(() => {
-          if (cached === entry) cached = null;
-        });
-      }
-      return cached.value;
+      return (await allSeries()).map((s) => toSeriesSummary(s, now()));
     },
     async seriesBySlug(slug) {
       const res = await client.series[":slug"].$get({ param: { slug } } as never, signal());
@@ -100,41 +87,46 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       if (!res.ok) throw new Error(`API /series/${slug} responded ${res.status}`);
       const info = await res.json();
       const rows = await allCapsules({ series: slug });
-      const items = inSeriesOrder(rows.map((c) => toItem(c, new Map([[info.id, info.title]]))));
-      const series = summarizeSeries(info, items, now());
-      return series ? { series, capsules: items } : null;
+      return {
+        series: toSeriesSummary(info, now()),
+        capsules: inSeriesOrder(rows.map((c) => toItem(c, new Map([[info.id, info.title]])))),
+      };
     },
   };
 }
 
-/** Serves nothing: null / []. Pages hide the pieces that depend on data. */
-export const emptySource: DataSource = {
-  latestCapsule: async () => null,
-  capsulesInMonth: async () => [],
-  listSeries: async () => [],
-  seriesBySlug: async () => null,
-};
+const isList = (method: string) => method.startsWith("list");
 
 /**
- * Wraps a source so failures never throw. When `fallback` is given, it is used on failure
- * or an empty result; otherwise the result is null / [].
+ * Serves nothing for every method, current and future: an empty array for `list*` methods,
+ * null for the rest. Pages hide the pieces that depend on data.
+ */
+export const emptySource: DataSource = new Proxy({} as DataSource, {
+  get: (_t, method) => (typeof method === "string" ? async () => (isList(method) ? [] : null) : undefined),
+});
+
+const isEmpty = (v: unknown) => v == null || (Array.isArray(v) && v.length === 0);
+
+/**
+ * Wraps every method of a source so failures never throw. On failure or an empty result
+ * (null or empty list) the same method of `fallback` is used; with no fallback, the empty
+ * value comes from `emptySource`. New DataSource methods need no extra code here.
  */
 export function withFallback(primary: DataSource, fallback: DataSource | null, onError?: (e: unknown) => void): DataSource {
-  const guard = <A extends unknown[], R>(pick: (s: DataSource) => (...a: A) => Promise<R>, empty: R, has: (r: R) => boolean) =>
-    async (...args: A): Promise<R> => {
-      try {
-        const v = await pick(primary)(...args);
-        if (has(v)) return v;
-      } catch (e) {
-        onError?.(e);
-      }
-      return fallback ? pick(fallback)(...args) : empty;
-    };
-  const list = (r: unknown[]) => r.length > 0;
-  return {
-    latestCapsule: guard((s) => () => s.latestCapsule(), null, Boolean),
-    capsulesInMonth: guard((s) => (m: string) => s.capsulesInMonth(m), [], list),
-    listSeries: guard((s) => () => s.listSeries(), [], list),
-    seriesBySlug: guard((s) => (slug: string) => s.seriesBySlug(slug), null, Boolean),
-  };
+  const backup = fallback ?? emptySource;
+  return new Proxy({} as DataSource, {
+    get: (_t, method) => {
+      if (typeof method !== "string") return undefined;
+      const name = method as keyof DataSource;
+      return async (...args: unknown[]) => {
+        try {
+          const v = await (primary[name] as (...a: unknown[]) => Promise<unknown>)(...args);
+          if (!isEmpty(v)) return v;
+        } catch (e) {
+          onError?.(e);
+        }
+        return (backup[name] as (...a: unknown[]) => Promise<unknown>)(...args);
+      };
+    },
+  });
 }

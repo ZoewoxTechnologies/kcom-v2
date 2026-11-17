@@ -1,5 +1,5 @@
 import { lagosDate } from "@kcom/content";
-import { inSeriesOrder, summarizeSeries } from "./series";
+import { inSeriesOrder, toSeriesSummary } from "./series";
 import type { CapsuleListItem, CapsuleSummary, DataSource, SeriesDetail, SeriesSummary } from "./types";
 
 export const sampleCapsule: CapsuleSummary = {
@@ -43,8 +43,20 @@ function build(now: Date): { items: CapsuleListItem[]; series: SeriesSummary[] }
         seriesTitle: def.title,
       });
     }
-    const s = summarizeSeries({ slug: slugOf(def.title), title: def.title, description: def.description }, own, now);
-    if (s) series.push(s);
+    series.push(
+      toSeriesSummary(
+        {
+          slug: slugOf(def.title),
+          title: def.title,
+          description: def.description,
+          capsuleCount: own.length,
+          firstDate: own[0]!.displayDate,
+          lastDate: own[own.length - 1]!.displayDate,
+          latestPart: own.length,
+        },
+        now,
+      ),
+    );
     items.push(...own);
   }
   return { items, series };
@@ -53,7 +65,7 @@ function build(now: Date): { items: CapsuleListItem[]; series: SeriesSummary[] }
 export function createSampleSource(now: () => Date = () => new Date()): DataSource {
   return {
     latestCapsule: async () => sampleCapsule,
-    async capsulesInMonth(month) {
+    async listCapsulesInMonth(month) {
       return build(now())
         .items.filter((c) => c.displayDate.startsWith(month))
         .sort((a, b) => b.displayDate.localeCompare(a.displayDate));

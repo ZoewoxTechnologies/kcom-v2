@@ -21,8 +21,10 @@ describe("api source", () => {
     await expect(createApiSource("http://api", fetchOf(() => json({}, 500))).latestCapsule()).rejects.toThrow("500");
   });
   it("flattens rich text", () => {
-    expect(richTextToPlain({ content: [{ content: [{ text: "a" }] }, { text: "b" }] })).toBe("a b");
+    expect(richTextToPlain({ type: "doc", content: [{ type: "paragraph", content: [{ text: "a" }] }, { type: "paragraph", content: [{ text: "b" }] }] })).toBe("a b");
     expect(richTextToPlain(null)).toBe("");
+    const marked = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Trans" }, { type: "text", text: "formed", marks: [{ type: "bold" }] }, { type: "text", text: " by" }] }, { type: "paragraph", content: [{ type: "text", text: "grace" }] }] };
+    expect(richTextToPlain(marked)).toBe("Transformed by grace");
   });
 });
 
@@ -32,6 +34,18 @@ describe("fallback and switch", () => {
     const onError = vi.fn();
     expect(await withFallback(down, sampleSource, onError).latestCapsule()).toEqual(sampleCapsule);
     expect(onError).toHaveBeenCalledOnce();
+  });
+  it("wraps every method, including ones added later", async () => {
+    type Extra = { listThings(): Promise<string[]>; thing(): Promise<string | null> };
+    const bad = { listThings: async () => { throw new Error("x"); }, thing: async () => null } as unknown as Extra;
+    const good = { listThings: async () => ["a"], thing: async () => "t" } as unknown as Extra;
+    const w = withFallback(bad as never, good as never) as unknown as Extra;
+    expect(await w.listThings()).toEqual(["a"]);
+    expect(await w.thing()).toBe("t");
+    const none = withFallback(bad as never, null) as unknown as Extra;
+    expect(await none.listThings()).toEqual([]);
+    expect(await none.thing()).toBeNull();
+    expect(await (emptySource as unknown as Extra).listThings()).toEqual([]);
   });
   it("production never shows sample content when the API is down or empty", async () => {
     expect(await withFallback(down, null).latestCapsule()).toBeNull();
@@ -47,14 +61,15 @@ describe("fallback and switch", () => {
 });
 
 describe("archive reads", () => {
-  const cap = (slug: string, publishAt: string, seriesId: string | null, partNumber: number | null) => ({
-    slug, title: slug, displayDate: publishAt.slice(0, 10), scriptureRef: null, seriesId, partNumber,
+  const cap = (slug: string, day: string, seriesId: string | null, partNumber: number | null) => ({
+    slug, title: slug, displayDate: day, scriptureRef: null, seriesId, partNumber,
   });
+  const info = { id: "s1", slug: "ser", title: "Ser", description: "d", capsuleCount: 3, firstDate: "2026-11-01", lastDate: "2026-11-16", latestPart: 3 };
   const apiFetch = (all: ReturnType<typeof cap>[]) =>
     vi.fn<typeof fetch>(async (input) => {
       const url = new URL(String(input));
-      if (url.pathname === "/series") return json([{ id: "s1", slug: "ser", title: "Ser", description: "d" }, { id: "s2", slug: "empty", title: "Empty", description: null }]);
-      if (url.pathname === "/series/ser") return json({ id: "s1", slug: "ser", title: "Ser", description: "d" });
+      if (url.pathname === "/series") return json([info]);
+      if (url.pathname === "/series/ser") return json(info);
       if (url.pathname === "/series/nope") return json({}, 404);
       const month = url.searchParams.get("month");
       const series = url.searchParams.get("series");
@@ -63,21 +78,23 @@ describe("archive reads", () => {
       return json(rows.slice(offset, offset + Number(url.searchParams.get("limit"))));
     });
   // 250 capsules force three pages of 100.
-  const many = Array.from({ length: 250 }, (_, i) => cap(`c${i}`, `2026-11-${String((i % 28) + 1).padStart(2, "0")}T00:00:00Z`, i < 3 ? "s1" : null, i < 3 ? i + 1 : null));
+  const many = Array.from({ length: 250 }, (_, i) => cap(`c${i}`, `2026-11-${String((i % 28) + 1).padStart(2, "0")}`, i < 3 ? "s1" : null, i < 3 ? 3 - i : null));
+  const now = () => new Date("2026-11-17T10:00:00Z");
 
   it("reads every page of a month and names the series", async () => {
-    const items = await createApiSource("http://api", apiFetch(many)).capsulesInMonth("2026-11");
+    const items = await createApiSource("http://api", apiFetch(many)).listCapsulesInMonth("2026-11");
     expect(items).toHaveLength(250);
     expect(items.find((c) => c.slug === "c0")?.seriesTitle).toBe("Ser");
   });
-  it("counts series from every capsule and skips series without live capsules", async () => {
-    const list = await createApiSource("http://api", apiFetch(many), () => new Date("2026-11-30T10:00:00Z")).listSeries();
-    expect(list).toHaveLength(1);
-    expect(list[0]).toMatchObject({ slug: "ser", count: 3, latestPart: 3 });
+  it("lists series from one API call, using the API's counts", async () => {
+    const f = apiFetch(many);
+    const list = await createApiSource("http://api", f, now).listSeries();
+    expect(f).toHaveBeenCalledTimes(1);
+    expect(list).toEqual([{ slug: "ser", title: "Ser", description: "d", count: 3, firstDate: "2026-11-01", lastDate: "2026-11-16", inProgress: true, latestPart: 3 }]);
   });
   it("series detail is in Day order; unknown series is null", async () => {
     const f = apiFetch(many);
-    const d = await createApiSource("http://api", f).seriesBySlug("ser");
+    const d = await createApiSource("http://api", f, now).seriesBySlug("ser");
     expect(d?.capsules.map((c) => c.partNumber)).toEqual([1, 2, 3]);
     expect(await createApiSource("http://api", f).seriesBySlug("nope")).toBeNull();
   });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatLagosDate, lagosDate, lagosDayRange, lagosMonthRange, nextLagosMidnight, slugify } from "./publish";
+import { dayParts, formatLagosDate, lagosDate, lagosDayRange, lagosMonth, lagosMonthRange, monthLabel, nextLagosMidnight, shiftMonth, shortMonthYear, slugify } from "./publish";
 
 const next = (iso: string) => nextLagosMidnight(new Date(iso)).toISOString();
 
@@ -73,4 +73,17 @@ describe("lagosMonthRange", () => {
   it("rolls over the year", () => {
     expect(lagosMonthRange("2026-12")[1].toISOString()).toBe("2026-12-31T23:00:00.000Z");
   });
+});
+
+describe("month and day labels", () => {
+  it("uses the Lagos month, not the UTC one", () => {
+    expect(lagosMonth(new Date("2026-10-31T23:30:00Z"))).toBe("2026-11");
+  });
+  it("labels and shifts months across years", () => {
+    expect(monthLabel("2026-11")).toBe("November 2026");
+    expect(shortMonthYear("2026-11-14")).toBe("Nov 2026");
+    expect(shiftMonth("2026-01", -1)).toBe("2025-12");
+    expect(shiftMonth("2025-12", 1)).toBe("2026-01");
+  });
+  it("splits a Lagos day", () => expect(dayParts("2026-11-14")).toEqual({ dow: "SAT", n: 14 }));
 });

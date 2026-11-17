@@ -44,7 +44,7 @@ export interface SeriesDetail {
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
   /** Live capsules published in a Lagos month (YYYY-MM), newest first. */
-  capsulesInMonth(month: string): Promise<CapsuleListItem[]>;
+  listCapsulesInMonth(month: string): Promise<CapsuleListItem[]>;
   /** Every series with live capsules. */
   listSeries(): Promise<SeriesSummary[]>;
   seriesBySlug(slug: string): Promise<SeriesDetail | null>;

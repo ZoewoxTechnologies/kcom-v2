@@ -2,10 +2,11 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArchiveHeader from "../../components/ArchiveHeader.astro";
 import CapsuleRow from "../../components/CapsuleRow.astro";
-import Pagination from "../../components/Pagination.astro";
+import Pagination from "@kcom/ui/astro/Pagination.astro";
+import { paginate } from "@kcom/ui/pagination";
 import { data } from "../../lib/data";
-import { SERIES_CAPSULES_PAGE_SIZE, capsulePath, paginate, plural, shortMonthYear } from "../../lib/archive";
-import { formatLagosDate } from "@kcom/content";
+import { SERIES_CAPSULES_PAGE_SIZE, capsulePath, plural } from "../../lib/archive";
+import { formatLagosDate, shortMonthYear } from "@kcom/content";
 
 const slug = Astro.params.slug ?? "";
 const detail = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) ? await data.seriesBySlug(slug) : null;
