@@ -23,6 +23,12 @@ export type {
   ChoiceProps,
   FieldsetProps,
 } from "./react/Field";
+export { Avatar, initialsOf } from "./react/Avatar";
+export type { AvatarProps, AvatarSize } from "./react/Avatar";
+export { Badge } from "./react/Badge";
+export type { BadgeProps, BadgeVariant } from "./react/Badge";
+export { Tag } from "./react/Tag";
+export type { TagProps } from "./react/Tag";
 export {
   DataTable,
   SortableTh,

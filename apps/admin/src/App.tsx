@@ -1,4 +1,5 @@
 import { ButtonsDemo } from "./demo/ButtonsDemo";
+import { AvatarBadgeTagDemo } from "./demo/AvatarBadgeTagDemo";
 import { DataTableDemo } from "./demo/DataTableDemo";
 import { DialogDemo } from "./demo/DialogDemo";
 import { MenuDemo } from "./demo/MenuDemo";
@@ -15,6 +16,7 @@ export function App() {
       <DialogDemo />
       <MenuDemo />
       <FormFieldsDemo />
+      <AvatarBadgeTagDemo />
     </main>
   );
 }
