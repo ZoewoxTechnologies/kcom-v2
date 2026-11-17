@@ -16,21 +16,26 @@ type Publishable = PgTable & { id: AnyPgColumn; status: AnyPgColumn };
 type OrderBy = AnyPgColumn | SQL;
 type Row<T extends PgTable> = T["$inferSelect"];
 
-export type AdminCrudOptions<T extends Publishable> = {
+export type AdminCrudOptions<
+  T extends Publishable,
+  C extends ZodType,
+  U extends ZodType,
+  Out = Row<T>,
+> = {
   db: CapsuleDb;
   table: T;
   /** Singular name used in 404 messages, e.g. "post". */
   label: string;
   /** Full body for create (defaults applied). Must be a strict object. */
-  createBody: ZodType<Record<string, unknown>>;
+  createBody: C;
   /** Partial body for update. Must be a strict object. */
-  updateBody: ZodType<Record<string, unknown>>;
+  updateBody: U;
   /** List ordering. */
   orderBy: OrderBy[];
   /** Messages for unique/foreign-key/check violations. */
   errors?: WriteErrorOptions;
   /** Shape a row before it is returned (e.g. add a computed field). */
-  present?: (row: Row<T>) => unknown;
+  present?: (row: Row<T>) => Out;
 };
 
 /**
@@ -39,9 +44,14 @@ export type AdminCrudOptions<T extends Publishable> = {
  * checked by the /admin group; writes need `content:write` and go through
  * `assertCanChange`. Chain extra routes on the returned router if needed.
  */
-export function adminCrudRoutes<T extends Publishable>(opts: AdminCrudOptions<T>) {
+export function adminCrudRoutes<
+  T extends Publishable,
+  C extends ZodType,
+  U extends ZodType,
+  Out = Row<T>,
+>(opts: AdminCrudOptions<T, C, U, Out>) {
   const { db, table, label, createBody, updateBody, orderBy, errors } = opts;
-  const present = (opts.present ?? ((row: Row<T>) => row)) as (row: Row<T>) => unknown;
+  const present = (opts.present ?? ((row: Row<T>) => row)) as (row: Row<T>) => Out;
   const write = requireCan("content:write");
   const listQuery = z.object({ status: publishStatus.optional(), ...pagination() });
   const writeErrors = { label: `${label} slug`, ...errors };
@@ -71,12 +81,13 @@ export function adminCrudRoutes<T extends Publishable>(opts: AdminCrudOptions<T>
       c.json(present(await byId(c.req.valid("param").id))),
     )
     .post("/", write, validate("json", createBody), async (c) => {
-      const body = c.req.valid("json") as Record<string, unknown>;
-      assertCanChange(c, null, body.status as Status | undefined, publishAtOf(body));
+      const body = c.req.valid("json");
+      const fields = body as Record<string, unknown>;
+      assertCanChange(c, null, fields.status as Status | undefined, publishAtOf(fields));
       try {
         const rows = (await db
           .insert(table)
-          .values(body as T["$inferInsert"])
+          .values(body as unknown as T["$inferInsert"])
           .returning()) as Row<T>[];
         return c.json(present(rows[0]!), 201);
       } catch (err) {
@@ -85,13 +96,14 @@ export function adminCrudRoutes<T extends Publishable>(opts: AdminCrudOptions<T>
     })
     .patch("/:id", write, validate("param", idParam), validate("json", updateBody), async (c) => {
       const { id } = c.req.valid("param");
-      const patch = c.req.valid("json") as Record<string, unknown>;
+      const patch = c.req.valid("json");
+      const fields = patch as Record<string, unknown>;
       const existing = (await byId(id)) as { status: Status };
-      assertCanChange(c, existing.status, patch.status as Status | undefined, publishAtOf(patch));
+      assertCanChange(c, existing.status, fields.status as Status | undefined, publishAtOf(fields));
       try {
         const rows = (await db
           .update(table)
-          .set(patch as Partial<T["$inferInsert"]>)
+          .set(patch as unknown as Partial<T["$inferInsert"]>)
           .where(eq(table.id, id))
           .returning()) as Row<T>[];
         return c.json(present(rows[0]!));
@@ -110,21 +122,23 @@ export function adminCrudRoutes<T extends Publishable>(opts: AdminCrudOptions<T>
 
 type Live = PgTable & { slug: AnyPgColumn; status: AnyPgColumn; publishAt: AnyPgColumn };
 
-export type PublicRoutesOptions<T extends Live> = {
+export type PublicRoutesOptions<T extends Live, Out = Row<T>> = {
   db: CapsuleDb;
   table: T;
   label: string;
   orderBy: OrderBy[];
-  present?: (row: Row<T>) => unknown;
+  present?: (row: Row<T>) => Out;
 };
 
 /**
  * Public, read-only, cacheable: a paginated list and a by-slug lookup, both
  * limited to live content (published, publish time passed).
  */
-export function publicContentRoutes<T extends Live>(opts: PublicRoutesOptions<T>) {
+export function publicContentRoutes<T extends Live, Out = Row<T>>(
+  opts: PublicRoutesOptions<T, Out>,
+) {
   const { db, table, label, orderBy } = opts;
-  const present = (opts.present ?? ((row: Row<T>) => row)) as (row: Row<T>) => unknown;
+  const present = (opts.present ?? ((row: Row<T>) => row)) as (row: Row<T>) => Out;
   const listQuery = z.object(pagination());
 
   return new Hono()

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
-import { beforeEach, describe, expect, it } from "vitest";
+import { hc } from "hono/client";
+import { beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
 import { books } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
@@ -20,10 +21,7 @@ const createBody = z.strictObject({
 });
 const updateBody = z.strictObject(fields).partial();
 
-let app: Hono;
-
-beforeEach(async () => {
-  const db = await createTestDb();
+function build(db: Awaited<ReturnType<typeof createTestDb>>) {
   const admin = adminCrudRoutes({
     db,
     table: books,
@@ -31,18 +29,25 @@ beforeEach(async () => {
     createBody,
     updateBody,
     orderBy: [books.title],
+    present: (row) => ({ id: row.id, title: row.title, shout: row.title.toUpperCase() }),
   });
   const asEditor = new Hono<AuthEnv>().use(async (c, next) => {
     c.set("user", { id: "u", email: "e@example.test", name: "E", role: "editor" });
     await next();
   });
-  app = new Hono()
+  return new Hono()
     .onError(errorHandler)
     .route("/admin", asEditor.route("/", admin))
     .route(
       "/pub",
       publicContentRoutes({ db, table: books, label: "book", orderBy: [books.title] }),
     );
+}
+
+let app: ReturnType<typeof build>;
+
+beforeEach(async () => {
+  app = build(await createTestDb());
 });
 
 const send = (method: string, path: string, body?: unknown) =>
@@ -61,7 +66,9 @@ describe("content CRUD factories", () => {
     expect((await send("POST", "/admin", { title: "B", slug: "c", extra: 1 })).status).toBe(400);
 
     expect(await (await send("GET", "/admin?status=draft")).json()).toMatchObject({ total: 1 });
-    expect(await (await send("GET", "/admin?status=published")).json()).toMatchObject({ total: 0 });
+    expect(await (await send("GET", "/admin?status=published")).json()).toMatchObject({
+      total: 0,
+    });
     expect(await (await send("GET", "/pub")).json()).toEqual([]);
     expect((await send("GET", "/pub/b")).status).toBe(404);
 
@@ -73,5 +80,24 @@ describe("content CRUD factories", () => {
 
     expect((await send("DELETE", `/admin/${id}`)).status).toBe(204);
     expect((await send("DELETE", `/admin/${id}`)).status).toBe(404);
+  });
+
+  it("keeps response types for RPC clients", async () => {
+    const client = hc<typeof app>("http://api.test", { fetch: app.request.bind(app) });
+    type Presented = { id: string; title: string; shout: string };
+
+    const created = await client.admin.$post({
+      json: { title: "B", slug: "b", status: "draft", publishAt: null },
+    });
+    if (created.status !== 201) throw new Error("expected 201");
+    expectTypeOf(await created.json()).toEqualTypeOf<Presented>();
+
+    const list = await client.admin.$get({ query: { limit: "10", offset: "0" } });
+    expectTypeOf(await list.json()).toEqualTypeOf<{ items: Presented[]; total: number }>();
+
+    const pub = await client.pub.$get({ query: { limit: "10", offset: "0" } });
+    const rows = await pub.json();
+    expectTypeOf(rows).items.toHaveProperty("slug");
+    expectTypeOf(rows).not.toBeUnknown();
   });
 });
