@@ -11,12 +11,13 @@ const variants: BadgeVariant[] = [
 ];
 
 const row = { display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center" } as const;
+const stack = { display: "flex", flexDirection: "column", gap: "1.5rem" } as const;
 
 export function AvatarBadgeTagDemo() {
   return (
-    <section>
-      <h2>Avatar, badge, tag</h2>
-      <div style={row}>
+    <section style={stack}>
+      <h2 style={{ margin: 0 }}>Avatar, badge, tag</h2>
+      <div style={{ ...row, padding: "0.25rem" }}>
         <Avatar name="Ada Lovelace" size="sm" />
         <Avatar name="Ada Lovelace" />
         <Avatar name="Ada Lovelace" size="lg" />
