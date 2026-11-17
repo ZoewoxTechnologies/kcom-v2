@@ -2,7 +2,7 @@ import { createApiSource, emptySource, withFallback } from "./client";
 import { sampleSource } from "./sample";
 import type { DataSource } from "./types";
 
-export type { CapsuleSummary, DataSource } from "./types";
+export type { Capsule, CapsuleLink, CapsuleListQuery, CapsuleSummary, DataSource, RichTextDoc, SeriesInfo } from "./types";
 
 /**
  * One switch: DATA_SOURCE=sample serves built-in sample data; DATA_SOURCE=api (default)

@@ -27,7 +27,7 @@ describe("api source", () => {
 });
 
 describe("fallback and switch", () => {
-  const down: typeof sampleSource = { latestCapsule: async () => { throw new Error("down"); } };
+  const down: typeof sampleSource = { ...emptySource, latestCapsule: async () => { throw new Error("down"); } };
   it("falls back to sample data on error", async () => {
     const onError = vi.fn();
     expect(await withFallback(down, sampleSource, onError).latestCapsule()).toEqual(sampleCapsule);
