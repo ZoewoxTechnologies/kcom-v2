@@ -3,14 +3,19 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { nextLagosMidnight, slug } from "@kcom/content";
 import { capsules, type CapsuleDb } from "@kcom/db";
-import { rethrowWriteError } from "../db-errors.js";
-import { HttpError } from "../errors.js";
-import { assertCan, requireCan, type AuthEnv } from "../require-permission.js";
-import { richTextSchema } from "../rich-text.js";
+import {
+  assertCanChange,
+  idParam,
+  notFound,
+  pagination,
+  publishStatus,
+  rethrowWriteError,
+  richTextSchema,
+} from "../content/index.js";
+import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 import { present } from "./capsules.js";
 
-const idParam = z.object({ id: z.uuid() });
 const text = (max: number) => z.string().trim().max(max);
 const optionalText = (max: number) => text(max).min(1).nullable();
 
@@ -26,7 +31,7 @@ const fields = {
   authorSource: optionalText(200),
   seriesId: z.uuid().nullable(),
   partNumber: z.number().int().positive().nullable(),
-  status: z.enum(["draft", "scheduled", "published"]),
+  status: publishStatus,
   publishAt: z.coerce.date(),
 };
 
@@ -44,21 +49,26 @@ const createBody = z.strictObject({
   publishAt: fields.publishAt.default(() => nextLagosMidnight()),
 });
 const updateBody = z
-  .strictObject(Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, v.optional()])))
+  .strictObject(fields)
+  .partial()
   .refine((b) => Object.keys(b).length > 0, "no fields to update");
 
 const listQuery = z.object({
   status: fields.status.optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
-  offset: z.coerce.number().int().min(0).default(0),
+  ...pagination(),
 });
+
+const CAPSULE_ERRORS = {
+  label: "capsule slug",
+  messages: { reference: "series does not exist", check: "part number needs a series" },
+};
 
 /** Editor/admin endpoints: full access to capsules including drafts and scheduled ones. */
 export function adminCapsuleRoutes(db: CapsuleDb) {
   const write = requireCan("content:write");
   const byId = async (id: string) => {
     const [row] = await db.select().from(capsules).where(eq(capsules.id, id));
-    if (!row) throw new HttpError(404, "not_found", "capsule not found");
+    if (!row) throw notFound("capsule");
     return row;
   };
 
@@ -79,38 +89,34 @@ export function adminCapsuleRoutes(db: CapsuleDb) {
     )
     .post("/", write, validate("json", createBody), async (c) => {
       const body = c.req.valid("json");
-      if (body.status !== "draft") assertCan(c, "content:publish");
+      assertCanChange(c, null, body.status);
       try {
         const [row] = await db.insert(capsules).values(body).returning();
         return c.json(present(row!), 201);
       } catch (err) {
-        rethrowWriteError(err, "capsule");
+        rethrowWriteError(err, CAPSULE_ERRORS);
       }
     })
     .patch("/:id", write, validate("param", idParam), validate("json", updateBody), async (c) => {
       const { id } = c.req.valid("param");
       const patch = c.req.valid("json");
       const existing = await byId(id);
-      // Anything touching live or scheduled content, or moving a draft out of draft,
-      // is a publishing action.
-      if (existing.status !== "draft" || (patch.status ?? "draft") !== "draft") {
-        assertCan(c, "content:publish");
-      }
+      assertCanChange(c, existing.status, patch.status);
       try {
         const [row] = await db.update(capsules).set(patch).where(eq(capsules.id, id)).returning();
         return c.json(present(row!));
       } catch (err) {
-        rethrowWriteError(err, "capsule");
+        rethrowWriteError(err, CAPSULE_ERRORS);
       }
     })
     .delete("/:id", write, validate("param", idParam), async (c) => {
       const { id } = c.req.valid("param");
-      if ((await byId(id)).status !== "draft") assertCan(c, "content:publish");
+      assertCanChange(c, (await byId(id)).status);
       const rows = await db
         .delete(capsules)
         .where(eq(capsules.id, id))
         .returning({ id: capsules.id });
-      if (rows.length === 0) throw new HttpError(404, "not_found", "capsule not found");
+      if (rows.length === 0) throw notFound("capsule");
       return c.body(null, 204);
     });
 }

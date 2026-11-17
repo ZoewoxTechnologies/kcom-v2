@@ -4,7 +4,7 @@ import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
 import { rolePermissions } from "./permissions.js";
 import { seedUser } from "./seed-users.js";
-import { sanitizeRichText } from "./rich-text.js";
+import { sanitizeRichText } from "./content/index.js";
 
 const PASSWORD = "correct horse battery";
 const ORIGIN = "http://admin.test";

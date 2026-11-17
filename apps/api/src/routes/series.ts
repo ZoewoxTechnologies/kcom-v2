@@ -3,13 +3,10 @@ import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
 import { capsules, series, type CapsuleDb } from "@kcom/db";
-import { rethrowWriteError } from "../db-errors.js";
+import { idParam, notFound, rethrowWriteError, slugParam } from "../content/index.js";
 import { HttpError } from "../errors.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
-
-const idParam = z.object({ id: z.uuid() });
-const slugParam = z.object({ slug });
 
 const fields = {
   title: z.string().trim().min(1).max(200),
@@ -37,7 +34,7 @@ export function seriesRoutes(db: CapsuleDb) {
         .select()
         .from(series)
         .where(eq(series.slug, c.req.valid("param").slug));
-      if (!row) throw new HttpError(404, "not_found", "series not found");
+      if (!row) throw notFound("series");
       c.header("Cache-Control", "public, max-age=60");
       return c.json(row);
     });
@@ -52,7 +49,7 @@ export function adminSeriesRoutes(db: CapsuleDb) {
         .select()
         .from(series)
         .where(eq(series.id, c.req.valid("param").id));
-      if (!row) throw new HttpError(404, "not_found", "series not found");
+      if (!row) throw notFound("series");
       return c.json(row);
     })
     .post("/", write, validate("json", createBody), async (c) => {
@@ -60,7 +57,7 @@ export function adminSeriesRoutes(db: CapsuleDb) {
         const [row] = await db.insert(series).values(c.req.valid("json")).returning();
         return c.json(row!, 201);
       } catch (err) {
-        rethrowWriteError(err, "series");
+        rethrowWriteError(err, { label: "series slug" });
       }
     })
     .patch("/:id", write, validate("param", idParam), validate("json", updateBody), async (c) => {
@@ -70,11 +67,11 @@ export function adminSeriesRoutes(db: CapsuleDb) {
           .set(c.req.valid("json"))
           .where(eq(series.id, c.req.valid("param").id))
           .returning();
-        if (!row) throw new HttpError(404, "not_found", "series not found");
+        if (!row) throw notFound("series");
         return c.json(row);
       } catch (err) {
         if (err instanceof HttpError) throw err;
-        rethrowWriteError(err, "series");
+        rethrowWriteError(err, { label: "series slug" });
       }
     })
     .delete("/:id", write, validate("param", idParam), async (c) => {
@@ -84,7 +81,7 @@ export function adminSeriesRoutes(db: CapsuleDb) {
         await tx.update(capsules).set({ partNumber: null }).where(eq(capsules.seriesId, id));
         return tx.delete(series).where(eq(series.id, id)).returning({ id: series.id });
       });
-      if (deleted.length === 0) throw new HttpError(404, "not_found", "series not found");
+      if (deleted.length === 0) throw notFound("series");
       return c.body(null, 204);
     });
 }

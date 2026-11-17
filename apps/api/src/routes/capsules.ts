@@ -8,10 +8,10 @@ import {
   listPublishedCapsules,
   type CapsuleDb,
 } from "@kcom/db";
+import { notFound, pagination, slugParam } from "../content/index.js";
 import { HttpError } from "../errors.js";
 import { validate } from "../validate.js";
 
-const slugParam = z.object({ slug });
 const dateParam = z.object({ date: z.iso.date() });
 
 const LAGOS = "+01:00"; // Africa/Lagos has no daylight saving.
@@ -24,8 +24,7 @@ const listQuery = z.object({
     .optional(),
   date: z.iso.date().optional(),
   series: slug.optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(30),
-  offset: z.coerce.number().int().min(0).default(0),
+  ...pagination(30),
 });
 
 type Capsule = NonNullable<Awaited<ReturnType<typeof latestCapsule>>>;
@@ -78,13 +77,13 @@ export function capsuleRoutes(db: CapsuleDb) {
     })
     .get("/date/:date", validate("param", dateParam), async (c) => {
       const capsule = await capsuleByRange(db, ...dayRange(c.req.valid("param").date));
-      if (!capsule) throw new HttpError(404, "not_found", "capsule not found");
+      if (!capsule) throw notFound("capsule");
       c.header("Cache-Control", "public, max-age=60");
       return c.json(present(capsule));
     })
     .get("/:slug", validate("param", slugParam), async (c) => {
       const capsule = await capsuleBySlug(db, c.req.valid("param").slug);
-      if (!capsule) throw new HttpError(404, "not_found", "capsule not found");
+      if (!capsule) throw notFound("capsule");
       c.header("Cache-Control", "public, max-age=60");
       return c.json(present(capsule));
     });
