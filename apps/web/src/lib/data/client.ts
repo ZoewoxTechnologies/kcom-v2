@@ -58,19 +58,28 @@ export function createApiSource(baseUrl: string, fetchImpl: typeof fetch = fetch
   };
 }
 
-/** Tries the API first and falls back to the sample source when a call fails or returns nothing usable. */
-export function withFallback(primary: DataSource, fallback: DataSource, onError?: (e: unknown) => void): DataSource {
-  const safe = async <T>(run: (s: DataSource) => Promise<T>, empty: (v: T) => boolean): Promise<T> => {
+/** Serves nothing: null / empty lists. Pages hide the pieces that depend on data. */
+export const emptySource: DataSource = {
+  latestCapsule: async () => null,
+  listSeries: async () => [],
+};
+
+/**
+ * Wraps a source so failures never throw. When `fallback` is given, it is used on failure
+ * or empty results; otherwise the result is null / empty.
+ */
+export function withFallback(primary: DataSource, fallback: DataSource | null, onError?: (e: unknown) => void): DataSource {
+  const safe = async <T>(run: (s: DataSource) => Promise<T>, empty: (v: T) => boolean, none: T): Promise<T> => {
     try {
       const v = await run(primary);
       if (!empty(v)) return v;
     } catch (e) {
       onError?.(e);
     }
-    return run(fallback);
+    return fallback ? run(fallback) : none;
   };
   return {
-    latestCapsule: () => safe((s) => s.latestCapsule(), (v) => v === null),
-    listSeries: () => safe((s) => s.listSeries(), (v) => v.length === 0),
+    latestCapsule: () => safe((s) => s.latestCapsule(), (v) => v === null, null),
+    listSeries: () => safe((s) => s.listSeries(), (v) => v.length === 0, []),
   };
 }

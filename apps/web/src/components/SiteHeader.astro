@@ -7,14 +7,14 @@ const { current = "" } = Astro.props;
 const capsule = await data.latestCapsule();
 const today = capsule?.displayDate
   ? new Date(`${capsule.displayDate}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })
-  : "Today";
+  : "";
 const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule.scriptureRef ?? ""}` : (capsule?.scriptureRef ?? "");
 ---
-<div class="verse-bar">
+{capsule && <div class="verse-bar">
   <span class="date">{today}</span>
   <a class="verse" href="/capsules/today"><span class="long">Today: {quote}</span><span class="short">{capsule?.scriptureRef}</span></a>
   <a class="email" href="/subscribe">Get it by email</a>
-</div>
+</div>}
 <header class="site-header">
   <a class="brand" href="/">
     <img src="/logo.png" alt="" width="48" height="48" />

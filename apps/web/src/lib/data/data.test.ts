@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createApiSource, richTextToPlain, withFallback } from "./client";
+import { createApiSource, emptySource, richTextToPlain, withFallback } from "./client";
 import { resolveSource } from "./index";
 import { sampleCapsule, sampleSource } from "./sample";
 
@@ -35,9 +35,20 @@ describe("fallback and switch", () => {
     expect((await s.listSeries()).length).toBeGreaterThan(0);
     expect(onError).toHaveBeenCalledOnce();
   });
-  it("DATA_SOURCE=sample or no API URL serves sample data", () => {
-    expect(resolveSource({ DATA_SOURCE: "sample", PUBLIC_API_URL: "http://x" })).toBe(sampleSource);
-    expect(resolveSource({})).toBe(sampleSource);
-    expect(resolveSource({ PUBLIC_API_URL: "http://x" })).not.toBe(sampleSource);
+  it("DATA_SOURCE=sample serves sample data; no API URL does so only outside production", () => {
+    expect(resolveSource({ DATA_SOURCE: "sample", PUBLIC_API_URL: "http://x" }, true)).toBe(sampleSource);
+    expect(resolveSource({}, false)).toBe(sampleSource);
+    expect(resolveSource({}, true)).toBe(emptySource);
+    expect(resolveSource({ PUBLIC_API_URL: "http://x" }, false)).not.toBe(sampleSource);
+  });
+  it("production never shows sample content when the API is down or empty", async () => {
+    const down = vi.fn<typeof fetch>(async () => {
+      throw new Error("down");
+    });
+    const s = withFallback(createApiSource("http://api", down), null);
+    expect(await s.latestCapsule()).toBeNull();
+    expect(await s.listSeries()).toEqual([]);
+    const empty = withFallback(createApiSource("http://api", (async () => json({}, 404)) as unknown as typeof fetch), null);
+    expect(await empty.latestCapsule()).toBeNull();
   });
 });
