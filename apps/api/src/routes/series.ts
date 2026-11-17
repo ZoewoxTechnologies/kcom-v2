@@ -3,10 +3,9 @@ import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
 import { capsules, series, type CapsuleDb } from "@kcom/db";
-import type { Auth } from "../auth.js";
 import { rethrowWriteError } from "../db-errors.js";
 import { HttpError } from "../errors.js";
-import { requirePermission, type AuthEnv } from "../require-permission.js";
+import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 
 const idParam = z.object({ id: z.uuid() });
@@ -44,12 +43,11 @@ export function seriesRoutes(db: CapsuleDb) {
     });
 }
 
-export function adminSeriesRoutes(db: CapsuleDb, auth: Auth) {
-  const read = requirePermission(auth, "content:read");
-  const write = requirePermission(auth, "content:write");
+export function adminSeriesRoutes(db: CapsuleDb) {
+  const write = requireCan("content:write");
   return new Hono<AuthEnv>()
-    .get("/", read, async (c) => c.json(await db.select().from(series).orderBy(asc(series.title))))
-    .get("/:id", read, validate("param", idParam), async (c) => {
+    .get("/", async (c) => c.json(await db.select().from(series).orderBy(asc(series.title))))
+    .get("/:id", validate("param", idParam), async (c) => {
       const [row] = await db
         .select()
         .from(series)

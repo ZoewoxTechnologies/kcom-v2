@@ -24,3 +24,15 @@ export const requirePermission = (auth: Auth, permission: Permission) =>
     c.header("Cache-Control", "no-store");
     await next();
   });
+
+/**
+ * Finer check for routes already behind `requirePermission` (for example the
+ * /admin group): reuses the user it set, so the session is looked up once.
+ */
+export const requireCan = (permission: Permission) =>
+  createMiddleware<AuthEnv>(async (c, next) => {
+    if (!can(c.var.user.role, permission)) {
+      throw new HttpError(403, "forbidden", "you do not have permission to do this");
+    }
+    await next();
+  });

@@ -3,10 +3,9 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { nextLagosMidnight, slug } from "@kcom/content";
 import { capsules, type CapsuleDb } from "@kcom/db";
-import type { Auth } from "../auth.js";
 import { rethrowWriteError } from "../db-errors.js";
 import { HttpError } from "../errors.js";
-import { requirePermission, type AuthEnv } from "../require-permission.js";
+import { requireCan, type AuthEnv } from "../require-permission.js";
 import { richTextSchema } from "../rich-text.js";
 import { validate } from "../validate.js";
 import { present } from "./capsules.js";
@@ -55,10 +54,9 @@ const listQuery = z.object({
 });
 
 /** Editor/admin endpoints: full access to capsules including drafts and scheduled ones. */
-export function adminCapsuleRoutes(db: CapsuleDb, auth: Auth) {
-  const read = requirePermission(auth, "content:read");
-  const write = requirePermission(auth, "content:write");
-  const publish = requirePermission(auth, "content:publish");
+export function adminCapsuleRoutes(db: CapsuleDb) {
+  const write = requireCan("content:write");
+  const publish = requireCan("content:publish");
   const byId = async (id: string) => {
     const [row] = await db.select().from(capsules).where(eq(capsules.id, id));
     if (!row) throw new HttpError(404, "not_found", "capsule not found");
@@ -66,7 +64,7 @@ export function adminCapsuleRoutes(db: CapsuleDb, auth: Auth) {
   };
 
   return new Hono<AuthEnv>()
-    .get("/", read, validate("query", listQuery), async (c) => {
+    .get("/", validate("query", listQuery), async (c) => {
       const { status, limit, offset } = c.req.valid("query");
       const rows = await db
         .select()
@@ -77,7 +75,7 @@ export function adminCapsuleRoutes(db: CapsuleDb, auth: Auth) {
         .offset(offset);
       return c.json(rows.map(present));
     })
-    .get("/:id", read, validate("param", idParam), async (c) =>
+    .get("/:id", validate("param", idParam), async (c) =>
       c.json(present(await byId(c.req.valid("param").id))),
     )
     .post("/", write, validate("json", createBody), async (c) => {
@@ -117,8 +115,8 @@ export function adminCapsuleRoutes(db: CapsuleDb, auth: Auth) {
 
 /** Moving a capsule out of draft needs the publish permission, checked after write. */
 async function requireContentPublish(
-  publish: ReturnType<typeof requirePermission>,
-  c: Parameters<ReturnType<typeof requirePermission>>[0],
+  publish: ReturnType<typeof requireCan>,
+  c: Parameters<ReturnType<typeof requireCan>>[0],
 ) {
   await publish(c, async () => {});
 }
