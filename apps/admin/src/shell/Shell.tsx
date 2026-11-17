@@ -44,8 +44,8 @@ export function Shell() {
       <div className="kc-admin__main">
         <header className="kc-admin__bar">
           <Button
-            variant="tertiary"
-            size="sm"
+            variant="secondary"
+            size="md"
             className="kc-admin__burger"
             aria-label="Menu"
             aria-controls="admin-nav"
