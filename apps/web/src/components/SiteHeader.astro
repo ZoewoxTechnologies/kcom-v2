@@ -35,16 +35,20 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   <details class="menu">
     <summary class="kc-btn kc-btn--secondary kc-btn--sm">Menu</summary>
     <nav aria-label="Main mobile">
-      {navItems.map((item) => (
-        <div class="group">
-          <a href={item.href} aria-current={isCurrent(item, current) ? "page" : undefined}>{item.label}</a>
-          {item.children && (
+      {navItems.map((item) =>
+        item.children ? (
+          <details class="group" open={isCurrent(item, current) || undefined}>
+            <summary>{item.label}</summary>
             <div class="sub">
               {item.children.map((c) => <a href={c.href}>{c.label}</a>)}
             </div>
-          )}
-        </div>
-      ))}
+          </details>
+        ) : (
+          <div class="group">
+            <a href={item.href} aria-current={isCurrent(item, current) ? "page" : undefined}>{item.label}</a>
+          </div>
+        ),
+      )}
     </nav>
   </details>
   <a class="cta kc-btn kc-btn--primary kc-btn--sm" href="/capsules/today">Today’s Capsule</a>
@@ -67,6 +71,11 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   .menu nav { position: absolute; right: 0; top: calc(100% + var(--space-2)); width: min(18rem, 85vw); background: var(--color-raised); border: 1px solid var(--color-line); border-radius: var(--radius); box-shadow: var(--shadow-menu); padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; font-family: var(--font-title); font-size: 1.375rem; max-height: calc(100dvh - 8rem); overflow-y: auto; }
   .main-nav :global(.kc-menu-wrap.is-current .kc-menu-trigger) { border-bottom: 2px solid var(--color-gold); border-radius: 0; }
   .main-nav :global(.kc-menu-trigger) { font-weight: 600; font-size: 0.9375rem; color: var(--color-text); }
+  .menu summary.kc-btn { display: inline-flex; }
+  .menu details.group > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: var(--space-2) 0; }
+  .menu details.group > summary::-webkit-details-marker { display: none; }
+  .menu details.group > summary::after { content: ""; inline-size: 0.5em; block-size: 0.5em; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: translateY(-0.1em) rotate(45deg); transition: transform var(--dur-fast) var(--ease-out); }
+  .menu details.group[open] > summary::after { transform: translateY(0.1em) rotate(-135deg); }
   .menu .group { border-bottom: 1px solid var(--color-line); padding: var(--space-1) 0; }
   .menu .group:last-child { border-bottom: 0; }
   .menu .sub { display: flex; flex-direction: column; padding: 0 0 var(--space-2) var(--space-3); line-height: 1.3; font-family: var(--font-body); font-size: 0.9375rem; color: var(--color-muted); }
