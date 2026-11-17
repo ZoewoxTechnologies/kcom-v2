@@ -23,7 +23,12 @@
   }
 
   .kc-toast {
-    --kc-toast-accent: var(--color-sage);
+    /* The toast surface is the inverse of the page, so accents use the
+       opposite theme's value to stay readable against it. */
+    --kc-toast-success: var(--color-sage);
+    --kc-toast-info: var(--color-gold);
+    --kc-toast-error: #e59a88;
+    --kc-toast-accent: var(--kc-toast-success);
 
     position: relative;
     overflow: hidden;
@@ -41,11 +46,26 @@
     pointer-events: auto;
 
     &[data-variant="error"] {
-      --kc-toast-accent: var(--color-error);
+      --kc-toast-accent: var(--kc-toast-error);
     }
 
     &[data-variant="info"] {
-      --kc-toast-accent: var(--color-gold);
+      --kc-toast-accent: var(--kc-toast-info);
+    }
+
+    /* Dark theme: the surface is light, so use the deeper light-theme tones. */
+    :root[data-theme="dark"] & {
+      --kc-toast-success: #2f6b42;
+      --kc-toast-info: var(--color-gold-text);
+      --kc-toast-error: #a3402e;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) & {
+        --kc-toast-success: #2f6b42;
+        --kc-toast-info: var(--color-gold-text);
+        --kc-toast-error: #a3402e;
+      }
     }
 
     &[data-state="open"] {

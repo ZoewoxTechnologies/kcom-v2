@@ -1,7 +1,9 @@
 import { ToastProvider } from "@kcom/ui";
 import { ButtonsDemo } from "./demo/ButtonsDemo";
+import { AvatarBadgeTagDemo } from "./demo/AvatarBadgeTagDemo";
 import { DataTableDemo } from "./demo/DataTableDemo";
 import { DialogDemo } from "./demo/DialogDemo";
+import { MenuDemo } from "./demo/MenuDemo";
 import { FormFieldsDemo } from "./demo/FormFieldsDemo";
 import { ToastDemo } from "./demo/ToastDemo";
 
@@ -15,7 +17,9 @@ export function App() {
         <ButtonsDemo />
         <DataTableDemo />
         <DialogDemo />
+        <MenuDemo />
         <FormFieldsDemo />
+        <AvatarBadgeTagDemo />
         <ToastDemo />
       </main>
     </ToastProvider>

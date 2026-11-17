@@ -1,0 +1,53 @@
+/* Avatar: .kc-avatar (+ --sm, --lg) wrapping an image and an initials fallback.
+   Import after tokens.css. */
+@layer components {
+  .kc-avatar {
+    --kc-avatar-size: 2.5rem;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    inline-size: var(--kc-avatar-size);
+    block-size: var(--kc-avatar-size);
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--color-wash);
+    color: var(--color-primary);
+    font: 700 calc(var(--kc-avatar-size) * 0.38) / 1 var(--font-body);
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+    user-select: none;
+  }
+
+  .kc-avatar--sm {
+    --kc-avatar-size: 2rem;
+  }
+
+  .kc-avatar--lg {
+    --kc-avatar-size: 4rem;
+  }
+
+  /* Team portraits: larger, with a gold ring. */
+  .kc-avatar--xl {
+    --kc-avatar-size: 7rem;
+
+    box-shadow:
+      0 0 0 2px var(--color-surface),
+      0 0 0 4px var(--color-gold);
+  }
+
+  .kc-avatar__image {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .kc-avatar__fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+}
