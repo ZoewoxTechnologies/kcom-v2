@@ -6,6 +6,10 @@ import { seedUser } from "./seed-users.js";
 const PASSWORD = "correct horse battery";
 const ORIGIN = "http://admin.test";
 const authOpts = { secret: "x".repeat(40), baseURL: "http://api.test" };
+const doc = (text: string) => ({
+  type: "doc",
+  content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+});
 
 let app: ReturnType<typeof createApp>;
 let editor: string;
@@ -25,88 +29,132 @@ beforeEach(async () => {
     .join("; ");
 });
 
-const send = (method: string, path: string, body?: unknown, cookie: string | undefined = editor) =>
+const send = (method: string, path: string, body?: unknown, cookie: string | null = editor) =>
   app.request(path, {
     method,
-    headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
+    headers: {
+      origin: ORIGIN,
+      ...(cookie ? { cookie } : {}),
+      ...(body === undefined ? {} : { "content-type": "application/json" }),
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-const post = { title: "Hello", slug: "hello", date: "2026-01-02", body: { type: "doc" } };
+const post = { title: "Hello", slug: "hello", date: "2026-01-02", body: doc("hi") };
+const ID = "00000000-0000-4000-8000-000000000000";
 
-describe.each([["blog", post]] as const)("%s API", (name, sample) => {
-  const admin = `/admin/${name}`;
-
-  it("requires auth on every admin route", async () => {
-    const id = "00000000-0000-4000-8000-000000000000";
+describe("admin blog", () => {
+  it("requires sign-in on every route", async () => {
     for (const [m, p] of [
-      ["GET", admin],
-      ["GET", `${admin}/${id}`],
-      ["POST", admin],
-      ["PATCH", `${admin}/${id}`],
-      ["DELETE", `${admin}/${id}`],
-    ]) {
-      expect((await send(m!, p!, m === "GET" ? undefined : {}, "")).status, `${m} ${p}`).toBe(401);
+      ["GET", "/admin/blog"],
+      ["GET", `/admin/blog/${ID}`],
+      ["POST", "/admin/blog"],
+      ["PATCH", `/admin/blog/${ID}`],
+      ["DELETE", `/admin/blog/${ID}`],
+    ] as const) {
+      const res = await send(m, p, m === "GET" || m === "DELETE" ? undefined : {}, null);
+      expect(res.status, `${m} ${p}`).toBe(401);
     }
   });
 
-  it("supports editor CRUD", async () => {
-    const created = await send("POST", admin, sample);
+  it("supports editor CRUD with no-store responses", async () => {
+    const created = await send("POST", "/admin/blog", post);
     expect(created.status).toBe(201);
     const { id } = (await created.json()) as { id: string };
 
-    expect((await (await send("GET", admin)).json()) as unknown[]).toHaveLength(1);
-    expect((await send("GET", `${admin}/${id}`)).status).toBe(200);
+    const list = await send("GET", "/admin/blog");
+    expect(list.headers.get("cache-control")).toBe("no-store");
+    expect(await list.json()).toMatchObject({ total: 1, items: [{ id, status: "draft" }] });
+    expect((await send("GET", `/admin/blog/${id}`)).status).toBe(200);
 
-    const patched = await send("PATCH", `${admin}/${id}`, { title: "Renamed" });
-    expect(patched.status).toBe(200);
-    expect(await patched.json()).toMatchObject({ title: "Renamed", slug: sample.slug });
+    const patched = await send("PATCH", `/admin/blog/${id}`, { title: "Renamed" });
+    expect(await patched.json()).toMatchObject({ title: "Renamed", slug: "hello" });
 
-    expect((await send("DELETE", `${admin}/${id}`)).status).toBe(204);
-    expect((await send("GET", `${admin}/${id}`)).status).toBe(404);
-    expect((await send("DELETE", `${admin}/${id}`)).status).toBe(404);
+    expect((await send("DELETE", `/admin/blog/${id}`)).status).toBe(204);
+    expect((await send("GET", `/admin/blog/${id}`)).status).toBe(404);
+    expect((await send("DELETE", `/admin/blog/${id}`)).status).toBe(404);
   });
 
-  it("hides drafts and future-dated items from public reads", async () => {
-    const draft = await send("POST", admin, sample);
-    const { id } = (await draft.json()) as { id: string };
-    const pub = (p: string) => send("GET", `/${name}${p}`, undefined, "");
-
-    expect(await (await pub("")).json()).toEqual([]);
-    expect((await pub(`/${sample.slug}`)).status).toBe(404);
-
-    await send("PATCH", `${admin}/${id}`, {
-      status: "published",
-      publishAt: "2999-01-01T00:00:00Z",
-    });
-    expect(await (await pub("")).json()).toEqual([]);
-    expect((await pub(`/${sample.slug}`)).status).toBe(404);
-
-    await send("PATCH", `${admin}/${id}`, { publishAt: null });
-    expect(await (await pub("")).json()).toHaveLength(1);
-    expect((await pub(`/${sample.slug}`)).status).toBe(200);
+  it("filters the admin list by status and paginates", async () => {
+    await send("POST", "/admin/blog", post);
+    await send("POST", "/admin/blog", { ...post, slug: "two", status: "published" });
+    const drafts = await (await send("GET", "/admin/blog?status=draft")).json();
+    expect(drafts).toMatchObject({ total: 1, items: [{ slug: "hello" }] });
+    const page = await (await send("GET", "/admin/blog?limit=1&offset=1")).json();
+    expect(page).toMatchObject({ total: 2 });
+    expect((page as { items: unknown[] }).items).toHaveLength(1);
   });
 
   it("rejects invalid input with 400", async () => {
-    expect((await send("POST", admin, { ...sample, slug: "Not A Slug" })).status).toBe(400);
-    expect((await send("POST", admin, { title: "" })).status).toBe(400);
-    expect((await send("PATCH", `${admin}/not-a-uuid`, {})).status).toBe(400);
+    for (const bad of [
+      { ...post, slug: "Not A Slug" },
+      { title: "" },
+      { ...post, title: "x".repeat(201) },
+      { ...post, excerpt: "x".repeat(501) },
+      { ...post, tags: Array.from({ length: 21 }, (_, i) => `t${i}`) },
+      { ...post, heroImageUrl: "javascript:alert(1)" },
+      { ...post, unknown: 1 },
+      { ...post, status: "bogus" },
+    ]) {
+      expect(
+        (await send("POST", "/admin/blog", bad)).status,
+        JSON.stringify(bad).slice(0, 60),
+      ).toBe(400);
+    }
+    expect((await send("PATCH", "/admin/blog/not-a-uuid", { title: "a" })).status).toBe(400);
+    expect((await send("PATCH", `/admin/blog/${ID}`, {})).status).toBe(400);
+    expect((await send("PATCH", `/admin/blog/${ID}`, { title: "a" })).status).toBe(404);
+  });
+
+  it("sanitises rich text before storing it", async () => {
+    const dirty = {
+      type: "doc",
+      content: [
+        { type: "script", content: [] },
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "x", marks: [{ type: "link", attrs: { href: "javascript:1" } }] },
+          ],
+        },
+      ],
+    };
+    const res = await send("POST", "/admin/blog", { ...post, body: dirty });
+    expect(((await res.json()) as { body: unknown }).body).toEqual({
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "x" }] }],
+    });
     expect(
-      (await send("PATCH", `${admin}/00000000-0000-4000-8000-000000000000`, { status: "bogus" }))
-        .status,
+      (await send("POST", "/admin/blog", { ...post, slug: "b", body: { type: "p" } })).status,
     ).toBe(400);
   });
 
   it("rejects a duplicate slug with 409", async () => {
-    expect((await send("POST", admin, sample)).status).toBe(201);
-    expect((await send("POST", admin, sample)).status).toBe(409);
+    expect((await send("POST", "/admin/blog", post)).status).toBe(201);
+    expect((await send("POST", "/admin/blog", post)).status).toBe(409);
   });
 });
 
-describe("blog fields", () => {
-  it("rejects non-http hero images", async () => {
-    expect(
-      (await send("POST", "/admin/blog", { ...post, heroImageUrl: "javascript:alert(1)" })).status,
-    ).toBe(400);
+describe("public blog", () => {
+  it("hides drafts and future-dated posts, and is cacheable", async () => {
+    const created = await send("POST", "/admin/blog", post);
+    const { id } = (await created.json()) as { id: string };
+    const pub = (p = "") => send("GET", `/blog${p}`, undefined, null);
+
+    expect(await (await pub()).json()).toEqual([]);
+    expect((await pub("/hello")).status).toBe(404);
+
+    await send("PATCH", `/admin/blog/${id}`, {
+      status: "published",
+      publishAt: "2999-01-01T00:00:00Z",
+    });
+    expect(await (await pub()).json()).toEqual([]);
+    expect((await pub("/hello")).status).toBe(404);
+
+    await send("PATCH", `/admin/blog/${id}`, { publishAt: null });
+    const list = await pub();
+    expect(list.headers.get("cache-control")).toBe("public, max-age=60");
+    expect(await list.json()).toHaveLength(1);
+    expect((await pub("/hello")).status).toBe(200);
   });
 });

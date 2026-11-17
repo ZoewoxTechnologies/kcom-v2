@@ -30,3 +30,16 @@ export function slugify(input: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/** [from, to) instants covering one Lagos calendar day (`date` is YYYY-MM-DD). */
+export function lagosDayRange(date: string): [Date, Date] {
+  const from = new Date(`${date}T00:00:00+01:00`);
+  return [from, new Date(from.getTime() + DAY_MS)];
+}
+
+/** [from, to) instants covering one Lagos calendar month (`month` is YYYY-MM). */
+export function lagosMonthRange(month: string): [Date, Date] {
+  const [y, m] = month.split("-").map(Number) as [number, number];
+  const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+  return [new Date(`${month}-01T00:00:00+01:00`), new Date(`${next}-01T00:00:00+01:00`)];
+}
