@@ -3,7 +3,9 @@ import { z } from "zod";
 /** Content model stubs. Fields will grow as the database schema lands. */
 
 const id = z.string().min(1);
-export const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase words separated by hyphens");
+export const slug = z
+  .string()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase words separated by hyphens");
 const status = z.enum(["draft", "published", "archived"]);
 
 const base = {
@@ -124,4 +126,11 @@ export type Book = z.infer<typeof bookSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 export type Subscriber = z.infer<typeof subscriberSchema>;
 
-export { formatLagosDate, lagosDate, nextLagosMidnight, slugify } from "./publish.js";
+export {
+  formatLagosDate,
+  lagosDate,
+  lagosDayRange,
+  lagosMonthRange,
+  nextLagosMidnight,
+  slugify,
+} from "./publish.js";
