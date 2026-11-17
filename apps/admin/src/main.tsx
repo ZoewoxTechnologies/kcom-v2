@@ -8,6 +8,7 @@ import "@kcom/ui/data-table.css";
 import "@kcom/ui/dialog.css";
 import "@kcom/ui/menu.css";
 import "@kcom/ui/forms.css";
+import "@kcom/ui/datetime-picker.css";
 import { App } from "./App";
 import { initSentry } from "./sentry";
 

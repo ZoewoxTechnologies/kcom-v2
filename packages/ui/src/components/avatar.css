@@ -32,7 +32,9 @@
   .kc-avatar--xl {
     --kc-avatar-size: 7rem;
 
-    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-gold);
+    box-shadow:
+      0 0 0 2px var(--color-surface),
+      0 0 0 4px var(--color-gold);
   }
 
   .kc-avatar__image {
