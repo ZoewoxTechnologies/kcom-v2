@@ -19,6 +19,11 @@ export interface DialogProps {
    * inside do. Use it for editors that guard closing behind a confirmation.
    */
   dismissible?: boolean;
+  /**
+   * Shows a × button in the corner that calls this instead of closing the
+   * dialog itself, so callers can confirm first. Omit for no × button.
+   */
+  onClose?: () => void;
   /** Element that opens the dialog; focus returns to it on close. */
   trigger?: ReactNode;
   className?: string;
@@ -33,6 +38,7 @@ export function Dialog({
   variant = "modal",
   size = "sm",
   dismissible = true,
+  onClose,
   className,
   children,
   ...root
@@ -57,6 +63,11 @@ export function Dialog({
           {...lock}
           aria-describedby={description ? undefined : undefined}
         >
+          {onClose ? (
+            <button type="button" className="kc-dialog__close" aria-label="Close" onClick={onClose}>
+              ×
+            </button>
+          ) : null}
           <RadixDialog.Title className="kc-dialog__title">{title}</RadixDialog.Title>
           {description ? (
             <RadixDialog.Description className="kc-dialog__description">

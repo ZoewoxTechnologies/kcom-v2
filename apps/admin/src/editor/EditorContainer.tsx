@@ -64,6 +64,7 @@ export function EditorContainer({
         title={title}
         description={description}
         onOpenChange={() => {}}
+        onClose={requestClose}
       >
         <button
           type="button"
