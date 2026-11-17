@@ -308,10 +308,11 @@ export const events = pgTable(
   {
     id: id(),
     title: text("title").notNull(),
+    slug: text("slug").notNull().unique(),
     startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
     endsAt: timestamp("ends_at", { withTimezone: true }),
     place: text("place"),
-    description: text("description"),
+    description: jsonb("description").$type<RichText>(),
     imageUrl: text("image_url"),
     status: publishStatus("status").notNull().default("draft"),
     createdAt: createdAt(),

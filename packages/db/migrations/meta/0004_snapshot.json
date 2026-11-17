@@ -1,5 +1,5 @@
 {
-  "id": "4465d145-da6d-4a72-906d-64f102314cc1",
+  "id": "9c3da032-560d-4718-960c-fe636a6f1bd1",
   "prevId": "6226101b-7393-4cc6-9ddb-a76a73415301",
   "version": "7",
   "dialect": "postgresql",
@@ -658,6 +658,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "starts_at": {
           "name": "starts_at",
           "type": "timestamp with time zone",
@@ -678,7 +684,7 @@
         },
         "description": {
           "name": "description",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -736,7 +742,15 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "events_slug_unique": {
+          "name": "events_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

@@ -1,3 +1,4 @@
+import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import { userRoles, type UserRole } from "@kcom/db";
 import type { Auth } from "./auth.js";
@@ -22,5 +23,21 @@ export const requirePermission = (auth: Auth, permission: Permission) =>
     }
     c.set("user", { id, email, name, role: role as UserRole });
     c.header("Cache-Control", "no-store");
+    await next();
+  });
+
+/**
+ * Finer check for routes already behind `requirePermission` (for example the
+ * /admin group): reuses the user it set, so the session is looked up once.
+ */
+export function assertCan(c: Context<AuthEnv>, permission: Permission) {
+  if (!can(c.var.user.role, permission)) {
+    throw new HttpError(403, "forbidden", "you do not have permission to do this");
+  }
+}
+
+export const requireCan = (permission: Permission) =>
+  createMiddleware<AuthEnv>(async (c, next) => {
+    assertCan(c, permission);
     await next();
   });

@@ -1,117 +1,146 @@
 import { Hono } from "hono";
+import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { and, asc, desc, eq, gte, lt, sql } from "drizzle-orm";
+import { slug } from "@kcom/content";
 import { events, type CapsuleDb } from "@kcom/db";
-import type { Auth } from "../auth.js";
-import { HttpError } from "../errors.js";
-import { requirePermission, type AuthEnv } from "../require-permission.js";
+import {
+  assertCanChange,
+  findById,
+  httpUrl,
+  idParam,
+  notFound,
+  pagination,
+  publicCache,
+  rethrowWriteError,
+  richTextSchema,
+  slugParam,
+} from "../content/index.js";
+import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 
-const idParam = z.object({ id: z.uuid() });
+/** Events have no publish time, so they are only draft or published. */
+const eventStatus = z.enum(["draft", "published"]);
 
 const fields = {
   title: z.string().trim().min(1).max(200),
-  startsAt: z.iso.datetime({ offset: true }).transform((v) => new Date(v)),
-  endsAt: z.iso
-    .datetime({ offset: true })
-    .transform((v) => new Date(v))
-    .nullable(),
-  place: z.string().trim().max(300).nullable(),
-  description: z.string().max(20000).nullable(),
-  imageUrl: z.url().nullable(),
-  status: z.enum(["draft", "published"]),
+  slug,
+  startsAt: z.coerce.date(),
+  endsAt: z.coerce.date().nullable(),
+  place: z.string().trim().min(1).max(300).nullable(),
+  description: richTextSchema.nullable(),
+  imageUrl: httpUrl.nullable(),
+  status: eventStatus,
 };
 
 const createBody = z
-  .object({ ...fields, endsAt: fields.endsAt.optional(), status: fields.status.default("draft") })
-  .partial({ place: true, description: true, imageUrl: true })
-  .refine((v) => !v.endsAt || v.endsAt >= v.startsAt, {
+  .strictObject({
+    ...fields,
+    endsAt: fields.endsAt.default(null),
+    place: fields.place.default(null),
+    description: fields.description.default(null),
+    imageUrl: fields.imageUrl.default(null),
+    status: fields.status.default("draft"),
+  })
+  .refine((b) => !b.endsAt || b.endsAt >= b.startsAt, {
     path: ["endsAt"],
     message: "must not be before startsAt",
   });
-
 const updateBody = z
-  .object(fields)
+  .strictObject(fields)
   .partial()
-  .refine((v) => Object.keys(v).length > 0, { message: "no fields to update" });
+  .refine((b) => Object.keys(b).length > 0, "no fields to update");
 
-const notFound = () => new HttpError(404, "not_found", "event not found");
+const listQuery = z.object({ status: eventStatus.optional(), ...pagination() });
+const publicQuery = z.object({ ...pagination(100) });
 
-/**
- * Public reads (published only) at /events and editor CRUD at /admin/events.
- * Mount at the app root.
- */
-export function eventRoutes(db: CapsuleDb, auth: Auth) {
-  const published = eq(events.status, "published");
-  const guard = (permission: "content:read" | "content:write") =>
-    requirePermission(auth, permission);
+const EVENT_ERRORS = { label: "event slug" };
+const published = eq(events.status, "published");
 
-  const pub = new Hono()
-    .get("/", async (c) => {
+/** Public, read-only: published events only, split into upcoming and past. */
+export function eventRoutes(db: CapsuleDb) {
+  return new Hono()
+    .use(publicCache)
+    .get("/", validate("query", publicQuery), async (c) => {
+      const { limit, offset } = c.req.valid("query");
       const [upcoming, past] = await Promise.all([
         db
           .select()
           .from(events)
           .where(and(published, gte(events.startsAt, sql`now()`)))
-          .orderBy(asc(events.startsAt)),
+          .orderBy(asc(events.startsAt))
+          .limit(limit)
+          .offset(offset),
         db
           .select()
           .from(events)
           .where(and(published, lt(events.startsAt, sql`now()`)))
-          .orderBy(desc(events.startsAt)),
+          .orderBy(desc(events.startsAt))
+          .limit(limit)
+          .offset(offset),
       ]);
-      c.header("Cache-Control", "public, max-age=60");
       return c.json({ upcoming, past });
     })
-    .get("/:id", validate("param", idParam), async (c) => {
+    .get("/:slug", validate("param", slugParam), async (c) => {
       const [row] = await db
         .select()
         .from(events)
-        .where(and(published, eq(events.id, c.req.valid("param").id)));
-      if (!row) throw notFound();
-      c.header("Cache-Control", "public, max-age=60");
+        .where(and(published, eq(events.slug, c.req.valid("param").slug)))
+        .limit(1);
+      if (!row) throw notFound("event");
       return c.json(row);
     });
+}
 
-  const admin = new Hono<AuthEnv>()
-    .get("/", guard("content:read"), async (c) =>
-      c.json(await db.select().from(events).orderBy(desc(events.startsAt))),
-    )
-    .get("/:id", guard("content:read"), validate("param", idParam), async (c) => {
-      const [row] = await db
-        .select()
-        .from(events)
-        .where(eq(events.id, c.req.valid("param").id));
-      if (!row) throw notFound();
-      return c.json(row);
+/** Editor/admin endpoints: full access to events including drafts. */
+export function adminEventRoutes(db: CapsuleDb) {
+  const write = requireCan("content:write");
+  const byId = (id: string) => findById(db, events, id, "event");
+
+  return new Hono<AuthEnv>()
+    .get("/", validate("query", listQuery), async (c) => {
+      const { status, limit, offset } = c.req.valid("query");
+      const where = status ? eq(events.status, status) : undefined;
+      const [items, [counted]] = await Promise.all([
+        db
+          .select()
+          .from(events)
+          .where(where)
+          .orderBy(desc(events.startsAt))
+          .limit(limit)
+          .offset(offset),
+        db.select({ total: count() }).from(events).where(where),
+      ]);
+      return c.json({ items, total: counted?.total ?? 0 });
     })
-    .post("/", guard("content:write"), validate("json", createBody), async (c) => {
-      const [row] = await db.insert(events).values(c.req.valid("json")).returning();
-      return c.json(row, 201);
-    })
-    .patch(
-      "/:id",
-      guard("content:write"),
-      validate("param", idParam),
-      validate("json", updateBody),
-      async (c) => {
-        const [row] = await db
-          .update(events)
-          .set(c.req.valid("json"))
-          .where(eq(events.id, c.req.valid("param").id))
-          .returning();
-        if (!row) throw notFound();
-        return c.json(row);
-      },
+    .get("/:id", validate("param", idParam), async (c) =>
+      c.json(await byId(c.req.valid("param").id)),
     )
-    .delete("/:id", guard("content:write"), validate("param", idParam), async (c) => {
-      const [row] = await db
-        .delete(events)
-        .where(eq(events.id, c.req.valid("param").id))
-        .returning({ id: events.id });
-      if (!row) throw notFound();
+    .post("/", write, validate("json", createBody), async (c) => {
+      const body = c.req.valid("json");
+      assertCanChange(c, null, body.status);
+      try {
+        const [row] = await db.insert(events).values(body).returning();
+        return c.json(row!, 201);
+      } catch (err) {
+        rethrowWriteError(err, EVENT_ERRORS);
+      }
+    })
+    .patch("/:id", write, validate("param", idParam), validate("json", updateBody), async (c) => {
+      const { id } = c.req.valid("param");
+      const patch = c.req.valid("json");
+      const existing = await byId(id);
+      assertCanChange(c, existing.status, patch.status);
+      try {
+        const [row] = await db.update(events).set(patch).where(eq(events.id, id)).returning();
+        return c.json(row!);
+      } catch (err) {
+        rethrowWriteError(err, EVENT_ERRORS);
+      }
+    })
+    .delete("/:id", write, validate("param", idParam), async (c) => {
+      const { id } = c.req.valid("param");
+      assertCanChange(c, (await byId(id)).status);
+      await db.delete(events).where(eq(events.id, id));
       return c.body(null, 204);
     });
-
-  return new Hono().route("/events", pub).route("/admin/events", admin);
 }
