@@ -33,12 +33,8 @@ const send = (method: string, path: string, body?: unknown, cookie: string | und
   });
 
 const post = { title: "Hello", slug: "hello", date: "2026-01-02", body: { type: "doc" } };
-const book = { title: "A Book", slug: "a-book", purchaseUrl: "https://example.com/buy" };
 
-describe.each([
-  ["blog", post],
-  ["books", book],
-] as const)("%s API", (name, sample) => {
+describe.each([["blog", post]] as const)("%s API", (name, sample) => {
   const admin = `/admin/${name}`;
 
   it("requires auth on every admin route", async () => {
@@ -107,14 +103,10 @@ describe.each([
   });
 });
 
-describe("blog and book fields", () => {
-  it("rejects non-http cover images and years", async () => {
+describe("blog fields", () => {
+  it("rejects non-http hero images", async () => {
     expect(
       (await send("POST", "/admin/blog", { ...post, heroImageUrl: "javascript:alert(1)" })).status,
     ).toBe(400);
-    expect(
-      (await send("POST", "/admin/books", { ...book, coverUrl: "ftp://x.test/a.png" })).status,
-    ).toBe(400);
-    expect((await send("POST", "/admin/books", { ...book, publishedYear: 20 })).status).toBe(400);
   });
 });

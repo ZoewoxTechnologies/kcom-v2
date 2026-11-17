@@ -3,8 +3,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
 import { blogPosts, type CapsuleDb } from "@kcom/db";
-import type { Auth } from "../auth.js";
-import { requirePermission, type AuthEnv } from "../require-permission.js";
+import { type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 import {
   conflictOnDuplicateSlug,
@@ -68,69 +67,53 @@ export function blogRoutes(db: CapsuleDb) {
     });
 }
 
-/** Editor CRUD: every post, drafts included. */
-export function adminBlogRoutes(db: CapsuleDb, auth: Auth) {
+/** Editor CRUD: every post, drafts included. Sign-in and role are checked by the /admin group. */
+export function adminBlogRoutes(db: CapsuleDb) {
   return new Hono<AuthEnv>()
-    .get("/", requirePermission(auth, "content:read"), async (c) =>
+    .get("/", async (c) =>
       c.json(
         await db.select().from(blogPosts).orderBy(desc(blogPosts.date), desc(blogPosts.createdAt)),
       ),
     )
-    .get("/:id", requirePermission(auth, "content:read"), validate("param", idParam), async (c) => {
+    .get("/:id", validate("param", idParam), async (c) => {
       const [row] = await db
         .select()
         .from(blogPosts)
         .where(eq(blogPosts.id, c.req.valid("param").id));
       return row ? c.json(row) : notFound("post");
     })
-    .post(
-      "/",
-      requirePermission(auth, "content:write"),
-      validate("json", createSchema),
-      async (c) => {
-        const body = c.req.valid("json");
-        requirePublishRight(c.var.user, body.status);
-        const [row] = await db
-          .insert(blogPosts)
-          .values({
-            ...toRow(body),
-            title: body.title,
-            slug: body.slug,
-            date: body.date,
-            body: body.body,
-          })
-          .returning()
-          .catch(conflictOnDuplicateSlug);
-        return c.json(row!, 201);
-      },
-    )
-    .patch(
-      "/:id",
-      requirePermission(auth, "content:write"),
-      validate("param", idParam),
-      validate("json", updateSchema),
-      async (c) => {
-        const body = c.req.valid("json");
-        requirePublishRight(c.var.user, body.status);
-        const [row] = await db
-          .update(blogPosts)
-          .set(toRow(body))
-          .where(eq(blogPosts.id, c.req.valid("param").id))
-          .returning()
-          .catch(conflictOnDuplicateSlug);
-        return row ? c.json(row) : notFound("post");
-      },
-    )
-    .delete(
-      "/:id",
-      requirePermission(auth, "content:write"),
-      validate("param", idParam),
-      async (c) => {
-        const [row] = await db
-          .delete(blogPosts)
-          .where(eq(blogPosts.id, c.req.valid("param").id))
-          .returning({ id: blogPosts.id });
-        return row ? c.body(null, 204) : notFound("post");
-      },
-    );
+    .post("/", validate("json", createSchema), async (c) => {
+      const body = c.req.valid("json");
+      requirePublishRight(c.var.user, body.status);
+      const [row] = await db
+        .insert(blogPosts)
+        .values({
+          ...toRow(body),
+          title: body.title,
+          slug: body.slug,
+          date: body.date,
+          body: body.body,
+        })
+        .returning()
+        .catch(conflictOnDuplicateSlug);
+      return c.json(row!, 201);
+    })
+    .patch("/:id", validate("param", idParam), validate("json", updateSchema), async (c) => {
+      const body = c.req.valid("json");
+      requirePublishRight(c.var.user, body.status);
+      const [row] = await db
+        .update(blogPosts)
+        .set(toRow(body))
+        .where(eq(blogPosts.id, c.req.valid("param").id))
+        .returning()
+        .catch(conflictOnDuplicateSlug);
+      return row ? c.json(row) : notFound("post");
+    })
+    .delete("/:id", validate("param", idParam), async (c) => {
+      const [row] = await db
+        .delete(blogPosts)
+        .where(eq(blogPosts.id, c.req.valid("param").id))
+        .returning({ id: blogPosts.id });
+      return row ? c.body(null, 204) : notFound("post");
+    });
 }
