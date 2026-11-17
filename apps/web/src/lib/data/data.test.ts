@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { dataMethods } from "./types";
+import { dataMethods, dataMethodsComplete } from "./types";
 import { createApiSource, emptySource, richTextToPlain, withFallback } from "./client";
 import { resolveSource } from "./index";
 import { sampleCapsule, sampleSource } from "./sample";
@@ -40,6 +40,13 @@ describe("fallback and switch", () => {
     const w = withFallback(down, null);
     expect(await Promise.resolve(w)).toBe(w);
     expect(await Promise.resolve(emptySource)).toBe(emptySource);
+  });
+  it("wrappers expose every listed method", () => {
+    expect(dataMethodsComplete).toBe(true);
+    for (const m of dataMethods) {
+      expect(typeof withFallback(down, null)[m]).toBe("function");
+      expect(typeof emptySource[m]).toBe("function");
+    }
   });
   it("applies the same fallback to every listed method", async () => {
     for (const m of dataMethods) {
