@@ -4,6 +4,7 @@ import { AvatarBadgeTagDemo } from "./demo/AvatarBadgeTagDemo";
 import { DataTableDemo } from "./demo/DataTableDemo";
 import { DialogDemo } from "./demo/DialogDemo";
 import { MenuDemo } from "./demo/MenuDemo";
+import { DateTimePickerDemo } from "./demo/DateTimePickerDemo";
 import { FormFieldsDemo } from "./demo/FormFieldsDemo";
 import { ToastDemo } from "./demo/ToastDemo";
 
@@ -20,6 +21,7 @@ export function App() {
         <MenuDemo />
         <FormFieldsDemo />
         <AvatarBadgeTagDemo />
+        <DateTimePickerDemo />
         <ToastDemo />
       </main>
     </ToastProvider>
