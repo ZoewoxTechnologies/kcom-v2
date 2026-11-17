@@ -6,6 +6,8 @@ import { errorHandler, notFoundHandler } from "./errors.js";
 import { health } from "./routes/health.js";
 import { capsuleRoutes } from "./routes/capsules.js";
 import { authRoutes } from "./routes/auth.js";
+import { adminRoutes } from "./routes/admin.js";
+import { publicBookRoutes } from "./routes/books.js";
 import { userRoutes } from "./routes/users.js";
 
 export type AppOptions = { corsOrigins?: string[]; auth?: AuthOptions };
@@ -28,6 +30,8 @@ export function createApp(db: CapsuleDb, { corsOrigins = [], auth = {} }: AppOpt
     .notFound(notFoundHandler)
     .route("/", health)
     .route("/capsules", capsuleRoutes(db))
+    .route("/books", publicBookRoutes(db))
+    .route("/admin", adminRoutes(db, authInstance))
     .route("/users", userRoutes(db, authInstance))
     .route("/api/auth", authRoutes(authInstance));
 }
