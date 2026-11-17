@@ -1,6 +1,6 @@
 import { hc } from "hono/client";
 import type { App } from "@kcom/api/app";
-import type { CapsuleSummary, DataSource } from "./types";
+import { dataMethods, type CapsuleSummary, type DataSource } from "./types";
 
 const BLOCKS = new Set(["paragraph", "heading", "blockquote", "listItem", "bulletList", "orderedList", "codeBlock", "doc"]);
 
@@ -40,38 +40,34 @@ export function createApiSource(baseUrl: string, fetchImpl: typeof fetch = fetch
   };
 }
 
+type Fn = (...args: unknown[]) => Promise<unknown>;
 const isList = (method: string) => method.startsWith("list");
+const isEmpty = (v: unknown) => v == null || (Array.isArray(v) && v.length === 0);
+
+function build(make: (method: (typeof dataMethods)[number]) => Fn): DataSource {
+  return Object.fromEntries(dataMethods.map((m) => [m, make(m)])) as unknown as DataSource;
+}
 
 /**
- * Serves nothing for every method, current and future: an empty array for `list*` methods,
- * null for the rest. Pages hide the pieces that depend on data.
+ * Serves nothing for every method: an empty array for `list*` methods, null for the rest.
+ * Pages hide the pieces that depend on data.
  */
-export const emptySource: DataSource = new Proxy({} as DataSource, {
-  get: (_t, method) => (typeof method === "string" ? async () => (isList(method) ? [] : null) : undefined),
-});
-
-const isEmpty = (v: unknown) => v == null || (Array.isArray(v) && v.length === 0);
+export const emptySource: DataSource = build((m) => async () => (isList(m) ? [] : null));
 
 /**
  * Wraps every method of a source so failures never throw. On failure or an empty result
  * (null or empty list) the same method of `fallback` is used; with no fallback, the empty
- * value comes from `emptySource`. New DataSource methods need no extra code here.
+ * value from `emptySource`.
  */
 export function withFallback(primary: DataSource, fallback: DataSource | null, onError?: (e: unknown) => void): DataSource {
   const backup = fallback ?? emptySource;
-  return new Proxy({} as DataSource, {
-    get: (_t, method) => {
-      if (typeof method !== "string") return undefined;
-      const name = method as keyof DataSource;
-      return async (...args: unknown[]) => {
-        try {
-          const v = await (primary[name] as (...a: unknown[]) => Promise<unknown>)(...args);
-          if (!isEmpty(v)) return v;
-        } catch (e) {
-          onError?.(e);
-        }
-        return (backup[name] as (...a: unknown[]) => Promise<unknown>)(...args);
-      };
-    },
+  return build((m) => async (...args) => {
+    try {
+      const v = await (primary[m] as Fn)(...args);
+      if (!isEmpty(v)) return v;
+    } catch (e) {
+      onError?.(e);
+    }
+    return (backup[m] as Fn)(...args);
   });
 }

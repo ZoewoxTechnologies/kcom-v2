@@ -11,3 +11,6 @@ export interface CapsuleSummary {
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
 }
+
+/** Every DataSource method name; wrappers are built from this, so a new method is a one-line addition here. */
+export const dataMethods = ["latestCapsule"] as const satisfies readonly (keyof DataSource)[];

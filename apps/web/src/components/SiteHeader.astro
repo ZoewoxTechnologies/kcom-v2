@@ -2,12 +2,12 @@
 import Menu from "@kcom/ui/astro/Menu.astro";
 import { navItems, isCurrent } from "../lib/nav";
 import { siteName } from "../lib/site";
-import { formatLagosDate } from "@kcom/content";
+import { formatLagosDate, formatLagosShortDate } from "@kcom/content";
 import { data } from "../lib/data";
 const { current = "" } = Astro.props;
 const capsule = await data.latestCapsule();
 const today = capsule ? formatLagosDate(capsule.displayDate) : "";
-const shortDate = capsule ? new Date(`${capsule.displayDate}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }) : "";
+const shortDate = capsule ? formatLagosShortDate(capsule.displayDate) : "";
 const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule.scriptureRef ?? ""}` : (capsule?.scriptureRef ?? "");
 ---
 {capsule && <div class="verse-bar">
