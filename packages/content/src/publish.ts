@@ -24,6 +24,17 @@ export function formatLagosDate(day: string): string {
   return `${part({ weekday: "long" })}, ${part({ day: "numeric" })} ${part({ month: "long" })}`;
 }
 
+/** A lagosDate string as { weekday: "Saturday", weekdayShort: "Sat", rest: "14 November 2026" }. */
+export function dayParts(day: string): { weekday: string; weekdayShort: string; rest: string } {
+  const [weekday = "", dm = ""] = formatLagosDate(day).split(", ");
+  return { weekday, weekdayShort: weekday.slice(0, 3), rest: `${dm} ${day.slice(0, 4)}` };
+}
+
+/** A lagosDate string as "14 Nov". */
+export function shortDay(day: string): string {
+  return new Date(`${day}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+}
+
 /**
  * Turns a title or legacy path segment into a valid capsule slug: lowercase
  * ASCII words separated by hyphens. Accents are stripped; returns "" when

@@ -1,19 +1,8 @@
-import { formatLagosDate, lagosDate } from "@kcom/content";
+import { lagosDate } from "@kcom/content";
 import type { Capsule, CapsuleLink, DataSource, SeriesInfo } from "./data";
 
 const MONTH_WALK = 24;
 const PAST_YEARS = 8;
-
-/** "Saturday", "14 November 2026" for a YYYY-MM-DD day. */
-export function dayParts(day: string): { weekday: string; weekdayShort: string; rest: string } {
-  const [weekday = "", dm = ""] = formatLagosDate(day).split(", ");
-  return { weekday, weekdayShort: weekday.slice(0, 3), rest: `${dm} ${day.slice(0, 4)}` };
-}
-
-/** "14 Nov" */
-export function shortDay(day: string): string {
-  return new Date(`${day}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
-}
 
 export function shiftMonth(month: string, by: number): string {
   const [y, m] = month.split("-").map(Number) as [number, number];

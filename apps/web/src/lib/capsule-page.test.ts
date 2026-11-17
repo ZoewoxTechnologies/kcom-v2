@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { dayParts, loadCapsulePage, neighbours, onThisDay, shiftMonth, shortDay } from "./capsule-page";
+import { dayParts, shortDay } from "@kcom/content";
+import { loadCapsulePage, neighbours, onThisDay, shiftMonth } from "./capsule-page";
 import { sampleCapsules, sampleSource } from "./data/sample";
 
 describe("dates", () => {

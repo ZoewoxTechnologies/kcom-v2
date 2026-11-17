@@ -1,24 +1,24 @@
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const SAFE_HREF = /^(https?:\/\/|mailto:)[^\s]+$/i;
+import { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref, richTextHeadingLevel } from "@kcom/content";
 
 type Node = { type?: unknown; text?: unknown; content?: unknown; marks?: unknown; attrs?: unknown };
 const isNode = (v: unknown): v is Node => typeof v === "object" && v !== null && !Array.isArray(v);
 const kids = (n: Node): unknown[] => (Array.isArray(n.content) ? n.content : []);
 
 function mark(html: string, m: unknown): string {
-  if (!isNode(m)) return html;
+  if (!isNode(m) || typeof m.type !== "string" || !RICH_TEXT_MARKS.has(m.type)) return html;
   if (m.type === "bold") return `<strong>${html}</strong>`;
   if (m.type === "italic") return `<em>${html}</em>`;
   if (m.type === "underline") return `<u>${html}</u>`;
   if (m.type === "link") {
     const href = isNode(m.attrs) ? (m.attrs as { href?: unknown }).href : undefined;
-    if (typeof href === "string" && SAFE_HREF.test(href)) return `<a href="${esc(href)}">${html}</a>`;
+    if (isSafeHref(href)) return `<a href="${esc(href)}">${html}</a>`;
   }
   return html;
 }
 
 function render(node: unknown): string {
-  if (!isNode(node)) return "";
+  if (!isNode(node) || typeof node.type !== "string" || !RICH_TEXT_NODES.has(node.type)) return "";
   const inner = () => kids(node).map(render).join("");
   switch (node.type) {
     case "text": {
@@ -28,7 +28,7 @@ function render(node: unknown): string {
     case "paragraph": return `<p>${inner()}</p>`;
     case "heading": {
       const level = isNode(node.attrs) ? (node.attrs as { level?: unknown }).level : 2;
-      const n = level === 3 || level === 4 ? level : 2;
+      const n = Math.max(2, richTextHeadingLevel(level));
       return `<h${n}>${inner()}</h${n}>`;
     }
     case "bulletList": return `<ul>${inner()}</ul>`;
