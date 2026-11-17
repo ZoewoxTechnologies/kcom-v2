@@ -7,11 +7,12 @@ import { data } from "../lib/data";
 const { current = "" } = Astro.props;
 const capsule = await data.latestCapsule();
 const today = capsule ? formatLagosDate(capsule.displayDate) : "";
+const shortDate = capsule ? new Date(`${capsule.displayDate}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }) : "";
 const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule.scriptureRef ?? ""}` : (capsule?.scriptureRef ?? "");
 ---
 {capsule && <div class="verse-bar">
   <span class="date">{today}</span>
-  <a class="verse" href="/capsules/today"><span class="long">Today: {quote}</span><span class="short">{capsule?.scriptureRef}</span></a>
+  <a class="verse" href="/capsules/today"><span class="long">Today: {quote}</span><span class="short">{shortDate} · Today: {capsule?.scriptureRef} →</span></a>
   <a class="email" href="/subscribe">Get it by email</a>
 </div>}
 <header class="site-header">
@@ -83,7 +84,7 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   .verse .short { display: inline; }
   .verse .long { display: none; }
   .cta { display: none; }
-  .verse-bar .date { display: none; }
+  .verse-bar .date, .verse-bar .email { display: none; }
   .verse-bar .verse { font-size: var(--text-base); }
   @media (min-width: 64rem) {
     .site-header { padding-block: var(--space-4); }
@@ -93,6 +94,7 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
     .menu { display: none; }
     .cta { display: inline-flex; }
     .verse-bar .date { display: inline; }
+    .verse-bar .email { display: inline; }
     .verse-bar .verse { font-size: var(--text-lg); }
     .verse .short { display: none; }
     .verse .long { display: inline; }
