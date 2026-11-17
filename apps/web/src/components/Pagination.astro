@@ -1,0 +1,38 @@
+---
+import { pageWindow } from "../lib/archive";
+
+interface Props {
+  page: number;
+  pages: number;
+  /** Path the page links point at, without a query string. */
+  path: string;
+  /** Other query parameters to keep on every link (e.g. a sort). */
+  query?: Record<string, string>;
+  label?: string;
+}
+const { page, pages, path, query = {}, label = "Pages" } = Astro.props;
+const href = (n: number) => {
+  const q = new URLSearchParams(query);
+  if (n > 1) q.set("page", String(n));
+  const s = q.toString();
+  return s ? `${path}?${s}` : path;
+};
+---
+{pages > 1 && (
+  <nav class="pagination" aria-label={label}>
+    {page > 1 && <a class="step" rel="prev" href={href(page - 1)} aria-label="Previous page">‹</a>}
+    {pageWindow(page, pages).map((n) =>
+      n === null ? <span class="gap" aria-hidden="true">…</span>
+      : n === page ? <a href={href(n)} aria-current="page" aria-label={`Page ${n}`} class="cur">{n}</a>
+      : <a href={href(n)} aria-label={`Page ${n}`}>{n}</a>,
+    )}
+    {page < pages && <a class="step" rel="next" href={href(page + 1)} aria-label="Next page">›</a>}
+  </nav>
+)}
+<style>
+  .pagination { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; font-weight: 600; }
+  a { inline-size: var(--touch-target); block-size: var(--touch-target); border-radius: var(--radius-pill); border: 1px solid var(--color-line); display: flex; align-items: center; justify-content: center; text-decoration: none; }
+  a:hover { background: var(--color-hover); }
+  .cur, .cur:hover { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
+  .gap { align-self: center; padding: var(--space-2); }
+</style>
