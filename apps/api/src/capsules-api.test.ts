@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { capsules } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
+import { rolePermissions } from "./permissions.js";
 import { seedUser } from "./seed-users.js";
 import { sanitizeRichText } from "./rich-text.js";
 
@@ -317,5 +318,60 @@ describe("series", () => {
       partNumber: number | null;
     };
     expect(after).toMatchObject({ seriesId: null, partNumber: null });
+  });
+});
+
+describe("publish permission for a writer without it", () => {
+  const original = rolePermissions.editor;
+  const live = { status: "published", publishAt: "2026-01-01T00:00:00Z" };
+  beforeEach(() => {
+    rolePermissions.editor = ["content:read", "content:write"];
+    return () => {
+      rolePermissions.editor = original;
+    };
+  });
+
+  async function make(over: Record<string, unknown>) {
+    const res = await call("/admin/capsules", admin, "POST", valid(over));
+    return ((await res.json()) as { id: string }).id;
+  }
+
+  it("may create and edit drafts", async () => {
+    expect((await call("/admin/capsules", editor, "POST", valid())).status).toBe(201);
+    const id = await make({ slug: "d" });
+    expect(
+      (
+        await call(`/admin/capsules/${id}`, editor, "PATCH", {
+          title: "T",
+          publishAt: "2026-03-01T00:00:00Z",
+        })
+      ).status,
+    ).toBe(200);
+    expect((await call(`/admin/capsules/${id}`, editor, "DELETE")).status).toBe(204);
+  });
+
+  it("cannot create a non-draft or move a draft out of draft", async () => {
+    expect((await call("/admin/capsules", editor, "POST", valid(live))).status).toBe(403);
+    const id = await make({ slug: "d" });
+    expect(
+      (await call(`/admin/capsules/${id}`, editor, "PATCH", { status: "scheduled" })).status,
+    ).toBe(403);
+  });
+
+  it("cannot edit, reschedule or delete published or scheduled capsules", async () => {
+    for (const status of ["published", "scheduled"]) {
+      const id = await make({ ...live, status, slug: status });
+      for (const patch of [
+        { title: "x" },
+        { publishAt: "2027-01-01T00:00:00Z" },
+        { status: "draft" },
+      ]) {
+        expect((await call(`/admin/capsules/${id}`, editor, "PATCH", patch)).status).toBe(403);
+      }
+      expect((await call(`/admin/capsules/${id}`, editor, "DELETE")).status).toBe(403);
+      expect((await call(`/admin/capsules/${id}`, admin, "PATCH", { title: "ok" })).status).toBe(
+        200,
+      );
+    }
   });
 });

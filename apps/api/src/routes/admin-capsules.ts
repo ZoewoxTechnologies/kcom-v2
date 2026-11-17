@@ -5,7 +5,7 @@ import { nextLagosMidnight, slug } from "@kcom/content";
 import { capsules, type CapsuleDb } from "@kcom/db";
 import { rethrowWriteError } from "../db-errors.js";
 import { HttpError } from "../errors.js";
-import { requireCan, type AuthEnv } from "../require-permission.js";
+import { assertCan, requireCan, type AuthEnv } from "../require-permission.js";
 import { richTextSchema } from "../rich-text.js";
 import { validate } from "../validate.js";
 import { present } from "./capsules.js";
@@ -56,7 +56,6 @@ const listQuery = z.object({
 /** Editor/admin endpoints: full access to capsules including drafts and scheduled ones. */
 export function adminCapsuleRoutes(db: CapsuleDb) {
   const write = requireCan("content:write");
-  const publish = requireCan("content:publish");
   const byId = async (id: string) => {
     const [row] = await db.select().from(capsules).where(eq(capsules.id, id));
     if (!row) throw new HttpError(404, "not_found", "capsule not found");
@@ -80,7 +79,7 @@ export function adminCapsuleRoutes(db: CapsuleDb) {
     )
     .post("/", write, validate("json", createBody), async (c) => {
       const body = c.req.valid("json");
-      if (body.status !== "draft") await requireContentPublish(publish, c);
+      if (body.status !== "draft") assertCan(c, "content:publish");
       try {
         const [row] = await db.insert(capsules).values(body).returning();
         return c.json(present(row!), 201);
@@ -92,8 +91,10 @@ export function adminCapsuleRoutes(db: CapsuleDb) {
       const { id } = c.req.valid("param");
       const patch = c.req.valid("json");
       const existing = await byId(id);
-      if (patch.status !== undefined && patch.status !== existing.status) {
-        await requireContentPublish(publish, c);
+      // Anything touching live or scheduled content, or moving a draft out of draft,
+      // is a publishing action.
+      if (existing.status !== "draft" || (patch.status ?? "draft") !== "draft") {
+        assertCan(c, "content:publish");
       }
       try {
         const [row] = await db.update(capsules).set(patch).where(eq(capsules.id, id)).returning();
@@ -104,6 +105,7 @@ export function adminCapsuleRoutes(db: CapsuleDb) {
     })
     .delete("/:id", write, validate("param", idParam), async (c) => {
       const { id } = c.req.valid("param");
+      if ((await byId(id)).status !== "draft") assertCan(c, "content:publish");
       const rows = await db
         .delete(capsules)
         .where(eq(capsules.id, id))
@@ -111,12 +113,4 @@ export function adminCapsuleRoutes(db: CapsuleDb) {
       if (rows.length === 0) throw new HttpError(404, "not_found", "capsule not found");
       return c.body(null, 204);
     });
-}
-
-/** Moving a capsule out of draft needs the publish permission, checked after write. */
-async function requireContentPublish(
-  publish: ReturnType<typeof requireCan>,
-  c: Parameters<ReturnType<typeof requireCan>>[0],
-) {
-  await publish(c, async () => {});
 }
