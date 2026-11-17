@@ -1,6 +1,7 @@
 import { ButtonsDemo } from "./demo/ButtonsDemo";
 import { DataTableDemo } from "./demo/DataTableDemo";
 import { DialogDemo } from "./demo/DialogDemo";
+import { MenuDemo } from "./demo/MenuDemo";
 import { FormFieldsDemo } from "./demo/FormFieldsDemo";
 
 export function App() {
@@ -12,6 +13,7 @@ export function App() {
       <ButtonsDemo />
       <DataTableDemo />
       <DialogDemo />
+      <MenuDemo />
       <FormFieldsDemo />
     </main>
   );
