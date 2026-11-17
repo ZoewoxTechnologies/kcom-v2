@@ -1,10 +1,11 @@
 import { Hono } from "hono";
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { nextLagosMidnight, slug } from "@kcom/content";
 import { capsules, type CapsuleDb } from "@kcom/db";
 import {
   assertCanChange,
+  findById,
   idParam,
   notFound,
   pagination,
@@ -66,23 +67,23 @@ const CAPSULE_ERRORS = {
 /** Editor/admin endpoints: full access to capsules including drafts and scheduled ones. */
 export function adminCapsuleRoutes(db: CapsuleDb) {
   const write = requireCan("content:write");
-  const byId = async (id: string) => {
-    const [row] = await db.select().from(capsules).where(eq(capsules.id, id));
-    if (!row) throw notFound("capsule");
-    return row;
-  };
+  const byId = (id: string) => findById(db, capsules, id, "capsule");
 
   return new Hono<AuthEnv>()
     .get("/", validate("query", listQuery), async (c) => {
       const { status, limit, offset } = c.req.valid("query");
-      const rows = await db
-        .select()
-        .from(capsules)
-        .where(status ? eq(capsules.status, status) : undefined)
-        .orderBy(desc(capsules.publishAt), desc(capsules.createdAt))
-        .limit(limit)
-        .offset(offset);
-      return c.json(rows.map(present));
+      const where = status ? eq(capsules.status, status) : undefined;
+      const [rows, [counted]] = await Promise.all([
+        db
+          .select()
+          .from(capsules)
+          .where(where)
+          .orderBy(desc(capsules.publishAt), desc(capsules.createdAt))
+          .limit(limit)
+          .offset(offset),
+        db.select({ total: count() }).from(capsules).where(where),
+      ]);
+      return c.json({ items: rows.map(present), total: counted?.total ?? 0 });
     })
     .get("/:id", validate("param", idParam), async (c) =>
       c.json(present(await byId(c.req.valid("param").id))),

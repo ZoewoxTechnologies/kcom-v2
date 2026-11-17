@@ -5,7 +5,9 @@ export {
   capsuleBySlug,
   isLive,
   latestCapsule,
+  listLiveSeries,
   listPublishedCapsules,
+  liveSeriesBySlug,
   type CapsuleDb,
   type CapsuleFilters,
 } from "./queries.js";

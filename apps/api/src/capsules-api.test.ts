@@ -86,7 +86,11 @@ describe("admin capsule CRUD", () => {
     expect((await call(`/admin/capsules/${row.id}`, editor)).status).toBe(200);
     const patched = await call(`/admin/capsules/${row.id}`, editor, "PATCH", { title: "New" });
     expect(((await patched.json()) as { title: string }).title).toBe("New");
-    expect((await call("/admin/capsules?status=draft", editor)).status).toBe(200);
+    const list = (await (await call("/admin/capsules?status=draft&limit=1", editor)).json()) as {
+      items: unknown[];
+      total: number;
+    };
+    expect([list.items.length, list.total]).toEqual([1, 1]);
     expect((await call(`/admin/capsules/${row.id}`, editor, "DELETE")).status).toBe(204);
     expect((await call(`/admin/capsules/${row.id}`, editor)).status).toBe(404);
   });
@@ -276,6 +280,16 @@ describe("public reads never leak drafts or future capsules", () => {
   });
 });
 
+describe("public /capsules/latest", () => {
+  it("404s with the shared not-found shape", async () => {
+    const res = await call("/capsules/latest", null);
+    expect(res.status).toBe(404);
+    expect(((await res.json()) as { error: { message: string } }).error.message).toBe(
+      "capsule not found",
+    );
+  });
+});
+
 describe("series", () => {
   it("supports CRUD and public reads", async () => {
     const res = await call("/admin/series", editor, "POST", { title: "Faith", slug: "faith" });
@@ -284,6 +298,22 @@ describe("series", () => {
     expect(
       (await call("/admin/series", editor, "POST", { title: "Faith", slug: "faith" })).status,
     ).toBe(409);
+    // Hidden while it has no live capsule.
+    expect((await call("/series/faith", null)).status).toBe(404);
+    expect(await (await call("/series", null)).json()).toEqual([]);
+    await call("/admin/capsules", admin, "POST", valid({ seriesId: s.id, status: "draft" }));
+    expect(await (await call("/series", null)).json()).toEqual([]);
+    await call(
+      "/admin/capsules",
+      admin,
+      "POST",
+      valid({
+        slug: "live",
+        seriesId: s.id,
+        status: "published",
+        publishAt: "2026-01-01T00:00:00Z",
+      }),
+    );
     expect((await call("/series/faith", null)).status).toBe(200);
     expect(((await (await call("/series", null)).json()) as unknown[]).length).toBe(1);
     const patched = await call(`/admin/series/${s.id}`, editor, "PATCH", { description: "d" });

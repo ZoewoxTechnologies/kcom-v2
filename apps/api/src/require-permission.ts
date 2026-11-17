@@ -38,8 +38,6 @@ export function assertCan(c: Context<AuthEnv>, permission: Permission) {
 
 export const requireCan = (permission: Permission) =>
   createMiddleware<AuthEnv>(async (c, next) => {
-    if (!can(c.var.user.role, permission)) {
-      throw new HttpError(403, "forbidden", "you do not have permission to do this");
-    }
+    assertCan(c, permission);
     await next();
   });

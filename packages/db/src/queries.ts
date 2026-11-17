@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, isNull, lt, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNull, lt, lte, or, sql } from "drizzle-orm";
 import type { AnyPgColumn, PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import * as schema from "./schema.js";
 
@@ -82,6 +82,23 @@ export async function capsuleByRange(db: CapsuleDb, from: Date, to: Date) {
       ),
     )
     .orderBy(desc(schema.capsules.publishAt), desc(schema.capsules.createdAt))
+    .limit(1);
+  return row ?? null;
+}
+
+const hasLiveCapsule = () =>
+  sql`exists (select 1 from ${schema.capsules} where ${schema.capsules.seriesId} = ${schema.series.id} and ${isLive(schema.capsules)})`;
+
+/** Series that have at least one live capsule, so draft-only series stay private. */
+export async function listLiveSeries(db: CapsuleDb) {
+  return db.select().from(schema.series).where(hasLiveCapsule()).orderBy(asc(schema.series.title));
+}
+
+export async function liveSeriesBySlug(db: CapsuleDb, slug: string) {
+  const [row] = await db
+    .select()
+    .from(schema.series)
+    .where(and(eq(schema.series.slug, slug), hasLiveCapsule()))
     .limit(1);
   return row ?? null;
 }

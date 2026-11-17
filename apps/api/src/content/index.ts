@@ -7,10 +7,11 @@
  * - `richTextSchema` / `sanitizeRichText`: validate and sanitise rich-text JSON.
  * - `assertCanChange`: the publish-permission rule, in one place.
  * - `rethrowWriteError`: map unique/foreign-key/check violations to 409/422.
- * - `notFound(what)`: a 404 to throw.
+ * - `notFound(what)`, `findById(db, table, id, label)`: 404 helpers.
+ * - `publicCache`: middleware for cacheable public routers.
  * - `isLive(table)`: public-read filter (published and publish time passed).
  */
-export { assertCanChange, notFound } from "./access.js";
+export { assertCanChange, findById, notFound, publicCache } from "./access.js";
 export { richTextSchema, sanitizeRichText } from "./rich-text.js";
 export { httpUrl, idParam, pagination, publishStatus, slugParam } from "./schemas.js";
 export { rethrowWriteError, type WriteErrorOptions } from "./write-errors.js";

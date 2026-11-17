@@ -2,9 +2,15 @@ import { Hono } from "hono";
 import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
-import { capsules, series, type CapsuleDb } from "@kcom/db";
-import { idParam, notFound, rethrowWriteError, slugParam } from "../content/index.js";
-import { HttpError } from "../errors.js";
+import { capsules, listLiveSeries, liveSeriesBySlug, series, type CapsuleDb } from "@kcom/db";
+import {
+  findById,
+  idParam,
+  notFound,
+  publicCache,
+  rethrowWriteError,
+  slugParam,
+} from "../content/index.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 
@@ -22,20 +28,14 @@ const updateBody = z
   })
   .refine((b) => Object.keys(b).length > 0, "no fields to update");
 
-/** Public, read-only series listing. */
+/** Public, read-only: only series that have at least one live capsule. */
 export function seriesRoutes(db: CapsuleDb) {
   return new Hono()
-    .get("/", async (c) => {
-      c.header("Cache-Control", "public, max-age=60");
-      return c.json(await db.select().from(series).orderBy(asc(series.title)));
-    })
+    .use(publicCache)
+    .get("/", async (c) => c.json(await listLiveSeries(db)))
     .get("/:slug", validate("param", slugParam), async (c) => {
-      const [row] = await db
-        .select()
-        .from(series)
-        .where(eq(series.slug, c.req.valid("param").slug));
+      const row = await liveSeriesBySlug(db, c.req.valid("param").slug);
       if (!row) throw notFound("series");
-      c.header("Cache-Control", "public, max-age=60");
       return c.json(row);
     });
 }
@@ -44,14 +44,9 @@ export function adminSeriesRoutes(db: CapsuleDb) {
   const write = requireCan("content:write");
   return new Hono<AuthEnv>()
     .get("/", async (c) => c.json(await db.select().from(series).orderBy(asc(series.title))))
-    .get("/:id", validate("param", idParam), async (c) => {
-      const [row] = await db
-        .select()
-        .from(series)
-        .where(eq(series.id, c.req.valid("param").id));
-      if (!row) throw notFound("series");
-      return c.json(row);
-    })
+    .get("/:id", validate("param", idParam), async (c) =>
+      c.json(await findById(db, series, c.req.valid("param").id, "series")),
+    )
     .post("/", write, validate("json", createBody), async (c) => {
       try {
         const [row] = await db.insert(series).values(c.req.valid("json")).returning();
@@ -61,16 +56,16 @@ export function adminSeriesRoutes(db: CapsuleDb) {
       }
     })
     .patch("/:id", write, validate("param", idParam), validate("json", updateBody), async (c) => {
+      const { id } = c.req.valid("param");
+      await findById(db, series, id, "series");
       try {
         const [row] = await db
           .update(series)
           .set(c.req.valid("json"))
-          .where(eq(series.id, c.req.valid("param").id))
+          .where(eq(series.id, id))
           .returning();
-        if (!row) throw notFound("series");
-        return c.json(row);
+        return c.json(row!);
       } catch (err) {
-        if (err instanceof HttpError) throw err;
         rethrowWriteError(err, { label: "series slug" });
       }
     })
