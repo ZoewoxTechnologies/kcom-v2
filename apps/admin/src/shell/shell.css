@@ -135,30 +135,17 @@
   .kc-admin__scrim {
     display: none;
   }
-  .kc-admin__account {
-    margin-block-start: auto;
-    padding: var(--space-3) var(--space-2) 0;
-    border-block-start: 1px solid rgba(255, 255, 255, 0.15);
-    font-size: var(--text-sm);
-    color: #d6e3e6;
-
-    strong {
-      color: #fff;
-    }
+  /* The menu script positions the panel at the trigger's left edge; the trigger sits at the
+     right of the bar, so anchor the fixed panel to the viewport's right edge instead. */
+  .kc-admin__user .kc-menu {
+    inset-inline-start: auto !important;
+    inset-inline-end: var(--space-4) !important;
   }
-  .kc-admin__sign-out {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--color-bar-gold);
-    font: inherit;
-    cursor: pointer;
-    text-decoration: underline;
-
-    &:focus-visible {
-      outline: 2px solid var(--color-bar-gold);
-      outline-offset: 2px;
-    }
+  .kc-admin__who {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
   }
   .kc-admin__content {
     padding: var(--space-5);
@@ -206,9 +193,6 @@
     }
     .kc-admin__bar {
       padding-inline: var(--space-4);
-    }
-    .kc-admin__view-site {
-      display: none;
     }
     .kc-admin__content {
       padding: var(--space-4);

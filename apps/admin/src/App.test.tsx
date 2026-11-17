@@ -99,8 +99,23 @@ describe("sign in", () => {
     await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
     expect(await screen.findByRole("link", { name: "Dashboard" })).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: "Sign out" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Sign out", hidden: true }));
     expect(await screen.findByRole("heading", { name: /sign in to manage/i })).toBeInTheDocument();
+  });
+});
+
+describe("account menu", () => {
+  it("shows name, role, profile, view site (new tab) and sign out", async () => {
+    mockApi(user("editor"));
+    renderAt("/");
+    await screen.findByRole("button", { name: /account menu for grace adeyemi/i });
+    const menu = screen.getByRole("menu", { hidden: true });
+    expect(menu).toHaveTextContent("Grace Adeyemi");
+    expect(menu).toHaveTextContent("editor");
+    const site = screen.getByRole("menuitem", { name: "View site", hidden: true });
+    expect(site).toHaveAttribute("target", "_blank");
+    expect(screen.getByRole("menuitem", { name: "Profile", hidden: true })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Sign out", hidden: true })).toBeInTheDocument();
   });
 });
 

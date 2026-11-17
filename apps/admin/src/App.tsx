@@ -23,6 +23,7 @@ export function App() {
           <Route element={<RequireAuth />}>
             <Route element={<Shell />}>
               <Route index element={<DashboardPage />} />
+              <Route path="profile" element={<PlaceholderPage title="Profile" />} />
               {sections.map((item) => (
                 <Route key={item.path} element={<RequirePermission permission={item.permission} />}>
                   <Route path={`${item.path}/*`} element={<PlaceholderPage title={item.label} />} />

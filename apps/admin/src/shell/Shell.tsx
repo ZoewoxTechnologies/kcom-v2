@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { Button } from "@kcom/ui";
+import { Avatar, Badge, Button, Menu, MenuItem, MenuLabel, MenuSeparator } from "@kcom/ui";
 import { useAuth } from "../auth/AuthProvider";
 import { navFor, navItemFor } from "./nav";
 
@@ -39,7 +39,7 @@ export function Shell() {
   }, [open]);
 
   if (!user) return null;
-  const title = navItemFor(pathname)?.label;
+  const title = navItemFor(pathname)?.label ?? (pathname === "/profile" ? "Profile" : "");
 
   return (
     <div className="kc-admin" data-nav-open={open || undefined}>
@@ -60,21 +60,6 @@ export function Shell() {
             </NavLink>
           ))}
         </nav>
-        <div className="kc-admin__account">
-          Signed in as
-          <br />
-          <strong>{user.name}</strong> ·{" "}
-          <button
-            type="button"
-            className="kc-admin__sign-out"
-            onClick={async () => {
-              await signOut();
-              navigate("/sign-in", { replace: true });
-            }}
-          >
-            Sign out
-          </button>
-        </div>
       </aside>
       {open && <div className="kc-admin__scrim" onClick={closeDrawer} aria-hidden="true" />}
       <div className="kc-admin__main">
@@ -91,9 +76,29 @@ export function Shell() {
             ☰
           </Button>
           <span className="kc-admin__title">{title}</span>
-          <a className="kc-btn kc-btn--secondary kc-admin__view-site" href={siteUrl}>
-            View site
-          </a>
+          <Menu
+            className="kc-admin__user"
+            triggerLabel={`Account menu for ${user.name}`}
+            trigger={<Avatar name={user.name} size="sm" />}
+          >
+            <MenuLabel className="kc-admin__who">
+              <strong>{user.name}</strong>
+              <Badge variant={user.role === "admin" ? "published" : "scheduled"}>{user.role}</Badge>
+            </MenuLabel>
+            <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
+            <MenuItem href={siteUrl} target="_blank" rel="noopener noreferrer">
+              View site
+            </MenuItem>
+            <MenuSeparator />
+            <MenuItem
+              onClick={async () => {
+                await signOut();
+                navigate("/sign-in", { replace: true });
+              }}
+            >
+              Sign out
+            </MenuItem>
+          </Menu>
         </header>
         <main className="kc-admin__content">
           <Outlet />
