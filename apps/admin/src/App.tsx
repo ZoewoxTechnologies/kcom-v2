@@ -17,6 +17,7 @@ export function App() {
     <ToastProvider>
       <AuthProvider>
         <Routes>
+          <Route path="/forgot-password" element={<PlaceholderPage title="Forgot password" />} />
           <Route path="/sign-in" element={<SignInPage />} />
           {import.meta.env.DEV && <Route path="/demo" element={<DemoPage />} />}
           <Route element={<RequireAuth />}>

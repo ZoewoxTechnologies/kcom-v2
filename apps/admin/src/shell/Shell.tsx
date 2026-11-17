@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { Avatar, Badge, Button, Menu, MenuItem, MenuLabel, MenuSeparator } from "@kcom/ui";
+import { Button } from "@kcom/ui";
 import { useAuth } from "../auth/AuthProvider";
 import { navFor, navItemFor } from "./nav";
+
+const siteUrl = import.meta.env.VITE_SITE_URL ?? "/";
 
 /** Side menu, top bar and content outlet for every signed-in page. */
 export function Shell() {
@@ -58,6 +60,21 @@ export function Shell() {
             </NavLink>
           ))}
         </nav>
+        <div className="kc-admin__account">
+          Signed in as
+          <br />
+          <strong>{user.name}</strong> ·{" "}
+          <button
+            type="button"
+            className="kc-admin__sign-out"
+            onClick={async () => {
+              await signOut();
+              navigate("/sign-in", { replace: true });
+            }}
+          >
+            Sign out
+          </button>
+        </div>
       </aside>
       {open && <div className="kc-admin__scrim" onClick={closeDrawer} aria-hidden="true" />}
       <div className="kc-admin__main">
@@ -74,30 +91,9 @@ export function Shell() {
             ☰
           </Button>
           <span className="kc-admin__title">{title}</span>
-          <Menu
-            className="kc-admin__user"
-            triggerLabel={`Account menu for ${user.name}`}
-            trigger={
-              <>
-                <Avatar name={user.name} size="sm" />
-                <span className="kc-admin__user-name">{user.name}</span>
-              </>
-            }
-          >
-            <MenuLabel>
-              {user.name}{" "}
-              <Badge variant={user.role === "admin" ? "published" : "scheduled"}>{user.role}</Badge>
-            </MenuLabel>
-            <MenuSeparator />
-            <MenuItem
-              onClick={async () => {
-                await signOut();
-                navigate("/sign-in", { replace: true });
-              }}
-            >
-              Sign out
-            </MenuItem>
-          </Menu>
+          <a className="kc-btn kc-btn--secondary kc-admin__view-site" href={siteUrl}>
+            View site
+          </a>
         </header>
         <main className="kc-admin__content">
           <Outlet />

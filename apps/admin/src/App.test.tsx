@@ -82,6 +82,15 @@ describe("sign in", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(/incorrect/i);
   });
 
+  it("links to the forgot-password page", async () => {
+    mockApi(null);
+    renderAt("/sign-in");
+    expect(await screen.findByRole("link", { name: "Forgot password?" })).toHaveAttribute(
+      "href",
+      "/forgot-password",
+    );
+  });
+
   it("signs in, lands on the shell, then signs out", async () => {
     mockApi(null);
     renderAt("/");
@@ -90,7 +99,7 @@ describe("sign in", () => {
     await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
     expect(await screen.findByRole("link", { name: "Dashboard" })).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("menuitem", { name: "Sign out", hidden: true }));
+    await userEvent.click(screen.getByRole("button", { name: "Sign out" }));
     expect(await screen.findByRole("heading", { name: /sign in to manage/i })).toBeInTheDocument();
   });
 });

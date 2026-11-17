@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { Button, TextField } from "@kcom/ui";
 import { useAuth } from "../auth/AuthProvider";
 
@@ -65,6 +65,9 @@ export function SignInPage() {
         <Button type="submit" size="lg" loading={busy}>
           Sign in
         </Button>
+        <Link to="/forgot-password" className="kc-admin-signin__forgot">
+          Forgot password?
+        </Link>
       </form>
     </div>
   );
