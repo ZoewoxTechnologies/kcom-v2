@@ -3,14 +3,18 @@ import type { CapsuleDb } from "@kcom/db";
 import type { Auth } from "../auth.js";
 import { requirePermission, type AuthEnv } from "../require-permission.js";
 import { adminBookRoutes } from "./books.js";
+import { adminCapsuleRoutes } from "./admin-capsules.js";
+import { adminSeriesRoutes } from "./series.js";
 
 /**
- * Everything under /admin. The sign-in and role check runs once here, so
- * resource routers mounted below only handle their own logic. Responses are
- * never cached (the guard sets no-store).
+ * Everything under /admin: signed-in Admin or Editor only (checked once here,
+ * responses are `no-store`). Add new content areas with one more `.route()`;
+ * their handlers use `requireCan` for finer permissions.
  */
 export function adminRoutes(db: CapsuleDb, auth: Auth) {
   return new Hono<AuthEnv>()
-    .use(requirePermission(auth, "content:write"))
-    .route("/books", adminBookRoutes(db));
+    .use(requirePermission(auth, "content:read"))
+    .route("/books", adminBookRoutes(db))
+    .route("/capsules", adminCapsuleRoutes(db))
+    .route("/series", adminSeriesRoutes(db));
 }

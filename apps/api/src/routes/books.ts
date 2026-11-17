@@ -1,104 +1,126 @@
 import { Hono } from "hono";
+import { and, asc, count, eq } from "drizzle-orm";
 import { z } from "zod";
-import { and, asc, eq, isNull, lte, or, sql } from "drizzle-orm";
 import { slug } from "@kcom/content";
-import { books, people, publishStatus, type CapsuleDb } from "@kcom/db";
-import { HttpError } from "../errors.js";
+import { books, isLive, type CapsuleDb } from "@kcom/db";
+import {
+  assertCanChange,
+  findById,
+  httpUrl,
+  idParam,
+  notFound,
+  pagination,
+  publicCache,
+  publishStatus,
+  rethrowWriteError,
+  richTextSchema,
+  slugParam,
+} from "../content/index.js";
+import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 
-const idParam = z.object({ id: z.uuid() });
-const slugParam = z.object({ slug });
-
-const httpUrl = z.url().refine((u) => /^https?:\/\//.test(u), "must be an http(s) URL");
-
-const bookInput = z.object({
-  title: z.string().trim().min(1),
+const fields = {
+  title: z.string().trim().min(1).max(200),
   slug,
-  description: z.record(z.string(), z.unknown()).nullable().default(null),
-  coverUrl: httpUrl.nullable().default(null),
-  purchaseUrl: httpUrl.nullable().default(null),
-  publishedYear: z.number().int().min(1000).max(9999).nullable().default(null),
-  authorId: z.uuid().nullable().default(null),
-  status: z.enum(publishStatus.enumValues).default("draft"),
-  publishAt: z.coerce.date().nullable().default(null),
+  description: richTextSchema.nullable(),
+  coverUrl: httpUrl.max(2000).nullable(),
+  purchaseUrl: httpUrl.max(2000).nullable(),
+  publishedYear: z.number().int().min(1000).max(9999).nullable(),
+  authorId: z.uuid().nullable(),
+  status: publishStatus,
+  publishAt: z.coerce.date().nullable(),
+};
+
+const createBody = z.strictObject({
+  ...fields,
+  description: fields.description.default(null),
+  coverUrl: fields.coverUrl.default(null),
+  purchaseUrl: fields.purchaseUrl.default(null),
+  publishedYear: fields.publishedYear.default(null),
+  authorId: fields.authorId.default(null),
+  status: fields.status.default("draft"),
+  publishAt: fields.publishAt.default(null),
 });
-const bookPatch = bookInput.partial();
+const updateBody = z
+  .strictObject(fields)
+  .partial()
+  .refine((b) => Object.keys(b).length > 0, "no fields to update");
+const listQuery = z.object({ status: fields.status.optional(), ...pagination() });
+const publicQuery = z.object(pagination());
 
-/** Published and not scheduled for the future. */
-const visible = and(
-  eq(books.status, "published"),
-  or(isNull(books.publishAt), lte(books.publishAt, sql`now()`)),
-);
+const BOOK_ERRORS = { label: "book slug", messages: { reference: "author does not exist" } };
 
+/** Public, read-only: published books whose publish time has passed. */
 export function publicBookRoutes(db: CapsuleDb) {
   return new Hono()
-    .get("/", async (c) => {
-      const rows = await db.select().from(books).where(visible).orderBy(asc(books.title));
-      c.header("Cache-Control", "public, max-age=60");
-      return c.json(rows);
+    .use(publicCache)
+    .get("/", validate("query", publicQuery), async (c) => {
+      const { limit, offset } = c.req.valid("query");
+      return c.json(
+        await db
+          .select()
+          .from(books)
+          .where(isLive(books))
+          .orderBy(asc(books.title))
+          .limit(limit)
+          .offset(offset),
+      );
     })
     .get("/:slug", validate("param", slugParam), async (c) => {
       const [row] = await db
         .select()
         .from(books)
-        .where(and(eq(books.slug, c.req.valid("param").slug), visible))
+        .where(and(eq(books.slug, c.req.valid("param").slug), isLive(books)))
         .limit(1);
-      if (!row) throw new HttpError(404, "not_found", "book not found");
-      c.header("Cache-Control", "public, max-age=60");
+      if (!row) throw notFound("book");
       return c.json(row);
     });
 }
 
-async function assertRefs(
-  db: CapsuleDb,
-  input: { slug?: string; authorId?: string | null },
-  selfId?: string,
-) {
-  if (input.slug !== undefined) {
-    const [dup] = await db.select({ id: books.id }).from(books).where(eq(books.slug, input.slug));
-    if (dup && dup.id !== selfId) throw new HttpError(409, "conflict", "slug already in use");
-  }
-  if (input.authorId) {
-    const [author] = await db
-      .select({ id: people.id })
-      .from(people)
-      .where(eq(people.id, input.authorId));
-    if (!author) throw new HttpError(422, "invalid_author", "author does not exist");
-  }
-}
-
 /** Mounted under the /admin group, which already enforces sign-in and role. */
 export function adminBookRoutes(db: CapsuleDb) {
-  return new Hono()
-    .get("/", async (c) => c.json(await db.select().from(books).orderBy(asc(books.title))))
-    .get("/:id", validate("param", idParam), async (c) => {
-      const [row] = await db
-        .select()
-        .from(books)
-        .where(eq(books.id, c.req.valid("param").id));
-      if (!row) throw new HttpError(404, "not_found", "book not found");
-      return c.json(row);
+  const write = requireCan("content:write");
+  const byId = (id: string) => findById(db, books, id, "book");
+  return new Hono<AuthEnv>()
+    .get("/", validate("query", listQuery), async (c) => {
+      const { status, limit, offset } = c.req.valid("query");
+      const where = status ? eq(books.status, status) : undefined;
+      const [items, [counted]] = await Promise.all([
+        db.select().from(books).where(where).orderBy(asc(books.title)).limit(limit).offset(offset),
+        db.select({ total: count() }).from(books).where(where),
+      ]);
+      return c.json({ items, total: counted?.total ?? 0 });
     })
-    .post("/", validate("json", bookInput), async (c) => {
-      const input = c.req.valid("json");
-      await assertRefs(db, input);
-      const [row] = await db.insert(books).values(input).returning();
-      return c.json(row, 201);
+    .get("/:id", validate("param", idParam), async (c) =>
+      c.json(await byId(c.req.valid("param").id)),
+    )
+    .post("/", write, validate("json", createBody), async (c) => {
+      const body = c.req.valid("json");
+      assertCanChange(c, null, body.status);
+      try {
+        const [row] = await db.insert(books).values(body).returning();
+        return c.json(row!, 201);
+      } catch (err) {
+        rethrowWriteError(err, BOOK_ERRORS);
+      }
     })
-    .patch("/:id", validate("param", idParam), validate("json", bookPatch), async (c) => {
+    .patch("/:id", write, validate("param", idParam), validate("json", updateBody), async (c) => {
       const { id } = c.req.valid("param");
-      const input = c.req.valid("json");
-      await assertRefs(db, input, id);
-      const [row] = await db.update(books).set(input).where(eq(books.id, id)).returning();
-      if (!row) throw new HttpError(404, "not_found", "book not found");
-      return c.json(row);
+      const patch = c.req.valid("json");
+      const existing = await byId(id);
+      assertCanChange(c, existing.status, patch.status);
+      try {
+        const [row] = await db.update(books).set(patch).where(eq(books.id, id)).returning();
+        return c.json(row!);
+      } catch (err) {
+        rethrowWriteError(err, BOOK_ERRORS);
+      }
     })
-    .delete("/:id", validate("param", idParam), async (c) => {
-      const [row] = await db
-        .delete(books)
-        .where(eq(books.id, c.req.valid("param").id))
-        .returning({ id: books.id });
-      if (!row) throw new HttpError(404, "not_found", "book not found");
+    .delete("/:id", write, validate("param", idParam), async (c) => {
+      const { id } = c.req.valid("param");
+      assertCanChange(c, (await byId(id)).status);
+      const rows = await db.delete(books).where(eq(books.id, id)).returning({ id: books.id });
+      if (rows.length === 0) throw notFound("book");
       return c.body(null, 204);
     });
 }

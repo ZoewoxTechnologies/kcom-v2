@@ -44,7 +44,9 @@ describe("GET /capsules/latest", () => {
   it("404s when there are no capsules", async () => {
     const res = await empty.request("/capsules/latest");
     expect(res.status).toBe(404);
-    expect(await res.json()).toEqual({ error: { code: "not_found", message: "not found" } });
+    expect(await res.json()).toEqual({
+      error: { code: "not_found", message: "capsule not found" },
+    });
   });
 });
 

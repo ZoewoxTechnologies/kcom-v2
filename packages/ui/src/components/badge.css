@@ -1,0 +1,139 @@
+/* Status badge: .kc-badge plus a status (draft, scheduled, published, confirmed,
+   pending, unsubscribed). Each status also has its own marker shape, so the
+   state is not carried by colour alone. Tag chip: .kc-tag. Import after tokens.css. */
+@layer components {
+  .kc-badge {
+    --kc-badge-bg: var(--color-wash);
+    --kc-badge-fg: var(--color-primary);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--kc-badge-bg);
+    color: var(--kc-badge-fg);
+    font: 700 var(--text-xs) / 1.2 var(--font-body);
+    white-space: nowrap;
+
+    &::before {
+      content: "";
+      flex: none;
+      inline-size: 0.6rem;
+      block-size: 0.6rem;
+      background: currentColor;
+    }
+  }
+
+  /* Draft: hollow dot. */
+  .kc-badge--draft {
+    --kc-badge-bg: var(--color-sandstone);
+    --kc-badge-fg: var(--color-gold-text);
+
+    &::before {
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      background: transparent;
+    }
+  }
+
+  /* Scheduled: clock-like half dot. */
+  .kc-badge--scheduled {
+    --kc-badge-bg: var(--color-wash);
+    --kc-badge-fg: var(--color-primary);
+
+    &::before {
+      border-radius: 50%;
+      background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+      box-shadow: inset 0 0 0 2px currentColor;
+    }
+  }
+
+  /* Published: filled dot. */
+  .kc-badge--published {
+    --kc-badge-bg: var(--kc-status-ok-bg);
+    --kc-badge-fg: var(--kc-status-ok-fg);
+
+    &::before {
+      border-radius: 50%;
+    }
+  }
+
+  /* Confirmed: check mark. */
+  .kc-badge--confirmed {
+    --kc-badge-bg: var(--kc-status-ok-bg);
+    --kc-badge-fg: var(--kc-status-ok-fg);
+
+    &::before {
+      background: currentColor;
+      clip-path: polygon(8% 52%, 22% 38%, 40% 56%, 78% 12%, 92% 26%, 40% 86%);
+    }
+  }
+
+  /* Pending: diamond. */
+  .kc-badge--pending {
+    --kc-badge-bg: var(--color-sandstone);
+    --kc-badge-fg: var(--color-gold-text);
+
+    &::before {
+      clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    }
+  }
+
+  /* Unsubscribed: dash, muted. */
+  .kc-badge--unsubscribed {
+    --kc-badge-bg: var(--kc-status-off-bg);
+    --kc-badge-fg: var(--color-muted);
+
+    &::before {
+      block-size: 2px;
+    }
+  }
+
+  /* Tag / series chip: neutral, optionally a link. */
+  .kc-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-wash);
+    color: var(--color-text);
+    font: 600 var(--text-sm) / 1.2 var(--font-body);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--dur-fast) var(--ease-out);
+
+    &:is(a, button) {
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-secondary-active);
+      }
+
+      &:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring);
+      }
+    }
+  }
+
+  :root {
+    --kc-status-ok-bg: #e3ece6;
+    --kc-status-ok-fg: #3f6e4c;
+    --kc-status-off-bg: #e9eeed;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --kc-status-ok-bg: #1f3427;
+      --kc-status-ok-fg: #9fd0ac;
+      --kc-status-off-bg: #25343a;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --kc-status-ok-bg: #1f3427;
+    --kc-status-ok-fg: #9fd0ac;
+    --kc-status-off-bg: #25343a;
+  }
+}

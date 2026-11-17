@@ -91,6 +91,34 @@ describe("/admin/books auth", () => {
 });
 
 describe("/admin/books CRUD", () => {
+  it("sanitises rich-text descriptions", async () => {
+    const description = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "hi",
+              marks: [{ type: "link", attrs: { href: "javascript:alert(1)" } }],
+            },
+          ],
+        },
+        { type: "script", content: [] },
+      ],
+    };
+    const res = await admin("", { method: "POST", json: { ...sample, description } });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { description: unknown };
+    expect(JSON.stringify(body.description)).not.toMatch(/javascript|script/);
+    const bad = await admin("", {
+      method: "POST",
+      json: { ...sample, slug: "b2", description: "<b>x</b>" },
+    });
+    expect(bad.status).toBe(400);
+  });
+
   it("creates, reads, updates and deletes, with no-store", async () => {
     const created = await admin("", { method: "POST", json: sample });
     expect(created.status).toBe(201);
@@ -98,8 +126,9 @@ describe("/admin/books CRUD", () => {
     const book = (await created.json()) as { id: string; status: string };
     expect(book.status).toBe("draft");
 
-    const list = (await (await admin("")).json()) as unknown[];
-    expect(list).toHaveLength(1); // drafts included
+    const list = (await (await admin("")).json()) as { items: unknown[]; total: number };
+    expect(list.total).toBe(1); // drafts included
+    expect(list.items).toHaveLength(1);
 
     const updated = await admin(`/${book.id}`, {
       method: "PATCH",
@@ -122,6 +151,8 @@ describe("/admin/books CRUD", () => {
       { ...sample, coverUrl: "javascript:alert(1)" },
       { ...sample, status: "nope" },
       { ...sample, publishedYear: 1.5 },
+      { ...sample, title: "x".repeat(201) },
+      { ...sample, unknown: true },
     ]) {
       const res = await admin("", { method: "POST", json: bad });
       expect(res.status, JSON.stringify(bad)).toBe(400);
