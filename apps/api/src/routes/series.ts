@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { asc, eq } from "drizzle-orm";
+import { asc, count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
 import { capsules, listLiveSeries, liveSeriesBySlug, series, type CapsuleDb } from "@kcom/db";
@@ -7,6 +7,7 @@ import {
   findById,
   idParam,
   notFound,
+  pagination,
   publicCache,
   rethrowWriteError,
   slugParam,
@@ -28,6 +29,8 @@ const updateBody = z
   })
   .refine((b) => Object.keys(b).length > 0, "no fields to update");
 
+const listQuery = z.object(pagination());
+
 /** Public, read-only: only series that have at least one live capsule. */
 export function seriesRoutes(db: CapsuleDb) {
   return new Hono()
@@ -43,7 +46,14 @@ export function seriesRoutes(db: CapsuleDb) {
 export function adminSeriesRoutes(db: CapsuleDb) {
   const write = requireCan("content:write");
   return new Hono<AuthEnv>()
-    .get("/", async (c) => c.json(await db.select().from(series).orderBy(asc(series.title))))
+    .get("/", validate("query", listQuery), async (c) => {
+      const { limit, offset } = c.req.valid("query");
+      const [items, [counted]] = await Promise.all([
+        db.select().from(series).orderBy(asc(series.title)).limit(limit).offset(offset),
+        db.select({ total: count() }).from(series),
+      ]);
+      return c.json({ items, total: counted?.total ?? 0 });
+    })
     .get("/:id", validate("param", idParam), async (c) =>
       c.json(await findById(db, series, c.req.valid("param").id, "series")),
     )

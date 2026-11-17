@@ -298,6 +298,11 @@ describe("series", () => {
     expect(
       (await call("/admin/series", editor, "POST", { title: "Faith", slug: "faith" })).status,
     ).toBe(409);
+    const adminList = (await (await call("/admin/series?limit=1", editor)).json()) as {
+      items: unknown[];
+      total: number;
+    };
+    expect([adminList.items.length, adminList.total]).toEqual([1, 1]);
     // Hidden while it has no live capsule.
     expect((await call("/series/faith", null)).status).toBe(404);
     expect(await (await call("/series", null)).json()).toEqual([]);
