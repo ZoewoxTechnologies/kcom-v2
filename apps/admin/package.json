@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@kcom/permissions": "workspace:*",
     "@kcom/ui": "workspace:*",
     "@sentry/react": "^11.12.0",
     "react": "^19.2.0",

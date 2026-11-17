@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuth } from "./AuthProvider";
-import type { Role } from "./api";
+import { can } from "@kcom/permissions";
+import type { Permission } from "@kcom/permissions";
 import { ForbiddenPage } from "../pages/ForbiddenPage";
 
 /** Sends visitors without a session to /sign-in, remembering where they were headed. */
@@ -14,9 +15,9 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
-/** Shows the friendly 403 page unless the user's role is allowed. */
-export function RequireRole({ roles }: { roles: readonly Role[] }) {
+/** Shows the friendly 403 page unless the user's role grants the permission. */
+export function RequirePermission({ permission }: { permission: Permission }) {
   const { user } = useAuth();
-  if (!user || !roles.includes(user.role)) return <ForbiddenPage />;
+  if (!user || !can(user.role, permission)) return <ForbiddenPage />;
   return <Outlet />;
 }

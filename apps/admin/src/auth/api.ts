@@ -1,10 +1,10 @@
-export type Role = "admin" | "editor";
+import type { UserRole } from "@kcom/permissions";
 
 export interface SessionUser {
   id: string;
   name: string;
   email: string;
-  role: Role;
+  role: UserRole;
 }
 
 const baseUrl = () => (import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "");

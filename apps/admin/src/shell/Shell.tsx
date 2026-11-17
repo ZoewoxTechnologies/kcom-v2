@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { Avatar, Badge, Button, Menu, MenuItem, MenuLabel, MenuSeparator } from "@kcom/ui";
 import { useAuth } from "../auth/AuthProvider";
-import { navFor, navItems } from "./nav";
+import { navFor, navItemFor } from "./nav";
 
 /** Side menu, top bar and content outlet for every signed-in page. */
 export function Shell() {
@@ -11,16 +11,37 @@ export function Shell() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
+  const barRef = useRef<HTMLElement>(null);
+  const focusBurger = () =>
+    barRef.current?.querySelector<HTMLElement>(".kc-admin__burger")?.focus();
+  const sideRef = useRef<HTMLElement>(null);
+
   useEffect(() => setOpen(false), [pathname]);
 
+  const closeDrawer = () => {
+    setOpen(false);
+    focusBurger();
+  };
+
+  // While the drawer is open: focus moves into it, and Escape closes it.
+  useEffect(() => {
+    if (!open) return;
+    sideRef.current?.querySelector<HTMLElement>("a")?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      focusBurger();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   if (!user) return null;
-  const title = navItems.find((i) =>
-    i.path === "/" ? pathname === "/" : pathname.startsWith(i.path),
-  )?.label;
+  const title = navItemFor(pathname)?.label;
 
   return (
     <div className="kc-admin" data-nav-open={open || undefined}>
-      <aside className="kc-admin__side" id="admin-nav" aria-label="Main">
+      <aside ref={sideRef} className="kc-admin__side" id="admin-nav" aria-label="Main">
         <div className="kc-admin__brand">
           <img src="/logo.png" alt="" width="36" height="36" />
           <span>KCOM Admin</span>
@@ -38,11 +59,9 @@ export function Shell() {
           ))}
         </nav>
       </aside>
-      {open && (
-        <div className="kc-admin__scrim" onClick={() => setOpen(false)} aria-hidden="true" />
-      )}
+      {open && <div className="kc-admin__scrim" onClick={closeDrawer} aria-hidden="true" />}
       <div className="kc-admin__main">
-        <header className="kc-admin__bar">
+        <header ref={barRef} className="kc-admin__bar">
           <Button
             variant="secondary"
             size="md"

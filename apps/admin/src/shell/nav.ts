@@ -1,25 +1,30 @@
-import type { Role } from "../auth/api";
+import { can } from "@kcom/permissions";
+import type { Permission, UserRole } from "@kcom/permissions";
 
 export interface NavItem {
   label: string;
   path: string;
-  /** Roles allowed to see and open the page. */
-  roles: readonly Role[];
+  /** Permission needed to see and open the page. */
+  permission: Permission;
 }
 
-const everyone: readonly Role[] = ["admin", "editor"];
-
 export const navItems: readonly NavItem[] = [
-  { label: "Dashboard", path: "/", roles: everyone },
-  { label: "Capsules", path: "/capsules", roles: everyone },
-  { label: "Calendar", path: "/calendar", roles: everyone },
-  { label: "Blog", path: "/blog", roles: everyone },
-  { label: "Homepage", path: "/homepage", roles: everyone },
-  { label: "Events", path: "/events", roles: everyone },
-  { label: "Books", path: "/books", roles: everyone },
-  { label: "Subscribers", path: "/subscribers", roles: everyone },
-  { label: "Users", path: "/users", roles: ["admin"] },
-  { label: "Settings", path: "/settings", roles: ["admin"] },
+  { label: "Dashboard", path: "/", permission: "content:read" },
+  { label: "Capsules", path: "/capsules", permission: "content:read" },
+  { label: "Calendar", path: "/calendar", permission: "content:read" },
+  { label: "Blog", path: "/blog", permission: "content:read" },
+  { label: "Homepage", path: "/homepage", permission: "content:read" },
+  { label: "Events", path: "/events", permission: "content:read" },
+  { label: "Books", path: "/books", permission: "content:read" },
+  { label: "Subscribers", path: "/subscribers", permission: "content:read" },
+  { label: "Users", path: "/users", permission: "users:manage" },
+  { label: "Settings", path: "/settings", permission: "users:manage" },
 ];
 
-export const navFor = (role: Role) => navItems.filter((item) => item.roles.includes(role));
+export const navFor = (role: UserRole) => navItems.filter((item) => can(role, item.permission));
+
+/** The nav item whose path is this pathname or a parent of it. */
+export const navItemFor = (pathname: string) =>
+  navItems.find((i) =>
+    i.path === "/" ? pathname === "/" : pathname === i.path || pathname.startsWith(`${i.path}/`),
+  );

@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { App } from "./App";
-import type { Role } from "./auth/api";
+import type { UserRole as Role } from "@kcom/permissions";
 
 type Session = { user: { id: string; name: string; email: string; role: Role } } | null;
 
@@ -56,10 +56,19 @@ describe("route guard", () => {
     expect(await screen.findByRole("heading", { name: /sign in to manage/i })).toBeInTheDocument();
   });
 
-  it("serves the demo page without a session", async () => {
+  it("serves the demo page without a session in development", async () => {
     mockApi(null);
     renderAt("/demo");
     expect(await screen.findByRole("heading", { name: "KCOM Admin" })).toBeInTheDocument();
+  });
+
+  it("does not register the demo page in production", async () => {
+    vi.stubEnv("DEV", false);
+    mockApi(null);
+    renderAt("/demo");
+    expect(await screen.findByRole("heading", { name: /sign in to manage/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "KCOM Admin" })).not.toBeInTheDocument();
+    vi.unstubAllEnvs();
   });
 });
 
@@ -83,6 +92,30 @@ describe("sign in", () => {
 
     await userEvent.click(screen.getByRole("menuitem", { name: "Sign out", hidden: true }));
     expect(await screen.findByRole("heading", { name: /sign in to manage/i })).toBeInTheDocument();
+  });
+});
+
+describe("phone drawer", () => {
+  it("moves focus in on open, and closes on Escape back to the menu button", async () => {
+    mockApi(user("editor"));
+    renderAt("/");
+    const burger = await screen.findByRole("button", { name: "Menu" });
+    await userEvent.click(burger);
+    expect(burger).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveFocus();
+
+    await userEvent.keyboard("{Escape}");
+    expect(burger).toHaveAttribute("aria-expanded", "false");
+    expect(burger).toHaveFocus();
+  });
+});
+
+describe("page title", () => {
+  it("does not match a path that merely starts with a section name", async () => {
+    mockApi(user("editor"));
+    renderAt("/blogx");
+    await screen.findByRole("link", { name: "Blog" });
+    expect(document.querySelector(".kc-admin__title")).toBeEmptyDOMElement();
   });
 });
 
