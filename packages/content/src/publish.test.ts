@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lagosDate, nextLagosMidnight, slugify } from "./publish";
+import { lagosDate, lagosDayRange, lagosMonthRange, nextLagosMidnight, slugify } from "./publish";
 
 const next = (iso: string) => nextLagosMidnight(new Date(iso)).toISOString();
 
@@ -42,5 +42,28 @@ describe("slugify", () => {
   });
   it("returns empty when nothing usable remains", () => {
     expect(slugify("日本語")).toBe("");
+  });
+});
+
+describe("lagosDayRange", () => {
+  it("spans 23:00 UTC to 23:00 UTC", () => {
+    const [from, to] = lagosDayRange("2026-01-10");
+    expect([from.toISOString(), to.toISOString()]).toEqual([
+      "2026-01-09T23:00:00.000Z",
+      "2026-01-10T23:00:00.000Z",
+    ]);
+  });
+});
+
+describe("lagosMonthRange", () => {
+  it("covers the month", () => {
+    const [from, to] = lagosMonthRange("2026-02");
+    expect([from.toISOString(), to.toISOString()]).toEqual([
+      "2026-01-31T23:00:00.000Z",
+      "2026-02-28T23:00:00.000Z",
+    ]);
+  });
+  it("rolls over the year", () => {
+    expect(lagosMonthRange("2026-12")[1].toISOString()).toBe("2026-12-31T23:00:00.000Z");
   });
 });
