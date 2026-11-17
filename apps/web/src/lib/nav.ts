@@ -13,10 +13,7 @@ export const navItems: readonly NavItem[] = [
     href: "/about",
     children: [
       { label: "Who We Are", href: "/about" },
-      { label: "Ministry Team", href: "/about/team" },
-      { label: "Ministry Arms", href: "/about/arms" },
-      { label: "Mandate and Message", href: "/about/mandate" },
-      { label: "Vision and Mission", href: "/about/vision" },
+      { label: "Team and Arms", href: "/about/team" },
     ],
   },
   {
