@@ -21,8 +21,10 @@ describe("api source", () => {
     await expect(createApiSource("http://api", fetchOf(() => json({}, 500))).latestCapsule()).rejects.toThrow("500");
   });
   it("flattens rich text", () => {
-    expect(richTextToPlain({ content: [{ content: [{ text: "a" }] }, { text: "b" }] })).toBe("a b");
+    expect(richTextToPlain({ type: "doc", content: [{ type: "paragraph", content: [{ text: "a" }] }, { type: "paragraph", content: [{ text: "b" }] }] })).toBe("a b");
     expect(richTextToPlain(null)).toBe("");
+    const marked = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Trans" }, { type: "text", text: "formed", marks: [{ type: "bold" }] }, { type: "text", text: " by" }] }, { type: "paragraph", content: [{ type: "text", text: "grace" }] }] };
+    expect(richTextToPlain(marked)).toBe("Transformed by grace");
   });
 });
 
@@ -32,6 +34,18 @@ describe("fallback and switch", () => {
     const onError = vi.fn();
     expect(await withFallback(down, sampleSource, onError).latestCapsule()).toEqual(sampleCapsule);
     expect(onError).toHaveBeenCalledOnce();
+  });
+  it("wraps every method, including ones added later", async () => {
+    type Extra = { listThings(): Promise<string[]>; thing(): Promise<string | null> };
+    const bad = { listThings: async () => { throw new Error("x"); }, thing: async () => null } as unknown as Extra;
+    const good = { listThings: async () => ["a"], thing: async () => "t" } as unknown as Extra;
+    const w = withFallback(bad as never, good as never) as unknown as Extra;
+    expect(await w.listThings()).toEqual(["a"]);
+    expect(await w.thing()).toBe("t");
+    const none = withFallback(bad as never, null) as unknown as Extra;
+    expect(await none.listThings()).toEqual([]);
+    expect(await none.thing()).toBeNull();
+    expect(await (emptySource as unknown as Extra).listThings()).toEqual([]);
   });
   it("production never shows sample content when the API is down or empty", async () => {
     expect(await withFallback(down, null).latestCapsule()).toBeNull();
