@@ -15,6 +15,8 @@ export interface MenuProps extends Omit<HTMLAttributes<HTMLDivElement>, "childre
   triggerClassName?: string;
   /** Accessible name for the trigger when it has no text. */
   triggerLabel?: string;
+  /** Which trigger edge the panel lines up with. Use "end" for a trigger at the right of a bar. */
+  align?: "start" | "end";
   children: ReactNode;
 }
 
@@ -25,6 +27,7 @@ export function Menu({
   triggerSize = "md",
   triggerClassName,
   triggerLabel,
+  align = "start",
   className,
   children,
   ...rest
@@ -35,7 +38,13 @@ export function Menu({
   useEffect(() => (ref.current ? initMenu(ref.current) : undefined), []);
 
   return (
-    <div {...rest} ref={ref} className={cx("kc-menu-wrap", className)} data-kc-menu>
+    <div
+      {...rest}
+      ref={ref}
+      className={cx("kc-menu-wrap", className)}
+      data-kc-menu
+      data-align={align === "end" ? "end" : undefined}
+    >
       <button
         type="button"
         className={cx(

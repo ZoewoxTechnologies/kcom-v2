@@ -47,7 +47,10 @@ const renderAt = (path: string) =>
   );
 
 beforeEach(() => vi.unstubAllGlobals());
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
 
 describe("route guard", () => {
   it("redirects visitors without a session to sign-in", async () => {
@@ -105,13 +108,30 @@ describe("sign in", () => {
 });
 
 describe("account menu", () => {
+  it("hides View site when no site URL is configured", async () => {
+    vi.stubEnv("VITE_SITE_URL", "");
+    mockApi(user("editor"));
+    renderAt("/");
+    await screen.findByRole("button", { name: /account menu/i });
+    expect(screen.queryByRole("menuitem", { name: "View site", hidden: true })).toBeNull();
+    vi.unstubAllEnvs();
+  });
+
+  it("shows the role as a capitalised tag", async () => {
+    mockApi(user("editor"));
+    renderAt("/");
+    await screen.findByRole("button", { name: /account menu/i });
+    expect(screen.getByRole("menu", { hidden: true })).toHaveTextContent("Editor");
+  });
+
   it("shows name, role, profile, view site (new tab) and sign out", async () => {
+    vi.stubEnv("VITE_SITE_URL", "https://site.example");
     mockApi(user("editor"));
     renderAt("/");
     await screen.findByRole("button", { name: /account menu for grace adeyemi/i });
     const menu = screen.getByRole("menu", { hidden: true });
     expect(menu).toHaveTextContent("Grace Adeyemi");
-    expect(menu).toHaveTextContent("editor");
+    expect(menu).toHaveTextContent("Editor");
     const site = screen.getByRole("menuitem", { name: "View site", hidden: true });
     expect(site).toHaveAttribute("target", "_blank");
     expect(screen.getByRole("menuitem", { name: "Profile", hidden: true })).toBeInTheDocument();
@@ -120,6 +140,30 @@ describe("account menu", () => {
 });
 
 describe("phone drawer", () => {
+  const stubPhone = (matches: boolean) =>
+    vi.stubGlobal("matchMedia", () => ({
+      matches,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+
+  it("is inert while closed at phone width, and not at desktop width", async () => {
+    stubPhone(true);
+    mockApi(user("editor"));
+    const { unmount } = renderAt("/");
+    const nav = await screen.findByRole("navigation", { hidden: true });
+    const side = nav.closest("aside")!;
+    expect(side).toHaveAttribute("inert");
+    await userEvent.click(screen.getByRole("button", { name: "Menu" }));
+    expect(side).not.toHaveAttribute("inert");
+    unmount();
+
+    stubPhone(false);
+    renderAt("/");
+    const desktopSide = (await screen.findByRole("navigation")).closest("aside")!;
+    expect(desktopSide).not.toHaveAttribute("inert");
+  });
+
   it("moves focus in on open, and closes on Escape back to the menu button", async () => {
     mockApi(user("editor"));
     renderAt("/");
