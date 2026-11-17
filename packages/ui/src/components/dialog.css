@@ -88,6 +88,25 @@
     color: var(--color-error);
   }
 
+  .kc-dialog__close {
+    position: absolute;
+    inset-block-start: 0.75rem;
+    inset-inline-end: 0.75rem;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .kc-dialog__close:hover {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+
   @keyframes kc-dialog-fade {
     from {
       opacity: 0;

@@ -2,6 +2,7 @@ import { ButtonsDemo } from "../demo/ButtonsDemo";
 import { AvatarBadgeTagDemo } from "../demo/AvatarBadgeTagDemo";
 import { DataTableDemo } from "../demo/DataTableDemo";
 import { DialogDemo } from "../demo/DialogDemo";
+import { EditorKitDemo } from "../demo/EditorKitDemo";
 import { MenuDemo } from "../demo/MenuDemo";
 import { DateTimePickerDemo } from "../demo/DateTimePickerDemo";
 import { FormFieldsDemo } from "../demo/FormFieldsDemo";
@@ -17,6 +18,7 @@ export function DemoPage() {
       <ButtonsDemo />
       <DataTableDemo />
       <DialogDemo />
+      <EditorKitDemo />
       <MenuDemo />
       <FormFieldsDemo />
       <AvatarBadgeTagDemo />
