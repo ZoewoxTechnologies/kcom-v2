@@ -1,6 +1,8 @@
 import { ButtonsDemo } from "./demo/ButtonsDemo";
+import { AvatarBadgeTagDemo } from "./demo/AvatarBadgeTagDemo";
 import { DataTableDemo } from "./demo/DataTableDemo";
 import { DialogDemo } from "./demo/DialogDemo";
+import { MenuDemo } from "./demo/MenuDemo";
 import { DateTimePickerDemo } from "./demo/DateTimePickerDemo";
 import { FormFieldsDemo } from "./demo/FormFieldsDemo";
 
@@ -13,7 +15,9 @@ export function App() {
       <ButtonsDemo />
       <DataTableDemo />
       <DialogDemo />
+      <MenuDemo />
       <FormFieldsDemo />
+      <AvatarBadgeTagDemo />
       <DateTimePickerDemo />
     </main>
   );

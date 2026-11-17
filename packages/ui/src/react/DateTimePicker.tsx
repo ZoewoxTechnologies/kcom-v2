@@ -144,19 +144,18 @@ export function DateTimePicker({
           setOpen(next);
         }}
       >
-        <Popover.Trigger asChild>
-          <button
-            type="button"
-            id={triggerId}
-            className="kc-input kc-datetime__trigger"
-            disabled={disabled}
-          >
-            <span>{value ? formatInZone(value, timeZone) : "Choose date and time"}</span>
-            <span aria-hidden="true" className="kc-datetime__icon">
-              ▾
-            </span>
-          </button>
-        </Popover.Trigger>
+        <div className="kc-select">
+          <Popover.Trigger asChild>
+            <button
+              type="button"
+              id={triggerId}
+              className="kc-select__control kc-datetime__trigger"
+              disabled={disabled}
+            >
+              {value ? formatInZone(value, timeZone) : "Choose date and time"}
+            </button>
+          </Popover.Trigger>
+        </div>
         <Popover.Portal>
           <Popover.Content
             className="kc-datetime__panel"

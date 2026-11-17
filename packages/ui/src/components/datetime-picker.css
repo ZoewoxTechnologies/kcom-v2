@@ -1,5 +1,5 @@
-/* Date and time picker. Import after tokens.css. The trigger uses local field
-   styling until the shared form-field styles land. */
+/* Date and time picker. Import after tokens.css. The trigger reuses the shared
+   select styling from forms.css. */
 @layer components {
   .kc-datetime {
     display: grid;
@@ -11,19 +11,9 @@
     color: var(--color-text);
   }
 
-  /* Looks like the shared .kc-input; only the layout differs. */
+  /* The trigger reuses .kc-select (chevron) and .kc-select__control (field look). */
   .kc-datetime__trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
     text-align: start;
-    cursor: pointer;
-
-    &:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
   }
 
   .kc-datetime__panel {
