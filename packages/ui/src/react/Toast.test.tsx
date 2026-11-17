@@ -34,10 +34,12 @@ describe("Toast update", () => {
     api = useToast();
     return null;
   }
+  const roots: ReturnType<typeof createRoot>[] = [];
   function mount() {
     const host = document.createElement("div");
     document.body.append(host);
     const root = createRoot(host);
+    roots.push(root);
     act(() =>
       root.render(
         <ToastProvider>
@@ -52,6 +54,7 @@ describe("Toast update", () => {
   const isOpen = () => document.querySelector(".kc-toast")?.getAttribute("data-state") === "open";
 
   afterEach(() => {
+    act(() => roots.splice(0).forEach((root) => root.unmount()));
     vi.useRealTimers();
     document.body.innerHTML = "";
   });
