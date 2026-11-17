@@ -1,21 +1,8 @@
-import { Hono } from "hono";
-import { count, desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
 import { blogPosts, type CapsuleDb } from "@kcom/db";
-import {
-  assertCanChange,
-  findById,
-  httpUrl,
-  idParam,
-  notFound,
-  pagination,
-  publishStatus,
-  rethrowWriteError,
-  richTextSchema,
-} from "../content/index.js";
-import { assertCan, requireCan, type AuthEnv } from "../require-permission.js";
-import { validate } from "../validate.js";
+import { adminCrudRoutes, httpUrl, publishStatus, richTextSchema } from "../content/index.js";
 
 const text = (max: number) => z.string().trim().max(max);
 
@@ -46,69 +33,16 @@ const updateBody = z
   .partial()
   .refine((b) => Object.keys(b).length > 0, "no fields to update");
 
-const listQuery = z.object({ status: fields.status.optional(), ...pagination() });
-
-const BLOG_ERRORS = {
-  label: "post slug",
-  messages: { reference: "author does not exist" },
-};
+const BLOG_ERRORS = { messages: { reference: "author does not exist" } };
 
 /** Editor/admin endpoints: full access to blog posts including drafts and scheduled ones. */
-export function adminBlogRoutes(db: CapsuleDb) {
-  const write = requireCan("content:write");
-  const byId = (id: string) => findById(db, blogPosts, id, "post");
-
-  return new Hono<AuthEnv>()
-    .get("/", validate("query", listQuery), async (c) => {
-      const { status, limit, offset } = c.req.valid("query");
-      const where = status ? eq(blogPosts.status, status) : undefined;
-      const [items, [counted]] = await Promise.all([
-        db
-          .select()
-          .from(blogPosts)
-          .where(where)
-          .orderBy(desc(blogPosts.date), desc(blogPosts.createdAt))
-          .limit(limit)
-          .offset(offset),
-        db.select({ total: count() }).from(blogPosts).where(where),
-      ]);
-      return c.json({ items, total: counted?.total ?? 0 });
-    })
-    .get("/:id", validate("param", idParam), async (c) =>
-      c.json(await byId(c.req.valid("param").id)),
-    )
-    .post("/", write, validate("json", createBody), async (c) => {
-      const body = c.req.valid("json");
-      assertCanChange(c, null, body.status);
-      if (body.publishAt !== null) assertCan(c, "content:publish");
-      try {
-        const [row] = await db.insert(blogPosts).values(body).returning();
-        return c.json(row!, 201);
-      } catch (err) {
-        rethrowWriteError(err, BLOG_ERRORS);
-      }
-    })
-    .patch("/:id", write, validate("param", idParam), validate("json", updateBody), async (c) => {
-      const { id } = c.req.valid("param");
-      const patch = c.req.valid("json");
-      const existing = await byId(id);
-      assertCanChange(c, existing.status, patch.status);
-      if (patch.publishAt !== undefined) assertCan(c, "content:publish");
-      try {
-        const [row] = await db.update(blogPosts).set(patch).where(eq(blogPosts.id, id)).returning();
-        return c.json(row!);
-      } catch (err) {
-        rethrowWriteError(err, BLOG_ERRORS);
-      }
-    })
-    .delete("/:id", write, validate("param", idParam), async (c) => {
-      const { id } = c.req.valid("param");
-      assertCanChange(c, (await byId(id)).status);
-      const rows = await db
-        .delete(blogPosts)
-        .where(eq(blogPosts.id, id))
-        .returning({ id: blogPosts.id });
-      if (rows.length === 0) throw notFound("post");
-      return c.body(null, 204);
-    });
-}
+export const adminBlogRoutes = (db: CapsuleDb) =>
+  adminCrudRoutes({
+    db,
+    table: blogPosts,
+    label: "post",
+    createBody,
+    updateBody,
+    orderBy: [desc(blogPosts.date), desc(blogPosts.createdAt)],
+    errors: BLOG_ERRORS,
+  });

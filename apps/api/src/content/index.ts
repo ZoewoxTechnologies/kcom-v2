@@ -9,8 +9,15 @@
  * - `rethrowWriteError`: map unique/foreign-key/check violations to 409/422.
  * - `notFound(what)`, `findById(db, table, id, label)`: 404 helpers.
  * - `publicCache`: middleware for cacheable public routers.
+ * - `adminCrudRoutes` / `publicContentRoutes`: the standard admin CRUD and public read routers.
  * - `isLive(table)`: public-read filter (published and publish time passed).
  */
+export {
+  adminCrudRoutes,
+  publicContentRoutes,
+  type AdminCrudOptions,
+  type PublicRoutesOptions,
+} from "./crud.js";
 export { assertCanChange, findById, notFound, publicCache } from "./access.js";
 export { richTextSchema, sanitizeRichText } from "./rich-text.js";
 export { httpUrl, idParam, pagination, publishStatus, slugParam } from "./schemas.js";
