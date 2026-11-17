@@ -38,6 +38,41 @@ describe("Menu markup", () => {
   });
 });
 
+describe("Menu align", () => {
+  it("marks an end-aligned menu and leaves the default unmarked", () => {
+    const end = renderToStaticMarkup(
+      <Menu trigger="Go" align="end">
+        <MenuItem>One</MenuItem>
+      </Menu>,
+    );
+    expect(end).toContain('data-align="end"');
+    expect(markup()).not.toContain("data-align");
+  });
+
+  it("positions an end-aligned panel from the viewport's right edge", () => {
+    document.body.innerHTML = renderToStaticMarkup(
+      <Menu trigger="Go" align="end">
+        <MenuItem>One</MenuItem>
+      </Menu>,
+    );
+    const wrap = document.querySelector<HTMLElement>("[data-kc-menu]")!;
+    const trigger = wrap.querySelector("button")!;
+    const panel = wrap.querySelector<HTMLElement>("[popover]")!;
+    trigger.getBoundingClientRect = () => ({ left: 850, right: 900, bottom: 40 }) as DOMRect;
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: 1000,
+      configurable: true,
+    });
+    panel.showPopover = () =>
+      panel.dispatchEvent(Object.assign(new Event("toggle"), { newState: "open" }));
+    initMenu(wrap);
+    panel.showPopover();
+    expect(panel.style.insetInlineEnd).toBe("100px");
+    expect(panel.style.insetInlineStart).toBe("auto");
+    document.body.innerHTML = "";
+  });
+});
+
 describe("Menu button trigger", () => {
   it("uses the shared button classes with size", () => {
     const html = renderToStaticMarkup(

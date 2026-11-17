@@ -68,8 +68,9 @@
     flex-direction: column;
     gap: var(--space-1);
     padding: var(--space-5) var(--space-3);
-    background: #1d3f4e;
-    color: #fff;
+    background: var(--color-side);
+    color: var(--color-on-side);
+    border-inline-end: 1px solid var(--color-side-line);
   }
   .kc-admin__brand {
     display: flex;
@@ -81,7 +82,7 @@
     font-size: 1.0625rem;
   }
   .kc-admin__brand img {
-    background: #fff;
+    background: var(--color-on-side);
     border-radius: 8px;
     object-fit: contain;
   }
@@ -93,21 +94,21 @@
   .kc-admin__link {
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-field);
-    color: #d6e3e6;
+    color: var(--color-on-side-muted);
     font-weight: 600;
     font-size: 0.9375rem;
     text-decoration: none;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--color-side-hover);
     }
     &:focus-visible {
       outline: 2px solid var(--color-bar-gold);
       outline-offset: 2px;
     }
     &.active {
-      background: rgba(255, 255, 255, 0.14);
-      color: #fff;
+      background: var(--color-side-active);
+      color: var(--color-on-side);
       box-shadow: inset 3px 0 0 var(--color-gold);
     }
   }
@@ -134,12 +135,6 @@
   .kc-admin__burger,
   .kc-admin__scrim {
     display: none;
-  }
-  /* The menu script positions the panel at the trigger's left edge; the trigger sits at the
-     right of the bar, so anchor the fixed panel to the viewport's right edge instead. */
-  .kc-admin__user .kc-menu {
-    inset-inline-start: auto !important;
-    inset-inline-end: var(--space-4) !important;
   }
   .kc-admin__who {
     display: flex;

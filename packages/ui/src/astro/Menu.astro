@@ -11,8 +11,10 @@ interface Props {
   triggerSize?: "sm" | "md" | "lg";
   triggerClass?: string;
   triggerLabel?: string;
+  /** Which trigger edge the panel lines up with. */
+  align?: "start" | "end";
 }
-const { id, class: className, triggerVariant, triggerSize = "md", triggerClass, triggerLabel } =
+const { id, class: className, triggerVariant, triggerSize = "md", triggerClass, triggerLabel, align = "start" } =
   Astro.props;
 const triggerClasses = [
   "kc-menu-trigger",
@@ -22,7 +24,7 @@ const triggerClasses = [
 ];
 ---
 
-<div class:list={["kc-menu-wrap", className]} data-kc-menu>
+<div class:list={["kc-menu-wrap", className]} data-kc-menu data-align={align === "end" ? "end" : undefined}>
   <button
     type="button"
     class:list={triggerClasses}
