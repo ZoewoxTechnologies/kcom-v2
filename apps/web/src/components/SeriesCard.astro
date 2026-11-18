@@ -1,0 +1,36 @@
+---
+import type { SeriesSummary } from "../lib/data";
+import { shortMonthYear } from "@kcom/content";
+import { plural, seriesPath } from "../lib/archive";
+
+interface Props {
+  series: SeriesSummary;
+}
+const { series: s } = Astro.props;
+const status = s.inProgress ? `In progress · Day ${s.latestPart}` : "Start at Day 1 →";
+---
+<a class:list={["card", { live: s.inProgress }]} href={seriesPath(s.slug)}>
+  <span class="top"><span>{shortMonthYear(s.firstDate)}</span><span class="days">{plural(s.count, "day")}</span></span>
+  <span class="title">{s.title}</span>
+  {s.description && <span class="desc">{s.description}</span>}
+  <span class="status">{status}</span>
+</a>
+<style>
+  .card { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); color: var(--color-text); text-decoration: none; }
+  .card:hover { border-color: var(--color-primary); }
+  .live, .live:hover { border: 2px solid var(--color-gold); padding: calc(var(--space-4) - 1px); }
+  .top { display: flex; justify-content: flex-start; gap: var(--space-2); font-size: var(--text-xs); letter-spacing: 0.08em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  .days { color: var(--color-muted); }
+  .days::before { content: "·"; margin-inline-end: var(--space-2); }
+  .title { font: 600 1.4375rem / 1.15 var(--font-title); }
+  .desc { display: none; font-size: 0.9375rem; color: var(--color-muted); }
+  .status { font-size: 0.8125rem; font-weight: 700; color: var(--color-primary); }
+  @media (min-width: 48rem) {
+    .card { gap: 10px; padding: var(--space-5); }
+    .live, .live:hover { padding: calc(var(--space-5) - 1px); }
+    .top { justify-content: space-between; font-size: 0.8125rem; }
+    .days::before { content: none; }
+    .title { font-size: 1.75rem; }
+    .desc { display: block; }
+  }
+</style>

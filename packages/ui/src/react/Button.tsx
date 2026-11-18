@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, MouseEvent } from "react";
+import type { ButtonHTMLAttributes, MouseEvent, Ref } from "react";
 
 export type ButtonVariant = "primary" | "secondary" | "tertiary" | "give";
 
@@ -8,6 +8,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /** Brand button. Import "@kcom/ui/tokens.css" and "@kcom/ui/button.css" once per app. */

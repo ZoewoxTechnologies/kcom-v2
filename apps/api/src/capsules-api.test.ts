@@ -344,6 +344,14 @@ describe("series", () => {
     );
     expect((await call("/series/faith", null)).status).toBe(200);
     expect(((await (await call("/series", null)).json()) as unknown[]).length).toBe(1);
+    // Summary covers live capsules only (not the draft): one capsule, Lagos day of 2026-01-01 00:00Z.
+    expect(await (await call("/series/faith", null)).json()).toMatchObject({
+      slug: "faith",
+      capsuleCount: 1,
+      firstDate: "2026-01-01",
+      lastDate: "2026-01-01",
+      latestPart: null,
+    });
     const patched = await call(`/admin/series/${s.id}`, editor, "PATCH", { description: "d" });
     expect(((await patched.json()) as { description: string }).description).toBe("d");
     expect((await call("/admin/series", editor, "POST", { title: "", slug: "x" })).status).toBe(
@@ -418,7 +426,8 @@ describe("publish permission for a writer without it", () => {
 
   it("cannot edit, reschedule or delete published or scheduled capsules", async () => {
     for (const status of ["published", "scheduled"]) {
-      const id = await make({ ...live, status, slug: status });
+      const publishAt = status === "scheduled" ? "2999-01-01T00:00:00Z" : live.publishAt;
+      const id = await make({ ...live, publishAt, status, slug: status });
       for (const patch of [
         { title: "x" },
         { publishAt: "2027-01-01T00:00:00Z" },

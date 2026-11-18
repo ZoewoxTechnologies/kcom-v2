@@ -10,6 +10,8 @@ import "@kcom/ui/dialog.css";
 import "@kcom/ui/menu.css";
 import "@kcom/ui/forms.css";
 import "@kcom/ui/datetime-picker.css";
+import "./shell/shell.css";
+import { BrowserRouter } from "react-router";
 import { App } from "./App";
 import { initSentry } from "./sentry";
 
@@ -17,6 +19,8 @@ initSentry();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </StrictMode>,
 );

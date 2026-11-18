@@ -1,0 +1,38 @@
+---
+interface Props {
+  /** Which tab is active. */
+  tab: "month" | "series";
+  title?: string;
+  intro?: string;
+}
+const { tab, title = "Capstone Capsules", intro } = Astro.props;
+const tabs = [
+  { id: "month", label: "By month", href: "/capsules" },
+  { id: "series", label: "By series", href: "/series" },
+] as const;
+---
+<section class="head">
+  <div class="inner">
+    <h1>{title}</h1>
+    {intro && <p class="intro">{intro}</p>}
+    <nav class="tabs" aria-label="Browse by">
+      {tabs.map((t) => <a href={t.href} aria-current={t.id === tab ? "page" : undefined}>{t.label}</a>)}
+    </nav>
+  </div>
+</section>
+<style>
+  .head { background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); margin-block-start: calc(var(--space-6) * -1); padding: var(--space-5) 0 0; }
+  .inner { max-inline-size: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-3); }
+  h1 { margin: 0; font-size: 2.25rem; }
+  .intro { display: none; margin: 0; color: var(--color-muted); max-inline-size: 40rem; }
+  .tabs { display: flex; gap: var(--space-5); font-weight: 700; margin-block-start: var(--space-2); }
+  .tabs a { color: var(--color-muted); text-decoration: none; padding-block: var(--space-3); border-block-end: 3px solid transparent; }
+  .tabs a[aria-current] { color: var(--color-text); border-block-end-color: var(--color-gold); }
+  @media (min-width: 48rem) {
+    .intro { display: block; }
+    .head { padding-block-start: var(--space-7); }
+    .inner { gap: 18px; }
+    h1 { font-size: clamp(2.25rem, 8vw, var(--text-3xl)); }
+    .tabs { gap: 28px; margin-block-start: var(--space-3); font-size: var(--text-base); }
+  }
+</style>

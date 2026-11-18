@@ -1,7 +1,7 @@
 ---
 import { richTextToPlain } from "../lib/data/client";
 import { richTextToHtml } from "../lib/rich-text";
-import { dayParts, formatLagosShortDate } from "@kcom/content";
+import { formatLagosDate, formatLagosShortDate } from "@kcom/content";
 import type { CapsulePageData } from "../lib/capsule-page";
 import DateNav from "./DateNav.astro";
 import LinkCard from "./LinkCard.astro";
@@ -17,14 +17,16 @@ interface Props {
 }
 const { page, mode, today, shareUrl } = Astro.props;
 const { capsule, prev, next, seriesInfo, past } = page;
-const day = dayParts(capsule.displayDate);
+const [weekday = "", dayMonth = ""] = formatLagosDate(capsule.displayDate).split(", ");
+const day = { weekday, weekdayShort: weekday.slice(0, 3), rest: `${dayMonth} ${capsule.displayDate.slice(0, 4)}` };
 const scripture = richTextToPlain(capsule.scriptureText);
 const meditation = scripture || capsule.bibleMeditation;
 const hasMeditation = Boolean(meditation);
 const href = (c: { slug: string }) => `/capsules/${c.slug}`;
-const series = seriesInfo?.series;
+const series = capsule.series;
 const part = capsule.partNumber;
-const seriesLabel = series ? `${series.title}${part ? ` · Day ${part}${seriesInfo.total > 1 && part <= seriesInfo.total ? ` of ${seriesInfo.total}` : ""}` : ""}` : "";
+const total = seriesInfo?.series.count ?? 0;
+const seriesLabel = series ? `${series.title}${part ? ` · Day ${part}${total > 1 && part <= total ? ` of ${total}` : ""}` : ""}` : "";
 const upcoming = mode === "today" && !next && capsule.displayDate === today;
 const showRelated = mode === "past" && (Boolean(seriesInfo) || past.length > 0);
 const bodyHtml = richTextToHtml(capsule.body);
@@ -98,6 +100,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
               <span class="name">{m.title}</span>
             </a>
           ))}
+          {seriesInfo.truncated && <a class="all" href={`/series/${seriesInfo.series.slug}`}>See all {seriesInfo.series.count} days →</a>}
         </div>
       )}
       {past.length > 0 && (
@@ -117,7 +120,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
 
 {mode === "today" && (
   <section class="signup" aria-label="Email signup">
-    <form action="/subscribe" method="get">
+    <form action="/subscribe" method="post">
       <div class="signup-text"><h2>Receive tomorrow’s capsule</h2><p>Every morning at 5 a.m. Free.</p></div>
       <label class="sr-only" for="capsule-email">Email address</label>
       <input id="capsule-email" class="kc-input" name="email" type="email" placeholder="you@example.com" autocomplete="email" />
@@ -168,6 +171,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
   .col { flex: 1 1 22rem; min-inline-size: 0; display: flex; flex-direction: column; gap: 6px; }
   .col h2 { margin-block-end: var(--space-2); font-size: 1.75rem; }
   .row { display: flex; gap: var(--space-4); padding: 10px 0; border-block-start: 1px solid var(--color-line); color: var(--color-text); text-decoration: none; }
+  .all { margin-block-start: var(--space-2); font-weight: 600; color: var(--color-primary); }
   .row.current { background: var(--color-surface); border-radius: 10px; padding: 10px 12px; border-block-start-color: transparent; }
   .row:hover .name { text-decoration: underline; }
   .when { inline-size: 3.5rem; flex: none; font-size: var(--text-sm); font-weight: 700; color: var(--color-muted); }

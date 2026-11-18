@@ -1,0 +1,216 @@
+/* Admin layout: sign-in card, side menu, top bar. Primitives come from @kcom/ui. */
+@layer components {
+  /* Plain text links (no class) use the brand link style in every state, so a visited
+     link never falls back to the browser's purple. Classed links (menu, side nav) style themselves. */
+  a:not([class]) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-underline-offset: 3px;
+    transition: color var(--dur-fast) var(--ease-out);
+
+    &:visited {
+      color: var(--color-primary);
+    }
+    &:hover {
+      color: var(--color-primary-hover);
+      text-decoration-color: var(--color-primary-hover);
+    }
+    &:active {
+      color: var(--color-primary-active);
+    }
+  }
+
+  .kc-admin-loading {
+    padding: var(--space-6);
+    color: var(--color-muted);
+  }
+
+  .kc-admin-signin {
+    min-block-size: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: var(--space-4);
+    background: linear-gradient(170deg, var(--color-wash), var(--color-page));
+    font-family: var(--font-body);
+    color: var(--color-text);
+  }
+  .kc-admin-signin__card {
+    inline-size: min(100%, 26rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+  }
+  .kc-admin-signin__head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+  .kc-admin-signin__head h1 {
+    margin: var(--space-2) 0 0;
+    font-size: 1.125rem;
+  }
+  .kc-admin-signin__org {
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: 1.375rem;
+    line-height: 1.1;
+  }
+  .kc-admin-signin__forgot {
+    text-align: center;
+    font-size: var(--text-sm);
+  }
+  .kc-admin-signin__error {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-field);
+    color: var(--color-error);
+  }
+
+  .kc-admin {
+    display: flex;
+    min-block-size: 100dvh;
+    background: var(--color-page);
+    color: var(--color-text);
+    font-family: var(--font-body);
+  }
+  .kc-admin__side {
+    flex: none;
+    inline-size: 15rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-5) var(--space-3);
+    background: var(--color-side);
+    color: var(--color-on-side);
+    border-inline-end: 1px solid var(--color-side-line);
+  }
+  .kc-admin__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0 var(--space-2) var(--space-4);
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: 1.0625rem;
+  }
+  .kc-admin__brand img {
+    background: var(--color-on-side);
+    border-radius: 8px;
+    object-fit: contain;
+  }
+  .kc-admin__side nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .kc-admin__link {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-field);
+    color: var(--color-on-side-muted);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+
+    &:hover {
+      background: var(--color-side-hover);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--color-bar-gold);
+      outline-offset: 2px;
+    }
+    &.active {
+      background: var(--color-side-active);
+      color: var(--color-on-side);
+      box-shadow: inset 3px 0 0 var(--color-gold);
+    }
+  }
+  .kc-admin__main {
+    flex: 1;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .kc-admin__bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+    background: var(--color-surface);
+    border-block-end: 1px solid var(--color-line);
+  }
+  .kc-admin__title {
+    flex: 1;
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: 1.375rem;
+  }
+  .kc-admin__burger,
+  .kc-admin__scrim {
+    display: none;
+  }
+  .kc-admin__who {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+  .kc-admin__content {
+    padding: var(--space-5);
+  }
+
+  .kc-admin-notice {
+    max-inline-size: 40rem;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+  .kc-admin-notice h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 47.99rem) {
+    .kc-admin__side {
+      position: fixed;
+      inset-block: 0;
+      inset-inline-start: 0;
+      z-index: 20;
+      translate: -100% 0;
+      transition: translate var(--dur-base, 200ms);
+    }
+    .kc-admin[data-nav-open] .kc-admin__side {
+      translate: 0 0;
+    }
+    .kc-admin__scrim {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.4);
+    }
+    .kc-admin__burger {
+      display: inline-flex;
+      min-inline-size: 2.75rem;
+      min-block-size: 2.75rem;
+      font-size: 1.5rem;
+    }
+    .kc-admin__bar {
+      padding-inline: var(--space-4);
+    }
+    .kc-admin__content {
+      padding: var(--space-4);
+    }
+  }
+}

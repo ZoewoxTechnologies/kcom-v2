@@ -13,7 +13,7 @@ if (!capsule) {
   const latest = await data.latestCapsule();
   capsule = latest ? await data.capsuleBySlug(latest.slug) : null;
 }
-if (!capsule) return new Response(null, { status: 404 });
+if (!capsule) return Astro.rewrite("/404");
 const page = await loadCapsulePage(data, capsule);
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
