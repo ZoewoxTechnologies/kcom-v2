@@ -280,6 +280,29 @@ describe("public reads never leak drafts or future capsules", () => {
   });
 });
 
+describe("public /capsules/:slug/neighbours", () => {
+  const base = { body: doc("b") };
+  const at = (slug: string, status: "published" | "draft", iso: string) => ({ ...base, title: slug, slug, status, publishAt: new Date(iso) });
+  type Link = { slug: string; displayDate: string } | null;
+  const get = async (slug: string) => (await (await call(`/capsules/${slug}/neighbours`, null)).json()) as { prev: Link; next: Link };
+
+  it("skips drafts and future capsules, and is null at either end", async () => {
+    await db.insert(capsules).values([
+      at("a", "published", "2026-01-10T12:00:00Z"),
+      at("b-draft", "draft", "2026-01-11T12:00:00Z"),
+      at("c", "published", "2026-01-12T12:00:00Z"),
+      at("d-future", "published", "2999-01-01T00:00:00Z"),
+    ]);
+    expect(await get("a")).toMatchObject({ prev: null, next: { slug: "c", displayDate: "2026-01-12" } });
+    expect(await get("c")).toMatchObject({ prev: { slug: "a" }, next: null });
+  });
+  it("404s for an unknown or unpublished slug", async () => {
+    await db.insert(capsules).values(at("b-draft", "draft", "2026-01-11T12:00:00Z"));
+    expect((await call("/capsules/b-draft/neighbours", null)).status).toBe(404);
+    expect((await call("/capsules/nope/neighbours", null)).status).toBe(404);
+  });
+});
+
 describe("public /capsules/latest", () => {
   it("404s with the shared not-found shape", async () => {
     const res = await call("/capsules/latest", null);

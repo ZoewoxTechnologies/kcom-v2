@@ -56,12 +56,19 @@ export interface CapsuleListQuery {
   limit?: number;
 }
 
+export interface CapsuleNeighbours {
+  prev: CapsuleLink | null;
+  next: CapsuleLink | null;
+}
+
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
   capsuleBySlug(slug: string): Promise<Capsule | null>;
   capsuleByDate(date: string): Promise<Capsule | null>;
   /** Published capsules, newest first. */
   listCapsules(query: CapsuleListQuery): Promise<CapsuleLink[]>;
+  /** The nearest published capsules before and after the one with this slug. */
+  capsuleNeighbours(slug: string): Promise<CapsuleNeighbours | null>;
   listSeries(): Promise<SeriesInfo[]>;
 }
 
@@ -73,6 +80,7 @@ export const dataMethods = [
   "latestCapsule",
   "capsuleBySlug",
   "capsuleByDate",
+  "capsuleNeighbours",
   "listCapsules",
   "listSeries",
 ] as const satisfies readonly (keyof DataSource)[];

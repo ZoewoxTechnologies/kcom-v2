@@ -85,6 +85,13 @@ export function createApiSource(baseUrl: string, fetchImpl: typeof fetch = fetch
       if (!res.ok) throw new Error(`API /capsules/date/${date} responded ${res.status}`);
       return toCapsule(await res.json());
     },
+    async capsuleNeighbours(slug) {
+      const res = await client.capsules[":slug"].neighbours.$get({ param: { slug } }, SIGNAL());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /capsules/${slug}/neighbours responded ${res.status}`);
+      const { prev, next } = await res.json();
+      return { prev: prev && toLink(prev), next: next && toLink(next) };
+    },
     async listCapsules({ month, date, series, limit = 100 }) {
       const query: { limit: string; offset: string; month?: string; date?: string; series?: string } = { limit: String(limit), offset: "0" };
       if (month) query.month = month;

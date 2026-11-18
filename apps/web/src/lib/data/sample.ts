@@ -76,6 +76,12 @@ export const sampleSource: DataSource = {
   latestCapsule: async () => sampleCapsule,
   capsuleBySlug: async (slug) => sampleCapsules.find((c) => c.slug === slug) ?? null,
   capsuleByDate: async (date) => sampleCapsules.find((c) => c.displayDate === date) ?? null,
+  capsuleNeighbours: async (slug) => {
+    const i = newestFirst.findIndex((c) => c.slug === slug);
+    if (i < 0) return null;
+    const at = (c: Capsule | undefined) => (c ? link(c) : null);
+    return { prev: at(newestFirst[i + 1]), next: at(newestFirst[i - 1]) };
+  },
   listCapsules: async ({ month, date, series, limit = 100 }) =>
     newestFirst
       .filter((c) => (!month || c.displayDate.startsWith(month)) && (!date || c.displayDate === date) && (!series || (series === sampleSeries.slug && c.seriesId === seriesId)))

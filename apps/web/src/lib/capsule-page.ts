@@ -1,7 +1,5 @@
-import { lagosDate } from "@kcom/content";
 import type { Capsule, CapsuleLink, DataSource, SeriesInfo } from "./data";
 
-const MONTH_WALK = 24;
 const PAST_YEARS = 8;
 
 export function shiftMonth(month: string, by: number): string {
@@ -13,26 +11,6 @@ export function shiftMonth(month: string, by: number): string {
 export interface Neighbours {
   prev: CapsuleLink | null;
   next: CapsuleLink | null;
-}
-
-/**
- * The nearest published days either side of `date`, skipping days with no capsule.
- * Walks month by month (newest first within a month), at most two years either way.
- */
-export async function neighbours(src: DataSource, date: string, today: string): Promise<Neighbours> {
-  const month = date.slice(0, 7);
-  const find = async (dir: 1 | -1) => {
-    for (let i = 0; i <= MONTH_WALK; i++) {
-      const m = shiftMonth(month, dir * i);
-      if (dir === 1 && m > today.slice(0, 7)) return null;
-      const rows = await src.listCapsules({ month: m });
-      const candidates = rows.filter((c) => (dir === -1 ? c.displayDate < date : c.displayDate > date && c.displayDate <= today));
-      if (candidates.length) return candidates.reduce((a, b) => ((dir === -1 ? b.displayDate > a.displayDate : b.displayDate < a.displayDate) ? b : a));
-    }
-    return null;
-  };
-  const [prev, next] = await Promise.all([find(-1), find(1)]);
-  return { prev, next };
 }
 
 export interface SeriesContext {
@@ -66,10 +44,9 @@ export interface CapsulePageData extends Neighbours {
   past: CapsuleLink[];
 }
 
-export async function loadCapsulePage(src: DataSource, capsule: Capsule, now: Date = new Date()): Promise<CapsulePageData> {
-  const today = lagosDate(now);
+export async function loadCapsulePage(src: DataSource, capsule: Capsule): Promise<CapsulePageData> {
   const [n, seriesInfo, past] = await Promise.all([
-    neighbours(src, capsule.displayDate, today),
+    src.capsuleNeighbours(capsule.slug).then((r) => r ?? { prev: null, next: null }),
     seriesContext(src, capsule),
     onThisDay(src, capsule.displayDate),
   ]);

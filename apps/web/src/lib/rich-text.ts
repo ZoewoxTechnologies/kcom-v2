@@ -1,5 +1,6 @@
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 import { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref, richTextHeadingLevel } from "@kcom/content";
+
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 type Node = { type?: unknown; text?: unknown; content?: unknown; marks?: unknown; attrs?: unknown };
 const isNode = (v: unknown): v is Node => typeof v === "object" && v !== null && !Array.isArray(v);
