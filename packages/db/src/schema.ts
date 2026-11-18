@@ -303,3 +303,24 @@ export const rateLimits = pgTable("rate_limits", {
   count: integer("count").notNull(),
   lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
+
+export const events = pgTable(
+  "events",
+  {
+    id: id(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull().unique(),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    place: text("place"),
+    description: jsonb("description").$type<RichText>(),
+    imageUrl: text("image_url"),
+    status: publishStatus("status").notNull().default("draft"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("events_status_starts_at_idx").on(t.status, t.startsAt),
+    check("events_ends_after_start", sql`${t.endsAt} IS NULL OR ${t.endsAt} >= ${t.startsAt}`),
+  ],
+);
