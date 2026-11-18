@@ -44,7 +44,9 @@ describe("GET /capsules/latest", () => {
   it("404s when there are no capsules", async () => {
     const res = await empty.request("/capsules/latest");
     expect(res.status).toBe(404);
-    expect(await res.json()).toEqual({ error: { code: "not_found", message: "not found" } });
+    expect(await res.json()).toEqual({
+      error: { code: "not_found", message: "capsule not found" },
+    });
   });
 });
 
@@ -91,7 +93,13 @@ describe("visibility and errors", () => {
     await db.insert(capsules).values([
       { ...base, title: "d", slug: "d", status: "draft" },
       { ...base, title: "s", slug: "s", status: "scheduled" },
-      { ...base, title: "f", slug: "f", status: "published", publishAt: new Date("2999-01-01T00:00:00Z") },
+      {
+        ...base,
+        title: "f",
+        slug: "f",
+        status: "published",
+        publishAt: new Date("2999-01-01T00:00:00Z"),
+      },
     ]);
     const res = await createApp(db).request("/capsules/latest");
     expect(res.status).toBe(404);
@@ -107,7 +115,9 @@ describe("visibility and errors", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await createApp(broken).request("/capsules/latest");
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: { code: "internal_error", message: "internal error" } });
+    expect(await res.json()).toEqual({
+      error: { code: "internal_error", message: "internal error" },
+    });
     spy.mockRestore();
   });
 });

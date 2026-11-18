@@ -1,15 +1,20 @@
-import type { ButtonHTMLAttributes, MouseEvent } from "react";
+import type { ButtonHTMLAttributes, MouseEvent, Ref } from "react";
 
 export type ButtonVariant = "primary" | "secondary" | "tertiary" | "give";
 
+export type ButtonSize = "sm" | "md" | "lg";
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /** Brand button. Import "@kcom/ui/tokens.css" and "@kcom/ui/button.css" once per app. */
 export function Button({
   variant = "primary",
+  size = "md",
   loading = false,
   className,
   children,
@@ -17,7 +22,9 @@ export function Button({
   type = "button",
   ...rest
 }: ButtonProps) {
-  const classes = ["kc-btn", `kc-btn--${variant}`, className].filter(Boolean).join(" ");
+  const classes = ["kc-btn", `kc-btn--${variant}`, size !== "md" && `kc-btn--${size}`, className]
+    .filter(Boolean)
+    .join(" ");
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     if (loading) {
       event.preventDefault();

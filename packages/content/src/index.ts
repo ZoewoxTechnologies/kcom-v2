@@ -3,7 +3,9 @@ import { z } from "zod";
 /** Content model stubs. Fields will grow as the database schema lands. */
 
 const id = z.string().min(1);
-export const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase words separated by hyphens");
+export const slug = z
+  .string()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase words separated by hyphens");
 const status = z.enum(["draft", "published", "archived"]);
 
 const base = {
@@ -67,19 +69,6 @@ export const blogPostSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 
-export const pageSchema = z.object({
-  ...publishable,
-  body: z.string(),
-});
-
-export const bookSchema = z.object({
-  ...publishable,
-  description: z.string().optional(),
-  coverUrl: z.string().url().optional(),
-  purchaseUrl: z.string().url().optional(),
-  authorId: id.optional(),
-});
-
 const optionalText = z.string().min(1).nullable().default(null);
 const optionalUrl = z
   .string()
@@ -119,9 +108,26 @@ export type Person = z.infer<typeof personSchema>;
 export type Series = z.infer<typeof seriesSchema>;
 export type Capsule = z.infer<typeof capsuleSchema>;
 export type BlogPost = z.infer<typeof blogPostSchema>;
-export type Page = z.infer<typeof pageSchema>;
-export type Book = z.infer<typeof bookSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 export type Subscriber = z.infer<typeof subscriberSchema>;
 
-export { lagosDate, nextLagosMidnight, slugify } from "./publish.js";
+export { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref, richTextHeadingLevel } from "./rich-text.js";
+
+export {
+  dayParts,
+  formatLagosDate,
+  formatLagosShortDate,
+  lagosDate,
+  lagosDayRange,
+  lagosMonth,
+  lagosMonthRange,
+  monthKey,
+  monthLabel,
+  monthName,
+  monthShort,
+  nextLagosMidnight,
+  shiftMonth,
+  shortMonthYear,
+  slugify,
+} from "./publish.js";
+export type { DayParts } from "./publish.js";

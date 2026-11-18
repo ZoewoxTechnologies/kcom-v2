@@ -7,6 +7,19 @@
     ".": "./src/index.ts",
     "./tokens.css": "./src/tokens.css",
     "./button.css": "./src/components/button.css",
+    "./avatar.css": "./src/components/avatar.css",
+    "./badge.css": "./src/components/badge.css",
+    "./datetime-picker.css": "./src/components/datetime-picker.css",
+    "./toast.css": "./src/components/toast.css",
+    "./data-table.css": "./src/components/data-table.css",
+    "./dialog.css": "./src/components/dialog.css",
+    "./menu.css": "./src/components/menu.css",
+    "./menu": "./src/menu/menu.ts",
+    "./fonts": "./src/fonts.ts",
+    "./astro/Menu.astro": "./src/astro/Menu.astro",
+    "./astro/Pagination.astro": "./src/astro/Pagination.astro",
+    "./pagination": "./src/lib/pagination.ts",
+    "./forms.css": "./src/components/forms.css",
     "./styles.css": "./src/styles.css",
     "./reset.css": "./src/reset.css",
     "./base.css": "./src/base.css"
@@ -21,12 +34,23 @@
   },
   "devDependencies": {
     "@kcom/config": "workspace:*",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.12",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "eslint": "^10.14.0",
+    "jsdom": "^31.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "typescript": "^5.7.2",
     "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-avatar": "^1.3.1",
+    "@radix-ui/react-alert-dialog": "^1.2.1",
+    "@radix-ui/react-dialog": "^1.3.1",
+    "@radix-ui/react-popover": "^1.3.1",
+    "@radix-ui/react-toast": "^1.3.1"
   }
 }

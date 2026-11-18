@@ -2,7 +2,8 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { createTestDb } from "./test-db.js";
 import { latestCapsule } from "./queries.js";
 import { seed } from "./seed-data.js";
-import { capsules, series, siteSettings, subscribers } from "./schema.js";
+import { eq } from "drizzle-orm";
+import { capsules, homepageSections, series, siteSettings, subscribers } from "./schema.js";
 
 let db: Awaited<ReturnType<typeof createTestDb>>;
 beforeAll(async () => {
@@ -57,16 +58,26 @@ describe("latestCapsule visibility", () => {
 
 describe("constraints", () => {
   it("rejects duplicate slug and legacyNid", async () => {
-    await db
-      .insert(capsules)
-      .values({ title: "a", slug: "dup", publishAt: new Date("2026-03-01T00:00:00Z"), body: {}, legacyNid: 99 });
-    await expect(
-      db.insert(capsules).values({ title: "b", slug: "dup", publishAt: new Date("2026-03-01T00:00:00Z"), body: {} }),
-    ).rejects.toThrow();
+    await db.insert(capsules).values({
+      title: "a",
+      slug: "dup",
+      publishAt: new Date("2026-03-01T00:00:00Z"),
+      body: {},
+      legacyNid: 99,
+    });
     await expect(
       db
         .insert(capsules)
-        .values({ title: "c", slug: "dup2", publishAt: new Date("2026-03-01T00:00:00Z"), body: {}, legacyNid: 99 }),
+        .values({ title: "b", slug: "dup", publishAt: new Date("2026-03-01T00:00:00Z"), body: {} }),
+    ).rejects.toThrow();
+    await expect(
+      db.insert(capsules).values({
+        title: "c",
+        slug: "dup2",
+        publishAt: new Date("2026-03-01T00:00:00Z"),
+        body: {},
+        legacyNid: 99,
+      }),
     ).rejects.toThrow();
   });
 
@@ -121,9 +132,13 @@ describe("constraints", () => {
 
   it("rejects a part number without a series", async () => {
     await expect(
-      db
-        .insert(capsules)
-        .values({ title: "x", slug: "x", publishAt: new Date("2026-02-01T00:00:00Z"), body: {}, partNumber: 1 }),
+      db.insert(capsules).values({
+        title: "x",
+        slug: "x",
+        publishAt: new Date("2026-02-01T00:00:00Z"),
+        body: {},
+        partNumber: 1,
+      }),
     ).rejects.toThrow();
   });
 
@@ -156,5 +171,50 @@ describe("constraints", () => {
 
   it("keeps site settings a singleton", async () => {
     await expect(db.insert(siteSettings).values({ id: 2, siteName: "x" })).rejects.toThrow();
+  });
+});
+
+describe("homepage_sections constraints", () => {
+  it("seeds the six sections in order", async () => {
+    const d = await createTestDb();
+    const rows = await d.select().from(homepageSections).orderBy(homepageSections.position);
+    expect(rows.map((r) => r.key)).toEqual([
+      "todays_capsule",
+      "current_series",
+      "past_series",
+      "blog",
+      "events_books",
+      "email_signup",
+    ]);
+  });
+
+  it("rejects hiding todays_capsule", async () => {
+    const d = await createTestDb();
+    await expect(
+      d
+        .update(homepageSections)
+        .set({ visible: false })
+        .where(eq(homepageSections.key, "todays_capsule")),
+    ).rejects.toThrow();
+  });
+
+  it("rejects moving todays_capsule off position 0", async () => {
+    const d = await createTestDb();
+    await expect(
+      d
+        .update(homepageSections)
+        .set({ position: 1 })
+        .where(eq(homepageSections.key, "todays_capsule")),
+    ).rejects.toThrow();
+  });
+
+  it("rejects an unknown key and a duplicate position", async () => {
+    const d = await createTestDb();
+    await expect(
+      d.insert(homepageSections).values({ key: "nope" as never, position: 9 }),
+    ).rejects.toThrow();
+    await expect(
+      d.update(homepageSections).set({ position: 1 }).where(eq(homepageSections.key, "blog")),
+    ).rejects.toThrow();
   });
 });

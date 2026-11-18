@@ -9,13 +9,14 @@
     "start": "node dist/server.js",
     "lint": "eslint .",
     "typecheck": "tsc",
-    "seed:admin": "tsx src/seed-admin.ts",
+    "seed:users": "tsx src/seed-users.ts",
     "test": "vitest run"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.8",
     "@kcom/content": "workspace:*",
     "@kcom/db": "workspace:*",
+    "@kcom/permissions": "workspace:*",
     "@sentry/node": "^11.12.0",
     "better-auth": "^1.7.25",
     "drizzle-orm": "^0.45.4",
@@ -30,5 +31,8 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^5.1.0"
+  },
+  "exports": {
+    "./app": "./src/app.ts"
   }
 }

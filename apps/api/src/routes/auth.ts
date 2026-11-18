@@ -11,7 +11,10 @@ export function authRoutes(auth: Auth) {
     const res = await auth.handler(c.req.raw);
     c.header("Cache-Control", "no-store");
     if (res.status < 400 || !res.headers.get("content-type")?.includes("json")) return res;
-    const body = (await res.clone().json().catch(() => null)) as {
+    const body = (await res
+      .clone()
+      .json()
+      .catch(() => null)) as {
       code?: string;
       message?: string;
     } | null;

@@ -1,0 +1,83 @@
+---
+import { footerColumns, socialLinks, contactPlaceholder, siteName } from "../lib/site";
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="cols">
+    <div class="about">
+      <div class="brand">
+        <img src="/logo.png" alt="" width="44" height="44" />
+        <span>Kingdom Capstone<span class="line2">Outreach Ministries</span></span>
+      </div>
+      <div class="rule"></div>
+      <p>He leadeth me beside the still waters.<span class="ref">Psalm 23:2</span></p>
+    </div>
+    {footerColumns.map((c) => (
+      <div class="col">
+        <strong>{c.heading}</strong>
+        {c.links.map((l) => <a href={l.href}>{l.label}</a>)}
+      </div>
+    ))}
+    <form class="signup" action="/subscribe" method="get">
+      <label for="footer-email">The daily capsule, by email</label>
+      <div class="row">
+        <input id="footer-email" class="kc-input" name="email" type="email" placeholder="you@example.com" autocomplete="email" />
+        <button type="submit" class="kc-btn">Subscribe</button>
+      </div>
+    </form>
+  </div>
+  <div class="base">
+    <span class="legal"><span>© {year} {siteName}</span><span class="sep" aria-hidden="true"> · </span><span>{contactPlaceholder}</span></span>
+    <span class="social">
+      <span class="links">{socialLinks.map((l) => <a href={l.href}>{l.label}</a>)}</span>
+      <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary kc-btn--sm" aria-label="Switch colour theme">Theme</button>
+    </span>
+  </div>
+</footer>
+<script is:inline>
+  document.getElementById("theme-toggle")?.addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme
+      ? root.dataset.theme === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+    const next = dark ? "light" : "dark";
+    root.dataset.theme = next;
+    try { localStorage.setItem("theme", next); } catch {}
+  });
+</script>
+<style>
+  .site-footer { margin-top: var(--space-6); background: var(--color-footer); color: var(--color-on-footer); padding: var(--space-7) var(--gutter) var(--space-5); display: flex; flex-direction: column; gap: var(--space-6); }
+  .cols { display: grid; gap: var(--space-6); font-size: 0.9375rem; grid-template-columns: 1fr; }
+  .brand { display: flex; align-items: center; gap: var(--space-3); font-family: var(--font-title); font-weight: 600; font-size: 1.375rem; line-height: 1.05; }
+  .brand :global(img) { width: 44px; height: 44px; object-fit: contain; }
+  .line2 { display: block; }
+  .rule { width: 40px; height: 2px; background: var(--color-gold); margin-block: var(--space-3); }
+  .about p { margin: 0; opacity: 0.9; }
+  .ref { display: block; font-size: var(--text-xs); letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-footer-gold); margin-top: var(--space-1); }
+  .col { display: flex; flex-direction: column; gap: var(--space-2); }
+  .col strong, .signup label { font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-footer-gold); font-weight: 700; }
+  .col a, .base a { color: inherit; text-decoration: none; }
+  .base a { text-decoration: underline; }
+  .signup { display: flex; flex-direction: column; gap: var(--space-2); order: -1; }
+  .row { display: flex; flex-direction: column; gap: var(--space-2); }
+  .row :global(.kc-btn) { width: 100%; }
+  .row :global(.kc-input) { flex: none; min-width: 0; border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.08); color: inherit; }
+  .row :global(.kc-input::placeholder) { color: inherit; opacity: 0.7; }
+  .row .kc-btn { --kc-btn-bg: var(--color-footer-button); --kc-btn-fg: var(--color-on-footer-button); --kc-btn-border: var(--color-footer-button); }
+  .base { display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--text-sm); border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: var(--space-4); }
+  .social { display: flex; gap: var(--space-5); align-items: center; flex-wrap: wrap; }
+  .links { display: contents; }
+  .legal { display: flex; flex-direction: column; }
+  .sep { display: none; }
+  #theme-toggle { --kc-btn-fg: var(--color-on-footer); --kc-btn-border: rgba(255, 255, 255, 0.3); }
+  @media (min-width: 64rem) {
+    .cols { grid-template-columns: 1.4fr 1fr 1fr 1.4fr; }
+    .signup { order: 0; }
+    .row { flex-direction: row; }
+    .row :global(.kc-input) { flex: 1; }
+    .row :global(.kc-btn) { width: auto; }
+    .legal { flex-direction: row; }
+    .sep { display: inline; white-space: pre; }
+    .base { flex-direction: row; justify-content: space-between; align-items: center; }
+  }
+</style>
