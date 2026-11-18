@@ -69,19 +69,6 @@ export const blogPostSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 
-export const pageSchema = z.object({
-  ...publishable,
-  body: z.string(),
-});
-
-export const bookSchema = z.object({
-  ...publishable,
-  description: z.string().optional(),
-  coverUrl: z.string().url().optional(),
-  purchaseUrl: z.string().url().optional(),
-  authorId: id.optional(),
-});
-
 const optionalText = z.string().min(1).nullable().default(null);
 const optionalUrl = z
   .string()
@@ -121,8 +108,6 @@ export type Person = z.infer<typeof personSchema>;
 export type Series = z.infer<typeof seriesSchema>;
 export type Capsule = z.infer<typeof capsuleSchema>;
 export type BlogPost = z.infer<typeof blogPostSchema>;
-export type Page = z.infer<typeof pageSchema>;
-export type Book = z.infer<typeof bookSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 export type Subscriber = z.infer<typeof subscriberSchema>;
 
@@ -134,7 +119,15 @@ export {
   formatLagosShortDate,
   lagosDate,
   lagosDayRange,
+  lagosMonth,
   lagosMonthRange,
+  monthKey,
+  monthLabel,
+  monthName,
+  monthShort,
   nextLagosMidnight,
+  shiftMonth,
+  shortMonthYear,
   slugify,
 } from "./publish.js";
+export type { DayParts } from "./publish.js";

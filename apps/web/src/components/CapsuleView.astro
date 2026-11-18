@@ -22,9 +22,10 @@ const scripture = richTextToPlain(capsule.scriptureText);
 const meditation = scripture || capsule.bibleMeditation;
 const hasMeditation = Boolean(meditation);
 const href = (c: { slug: string }) => `/capsules/${c.slug}`;
-const series = seriesInfo?.series;
+const series = capsule.series;
 const part = capsule.partNumber;
-const seriesLabel = series ? `${series.title}${part ? ` · Day ${part}${seriesInfo.total > 1 && part <= seriesInfo.total ? ` of ${seriesInfo.total}` : ""}` : ""}` : "";
+const total = seriesInfo?.series.count ?? 0;
+const seriesLabel = series ? `${series.title}${part ? ` · Day ${part}${total > 1 && part <= total ? ` of ${total}` : ""}` : ""}` : "";
 const upcoming = mode === "today" && !next && capsule.displayDate === today;
 const showRelated = mode === "past" && (Boolean(seriesInfo) || past.length > 0);
 const bodyHtml = richTextToHtml(capsule.body);
@@ -33,7 +34,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
 {capsule.bannerUrl && <div class="banner"><img src={capsule.bannerUrl} alt="" /></div>}
 <article class:list={["capsule", mode]}>
   {mode === "today" ? (
-    <DateNav weekday={day.weekday} weekdayShort={day.weekdayShort} rest={day.rest} prevHref={prev ? href(prev) : undefined} nextHref={next ? href(next) : undefined} />
+    <DateNav day={day} prevHref={prev ? href(prev) : undefined} nextHref={next ? href(next) : undefined} />
   ) : (
     <nav class="crumbs" aria-label="Breadcrumb">
       <a href="/capsules">Capstone Capsules</a>
@@ -42,7 +43,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
   )}
 
   <header class="head">
-    {mode === "past" && <span class="date"><span class="wd-long">{day.weekday}</span><span class="wd-short">{day.weekdayShort}</span> · {day.rest}</span>}
+    {mode === "past" && <span class="date"><span class="wd-long">{day.weekday}</span><span class="wd-short">{day.weekday.slice(0, 3)}</span> · {day.rest}</span>}
     {mode === "today" && series && <a class="pill" href={`/series/${series.slug}`}><span class="pre">Series · </span>{seriesLabel}</a>}
     <h1>{capsule.title}</h1>
   </header>
@@ -82,7 +83,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
     {prev ? <LinkCard href={href(prev)} label={`← ${mode === "today" ? "Previous · " : ""}${formatLagosShortDate(prev.displayDate)}`} title={prev.title} /> : <span class="gap"></span>}
     {next
       ? <LinkCard end href={href(next)} label={`${mode === "today" ? "Next · " : ""}${formatLagosShortDate(next.displayDate)} →`} title={next.title} />
-      : upcoming ? <LinkCard end label="Next · tomorrow" title="Arrives tomorrow at 5 a.m." /> : <span class="gap"></span>}
+      : upcoming ? <LinkCard end label="Next · tomorrow" title="Arrives at midnight (Lagos time)" /> : <span class="gap"></span>}
   </nav>
 </article>
 
@@ -98,6 +99,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
               <span class="name">{m.title}</span>
             </a>
           ))}
+          {seriesInfo.truncated && <a class="all" href={`/series/${seriesInfo.series.slug}`}>See all {seriesInfo.series.count} days →</a>}
         </div>
       )}
       {past.length > 0 && (
@@ -117,10 +119,10 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
 
 {mode === "today" && (
   <section class="signup" aria-label="Email signup">
-    <form action="/subscribe" method="get">
-      <div class="signup-text"><h2>Receive tomorrow’s capsule</h2><p>Every morning at 5 a.m. Free.</p></div>
+    <form action="/subscribe" method="post">
+      <div class="signup-text"><h2>Receive tomorrow’s capsule</h2><p>Every day at midnight, Lagos time. Free.</p></div>
       <label class="sr-only" for="capsule-email">Email address</label>
-      <input id="capsule-email" class="kc-input" name="email" type="email" placeholder="you@example.com" autocomplete="email" />
+      <input id="capsule-email" class="kc-input" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
       <button type="submit" class="kc-btn kc-btn--primary">Subscribe</button>
     </form>
   </section>
@@ -168,6 +170,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
   .col { flex: 1 1 22rem; min-inline-size: 0; display: flex; flex-direction: column; gap: 6px; }
   .col h2 { margin-block-end: var(--space-2); font-size: 1.75rem; }
   .row { display: flex; gap: var(--space-4); padding: 10px 0; border-block-start: 1px solid var(--color-line); color: var(--color-text); text-decoration: none; }
+  .all { margin-block-start: var(--space-2); font-weight: 600; color: var(--color-primary); }
   .row.current { background: var(--color-surface); border-radius: 10px; padding: 10px 12px; border-block-start-color: transparent; }
   .row:hover .name { text-decoration: underline; }
   .when { inline-size: 3.5rem; flex: none; font-size: var(--text-sm); font-weight: 700; color: var(--color-muted); }

@@ -10,7 +10,7 @@ import { richTextToHtml } from "../../lib/rich-text";
 
 const { slug } = Astro.params;
 const post = slug ? await data.blogPostBySlug(slug) : null;
-if (!post) return new Response(null, { status: 404 });
+if (!post) return Astro.rewrite("/404");
 const related = await relatedPosts(data, post);
 const html = richTextToHtml(post.body);
 const description = post.excerpt ?? (richTextToPlain(post.body).slice(0, 160) || undefined);

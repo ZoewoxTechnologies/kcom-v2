@@ -1,18 +1,16 @@
 ---
+import type { DayParts } from "@kcom/content";
 interface Props {
-  /** Date label parts; the weekday has a short form for narrow screens. */
-  weekday: string;
-  weekdayShort: string;
-  rest: string;
+  day: DayParts;
   prevHref?: string;
   nextHref?: string;
   label?: string;
 }
-const { weekday, weekdayShort, rest, prevHref, nextHref, label = "Capsule date" } = Astro.props;
+const { day, prevHref, nextHref, label = "Capsule date" } = Astro.props;
 ---
 <nav class="date-nav" aria-label={label}>
   {prevHref ? <a class="arrow" href={prevHref} aria-label="Previous day">←</a> : <span class="arrow off" aria-hidden="true">←</span>}
-  <span class="date"><span class="long">{weekday}</span><span class="short">{weekdayShort}</span> · {rest}</span>
+  <span class="date"><span class="long">{day.weekday}</span><span class="short">{day.weekday.slice(0, 3)}</span> · {day.rest}</span>
   {nextHref ? <a class="arrow" href={nextHref} aria-label="Next day">→</a> : <span class="arrow off" aria-hidden="true">→</span>}
 </nav>
 <style>

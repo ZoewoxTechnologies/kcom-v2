@@ -2,14 +2,13 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BlogCard from "../../components/BlogCard.astro";
 import CardGrid from "../../components/CardGrid.astro";
-import Pager from "../../components/Pager.astro";
+import Pagination from "@kcom/ui/astro/Pagination.astro";
+import { paginate } from "@kcom/ui/pagination";
 import { data } from "../../lib/data";
-import { loadBlogPage, parsePage } from "../../lib/blog";
+import { allBlogPosts, BLOG_PAGE_SIZE } from "../../lib/blog";
 
-const page = parsePage(Astro.url.searchParams.get("page"));
-const { posts, hasPrev, hasNext } = await loadBlogPage(data, page);
+const { page, pages, items: posts } = paginate(await allBlogPosts(data), Astro.url.searchParams.get("page"), BLOG_PAGE_SIZE);
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
-const href = (n: number) => (n <= 1 ? "/blog" : `/blog?page=${n}`);
 ---
 <BaseLayout title={page > 1 ? `Blog, page ${page}` : "Blog"} description="Teachings, messages and devotionals from Kingdom Capstone Outreach Ministries." current="/blog">
   <div class="blog">
@@ -22,8 +21,7 @@ const href = (n: number) => (n <= 1 ? "/blog" : `/blog?page=${n}`);
     ) : (
       <p class="empty">No posts yet. Please check back soon.</p>
     )}
-    <Pager href={href} page={page} hasPrev={hasPrev} hasNext={hasNext} label="Blog pages" />
-    {page > 1 && posts.length === 0 && <p><a href="/blog">Back to the latest posts</a></p>}
+    <Pagination page={page} pages={pages} path="/blog" label="Blog pages" />
   </div>
 </BaseLayout>
 <style>

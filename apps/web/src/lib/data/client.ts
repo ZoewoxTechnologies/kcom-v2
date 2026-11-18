@@ -1,6 +1,7 @@
 import { hc } from "hono/client";
 import type { App } from "@kcom/api/app";
-import { dataMethods, type BlogPostSummary, type Capsule, type CapsuleLink, type CapsuleSummary, type DataSource, type RichTextDoc } from "./types";
+import { inSeriesOrder, toSeriesSummary } from "./series";
+import { dataMethods, type BlogPostSummary, type Capsule, type CapsuleListItem, type CapsuleSummary, type DataSource } from "./types";
 
 const BLOCKS = new Set(["paragraph", "heading", "blockquote", "listItem", "bulletList", "orderedList", "codeBlock", "doc"]);
 
@@ -17,41 +18,9 @@ export function richTextToPlain(node: unknown): string {
   return walk(node).replace(/\s+/g, " ").trim();
 }
 
-const SIGNAL = () => ({ init: { signal: AbortSignal.timeout(3000) } });
-
-const toLink = (c: { slug: string; title: string; displayDate: string; scriptureRef: string | null; seriesId: string | null; partNumber: number | null }): CapsuleLink => ({
-  slug: c.slug,
-  title: c.title,
-  displayDate: c.displayDate,
-  scriptureRef: c.scriptureRef,
-  seriesId: c.seriesId,
-  partNumber: c.partNumber,
-});
-
-const toCapsule = (c: {
-  slug: string;
-  title: string;
-  displayDate: string;
-  scriptureRef: string | null;
-  scriptureText: RichTextDoc | null;
-  bibleMeditation: string | null;
-  body: RichTextDoc;
-  decrees: string[];
-  prayer: RichTextDoc | null;
-  authorSource: string | null;
-  seriesId: string | null;
-  partNumber: number | null;
-}): Capsule => ({
-  ...toLink(c),
-  scriptureText: c.scriptureText,
-  bibleMeditation: c.bibleMeditation,
-  body: c.body,
-  decrees: c.decrees,
-  prayer: c.prayer,
-  authorSource: c.authorSource,
-  // The API has no banner field yet; the page hides the banner when it is null.
-  bannerUrl: null,
-});
+type Fetch = typeof fetch;
+const PAGE = 100;
+const SERIES_TTL_MS = 5000;
 
 const toBlogSummary = (p: { slug: string; title: string; date: string; excerpt: string | null; heroImageUrl: string | null; tags: string[] }): BlogPostSummary => ({
   slug: p.slug,
@@ -66,11 +35,91 @@ const toBlogSummary = (p: { slug: string; title: string; date: string; excerpt: 
  * Reads the public API through its own route types, so response shapes cannot drift.
  * A 404 is null; other failures throw.
  */
-export function createApiSource(baseUrl: string, fetchImpl: typeof fetch = fetch): DataSource {
+export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: () => Date = () => new Date()): DataSource {
   const client = hc<App>(baseUrl.replace(/\/+$/, ""), { fetch: fetchImpl });
+  const signal = () => ({ init: { signal: AbortSignal.timeout(10000) } });
+
+  type Row = Awaited<ReturnType<Awaited<ReturnType<typeof client.capsules.$get>>["json"]>>[number];
+  const toItem = (c: Row, titleOf: Map<string, string>): CapsuleListItem => ({
+    slug: c.slug,
+    title: c.title,
+    displayDate: c.displayDate,
+    scriptureRef: c.scriptureRef,
+    partNumber: c.partNumber,
+    seriesTitle: (c.seriesId && titleOf.get(c.seriesId)) || null,
+  });
+
+  /** Walks the paginated capsule list to the end. */
+  async function allCapsules(query: { month?: string; series?: string }): Promise<Row[]> {
+    const out: Row[] = [];
+    for (let offset = 0; ; offset += PAGE) {
+      const res = await client.capsules.$get({ query: { ...query, limit: String(PAGE), offset: String(offset) } }, signal());
+      if (!res.ok) throw new Error(`API /capsules responded ${res.status}`);
+      const rows = await res.json();
+      out.push(...rows);
+      if (rows.length < PAGE) return out;
+    }
+  }
+
+  /** One /series fetch is shared by calls within a few seconds (a page asks for it more than once). */
+  let seriesCache: { at: number; rows: ReturnType<typeof fetchSeries> } | null = null;
+  async function fetchSeries() {
+    const res = await client.series.$get(undefined, signal());
+    if (!res.ok) throw new Error(`API /series responded ${res.status}`);
+    return res.json();
+  }
+  function allSeries() {
+    const t = now().getTime();
+    if (!seriesCache || t - seriesCache.at > SERIES_TTL_MS) {
+      const rows = fetchSeries();
+      seriesCache = { at: t, rows };
+      rows.catch(() => { if (seriesCache?.rows === rows) seriesCache = null; });
+    }
+    return seriesCache.rows;
+  }
+
+  type Full = Awaited<ReturnType<Awaited<ReturnType<(typeof client.capsules)[":slug"]["$get"]>>["json"]>>;
+  async function toCapsule(c: Full): Promise<Capsule> {
+    const series = c.seriesId ? (await allSeries()).find((s) => s.id === c.seriesId) : undefined;
+    return {
+      slug: c.slug,
+      title: c.title,
+      displayDate: c.displayDate,
+      scriptureRef: c.scriptureRef,
+      scriptureText: c.scriptureText,
+      bibleMeditation: c.bibleMeditation,
+      body: c.body,
+      decrees: c.decrees,
+      prayer: c.prayer,
+      authorSource: c.authorSource,
+      series: series ? { slug: series.slug, title: series.title } : null,
+      partNumber: c.partNumber,
+      // The API has no banner field yet; the page hides the banner when it is null.
+      bannerUrl: null,
+    };
+  }
+
   return {
+    async capsuleBySlug(slug) {
+      const res = await client.capsules[":slug"].$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /capsules/${slug} responded ${res.status}`);
+      return toCapsule(await res.json());
+    },
+    async capsuleByDate(date) {
+      const res = await client.capsules.date[":date"].$get({ param: { date } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /capsules/date/${date} responded ${res.status}`);
+      return toCapsule(await res.json());
+    },
+    async capsuleNeighbours(slug) {
+      const res = await client.capsules[":slug"].neighbours.$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /capsules/${slug}/neighbours responded ${res.status}`);
+      return res.json();
+    },
     async latestCapsule(): Promise<CapsuleSummary | null> {
-      const res = await client.capsules.latest.$get(undefined, SIGNAL());
+      const res = await client.capsules.latest.$get(undefined, { init: { signal: AbortSignal.timeout(3000) } });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`API /capsules/latest responded ${res.status}`);
       const c = await res.json();
@@ -82,46 +131,32 @@ export function createApiSource(baseUrl: string, fetchImpl: typeof fetch = fetch
         scriptureText: richTextToPlain(c.scriptureText) || null,
       };
     },
-    async capsuleBySlug(slug) {
-      const res = await client.capsules[":slug"].$get({ param: { slug } }, SIGNAL());
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`API /capsules/${slug} responded ${res.status}`);
-      return toCapsule(await res.json());
-    },
-    async capsuleByDate(date) {
-      const res = await client.capsules.date[":date"].$get({ param: { date } }, SIGNAL());
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`API /capsules/date/${date} responded ${res.status}`);
-      return toCapsule(await res.json());
-    },
-    async capsuleNeighbours(slug) {
-      const res = await client.capsules[":slug"].neighbours.$get({ param: { slug } }, SIGNAL());
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`API /capsules/${slug}/neighbours responded ${res.status}`);
-      const { prev, next } = await res.json();
-      return { prev: prev && toLink(prev), next: next && toLink(next) };
-    },
-    async listCapsules({ month, date, series, limit = 100 }) {
-      const query: { limit: string; offset: string; month?: string; date?: string; series?: string } = { limit: String(limit), offset: "0" };
-      if (month) query.month = month;
-      if (date) query.date = date;
-      if (series) query.series = series;
-      const res = await client.capsules.$get({ query }, SIGNAL());
-      if (!res.ok) throw new Error(`API /capsules responded ${res.status}`);
-      return (await res.json()).map(toLink);
+    async listCapsulesInMonth(month) {
+      const [rows, series] = await Promise.all([allCapsules({ month }), allSeries()]);
+      const titleOf = new Map(series.map((s) => [s.id, s.title]));
+      return rows.map((c) => toItem(c, titleOf));
     },
     async listSeries() {
-      const res = await client.series.$get(undefined, SIGNAL());
-      if (!res.ok) throw new Error(`API /series responded ${res.status}`);
-      return (await res.json()).map((s) => ({ id: s.id, slug: s.slug, title: s.title }));
+      return (await allSeries()).map((s) => toSeriesSummary(s, now()));
+    },
+    async seriesBySlug(slug) {
+      const res = await client.series[":slug"].$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /series/${slug} responded ${res.status}`);
+      const info = await res.json();
+      const rows = await allCapsules({ series: slug });
+      return {
+        series: toSeriesSummary(info, now()),
+        capsules: inSeriesOrder(rows.map((c) => toItem(c, new Map([[info.id, info.title]])))),
+      };
     },
     async listBlogPosts({ limit = 20, offset = 0 } = {}) {
-      const res = await client.blog.$get({ query: { limit: String(limit), offset: String(offset) } }, SIGNAL());
+      const res = await client.blog.$get({ query: { limit: String(limit), offset: String(offset) } }, signal());
       if (!res.ok) throw new Error(`API /blog responded ${res.status}`);
       return (await res.json()).map(toBlogSummary);
     },
     async blogPostBySlug(slug) {
-      const res = await client.blog[":slug"].$get({ param: { slug } }, SIGNAL());
+      const res = await client.blog[":slug"].$get({ param: { slug } }, signal());
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`API /blog/${slug} responded ${res.status}`);
       const p = await res.json();
