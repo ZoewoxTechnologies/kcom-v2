@@ -55,3 +55,55 @@ export function lagosMonthRange(month: string): [Date, Date] {
   const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
   return [new Date(`${month}-01T00:00:00+01:00`), new Date(`${next}-01T00:00:00+01:00`)];
 }
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** The Lagos calendar month (YYYY-MM) of an instant. */
+export function lagosMonth(at: Date = new Date()): string {
+  return lagosDate(at).slice(0, 7);
+}
+
+/** YYYY-MM from a year and a 1-based month. */
+export function monthKey(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+/** Month name for a 1-based month: "November". */
+export function monthName(month: number): string {
+  return MONTH_NAMES[month - 1]!;
+}
+
+/** "Nov" for a 1-based month. */
+export function monthShort(month: number): string {
+  return monthName(month).slice(0, 3);
+}
+
+/** "November 2026" for a YYYY-MM key. */
+export function monthLabel(key: string): string {
+  return `${monthName(Number(key.slice(5)))} ${key.slice(0, 4)}`;
+}
+
+/** "Nov 2026" for a lagosDate string (YYYY-MM-DD). */
+export function shortMonthYear(day: string): string {
+  return `${monthShort(Number(day.slice(5, 7)))} ${day.slice(0, 4)}`;
+}
+
+/** The previous (-1) or next (+1) month key. */
+export function shiftMonth(key: string, by: 1 | -1): string {
+  const total = Number(key.slice(0, 4)) * 12 + (Number(key.slice(5)) - 1) + by;
+  return monthKey(Math.floor(total / 12), (total % 12) + 1);
+}
+
+/** A calendar day split for display, as returned by `dayParts`. */
+export interface DayParts {
+  /** Upper-case three-letter weekday, e.g. "SAT". */
+  dow: string;
+  /** Day of the month, 1 to 31. */
+  n: number;
+}
+
+/** Weekday abbreviation and day of the month for a lagosDate string (YYYY-MM-DD): "2026-11-14" gives { dow: "SAT", n: 14 }. */
+export function dayParts(day: string): DayParts {
+  const d = new Date(`${day}T12:00:00Z`);
+  return { dow: d.toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" }).toUpperCase(), n: d.getUTCDate() };
+}

@@ -1,6 +1,7 @@
 import { hc } from "hono/client";
 import type { App } from "@kcom/api/app";
-import { dataMethods, type CapsuleSummary, type DataSource } from "./types";
+import { inSeriesOrder, toSeriesSummary } from "./series";
+import { dataMethods, type CapsuleListItem, type CapsuleSummary, type DataSource } from "./types";
 
 const BLOCKS = new Set(["paragraph", "heading", "blockquote", "listItem", "bulletList", "orderedList", "codeBlock", "doc"]);
 
@@ -17,12 +18,45 @@ export function richTextToPlain(node: unknown): string {
   return walk(node).replace(/\s+/g, " ").trim();
 }
 
+type Fetch = typeof fetch;
+const PAGE = 100;
+
 /**
  * Reads the public API through its own route types, so response shapes cannot drift.
- * A 404 is null; other failures throw. Add sources here as the API grows (e.g. /series).
+ * A 404 is null; other failures throw.
  */
-export function createApiSource(baseUrl: string, fetchImpl: typeof fetch = fetch): DataSource {
+export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: () => Date = () => new Date()): DataSource {
   const client = hc<App>(baseUrl.replace(/\/+$/, ""), { fetch: fetchImpl });
+  const signal = () => ({ init: { signal: AbortSignal.timeout(10000) } });
+
+  type Row = Awaited<ReturnType<Awaited<ReturnType<typeof client.capsules.$get>>["json"]>>[number];
+  const toItem = (c: Row, titleOf: Map<string, string>): CapsuleListItem => ({
+    slug: c.slug,
+    title: c.title,
+    displayDate: c.displayDate,
+    scriptureRef: c.scriptureRef,
+    partNumber: c.partNumber,
+    seriesTitle: (c.seriesId && titleOf.get(c.seriesId)) || null,
+  });
+
+  /** Walks the paginated capsule list to the end. */
+  async function allCapsules(query: { month?: string; series?: string }): Promise<Row[]> {
+    const out: Row[] = [];
+    for (let offset = 0; ; offset += PAGE) {
+      const res = await client.capsules.$get({ query: { ...query, limit: String(PAGE), offset: String(offset) } }, signal());
+      if (!res.ok) throw new Error(`API /capsules responded ${res.status}`);
+      const rows = await res.json();
+      out.push(...rows);
+      if (rows.length < PAGE) return out;
+    }
+  }
+
+  async function allSeries() {
+    const res = await client.series.$get(undefined, signal());
+    if (!res.ok) throw new Error(`API /series responded ${res.status}`);
+    return res.json();
+  }
+
   return {
     async latestCapsule(): Promise<CapsuleSummary | null> {
       const res = await client.capsules.latest.$get(undefined, { init: { signal: AbortSignal.timeout(3000) } });
@@ -35,6 +69,25 @@ export function createApiSource(baseUrl: string, fetchImpl: typeof fetch = fetch
         displayDate: c.displayDate,
         scriptureRef: c.scriptureRef,
         scriptureText: richTextToPlain(c.scriptureText) || null,
+      };
+    },
+    async listCapsulesInMonth(month) {
+      const [rows, series] = await Promise.all([allCapsules({ month }), allSeries()]);
+      const titleOf = new Map(series.map((s) => [s.id, s.title]));
+      return rows.map((c) => toItem(c, titleOf));
+    },
+    async listSeries() {
+      return (await allSeries()).map((s) => toSeriesSummary(s, now()));
+    },
+    async seriesBySlug(slug) {
+      const res = await client.series[":slug"].$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /series/${slug} responded ${res.status}`);
+      const info = await res.json();
+      const rows = await allCapsules({ series: slug });
+      return {
+        series: toSeriesSummary(info, now()),
+        capsules: inSeriesOrder(rows.map((c) => toItem(c, new Map([[info.id, info.title]])))),
       };
     },
   };

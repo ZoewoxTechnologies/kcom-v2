@@ -321,6 +321,14 @@ describe("series", () => {
     );
     expect((await call("/series/faith", null)).status).toBe(200);
     expect(((await (await call("/series", null)).json()) as unknown[]).length).toBe(1);
+    // Summary covers live capsules only (not the draft): one capsule, Lagos day of 2026-01-01 00:00Z.
+    expect(await (await call("/series/faith", null)).json()).toMatchObject({
+      slug: "faith",
+      capsuleCount: 1,
+      firstDate: "2026-01-01",
+      lastDate: "2026-01-01",
+      latestPart: null,
+    });
     const patched = await call(`/admin/series/${s.id}`, editor, "PATCH", { description: "d" });
     expect(((await patched.json()) as { description: string }).description).toBe("d");
     expect((await call("/admin/series", editor, "POST", { title: "", slug: "x" })).status).toBe(

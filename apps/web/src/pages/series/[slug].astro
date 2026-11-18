@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArchiveHeader from "../../components/ArchiveHeader.astro";
+import CapsuleRow from "../../components/CapsuleRow.astro";
+import Pagination from "@kcom/ui/astro/Pagination.astro";
+import { paginate } from "@kcom/ui/pagination";
+import { data } from "../../lib/data";
+import { SERIES_CAPSULES_PAGE_SIZE, capsulePath, plural } from "../../lib/archive";
+import { formatLagosDate, shortMonthYear } from "@kcom/content";
+
+const slug = Astro.params.slug ?? "";
+const detail = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) ? await data.seriesBySlug(slug) : null;
+if (!detail) return Astro.rewrite("/404");
+const { series: s, capsules } = detail;
+const { page, pages, items } = paginate(capsules, Astro.url.searchParams.get("page"), SERIES_CAPSULES_PAGE_SIZE);
+const offset = (page - 1) * SERIES_CAPSULES_PAGE_SIZE;
+---
+<BaseLayout title={s.title} description={s.description ?? `The ${s.title} series of Capstone Capsules.`} current="/series">
+  <ArchiveHeader tab="series" />
+  <div class="body">
+    <a class="back" href="/series">← All series</a>
+    <div class="heading">
+      <h2>{s.title}</h2>
+      <span class="facts">{shortMonthYear(s.firstDate)} · {plural(s.count, "day")}{s.inProgress ? ` · In progress, Day ${s.latestPart}` : ""}</span>
+    </div>
+    {s.description && <p class="desc">{s.description}</p>}
+    <div class="list">
+      {items.map((c, i) => (
+        <CapsuleRow href={capsulePath(c.slug)} kicker="DAY" figure={c.partNumber ?? offset + i + 1} title={c.title} meta={`${formatLagosDate(c.displayDate)}${c.scriptureRef ? ` · ${c.scriptureRef}` : ""}`} />
+      ))}
+    </div>
+    <Pagination page={page} pages={pages} path={`/series/${s.slug}`} />
+  </div>
+</BaseLayout>
+<style>
+  .body { max-inline-size: 70rem; inline-size: 100%; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-3); padding-block: var(--space-5) var(--space-7); }
+  .back { font-weight: 600; width: max-content; }
+  .heading { display: flex; align-items: baseline; gap: var(--space-2) var(--space-4); flex-wrap: wrap; }
+  h2 { margin: 0; font-size: 2rem; }
+  .facts { color: var(--color-muted); font-size: 0.9375rem; }
+  .desc { margin: 0; color: var(--color-muted); max-inline-size: 40rem; }
+  .list { display: flex; flex-direction: column; margin-block: var(--space-3) var(--space-4); }
+  @media (min-width: 48rem) { h2 { font-size: 2.5rem; } }
+</style>
