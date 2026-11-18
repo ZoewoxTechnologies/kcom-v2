@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { dayParts, shortDay } from "@kcom/content";
+import { dayParts, formatLagosShortDate } from "@kcom/content";
 import { loadCapsulePage, neighbours, onThisDay, shiftMonth } from "./capsule-page";
 import { sampleCapsules, sampleSource } from "./data/sample";
 
 describe("dates", () => {
   it("formats day parts", () => {
     expect(dayParts("2026-11-14")).toEqual({ weekday: "Saturday", weekdayShort: "Sat", rest: "14 November 2026" });
-    expect(shortDay("2026-11-14")).toBe("14 Nov");
+    expect(formatLagosShortDate("2026-11-14")).toBe("14 Nov");
   });
   it("shifts months across years", () => {
     expect(shiftMonth("2026-01", -1)).toBe("2025-12");

@@ -2,12 +2,12 @@
 import Menu from "@kcom/ui/astro/Menu.astro";
 import { navItems, isCurrent } from "../lib/nav";
 import { siteName } from "../lib/site";
-import { formatLagosDate } from "@kcom/content";
+import { formatLagosDate, formatLagosShortDate } from "@kcom/content";
 import { data } from "../lib/data";
 const { current = "" } = Astro.props;
 const capsule = await data.latestCapsule();
 const today = capsule ? formatLagosDate(capsule.displayDate) : "";
-const shortDate = capsule ? new Date(`${capsule.displayDate}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }) : "";
+const shortDate = capsule ? formatLagosShortDate(capsule.displayDate) : "";
 const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule.scriptureRef ?? ""}` : (capsule?.scriptureRef ?? "");
 ---
 {capsule && <div class="verse-bar">
@@ -75,7 +75,7 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   .menu summary.kc-btn { display: inline-flex; }
   .menu details.group > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 0; }
   .menu details.group > summary::-webkit-details-marker { display: none; }
-  .menu details.group > summary::after { content: ""; inline-size: 0.5em; block-size: 0.5em; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: translateY(-0.1em) rotate(45deg); transition: transform var(--dur-fast) var(--ease-out); }
+  .menu details.group > summary::after { content: ""; margin-inline-end: 0.2em; inline-size: 0.5em; block-size: 0.5em; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: translateY(-0.1em) rotate(45deg); transition: transform var(--dur-fast) var(--ease-out); }
   .menu details.group[open] > summary::after { transform: translateY(0.1em) rotate(-135deg); }
   .menu .group { border-bottom: 1px solid var(--color-line); padding: var(--space-1) 0; }
   .menu .group:last-child { border-bottom: 0; }

@@ -131,7 +131,7 @@ export { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref, richTextHeadingLevel } fr
 export {
   dayParts,
   formatLagosDate,
-  shortDay,
+  formatLagosShortDate,
   lagosDate,
   lagosDayRange,
   lagosMonthRange,

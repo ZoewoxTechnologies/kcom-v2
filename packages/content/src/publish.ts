@@ -30,8 +30,8 @@ export function dayParts(day: string): { weekday: string; weekdayShort: string; 
   return { weekday, weekdayShort: weekday.slice(0, 3), rest: `${dm} ${day.slice(0, 4)}` };
 }
 
-/** A lagosDate string as "14 Nov". */
-export function shortDay(day: string): string {
+/** A lagosDate string (YYYY-MM-DD) as "14 Nov". */
+export function formatLagosShortDate(day: string): string {
   return new Date(`${day}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 }
 

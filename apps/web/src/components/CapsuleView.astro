@@ -1,7 +1,7 @@
 ---
 import { richTextToPlain } from "../lib/data/client";
 import { richTextToHtml } from "../lib/rich-text";
-import { dayParts, shortDay } from "@kcom/content";
+import { dayParts, formatLagosShortDate } from "@kcom/content";
 import type { CapsulePageData } from "../lib/capsule-page";
 import DateNav from "./DateNav.astro";
 import LinkCard from "./LinkCard.astro";
@@ -79,9 +79,9 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
   <ShareLinks url={shareUrl} title={capsule.title} />
 
   <nav class="more" aria-label={mode === "today" ? "More capsules" : "Previous and next"}>
-    {prev ? <LinkCard href={href(prev)} label={`← ${mode === "today" ? "Previous · " : ""}${shortDay(prev.displayDate)}`} title={prev.title} /> : <span class="gap"></span>}
+    {prev ? <LinkCard href={href(prev)} label={`← ${mode === "today" ? "Previous · " : ""}${formatLagosShortDate(prev.displayDate)}`} title={prev.title} /> : <span class="gap"></span>}
     {next
-      ? <LinkCard end href={href(next)} label={`${mode === "today" ? "Next · " : ""}${shortDay(next.displayDate)} →`} title={next.title} />
+      ? <LinkCard end href={href(next)} label={`${mode === "today" ? "Next · " : ""}${formatLagosShortDate(next.displayDate)} →`} title={next.title} />
       : upcoming ? <LinkCard end label="Next · tomorrow" title="Arrives tomorrow at 5 a.m." /> : <span class="gap"></span>}
   </nav>
 </article>
@@ -94,7 +94,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
           <h2>In this series · {seriesInfo.series.title}</h2>
           {seriesInfo.members.map((m) => (
             <a class:list={["row", { current: m.slug === capsule.slug }]} href={href(m)} aria-current={m.slug === capsule.slug ? "page" : undefined}>
-              <span class="when">{m.partNumber ? `Day ${m.partNumber}` : shortDay(m.displayDate)}</span>
+              <span class="when">{m.partNumber ? `Day ${m.partNumber}` : formatLagosShortDate(m.displayDate)}</span>
               <span class="name">{m.title}</span>
             </a>
           ))}
