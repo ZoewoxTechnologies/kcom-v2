@@ -9,6 +9,8 @@ import { bookRoutes } from "./routes/books.js";
 import { capsuleRoutes } from "./routes/capsules.js";
 import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
+import { homepageRoutes } from "./routes/homepage.js";
+import { pageRoutes } from "./routes/pages.js";
 import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
 import { userRoutes } from "./routes/users.js";
@@ -65,6 +67,8 @@ export function createApp(
     .route("/capsules", capsuleRoutes(db))
     .route("/events", eventRoutes(db))
     .route("/series", seriesRoutes(db))
+    .route("/pages", pageRoutes(db))
+    .route("/homepage", homepageRoutes(db))
     .route("/admin", adminRoutes(db, authInstance, capsuleEvents))
     .route("/internal", internalRoutes(db, capsuleEvents, internalToken))
     .route("/users", userRoutes(db, authInstance))
