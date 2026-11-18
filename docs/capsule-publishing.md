@@ -4,7 +4,7 @@
 
 `draft` → `scheduled` → `published`, and `scheduled` → `draft` (unschedule).
 
-- Creating a capsule without `publishAt` defaults it to the next 00:00 Africa/Lagos (`nextLagosMidnight` in `@kcom/content`). Editors may pick any later time.
+- Creating a capsule without `publishAt` defaults it to the next 00:00 Africa/Lagos (`nextLagosMidnight` in `@kcom/content`). A capsule created as `published` without `publishAt` defaults to now instead. Editors may pick any later time.
 - Scheduling needs a future `publishAt`. Moving a draft with a stale time to `scheduled` without a new time resets it to the next Lagos midnight.
 - Editing a scheduled capsule (no status in the patch) keeps its `publishAt`. Unscheduling sets `draft` and keeps the time.
 - Published capsules cannot be scheduled. Unpublishing (`published` → `draft`, needs `content:publish`) is allowed; publishing it again fires the event again.
