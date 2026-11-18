@@ -46,7 +46,19 @@ const months = Array.from({ length: 12 }, (_, i) => ({ n: i + 1, key: monthKey(m
   </div>
 </BaseLayout>
 <script>
-  document.querySelector(".grid [aria-current]")?.scrollIntoView({ inline: "center", block: "nearest" });
+  // Centre the selected month in the scrolling chip row (phone). Chip widths change when web
+  // fonts arrive, so centre again once they have loaded.
+  const grid = document.querySelector<HTMLElement>(".grid");
+  const centre = () => {
+    const chip = grid?.querySelector<HTMLElement>("[aria-current]");
+    if (!grid || !chip) return;
+    const g = grid.getBoundingClientRect();
+    const c = chip.getBoundingClientRect();
+    grid.scrollLeft += c.left - g.left - (g.width - c.width) / 2;
+  };
+  centre();
+  document.fonts?.ready.then(centre);
+  window.addEventListener("load", centre);
 </script>
 <style>
   .layout { max-inline-size: 70rem; inline-size: 100%; margin-inline: auto; display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-7); padding-block: var(--space-4) var(--space-7); }
