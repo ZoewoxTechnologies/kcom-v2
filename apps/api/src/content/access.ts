@@ -11,15 +11,22 @@ export const notFound = (what: string) => new HttpError(404, "not_found", `${wha
 /**
  * The one rule for who may publish: any change to non-draft content, or moving
  * content out of draft, needs `content:publish`. Draft-only edits need just
- * `content:write`. Pass `existing` = null when creating, `next` = undefined
- * when the status is not being set (a delete, or a patch without status).
+ * `content:write`. Setting a publish time also needs `content:publish`. Pass
+ * `existing` = null when creating, `next` = undefined when the status is not
+ * being set (a delete, or a patch without status), and `publishAt` only when
+ * the request sets one (leave it undefined otherwise).
  */
 export function assertCanChange(
   c: Context<AuthEnv>,
   existing: "draft" | "scheduled" | "published" | null,
   next?: "draft" | "scheduled" | "published",
+  publishAt?: unknown,
 ) {
-  if ((existing !== null && existing !== "draft") || (next !== undefined && next !== "draft")) {
+  if (
+    (existing !== null && existing !== "draft") ||
+    (next !== undefined && next !== "draft") ||
+    publishAt !== undefined
+  ) {
     assertCan(c, "content:publish");
   }
 }
