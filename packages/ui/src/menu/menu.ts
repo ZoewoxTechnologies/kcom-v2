@@ -12,7 +12,7 @@
    Without this script the browser still opens and closes the menu, handles Escape and
    outside clicks, and returns focus to the trigger. The script adds arrow-key, Home/End
    and typeahead navigation, closes the menu on item activation, keeps aria-expanded in
-   sync and positions the popover under its trigger. */
+   sync and positions the popover under its trigger (data-align="end" lines up right edges). */
 
 const ITEM = ".kc-menu__item";
 const READY = "kcMenuReady";
@@ -23,12 +23,19 @@ function items(panel: HTMLElement): HTMLElement[] {
   );
 }
 
-function place(trigger: HTMLElement, panel: HTMLElement) {
+function place(trigger: HTMLElement, panel: HTMLElement, align: string | undefined) {
   const r = trigger.getBoundingClientRect();
   panel.style.position = "fixed";
   panel.style.margin = "0";
   panel.style.insetBlockStart = `${r.bottom + 8}px`;
-  panel.style.insetInlineStart = `${r.left}px`;
+  if (align === "end") {
+    // Right edges line up: the panel grows leftwards from the trigger.
+    panel.style.insetInlineStart = "auto";
+    panel.style.insetInlineEnd = `${document.documentElement.clientWidth - r.right}px`;
+  } else {
+    panel.style.insetInlineEnd = "auto";
+    panel.style.insetInlineStart = `${r.left}px`;
+  }
 }
 
 /** Wire up one menu wrapper. Returns a cleanup function. */
@@ -48,7 +55,7 @@ export function initMenu(wrap: HTMLElement): () => void {
     const open = (event as ToggleEvent).newState === "open";
     trigger.setAttribute("aria-expanded", String(open));
     if (open) {
-      place(trigger, panel);
+      place(trigger, panel, wrap.dataset.align);
       for (const item of items(panel)) item.tabIndex = -1;
       focusAt(items(panel), 0);
     }

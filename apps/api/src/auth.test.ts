@@ -63,6 +63,17 @@ describe("auth", () => {
     expect(ok.headers.get("access-control-allow-origin")).toBe(ORIGIN);
   });
 
+  it("answers an unknown email exactly like a wrong password", async () => {
+    const wrong = await post("/sign-in/email", { email: EMAIL, password: "wrong password!!" });
+    const unknown = await post("/sign-in/email", {
+      email: "nobody@example.test",
+      password: "wrong password!!",
+    });
+    expect(unknown.status).toBe(wrong.status);
+    expect(await unknown.json()).toEqual(await wrong.json());
+    expect(unknown.headers.getSetCookie()).toHaveLength(0);
+  });
+
   it("rejects a wrong password in the API error shape", async () => {
     const res = await post("/sign-in/email", { email: EMAIL, password: "wrong password!!" });
     expect(res.status).toBe(401);

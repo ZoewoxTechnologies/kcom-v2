@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { userRoles, type UserRole } from "@kcom/permissions";
 import {
   bigint,
   boolean,
@@ -228,8 +229,8 @@ export const subscribers = pgTable(
 
 // Auth tables (Better Auth). Ids are text because Better Auth generates them.
 
-export const userRoles = ["admin", "editor"] as const;
-export type UserRole = (typeof userRoles)[number];
+export { userRoles };
+export type { UserRole };
 
 export const users = pgTable(
   "users",
