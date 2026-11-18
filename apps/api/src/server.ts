@@ -11,6 +11,7 @@ const app = createApp(createDb(), {
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean),
+  internalToken: process.env.INTERNAL_JOB_TOKEN || undefined,
   auth: {
     cookies: {
       secure: process.env.COOKIE_SECURE !== "false",
