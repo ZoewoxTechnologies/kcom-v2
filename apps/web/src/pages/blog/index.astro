@@ -1,0 +1,34 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import BlogCard from "../../components/BlogCard.astro";
+import CardGrid from "../../components/CardGrid.astro";
+import Pager from "../../components/Pager.astro";
+import { data } from "../../lib/data";
+import { loadBlogPage, parsePage } from "../../lib/blog";
+
+const page = parsePage(Astro.url.searchParams.get("page"));
+const { posts, hasPrev, hasNext } = await loadBlogPage(data, page);
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+const href = (n: number) => (n <= 1 ? "/blog" : `/blog?page=${n}`);
+---
+<BaseLayout title={page > 1 ? `Blog, page ${page}` : "Blog"} description="Teachings, messages and devotionals from Kingdom Capstone Outreach Ministries." current="/blog">
+  <div class="blog">
+    <header>
+      <h1>Blog</h1>
+      <p>Teachings, messages and devotionals.</p>
+    </header>
+    {posts.length > 0 ? (
+      <CardGrid>{posts.map((post) => <BlogCard post={post} level={2} />)}</CardGrid>
+    ) : (
+      <p class="empty">No posts yet. Please check back soon.</p>
+    )}
+    <Pager href={href} page={page} hasPrev={hasPrev} hasNext={hasNext} label="Blog pages" />
+    {page > 1 && posts.length === 0 && <p><a href="/blog">Back to the latest posts</a></p>}
+  </div>
+</BaseLayout>
+<style>
+  .blog { display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-5) var(--space-7); }
+  header { display: flex; flex-direction: column; gap: var(--space-2); }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; }
+  header p, .empty { margin: 0; color: var(--color-muted); }
+</style>

@@ -61,6 +61,27 @@ export interface CapsuleNeighbours {
   next: CapsuleLink | null;
 }
 
+/** A published blog post, without its body: enough for cards and lists. */
+export interface BlogPostSummary {
+  slug: string;
+  title: string;
+  /** Calendar day, YYYY-MM-DD. */
+  date: string;
+  excerpt: string | null;
+  heroImageUrl: string | null;
+  tags: string[];
+}
+
+/** A published blog post in full. */
+export interface BlogPost extends BlogPostSummary {
+  body: RichTextDoc;
+}
+
+export interface BlogListQuery {
+  limit?: number;
+  offset?: number;
+}
+
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
   capsuleBySlug(slug: string): Promise<Capsule | null>;
@@ -70,6 +91,9 @@ export interface DataSource {
   /** The nearest published capsules before and after the one with this slug. */
   capsuleNeighbours(slug: string): Promise<CapsuleNeighbours | null>;
   listSeries(): Promise<SeriesInfo[]>;
+  /** Published posts, newest first. */
+  listBlogPosts(query?: BlogListQuery): Promise<BlogPostSummary[]>;
+  blogPostBySlug(slug: string): Promise<BlogPost | null>;
 }
 
 /**
@@ -83,6 +107,8 @@ export const dataMethods = [
   "capsuleNeighbours",
   "listCapsules",
   "listSeries",
+  "listBlogPosts",
+  "blogPostBySlug",
 ] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;

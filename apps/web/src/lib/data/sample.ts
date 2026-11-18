@@ -1,3 +1,4 @@
+import { sampleBlogPosts } from "./sample-blog";
 import type { Capsule, CapsuleLink, CapsuleSummary, DataSource, SeriesInfo } from "./types";
 
 const doc = (...paragraphs: string[]) => ({
@@ -88,4 +89,7 @@ export const sampleSource: DataSource = {
       .slice(0, limit)
       .map(link),
   listSeries: async () => [sampleSeries],
+  listBlogPosts: async ({ limit = 20, offset = 0 } = {}) =>
+    sampleBlogPosts.slice(offset, offset + limit).map((b) => ({ slug: b.slug, title: b.title, date: b.date, excerpt: b.excerpt, heroImageUrl: b.heroImageUrl, tags: b.tags })),
+  blogPostBySlug: async (slug) => sampleBlogPosts.find((b) => b.slug === slug) ?? null,
 };

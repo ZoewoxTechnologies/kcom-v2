@@ -1,0 +1,22 @@
+---
+interface Props {
+  /** Builds the URL for a 1-based page. */
+  href: (page: number) => string;
+  page: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+  label?: string;
+}
+const { href, page, hasPrev, hasNext, label = "Pagination" } = Astro.props;
+---
+{(hasPrev || hasNext) && (
+  <nav class="pager" aria-label={label}>
+    {hasPrev ? <a class="kc-btn kc-btn--secondary" rel="prev" href={href(page - 1)}>← Newer</a> : <span />}
+    <span class="here" aria-current="page">Page {page}</span>
+    {hasNext ? <a class="kc-btn kc-btn--secondary" rel="next" href={href(page + 1)}>Older →</a> : <span />}
+  </nav>
+)}
+<style>
+  .pager { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .here { font-size: var(--text-sm); color: var(--color-muted); }
+</style>

@@ -1,6 +1,6 @@
 import { hc } from "hono/client";
 import type { App } from "@kcom/api/app";
-import { dataMethods, type Capsule, type CapsuleLink, type CapsuleSummary, type DataSource, type RichTextDoc } from "./types";
+import { dataMethods, type BlogPostSummary, type Capsule, type CapsuleLink, type CapsuleSummary, type DataSource, type RichTextDoc } from "./types";
 
 const BLOCKS = new Set(["paragraph", "heading", "blockquote", "listItem", "bulletList", "orderedList", "codeBlock", "doc"]);
 
@@ -51,6 +51,15 @@ const toCapsule = (c: {
   authorSource: c.authorSource,
   // The API has no banner field yet; the page hides the banner when it is null.
   bannerUrl: null,
+});
+
+const toBlogSummary = (p: { slug: string; title: string; date: string; excerpt: string | null; heroImageUrl: string | null; tags: string[] }): BlogPostSummary => ({
+  slug: p.slug,
+  title: p.title,
+  date: p.date,
+  excerpt: p.excerpt,
+  heroImageUrl: p.heroImageUrl,
+  tags: p.tags,
 });
 
 /**
@@ -105,6 +114,18 @@ export function createApiSource(baseUrl: string, fetchImpl: typeof fetch = fetch
       const res = await client.series.$get(undefined, SIGNAL());
       if (!res.ok) throw new Error(`API /series responded ${res.status}`);
       return (await res.json()).map((s) => ({ id: s.id, slug: s.slug, title: s.title }));
+    },
+    async listBlogPosts({ limit = 20, offset = 0 } = {}) {
+      const res = await client.blog.$get({ query: { limit: String(limit), offset: String(offset) } }, SIGNAL());
+      if (!res.ok) throw new Error(`API /blog responded ${res.status}`);
+      return (await res.json()).map(toBlogSummary);
+    },
+    async blogPostBySlug(slug) {
+      const res = await client.blog[":slug"].$get({ param: { slug } }, SIGNAL());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /blog/${slug} responded ${res.status}`);
+      const p = await res.json();
+      return { ...toBlogSummary(p), body: p.body };
     },
   };
 }
