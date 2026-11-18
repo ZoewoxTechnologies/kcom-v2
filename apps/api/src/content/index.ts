@@ -1,7 +1,8 @@
 /**
- * Shared building blocks for content resources (capsules, series, and later
- * blog, books and events). Small explicit helpers, not a CRUD factory: each
- * resource keeps its own hand-written route file and uses these where needed.
+ * Shared building blocks for content resources (capsules, series, blog, books,
+ * events). Small explicit helpers plus two router factories for the standard
+ * publishable-table routes; a resource with custom behaviour (capsules, series)
+ * hand-writes its routes from the helpers instead.
  *
  * - `schemas`: id/slug params, http(s) URL, publish status, pagination.
  * - `richTextSchema` / `sanitizeRichText`: validate and sanitise rich-text JSON.
