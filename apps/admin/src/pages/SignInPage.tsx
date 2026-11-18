@@ -70,9 +70,9 @@ export function SignInPage() {
         <Button type="submit" size="lg" loading={busy}>
           Sign in
         </Button>
-        <Link to="/forgot-password" className="kc-admin-signin__forgot">
-          Forgot password?
-        </Link>
+        <p className="kc-admin-signin__forgot">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
       </form>
     </div>
   );

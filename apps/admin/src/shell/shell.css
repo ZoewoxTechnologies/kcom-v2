@@ -1,5 +1,26 @@
 /* Admin layout: sign-in card, side menu, top bar. Primitives come from @kcom/ui. */
 @layer components {
+  /* Plain text links (no class) use the brand link style in every state, so a visited
+     link never falls back to the browser's purple. Classed links (menu, side nav) style themselves. */
+  a:not([class]) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-underline-offset: 3px;
+    transition: color var(--dur-fast) var(--ease-out);
+
+    &:visited {
+      color: var(--color-primary);
+    }
+    &:hover {
+      color: var(--color-primary-hover);
+      text-decoration-color: var(--color-primary-hover);
+    }
+    &:active {
+      color: var(--color-primary-active);
+    }
+  }
+
   .kc-admin-loading {
     padding: var(--space-6);
     color: var(--color-muted);
@@ -45,7 +66,6 @@
   .kc-admin-signin__forgot {
     text-align: center;
     font-size: var(--text-sm);
-    color: var(--color-primary);
   }
   .kc-admin-signin__error {
     padding: var(--space-3) var(--space-4);
