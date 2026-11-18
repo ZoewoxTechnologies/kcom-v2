@@ -10,7 +10,7 @@ const node = (nid: number, title: string, body: string | null, extra: Partial<Ra
   aliases: [`content/${title.toLowerCase().replace(/\W+/g, "-").replace(/-$/, "")}`],
   fields: {
     ...(body === null ? {} : { body: [{ body_value: body }] }),
-    field_daily_digest_date: [{ field_daily_digest_date_value: "2015-03-01 00:00:00" }],
+    field_daily_digest_date: [{ field_daily_digest_date_value: `2015-03-${10 + nid} 00:00:00` }],
     field_prayer: [{ field_prayer_value: "Lord, help me &amp; mine." }],
     field_bible_meditation: [{ field_bible_meditation_value: "John 14:1-31" }],
     field_excerpt: [{ field_excerpt_value: "\tAdetokunbo O. Ilesanmi (Meditations)\r\n\tAdapted from: A Book." }],
@@ -28,6 +28,18 @@ describe("htmlToDoc", () => {
     expect(nodeText(doc.content[0]!)).toBe("A b & c");
     expect(doc.content[0]?.content?.[1]?.marks).toEqual([{ type: "bold" }]);
     expect(doc.content[1]?.content).toHaveLength(2);
+  });
+});
+
+describe("htmlToDoc safety", () => {
+  it("keeps safe links, drops unsafe ones and images, and reports them", () => {
+    const seen: string[] = [];
+    const doc = htmlToDoc('<p><a href="https://x.org/a">ok</a> <a href="javascript:alert(1)">bad</a><img src="data:image/png;base64,AAA"></p>', (c, d) => seen.push(`${c}:${d}`));
+    const inline = doc.content[0]?.content ?? [];
+    expect(inline.find((n) => n.text === "ok")?.marks).toEqual([{ type: "link", attrs: { href: "https://x.org/a" } }]);
+    expect(inline.find((n) => n.text?.includes("bad"))?.marks).toBeUndefined();
+    expect(JSON.stringify(doc)).not.toContain('"image"');
+    expect(seen).toEqual(["unsafe-link:javascript:alert(1)", "image:data:image/png;base64,AAA"]);
   });
 });
 
@@ -76,7 +88,7 @@ describe("transformCapsules", () => {
       slug: "door-1", status: "published", scriptureRef: "Isaiah 26:3", bibleMeditation: "John 14:1-31",
       authorSource: "Adetokunbo O. Ilesanmi (Meditations) — Adapted from: A Book.", legacyPath: "content/door-1",
     });
-    expect(c.publishAt.toISOString()).toBe("2015-02-28T23:00:00.000Z");
+    expect(c.publishAt.toISOString()).toBe("2015-03-10T23:00:00.000Z");
     expect(c.body.content).toHaveLength(1);
     expect(nodeText(c.prayer as never)).toBe("Lord, help me & mine.");
   });
@@ -91,6 +103,19 @@ describe("transformCapsules", () => {
     expect(r.capsules.map((c) => c.legacyNid)).toEqual([1, 2, 3, 5]);
     expect(r.issues.map((i) => `${i.nid}:${i.code}`)).toEqual(["4:empty-body", "5:no-scripture", "5:no-prayer"]);
     expect(r.stats).toMatchObject({ nodes: 5, migrated: 4, skipped: 1 });
+  });
+
+  it("keeps same-day capsules, offsetting the later publishAt and warning", () => {
+    const d = transformCapsules([node(1, "One", `${scripture}<p>a</p>`), node(2, "Two", `${scripture}<p>b</p>`, { field_daily_digest_date: [{ field_daily_digest_date_value: "2015-03-11 00:00:00" }] })]);
+    const [a, b] = d.capsules;
+    expect(b!.publishAt.getTime() - a!.publishAt.getTime()).toBe(60_000);
+    expect(d.issues.filter((i) => i.code === "duplicate-date").map((i) => i.nid)).toEqual([2]);
+  });
+
+  it("skips and reports fields over the shared limits", () => {
+    const d = transformCapsules([node(1, "Long", `${scripture}<p>a</p>`, { field_bible_meditation: [{ field_bible_meditation_value: "x".repeat(501) }] })]);
+    expect(d.capsules).toEqual([]);
+    expect(d.issues).toMatchObject([{ code: "over-limit", level: "error" }]);
   });
 
   it("de-duplicates slugs", () => {

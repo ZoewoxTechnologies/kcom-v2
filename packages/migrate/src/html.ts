@@ -1,3 +1,5 @@
+import { isSafeHref } from "@kcom/content";
+
 /** Tiptap-style JSON node. */
 export interface RichNode {
   type: string;
@@ -50,7 +52,7 @@ const collapse = (s: string) => s.replace(/[\s ]+/g, " ");
  * Tiptap-compatible JSON document. Unknown tags are unwrapped; scripts and
  * styles are dropped; empty paragraphs are removed.
  */
-export function htmlToDoc(html: string): RichDoc {
+export function htmlToDoc(html: string, report: (code: "unsafe-link" | "image", detail: string) => void = () => {}): RichDoc {
   const root: RichNode = { type: "doc", content: [] };
   const stack: RichNode[] = [root];
   const marks: Mark[] = [];
@@ -116,7 +118,8 @@ export function htmlToDoc(html: string): RichDoc {
         if (i >= 0) marks.splice(i, 1);
       } else {
         const href = attr(attrs, "href");
-        if (href) marks.push({ type: "link", attrs: { href } });
+        if (isSafeHref(href)) marks.push({ type: "link", attrs: { href } });
+        else if (href) report("unsafe-link", String(href).slice(0, 80));
       }
       continue;
     }
@@ -125,12 +128,7 @@ export function htmlToDoc(html: string): RichDoc {
       continue;
     }
     if (name === "img") {
-      const src = attr(attrs, "src");
-      if (src) {
-        closeImplicit();
-        const img: RichNode = { type: "image", attrs: { src, alt: attr(attrs, "alt") ?? null } };
-        (top().content ??= []).push(img);
-      }
+      report("image", (attr(attrs, "src") ?? "").slice(0, 80));
       continue;
     }
     if (name === "hr") continue;
@@ -198,14 +196,6 @@ export function nodeText(n: RichNode): string {
   if (n.type === "text") return n.text ?? "";
   if (n.type === "hardBreak") return "\n";
   return (n.content ?? []).map(nodeText).join("");
-}
-
-/** Image sources used in a document. */
-export function imageSources(n: RichNode): string[] {
-  const out: string[] = [];
-  if (n.type === "image" && typeof n.attrs?.src === "string") out.push(n.attrs.src);
-  for (const c of n.content ?? []) out.push(...imageSources(c));
-  return out;
 }
 
 export const textDoc = (text: string): RichDoc => ({

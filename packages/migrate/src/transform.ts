@@ -1,6 +1,6 @@
-import { capsuleSchema, slugify, type Capsule } from "@kcom/content";
+import { CAPSULE_LIMITS, capsuleSchema, lagosDayRange, slugify, type Capsule } from "@kcom/content";
 import { CAPSULE_TYPE, type RawNode } from "./extract.ts";
-import { decodeEntities, htmlToDoc, imageSources, nodeText, textDoc, type RichNode } from "./html.ts";
+import { decodeEntities, htmlToDoc, nodeText, textDoc, type RichNode } from "./html.ts";
 
 export type IssueLevel = "error" | "warning";
 export interface Issue {
@@ -29,8 +29,6 @@ export interface TransformResult {
   capsules: Capsule[];
   series: SeriesRecord[];
   issues: Issue[];
-  /** Images referenced from capsule bodies that must move to Cloudinary. */
-  images: { nid: number; src: string }[];
   stats: Record<string, number>;
 }
 
@@ -117,19 +115,17 @@ function cleanAuthor(raw: string | undefined): string | null {
   return lines.length ? lines.join(" — ") : null;
 }
 
-const lagosMidnightOf = (date: string) => new Date(Date.parse(`${date}T00:00:00Z`) - 60 * 60 * 1000);
 const fromUnix = (s: number) => new Date(s * 1000);
 
 /** Maps raw capsule nodes onto the capsule model and validates each one. */
 export function transformCapsules(nodes: RawNode[]): TransformResult {
   const issues: Issue[] = [];
-  const images: { nid: number; src: string }[] = [];
   const stats: Record<string, number> = {
     nodes: 0, migrated: 0, skipped: 0, withScripture: 0, withPrayer: 0, withMeditation: 0, inSeries: 0,
   };
   const usedSlugs = new Set<string>();
   const usedPaths = new Set<string>();
-  const drafts: { capsule: Capsule; series: { base: string; part: number } | null }[] = [];
+  const drafts: { capsule: Capsule; date: string; series: { base: string; part: number } | null }[] = [];
 
   for (const node of nodes) {
     if (node.type !== CAPSULE_TYPE) continue;
@@ -138,7 +134,12 @@ export function transformCapsules(nodes: RawNode[]): TransformResult {
       issues.push({ nid: node.nid, title: node.title, level, code, ...(detail ? { detail } : {}) });
 
     const html = node.fields.body?.[0]?.body_value;
-    const doc = typeof html === "string" ? htmlToDoc(/<p[\s>]/i.test(html) ? html : wrapPlain(html)) : null;
+    const doc =
+      typeof html === "string"
+        ? htmlToDoc(/<p[\s>]/i.test(html) ? html : wrapPlain(html), (code, detail) =>
+            issue("warning", code, code === "image" ? `image dropped: ${detail}` : `link dropped, text kept: ${detail}`),
+          )
+        : null;
     if (!doc || doc.content.length === 0) {
       issue("error", "empty-body", "no body text; skipped");
       stats.skipped = (stats.skipped ?? 0) + 1;
@@ -175,8 +176,6 @@ export function transformCapsules(nodes: RawNode[]): TransformResult {
     const authorSource = cleanAuthor(typeof authorRaw === "string" ? authorRaw : undefined);
     if (!authorSource) issue("warning", "no-author-credit");
 
-    for (const src of imageSources(doc)) images.push({ nid: node.nid, src });
-
     const dateRaw = node.fields.field_daily_digest_date?.[0]?.field_daily_digest_date_value;
     let date = typeof dateRaw === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateRaw) ? dateRaw.slice(0, 10) : null;
     if (!date) {
@@ -206,7 +205,7 @@ export function transformCapsules(nodes: RawNode[]): TransformResult {
       slug,
       title: decodeEntities(node.title).replace(/\s+/g, " ").trim(),
       status: "published",
-      publishAt: lagosMidnightOf(date),
+      publishAt: lagosDayRange(date)[0],
       scriptureRef,
       scriptureText,
       body: doc,
@@ -219,13 +218,42 @@ export function transformCapsules(nodes: RawNode[]): TransformResult {
       legacyNid: node.nid,
       legacyPath: path,
     };
+    const over = (Object.keys(CAPSULE_LIMITS) as (keyof typeof CAPSULE_LIMITS)[]).filter(
+      (k) => (candidate[k]?.length ?? 0) > CAPSULE_LIMITS[k],
+    );
+    if (over.length) {
+      issue("error", "over-limit", over.map((k) => `${k} is ${candidate[k]?.length} chars (max ${CAPSULE_LIMITS[k]})`).join("; "));
+      stats.skipped = (stats.skipped ?? 0) + 1;
+      continue;
+    }
     const parsed = capsuleSchema.safeParse(candidate);
     if (!parsed.success) {
       issue("error", "invalid", parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "));
       stats.skipped = (stats.skipped ?? 0) + 1;
       continue;
     }
-    drafts.push({ capsule: parsed.data, series: parseSeriesTitle(parsed.data.title) });
+    drafts.push({ capsule: parsed.data, date, series: parseSeriesTitle(parsed.data.title) });
+  }
+
+  // Two capsules on one day would collide; keep both and nudge later ones by a minute each.
+  const byDate = new Map<string, typeof drafts>();
+  for (const d of drafts) byDate.set(d.date, [...(byDate.get(d.date) ?? []), d]);
+  for (const [date, group] of byDate) {
+    if (group.length < 2) continue;
+    group.sort((a, b) => (a.capsule.legacyNid ?? 0) - (b.capsule.legacyNid ?? 0));
+    for (let i = 1; i < group.length; i++) {
+      const first = group[0]?.capsule;
+      const later = group[i]?.capsule;
+      if (!first || !later) continue;
+      later.publishAt = new Date(later.publishAt.getTime() + i * 60 * 1000);
+      issues.push({
+        nid: later.legacyNid ?? 0,
+        title: later.title,
+        level: "warning",
+        code: "duplicate-date",
+        detail: `${date} is shared with nid ${first.legacyNid} "${first.title}"; publishAt moved +${i} min`,
+      });
+    }
   }
 
   // A series needs at least two capsules sharing a base title.
@@ -260,7 +288,7 @@ export function transformCapsules(nodes: RawNode[]): TransformResult {
 
   const capsules = drafts.map((d) => d.capsule).sort((a, b) => a.publishAt.getTime() - b.publishAt.getTime() || (a.legacyNid ?? 0) - (b.legacyNid ?? 0));
   stats.migrated = capsules.length;
-  return { capsules, series, issues, images, stats };
+  return { capsules, series, issues, stats };
 }
 
 /**
