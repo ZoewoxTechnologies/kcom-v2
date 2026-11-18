@@ -1,0 +1,32 @@
+---
+interface Props {
+  /** Query parameter the select sets. */
+  name: string;
+  label: string;
+  options: readonly { value: string | number; label: string | number }[];
+  value: string | number;
+  /** Where the GET form submits; defaults to the current page. */
+  action?: string;
+  /** Label beside the select instead of above it. */
+  inline?: boolean;
+  class?: string;
+}
+const { name, label, options, value, action, inline = false, class: className } = Astro.props;
+---
+<form method="get" action={action} class:list={["select-form", className]}>
+  <label class:list={{ inline }}>{label}
+    <select name={name} data-autosubmit>
+      {options.map((o) => <option value={o.value} selected={String(o.value) === String(value)}>{o.label}</option>)}
+    </select>
+  </label>
+  <noscript><button type="submit">Apply</button></noscript>
+</form>
+<script>
+  document.querySelectorAll<HTMLSelectElement>("select[data-autosubmit]").forEach((s) => s.addEventListener("change", () => s.form?.submit()));
+</script>
+<style>
+  label { display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); font-weight: 700; }
+  label.inline { flex-direction: row; align-items: center; gap: 10px; }
+  select { font: inherit; padding: 10px 12px; border-radius: var(--radius-field); border: 1px solid var(--color-field); background: var(--color-surface); color: var(--color-text); }
+  button { font: inherit; padding: 10px 12px; }
+</style>

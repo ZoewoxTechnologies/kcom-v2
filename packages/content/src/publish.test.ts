@@ -92,5 +92,21 @@ describe("month and day labels", () => {
     expect(shiftMonth("2026-01", -1)).toBe("2025-12");
     expect(shiftMonth("2025-12", 1)).toBe("2026-01");
   });
-  it("splits a Lagos day", () => expect(dayParts("2026-11-14")).toEqual({ dow: "SAT", n: 14 }));
+});
+
+describe("dayParts", () => {
+  it("splits a Lagos day into weekday and day of the month", () => {
+    expect(dayParts("2026-11-14")).toEqual({ dow: "SAT", n: 14 });
+    expect(dayParts("2026-11-01")).toEqual({ dow: "SUN", n: 1 });
+    expect(dayParts("2028-02-29")).toEqual({ dow: "TUE", n: 29 });
+  });
+});
+
+describe("shiftMonth", () => {
+  it("steps one month either way, across year ends", () => {
+    expect(shiftMonth("2026-05", 1)).toBe("2026-06");
+    expect(shiftMonth("2026-05", -1)).toBe("2026-04");
+    expect(shiftMonth("2026-12", 1)).toBe("2027-01");
+    expect(shiftMonth("2026-01", -1)).toBe("2025-12");
+  });
 });

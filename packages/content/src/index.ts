@@ -143,3 +143,4 @@ export {
   shortMonthYear,
   slugify,
 } from "./publish.js";
+export type { DayParts } from "./publish.js";

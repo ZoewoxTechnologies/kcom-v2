@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArchiveHeader from "../../components/ArchiveHeader.astro";
 import Pagination from "@kcom/ui/astro/Pagination.astro";
 import { paginate } from "@kcom/ui/pagination";
+import SelectForm from "../../components/SelectForm.astro";
 import SeriesCard from "../../components/SeriesCard.astro";
 import { data } from "../../lib/data";
 import { SERIES_PAGE_SIZE, parseSort, plural, seriesSorts, sortSeries } from "../../lib/archive";
@@ -16,30 +17,18 @@ const { page, pages, items } = paginate(all, Astro.url.searchParams.get("page"),
   <div class="body">
     <div class="bar">
       <span class="count">{plural(all.length, "series", "series")}</span>
-      <form method="get" class="sort">
-        <label>Sort
-          <select name="sort" data-autosubmit>
-            {seriesSorts.map((s) => <option value={s.value} selected={s.value === sort}>{s.label}</option>)}
-          </select>
-        </label>
-        <noscript><button type="submit">Apply</button></noscript>
-      </form>
+      <SelectForm class="sort" name="sort" label="Sort" inline options={seriesSorts} value={sort} />
     </div>
     {all.length === 0 && <p class="empty">No series yet.</p>}
     <div class="grid">{items.map((s) => <SeriesCard series={s} />)}</div>
     <Pagination page={page} pages={pages} path="/series" query={sort === "newest" ? {} : { sort }} />
   </div>
 </BaseLayout>
-<script>
-  document.querySelectorAll<HTMLSelectElement>("select[data-autosubmit]").forEach((s) => s.addEventListener("change", () => s.form?.submit()));
-</script>
 <style>
   .body { max-inline-size: 70rem; inline-size: 100%; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-5); padding-block: var(--space-4) var(--space-7); }
   .bar { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
   .count { color: var(--color-muted); font-size: 0.9375rem; }
-  .sort { margin-inline-start: auto; }
-  .sort label { display: flex; align-items: center; gap: 10px; font-size: var(--text-sm); font-weight: 700; }
-  select { font: inherit; padding: 10px 12px; border-radius: var(--radius-field); border: 1px solid var(--color-field); background: var(--color-surface); color: var(--color-text); }
+  .bar :global(.sort) { margin-inline-start: auto; }
   .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
   .empty { color: var(--color-muted); }
   @media (min-width: 48rem) {

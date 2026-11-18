@@ -10,7 +10,7 @@ import { formatLagosDate, shortMonthYear } from "@kcom/content";
 
 const slug = Astro.params.slug ?? "";
 const detail = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) ? await data.seriesBySlug(slug) : null;
-if (!detail) return new Response(null, { status: 404 });
+if (!detail) return Astro.rewrite("/404");
 const { series: s, capsules } = detail;
 const { page, pages, items } = paginate(capsules, Astro.url.searchParams.get("page"), SERIES_CAPSULES_PAGE_SIZE);
 const offset = (page - 1) * SERIES_CAPSULES_PAGE_SIZE;

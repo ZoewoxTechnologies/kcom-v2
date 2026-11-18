@@ -94,8 +94,16 @@ export function shiftMonth(key: string, by: 1 | -1): string {
   return monthKey(Math.floor(total / 12), (total % 12) + 1);
 }
 
-/** Weekday abbreviation ("SAT") and day of the month for a lagosDate string. */
-export function dayParts(day: string): { dow: string; n: number } {
+/** A calendar day split for display, as returned by `dayParts`. */
+export interface DayParts {
+  /** Upper-case three-letter weekday, e.g. "SAT". */
+  dow: string;
+  /** Day of the month, 1 to 31. */
+  n: number;
+}
+
+/** Weekday abbreviation and day of the month for a lagosDate string (YYYY-MM-DD): "2026-11-14" gives { dow: "SAT", n: 14 }. */
+export function dayParts(day: string): DayParts {
   const d = new Date(`${day}T12:00:00Z`);
   return { dow: d.toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" }).toUpperCase(), n: d.getUTCDate() };
 }

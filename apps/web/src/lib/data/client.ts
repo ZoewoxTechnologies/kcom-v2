@@ -27,8 +27,6 @@ const PAGE = 100;
  */
 export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: () => Date = () => new Date()): DataSource {
   const client = hc<App>(baseUrl.replace(/\/+$/, ""), { fetch: fetchImpl });
-  // The API's validators type every input (json, query, param) as required on each route, so
-  // the typed call arguments are cast; the responses stay fully typed.
   const signal = () => ({ init: { signal: AbortSignal.timeout(10000) } });
 
   type Row = Awaited<ReturnType<Awaited<ReturnType<typeof client.capsules.$get>>["json"]>>[number];
@@ -45,7 +43,7 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
   async function allCapsules(query: { month?: string; series?: string }): Promise<Row[]> {
     const out: Row[] = [];
     for (let offset = 0; ; offset += PAGE) {
-      const res = await client.capsules.$get({ query: { ...query, limit: String(PAGE), offset: String(offset) } } as never, signal());
+      const res = await client.capsules.$get({ query: { ...query, limit: String(PAGE), offset: String(offset) } }, signal());
       if (!res.ok) throw new Error(`API /capsules responded ${res.status}`);
       const rows = await res.json();
       out.push(...rows);
@@ -82,7 +80,7 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       return (await allSeries()).map((s) => toSeriesSummary(s, now()));
     },
     async seriesBySlug(slug) {
-      const res = await client.series[":slug"].$get({ param: { slug } } as never, signal());
+      const res = await client.series[":slug"].$get({ param: { slug } }, signal());
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`API /series/${slug} responded ${res.status}`);
       const info = await res.json();
