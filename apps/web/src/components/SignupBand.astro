@@ -4,7 +4,7 @@ interface Props {
   text?: string;
   id?: string;
 }
-const { title = "Get Capstone Capsules by email", text = "A short word from Scripture every morning.", id = "band-email" } = Astro.props;
+const { title = "Get Capstone Capsules by email", text = "A short word from Scripture, every day at midnight (Lagos time).", id = "band-email" } = Astro.props;
 ---
 <section class="band" aria-labelledby={`${id}-title`}>
   <h2 id={`${id}-title`}>{title}</h2>
