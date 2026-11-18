@@ -155,4 +155,20 @@ describe("EditorContainer", () => {
     expect(router.state.location.pathname).toBe("/");
     expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
   });
+
+  it("disables every prompt action while a save is pending", async () => {
+    let finishSave!: () => void;
+    const { onClose, user } = setup(() => new Promise<void>((resolve) => (finishSave = resolve)));
+    await user.type(screen.getByLabelText("Title"), "x");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "Save draft" }));
+    for (const name of ["Save draft", "Keep editing", "Discard"]) {
+      expect(screen.getByRole("button", { name })).toBeDisabled();
+    }
+    await user.click(screen.getByRole("button", { name: "Discard" }));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByText("Discard your changes?")).toBeInTheDocument();
+    finishSave();
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
 });

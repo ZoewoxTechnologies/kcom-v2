@@ -51,6 +51,7 @@ export function EditorContainer({
   if (!promptOpen) settled.current = false;
 
   const finish = (navigating: boolean) => {
+    if (settled.current) return;
     settled.current = true;
     allowNavigation();
     setClosePrompt(false);

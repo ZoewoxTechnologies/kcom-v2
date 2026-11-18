@@ -90,7 +90,7 @@
 
   /* Keeps long titles clear of the close button. */
   .kc-dialog--closable .kc-dialog__title {
-    padding-inline-end: 2.5rem;
+    padding-inline-end: 2.75rem;
   }
 
   .kc-dialog__close {
