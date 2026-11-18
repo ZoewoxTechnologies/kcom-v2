@@ -1,0 +1,33 @@
+---
+import { postKicker } from "../lib/blog";
+import type { BlogPostSummary } from "../lib/data/types";
+
+interface Props {
+  post: BlogPostSummary;
+  /** Heading level of the title, so cards fit the page's outline. */
+  level?: 2 | 3;
+}
+const { post, level = 3 } = Astro.props;
+const Heading = `h${level}` as const;
+---
+<article class="card">
+  <a href={`/blog/${post.slug}`}>
+    <div class="cover">{post.heroImageUrl && <img src={post.heroImageUrl} alt="" loading="lazy" />}</div>
+    <div class="text">
+      <span class="kicker">{postKicker(post)}</span>
+      <Heading class="title">{post.title}</Heading>
+      {post.excerpt && <p class="excerpt">{post.excerpt}</p>}
+    </div>
+  </a>
+</article>
+<style>
+  .card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); overflow: hidden; }
+  a { display: flex; flex-direction: column; block-size: 100%; color: var(--color-text); text-decoration: none; }
+  a:hover .title { text-decoration: underline; }
+  .cover { aspect-ratio: 16 / 10; background: linear-gradient(160deg, var(--color-wash), var(--color-sage)); }
+  .cover img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+  .text { padding: var(--space-4) var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: 6px; line-height: 1.4; }
+  .kicker { font-size: 0.8125rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  .title { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 1.5rem; line-height: 1.15; }
+  .excerpt { margin: 0; font-size: var(--text-sm); color: var(--color-muted); }
+</style>

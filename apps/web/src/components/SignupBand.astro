@@ -1,0 +1,26 @@
+---
+interface Props {
+  title?: string;
+  text?: string;
+  id?: string;
+}
+const { title = "Get Capstone Capsules by email", text = "A short word from Scripture, every day at midnight (Lagos time).", id = "band-email" } = Astro.props;
+---
+<section class="band" aria-labelledby={`${id}-title`}>
+  <h2 id={`${id}-title`}>{title}</h2>
+  <p>{text}</p>
+  <form action="/subscribe" method="post">
+    <label class="sr-only" for={id}>Your email address</label>
+    <input id={id} class="kc-input" name="email" type="email" placeholder="Your email address" autocomplete="email" required />
+    <button type="submit" class="kc-btn">Subscribe</button>
+  </form>
+</section>
+<style>
+  .band { background: var(--color-footer); color: var(--color-on-footer); border-radius: var(--radius); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+  h2 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: 1.5rem; }
+  p { margin: 0; opacity: 0.9; }
+  form { display: flex; flex-wrap: wrap; gap: 10px; }
+  .kc-input { flex: 1 1 15rem; min-inline-size: 0; }
+  .kc-btn { background: var(--color-footer-button); color: var(--color-on-footer-button); }
+  @media (min-width: 48rem) { .band { padding: var(--space-6); } h2 { font-size: 1.875rem; } }
+</style>

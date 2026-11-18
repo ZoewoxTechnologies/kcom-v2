@@ -1,7 +1,7 @@
 import { hc } from "hono/client";
 import type { App } from "@kcom/api/app";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import { dataMethods, type Capsule, type CapsuleListItem, type CapsuleSummary, type DataSource } from "./types";
+import { dataMethods, type BlogPostSummary, type Capsule, type CapsuleListItem, type CapsuleSummary, type DataSource } from "./types";
 
 const BLOCKS = new Set(["paragraph", "heading", "blockquote", "listItem", "bulletList", "orderedList", "codeBlock", "doc"]);
 
@@ -21,6 +21,15 @@ export function richTextToPlain(node: unknown): string {
 type Fetch = typeof fetch;
 const PAGE = 100;
 const SERIES_TTL_MS = 5000;
+
+const toBlogSummary = (p: { slug: string; title: string; date: string; excerpt: string | null; heroImageUrl: string | null; tags: string[] }): BlogPostSummary => ({
+  slug: p.slug,
+  title: p.title,
+  date: p.date,
+  excerpt: p.excerpt,
+  heroImageUrl: p.heroImageUrl,
+  tags: p.tags,
+});
 
 /**
  * Reads the public API through its own route types, so response shapes cannot drift.
@@ -140,6 +149,18 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
         series: toSeriesSummary(info, now()),
         capsules: inSeriesOrder(rows.map((c) => toItem(c, new Map([[info.id, info.title]])))),
       };
+    },
+    async listBlogPosts({ limit = 20, offset = 0 } = {}) {
+      const res = await client.blog.$get({ query: { limit: String(limit), offset: String(offset) } }, signal());
+      if (!res.ok) throw new Error(`API /blog responded ${res.status}`);
+      return (await res.json()).map(toBlogSummary);
+    },
+    async blogPostBySlug(slug) {
+      const res = await client.blog[":slug"].$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /blog/${slug} responded ${res.status}`);
+      const p = await res.json();
+      return { ...toBlogSummary(p), body: p.body };
     },
   };
 }

@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import BlogCard from "../../components/BlogCard.astro";
+import CardGrid from "../../components/CardGrid.astro";
+import Pagination from "@kcom/ui/astro/Pagination.astro";
+import { paginate } from "@kcom/ui/pagination";
+import { data } from "../../lib/data";
+import { allBlogPosts, BLOG_PAGE_SIZE } from "../../lib/blog";
+
+const { page, pages, items: posts } = paginate(await allBlogPosts(data), Astro.url.searchParams.get("page"), BLOG_PAGE_SIZE);
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+---
+<BaseLayout title={page > 1 ? `Blog, page ${page}` : "Blog"} description="Teachings, messages and devotionals from Kingdom Capstone Outreach Ministries." current="/blog">
+  <div class="blog">
+    <header>
+      <h1>Blog</h1>
+      <p>Teachings, messages and devotionals.</p>
+    </header>
+    {posts.length > 0 ? (
+      <CardGrid>{posts.map((post) => <BlogCard post={post} level={2} />)}</CardGrid>
+    ) : (
+      <p class="empty">No posts yet. Please check back soon.</p>
+    )}
+    <Pagination page={page} pages={pages} path="/blog" label="Blog pages" />
+  </div>
+</BaseLayout>
+<style>
+  .blog { display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-5) var(--space-7); }
+  header { display: flex; flex-direction: column; gap: var(--space-2); }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; }
+  header p, .empty { margin: 0; color: var(--color-muted); }
+</style>

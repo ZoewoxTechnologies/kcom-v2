@@ -72,6 +72,27 @@ export interface CapsuleNeighbours {
   next: CapsuleLink | null;
 }
 
+/** A published blog post, without its body: enough for cards and lists. */
+export interface BlogPostSummary {
+  slug: string;
+  title: string;
+  /** Calendar day, YYYY-MM-DD. */
+  date: string;
+  excerpt: string | null;
+  heroImageUrl: string | null;
+  tags: string[];
+}
+
+/** A published blog post in full. */
+export interface BlogPost extends BlogPostSummary {
+  body: RichTextDoc;
+}
+
+export interface BlogListQuery {
+  limit?: number;
+  offset?: number;
+}
+
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
   capsuleBySlug(slug: string): Promise<Capsule | null>;
@@ -84,13 +105,16 @@ export interface DataSource {
   /** Every series with live capsules. */
   listSeries(): Promise<SeriesSummary[]>;
   seriesBySlug(slug: string): Promise<SeriesDetail | null>;
+  /** Published posts, newest first. */
+  listBlogPosts(query?: BlogListQuery): Promise<BlogPostSummary[]>;
+  blogPostBySlug(slug: string): Promise<BlogPost | null>;
 }
 
 /**
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug"] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */
