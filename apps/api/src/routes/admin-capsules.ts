@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { nextLagosMidnight, slug } from "@kcom/content";
 import { capsules, type CapsuleDb } from "@kcom/db";
@@ -13,6 +13,8 @@ import {
   rethrowWriteError,
   richTextSchema,
 } from "../content/index.js";
+import { HttpError } from "../errors.js";
+import type { CapsuleEvents } from "../capsule-publishing.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 import { present } from "./capsules.js";
@@ -64,8 +66,37 @@ const CAPSULE_ERRORS = {
   messages: { reference: "series does not exist", check: "part number needs a series" },
 };
 
+type Patch = z.infer<typeof updateBody>;
+
+/**
+ * Status transitions: draft -> scheduled -> published, and scheduled -> draft
+ * (unschedule). Scheduling needs a future time (default: next Lagos midnight);
+ * publishing happens now. Edits that don't set a status keep the schedule.
+ */
+function planStatusChange(
+  existing: typeof capsules.$inferSelect,
+  patch: Patch,
+): { publishAt?: Date } {
+  const now = new Date();
+  if (patch.status === "scheduled" && existing.status !== "published") {
+    if (patch.publishAt) {
+      if (patch.publishAt <= now) throw invalid("publishAt must be in the future to schedule");
+      return {};
+    }
+    return existing.publishAt > now ? {} : { publishAt: nextLagosMidnight(now) };
+  }
+  if (patch.status === "published" && existing.status !== "published") {
+    if (patch.publishAt && patch.publishAt > now) {
+      throw invalid("use status scheduled for a future publishAt");
+    }
+    return patch.publishAt ? {} : { publishAt: now };
+  }
+  return {};
+}
+const invalid = (message: string) => new HttpError(422, "invalid_transition", message);
+
 /** Editor/admin endpoints: full access to capsules including drafts and scheduled ones. */
-export function adminCapsuleRoutes(db: CapsuleDb) {
+export function adminCapsuleRoutes(db: CapsuleDb, events: CapsuleEvents) {
   const write = requireCan("content:write");
   const byId = (id: string) => findById(db, capsules, id, "capsule");
 
@@ -91,6 +122,9 @@ export function adminCapsuleRoutes(db: CapsuleDb) {
     .post("/", write, validate("json", createBody), async (c) => {
       const body = c.req.valid("json");
       assertCanChange(c, null, body.status);
+      if (body.status === "scheduled" && body.publishAt <= new Date()) {
+        throw invalid("publishAt must be in the future to schedule");
+      }
       try {
         const [row] = await db.insert(capsules).values(body).returning();
         return c.json(present(row!), 201);
@@ -103,9 +137,18 @@ export function adminCapsuleRoutes(db: CapsuleDb) {
       const patch = c.req.valid("json");
       const existing = await byId(id);
       assertCanChange(c, existing.status, patch.status);
+      const set = { ...patch, ...planStatusChange(existing, patch) };
+      const publishing = set.status === "published" && existing.status !== "published";
       try {
-        const [row] = await db.update(capsules).set(patch).where(eq(capsules.id, id)).returning();
-        return c.json(present(row!));
+        // A publishing write only matches while the capsule is not yet published,
+        // so a concurrent job run cannot make this publish (and its event) happen twice.
+        const where = publishing
+          ? and(eq(capsules.id, id), ne(capsules.status, "published"))
+          : eq(capsules.id, id);
+        const [row] = await db.update(capsules).set(set).where(where).returning();
+        if (!row) return c.json(present(await byId(id)));
+        if (publishing) await events.emitPublished(row);
+        return c.json(present(row));
       } catch (err) {
         rethrowWriteError(err, CAPSULE_ERRORS);
       }
