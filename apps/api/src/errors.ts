@@ -8,7 +8,7 @@ export type ApiError = {
 
 export class HttpError extends Error {
   constructor(
-    readonly status: 400 | 401 | 403 | 404 | 409 | 422 | 500 | 502 | 503,
+    readonly status: 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500 | 502 | 503,
     readonly code: string,
     message: string,
     readonly details?: unknown,
@@ -28,7 +28,8 @@ export function notFoundHandler(c: Context) {
 
 export function errorHandler(err: Error, c: Context) {
   c.header("Cache-Control", "no-store");
-  if (err instanceof HttpError && err.status < 500) {
+  // 503 is a deliberate, non-reported "not available" (e.g. missing config).
+  if (err instanceof HttpError && (err.status < 500 || err.status === 503)) {
     return c.json(errorBody(err.code, err.message, err.details), err.status);
   }
   Sentry.captureException(err);

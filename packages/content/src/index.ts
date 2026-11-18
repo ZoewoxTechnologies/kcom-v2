@@ -1,4 +1,8 @@
 import { z } from "zod";
+import { isCloudinaryImageUrl } from "@kcom/media";
+
+/** Stored image URLs must be Cloudinary delivery URLs. */
+const imageUrlField = z.string().refine(isCloudinaryImageUrl, "must be a Cloudinary image URL");
 
 /** Content model stubs. Fields will grow as the database schema lands. */
 
@@ -26,7 +30,7 @@ export const personSchema = z.object({
   ...base,
   name: z.string().min(1),
   bio: z.string().optional(),
-  photoUrl: z.string().url().optional(),
+  photoUrl: imageUrlField.optional(),
 });
 
 export const seriesSchema = z.object({
@@ -77,7 +81,7 @@ export const pageSchema = z.object({
 export const bookSchema = z.object({
   ...publishable,
   description: z.string().optional(),
-  coverUrl: z.string().url().optional(),
+  coverUrl: imageUrlField.optional(),
   purchaseUrl: z.string().url().optional(),
   authorId: id.optional(),
 });

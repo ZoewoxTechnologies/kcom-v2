@@ -3,13 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc",
     "test": "vitest run"
   },
-  "dependencies": { "zod": "^4.6.7" },
+  "dependencies": {
+    "@kcom/media": "workspace:*",
+    "zod": "^4.6.7"
+  },
   "devDependencies": {
     "@kcom/config": "workspace:*",
     "eslint": "^10.14.0",

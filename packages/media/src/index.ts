@@ -18,15 +18,26 @@ export type ImageTransform = {
   quality?: "auto" | number;
 };
 
+const CLOUDINARY_HOST = "res.cloudinary.com";
 const MARKER = "/image/upload/";
+
+/** True for an https Cloudinary image delivery URL (exact host match). */
+export function isCloudinaryImageUrl(value: string): boolean {
+  try {
+    const u = new URL(value);
+    return u.protocol === "https:" && u.hostname === CLOUDINARY_HOST && u.pathname.includes(MARKER);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Builds a resized/reformatted delivery URL from a stored Cloudinary URL.
  * URLs that are not Cloudinary uploads are returned unchanged.
  */
 export function imageUrl(url: string, t: ImageTransform = {}): string {
+  if (!isCloudinaryImageUrl(url)) return url;
   const i = url.indexOf(MARKER);
-  if (i === -1 || !url.includes("res.cloudinary.com/")) return url;
   const parts: string[] = [];
   if (t.width || t.height) parts.push(`c_${t.fit ?? "limit"}`);
   if (t.width) parts.push(`w_${Math.round(t.width)}`);

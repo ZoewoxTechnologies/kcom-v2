@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestDb } from "@kcom/db/test-db";
 import { imageUploadConfig } from "@kcom/media";
@@ -7,9 +8,16 @@ import { seedUser } from "./seed-users.js";
 
 const PASSWORD = "correct horse battery";
 const ORIGIN = "http://admin.test";
-const cloudinary = { cloudName: "demo", apiKey: "key123", apiSecret: "secret456" };
+const cloudinary = {
+  cloudName: "demo",
+  apiKey: "key123",
+  apiSecret: "secret456",
+  uploadPreset: "kcom_signed",
+};
 
 let app: ReturnType<typeof createApp>;
+let db: Awaited<ReturnType<typeof createTestDb>>;
+let viewer: string;
 let editor: string;
 
 async function signIn(email: string) {
@@ -25,7 +33,8 @@ async function signIn(email: string) {
 }
 
 beforeEach(async () => {
-  const db = await createTestDb();
+  db = await createTestDb();
+  await seedUser(db, { email: "viewer@example.test", password: PASSWORD, role: "editor" });
   await seedUser(db, { email: "editor@example.test", password: PASSWORD, role: "editor" });
   app = createApp(db, {
     corsOrigins: [ORIGIN],
@@ -33,6 +42,7 @@ beforeEach(async () => {
     cloudinary,
   });
   editor = await signIn("editor@example.test");
+  viewer = await signIn("viewer@example.test");
 });
 
 const sign = (body: unknown, cookie: string | null = editor) =>
@@ -48,22 +58,24 @@ describe("admin uploads", () => {
     expect(res.status).toBe(401);
   });
 
-  it("rejects users without content:write", async () => {
-    const { rolePermissions } = await import("./permissions.js");
-    const original = rolePermissions.editor;
-    (rolePermissions as { editor: readonly string[] }).editor = ["content:read"];
-    try {
-      const res = await sign({ contentType: "image/png", size: 10 });
-      expect(res.status).toBe(403);
-    } finally {
-      (rolePermissions as { editor: readonly string[] }).editor = original;
-    }
+  it("rejects users whose role lacks content:write", async () => {
+    // Every real role can write, so drop the role check constraint and use an unknown role.
+    await db.execute(sql`ALTER TABLE users DROP CONSTRAINT users_role_valid`);
+    await db.execute(sql`UPDATE users SET role = 'viewer' WHERE email = 'viewer@example.test'`);
+    const res = await sign({ contentType: "image/png", size: 10 }, viewer);
+    expect(res.status).toBe(403);
   });
 
   it("rejects unsupported types", async () => {
     const res = await sign({ contentType: "image/gif", size: 10 });
-    expect(res.status).toBe(422);
-    expect(((await res.json()) as { error: { code: string } }).error.code).toBe("unsupported_type");
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects prototype keys and unknown fields", async () => {
+    for (const contentType of ["toString", "constructor", "__proto__"]) {
+      expect((await sign({ contentType, size: 10 })).status, contentType).toBe(400);
+    }
+    expect((await sign({ contentType: "image/png", size: 10, extra: 1 })).status).toBe(400);
   });
 
   it("rejects oversize files", async () => {
@@ -82,21 +94,23 @@ describe("admin uploads", () => {
     vi.restoreAllMocks();
     expect(res.status).toBe(200);
     expect(res.headers.get("cache-control")).toBe("no-store");
-    const body = (await res.json()) as { signature: string };
+    const body = (await res.json()) as { signature: string; params: { context: string } };
     expect(body).toMatchObject({
       uploadUrl: "https://api.cloudinary.com/v1_1/demo/image/upload",
       apiKey: "key123",
       maxBytes: imageUploadConfig.maxBytes,
-      params: { allowed_formats: "png,jpg,webp", folder: "kcom", timestamp: 1_700_000_000 },
+      params: { upload_preset: "kcom_signed", timestamp: 1_700_000_000 },
     });
     const expected = createHash("sha1")
-      .update("allowed_formats=png,jpg,webp&folder=kcom&timestamp=1700000000secret456")
+      .update(
+        `context=${body.params.context}&timestamp=1700000000&upload_preset=kcom_signedsecret456`,
+      )
       .digest("hex");
     expect(body.signature).toBe(expected);
     expect(JSON.stringify(body)).not.toContain("secret456");
   });
 
-  it("fails loudly (500, reported) when Cloudinary is not configured", async () => {
+  it("returns 503 when Cloudinary is not configured", async () => {
     const db = await createTestDb();
     await seedUser(db, { email: "e2@example.test", password: PASSWORD, role: "editor" });
     app = createApp(db, {
@@ -104,6 +118,13 @@ describe("admin uploads", () => {
       auth: { secret: "x".repeat(40), baseURL: "http://api.test" },
     });
     const res = await sign({ contentType: "image/png", size: 10 }, await signIn("e2@example.test"));
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(503);
+  });
+
+  it("rate limits signing per user", async () => {
+    let last = 0;
+    for (let n = 0; n < 21; n++) last = (await sign({ contentType: "image/png", size: 10 })).status;
+    expect(last).toBe(429);
+    expect((await sign({ contentType: "image/png", size: 10 }, viewer)).status).toBe(200);
   });
 });

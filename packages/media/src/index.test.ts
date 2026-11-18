@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { imageSrcSet, imageUrl } from "./index.js";
+import { imageSrcSet, imageUrl, isCloudinaryImageUrl } from "./index.js";
 
 const url = "https://res.cloudinary.com/demo/image/upload/v123/kcom/a.png";
 
@@ -16,6 +16,16 @@ describe("imageUrl", () => {
   });
   it("leaves other URLs alone", () => {
     expect(imageUrl("https://example.org/a.png", { width: 10 })).toBe("https://example.org/a.png");
+  });
+  it("is not fooled by lookalike hosts", () => {
+    for (const bad of [
+      "https://evil.test/res.cloudinary.com/image/upload/a.png",
+      "https://res.cloudinary.com.evil.test/image/upload/a.png",
+      "http://res.cloudinary.com/demo/image/upload/a.png",
+    ]) {
+      expect(isCloudinaryImageUrl(bad)).toBe(false);
+      expect(imageUrl(bad, { width: 10 })).toBe(bad);
+    }
   });
   it("builds a srcset", () => {
     expect(imageSrcSet(url, [320, 640])).toContain("w_320,f_auto,q_auto/v123/kcom/a.png 320w, ");

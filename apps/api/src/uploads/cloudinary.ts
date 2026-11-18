@@ -1,17 +1,24 @@
 import { createHash } from "node:crypto";
 
-export type CloudinaryConfig = { cloudName: string; apiKey: string; apiSecret: string };
+export type CloudinaryConfig = {
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
+  /** Name of a signed upload preset (folder, allowed formats, max size) set up in Cloudinary. */
+  uploadPreset: string;
+};
 
 /** Reads Cloudinary settings from env; undefined when not fully configured. */
 export function cloudinaryFromEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): CloudinaryConfig | undefined {
-  const {
-    CLOUDINARY_CLOUD_NAME: cloudName,
-    CLOUDINARY_API_KEY: apiKey,
-    CLOUDINARY_API_SECRET: apiSecret,
-  } = env;
-  return cloudName && apiKey && apiSecret ? { cloudName, apiKey, apiSecret } : undefined;
+  const cloudName = env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = env.CLOUDINARY_API_KEY;
+  const apiSecret = env.CLOUDINARY_API_SECRET;
+  const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
+  return cloudName && apiKey && apiSecret && uploadPreset
+    ? { cloudName, apiKey, apiSecret, uploadPreset }
+    : undefined;
 }
 
 /** Cloudinary's signature: SHA-1 of the sorted `k=v` params joined by `&`, plus the secret. */
