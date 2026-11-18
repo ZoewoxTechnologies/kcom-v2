@@ -4,6 +4,7 @@ import type { CapsuleDb } from "@kcom/db";
 import { createAuth, type AuthOptions } from "./auth.js";
 import { errorHandler, notFoundHandler } from "./errors.js";
 import { health } from "./routes/health.js";
+import { blogRoutes } from "./routes/blog.js";
 import { capsuleRoutes } from "./routes/capsules.js";
 import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
@@ -42,6 +43,7 @@ export function createApp(db: CapsuleDb, { corsOrigins = [], auth = {} }: AppOpt
     .onError(errorHandler)
     .notFound(notFoundHandler)
     .route("/", health)
+    .route("/blog", blogRoutes(db))
     .route("/capsules", capsuleRoutes(db))
     .route("/series", seriesRoutes(db))
     .route("/pages", pageRoutes(db))
