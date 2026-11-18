@@ -105,6 +105,28 @@ describe("sign in", () => {
     await userEvent.click(screen.getByRole("menuitem", { name: "Sign out", hidden: true }));
     expect(await screen.findByRole("heading", { name: /sign in to manage/i })).toBeInTheDocument();
   });
+
+  it("returns to the page that was asked for after signing in", async () => {
+    mockApi(null);
+    renderAt("/capsules");
+    await userEvent.type(await screen.findByLabelText(/email address/i), "grace@example.com");
+    await userEvent.type(screen.getByLabelText(/password/i), "correct-horse-battery");
+    await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    expect(await screen.findByRole("heading", { name: "Capsules" })).toBeInTheDocument();
+  });
+
+  it("ignores a protocol-relative return address", async () => {
+    mockApi(null);
+    render(
+      <MemoryRouter initialEntries={[{ pathname: "/sign-in", state: { from: "//evil.example" } }]}>
+        <App />
+      </MemoryRouter>,
+    );
+    await userEvent.type(await screen.findByLabelText(/email address/i), "grace@example.com");
+    await userEvent.type(screen.getByLabelText(/password/i), "correct-horse-battery");
+    await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    expect(await screen.findByRole("heading", { name: /welcome/i })).toBeInTheDocument();
+  });
 });
 
 describe("account menu", () => {
@@ -162,6 +184,18 @@ describe("phone drawer", () => {
     renderAt("/");
     const desktopSide = (await screen.findByRole("navigation")).closest("aside")!;
     expect(desktopSide).not.toHaveAttribute("inert");
+  });
+
+  it("closes when the scrim is clicked", async () => {
+    stubPhone(true);
+    mockApi(user("editor"));
+    const { container } = renderAt("/");
+    const burger = await screen.findByRole("button", { name: "Menu" });
+    await userEvent.click(burger);
+    expect(burger).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(container.querySelector(".kc-admin__scrim")!);
+    expect(burger).toHaveAttribute("aria-expanded", "false");
+    expect(container.querySelector(".kc-admin__scrim")).toBeNull();
   });
 
   it("moves focus in on open, and closes on Escape back to the menu button", async () => {
