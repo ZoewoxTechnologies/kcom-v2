@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it } from "vitest";
-import { userRoles } from "@kcom/db";
+import { userRoles } from "@kcom/permissions";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
 import { createAuth } from "./auth.js";

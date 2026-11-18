@@ -49,6 +49,14 @@
     --color-footer-button: #f6eedd;
     --color-on-footer-button: #1d2b2d;
 
+    /* Admin side menu */
+    --color-side: #1d3f4e;
+    --color-on-side: #ffffff;
+    --color-on-side-muted: #d6e3e6;
+    --color-side-hover: rgba(255, 255, 255, 0.08);
+    --color-side-active: rgba(255, 255, 255, 0.14);
+    --color-side-line: rgba(255, 255, 255, 0.15);
+
     --focus-ring: 0 0 0 2px var(--color-page), 0 0 0 4px var(--color-focus);
     --focus-ring-on-gold: 0 0 0 2px var(--color-page), 0 0 0 4px var(--color-primary);
 
@@ -150,6 +158,10 @@
       --color-footer: #0b1316;
       --color-on-footer: #dfe8e6;
       --color-footer-gold: #d9bc7a;
+      --color-side: #25495a;
+      --color-on-side: #f2f7f6;
+      --color-on-side-muted: #c3d6db;
+      --color-side-line: rgba(255, 255, 255, 0.2);
       --color-footer-button: #8cc0d4;
       --color-on-footer-button: #0f1c21;
       --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -187,6 +199,10 @@
     --color-footer: #0b1316;
     --color-on-footer: #dfe8e6;
     --color-footer-gold: #d9bc7a;
+    --color-side: #25495a;
+    --color-on-side: #f2f7f6;
+    --color-on-side-muted: #c3d6db;
+    --color-side-line: rgba(255, 255, 255, 0.2);
     --color-footer-button: #8cc0d4;
     --color-on-footer-button: #0f1c21;
     --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.4);

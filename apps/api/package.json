@@ -16,6 +16,7 @@
     "@hono/node-server": "^2.1.8",
     "@kcom/content": "workspace:*",
     "@kcom/db": "workspace:*",
+    "@kcom/permissions": "workspace:*",
     "@sentry/node": "^11.12.0",
     "better-auth": "^1.7.25",
     "drizzle-orm": "^0.45.4",

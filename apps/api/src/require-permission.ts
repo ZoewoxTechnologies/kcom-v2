@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
-import { userRoles, type UserRole } from "@kcom/db";
+import { userRoles, type UserRole } from "@kcom/permissions";
 import type { Auth } from "./auth.js";
 import { HttpError } from "./errors.js";
 import { can, type Permission } from "./permissions.js";
