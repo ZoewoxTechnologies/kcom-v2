@@ -42,9 +42,11 @@ const call = (path: string, cookie: string | null, method = "GET", body?: unknow
 const page = (over: Record<string, unknown> = {}) => ({
   title: "Who We Are",
   slug: "who-we-are",
-  sections: [{ type: "richText", props: { body: doc("hi") } }],
   ...over,
 });
+const richSection = { type: "richText", props: { body: doc("hi") } };
+const putSections = (id: string, cookie: string | null, sections: unknown[]) =>
+  call(`/admin/pages/${id}/sections`, cookie, "PUT", { sections });
 
 beforeEach(async () => {
   const db = await createTestDb();
@@ -57,7 +59,10 @@ beforeEach(async () => {
 
 describe("public pages", () => {
   it("serves only published pages, with ordered sections and caching", async () => {
-    await call("/admin/pages", admin, "POST", page({ status: "published" }));
+    const live = (await (
+      await call("/admin/pages", admin, "POST", page({ status: "published" }))
+    ).json()) as { id: string };
+    await putSections(live.id, admin, [{ type: "hero", props: { heading: "Hello" } }, richSection]);
     await call("/admin/pages", editor, "POST", page({ slug: "draft-page", title: "Draft" }));
     await call(
       "/admin/pages",
@@ -72,12 +77,17 @@ describe("public pages", () => {
 
     const listRes = await call("/pages", null);
     expect(listRes.headers.get("cache-control")).toContain("public");
-    expect(await listRes.json()).toEqual([{ slug: "who-we-are", title: "Who We Are" }]);
+    const listed = (await listRes.json()) as { slug: string }[];
+    expect(listed.map((p) => p.slug)).toEqual(["who-we-are"]);
 
-    const one = (await (await call("/pages/who-we-are", null)).json()) as {
+    expect(((await (await call("/pages/who-we-are", null)).json()) as { slug: string }).slug).toBe(
+      "who-we-are",
+    );
+    const sections = (await (await call("/pages/who-we-are/sections", null)).json()) as {
       sections: { type: string }[];
     };
-    expect(one.sections).toHaveLength(1);
+    expect(sections.sections.map((s) => s.type)).toEqual(["hero", "richText"]);
+    expect((await call("/pages/draft-page/sections", null)).status).toBe(404);
     expect((await call("/pages/draft-page", null)).status).toBe(404);
     expect((await call("/pages/future", null)).status).toBe(404);
   });
@@ -100,14 +110,21 @@ describe("admin pages", () => {
     const row = (await created.json()) as { id: string; status: string };
     expect(row.status).toBe("draft");
 
-    const patched = await call(`/admin/pages/${row.id}`, editor, "PATCH", {
-      sections: [
-        { type: "hero", props: { heading: "Hello" } },
-        { type: "cta", props: { label: "Give", url: "https://example.test/give" } },
-      ],
-    });
-    const body = (await patched.json()) as { sections: { type: string }[] };
+    const patched = await call(`/admin/pages/${row.id}`, editor, "PATCH", { title: "New" });
+    expect(((await patched.json()) as { title: string }).title).toBe("New");
+
+    await putSections(row.id, editor, [richSection]);
+    const replaced = await putSections(row.id, editor, [
+      { type: "hero", props: { heading: "Hello" } },
+      { type: "cta", props: { label: "Give", url: "https://example.test/give" } },
+    ]);
+    const body = (await replaced.json()) as { sections: { type: string }[] };
     expect(body.sections.map((s) => s.type)).toEqual(["hero", "cta"]);
+    const read = (await (await call(`/admin/pages/${row.id}/sections`, editor)).json()) as {
+      sections: unknown[];
+    };
+    expect(read.sections).toHaveLength(2);
+    expect((await putSections(row.id, editor, [])).status).toBe(200);
 
     const list = (await (await call("/admin/pages?status=draft", editor)).json()) as {
       items: unknown[];
@@ -133,15 +150,23 @@ describe("admin pages", () => {
     ["bad slug", { slug: "Bad_Slug" }],
     ["blank title", { title: " " }],
     ["bad status", { status: "live" }],
-    ["unknown section type", { sections: [{ type: "script", props: {} }] }],
-    ["extra section prop", { sections: [{ type: "hero", props: { heading: "x", evil: 1 } }] }],
-    [
-      "non-http cta url",
-      { sections: [{ type: "cta", props: { label: "x", url: "javascript:alert(1)" } }] },
-    ],
-    ["richText not a doc", { sections: [{ type: "richText", props: { body: { type: "p" } } }] }],
+    ["sections inline", { sections: [] }],
   ])("rejects %s", async (_n, over) => {
     expect((await call("/admin/pages", editor, "POST", page(over))).status).toBe(400);
+  });
+
+  it.each([
+    ["unknown section type", [{ type: "script", props: {} }]],
+    ["extra section prop", [{ type: "hero", props: { heading: "x", evil: 1 } }]],
+    ["non-http cta url", [{ type: "cta", props: { label: "x", url: "javascript:alert(1)" } }]],
+    ["richText not a doc", [{ type: "richText", props: { body: { type: "p" } } }]],
+  ])("rejects sections with %s", async (_n, sections) => {
+    const row = (await (await call("/admin/pages", editor, "POST", page())).json()) as {
+      id: string;
+    };
+    expect((await putSections(row.id, editor, sections)).status).toBe(400);
+    expect((await putSections(MISSING, editor, [])).status).toBe(404);
+    expect((await putSections(row.id, null, [])).status).toBe(401);
   });
 
   it("lets editors publish, edit and delete live pages (they hold content:publish)", async () => {
