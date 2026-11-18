@@ -86,14 +86,25 @@ export async function capsuleByRange(db: CapsuleDb, from: Date, to: Date) {
   return row ?? null;
 }
 
-/** The live capsules published just before and just after `publishAt` (null at either end). */
-export async function capsuleNeighbours(db: CapsuleDb, publishAt: Date) {
+/**
+ * The live capsules just before and just after `capsule` in publishing order (publish_at, then id,
+ * so capsules sharing a timestamp each see the other). Null at either end.
+ */
+export async function capsuleNeighbours(db: CapsuleDb, capsule: { id: string; publishAt: Date }) {
+  const c = schema.capsules;
   const nearest = (before: boolean) =>
     db
       .select()
-      .from(schema.capsules)
-      .where(and(isLive(schema.capsules), (before ? lt : gt)(schema.capsules.publishAt, publishAt)))
-      .orderBy((before ? desc : asc)(schema.capsules.publishAt))
+      .from(c)
+      .where(
+        and(
+          isLive(c),
+          before
+            ? or(lt(c.publishAt, capsule.publishAt), and(eq(c.publishAt, capsule.publishAt), lt(c.id, capsule.id)))
+            : or(gt(c.publishAt, capsule.publishAt), and(eq(c.publishAt, capsule.publishAt), gt(c.id, capsule.id))),
+        ),
+      )
+      .orderBy(...(before ? [desc(c.publishAt), desc(c.id)] : [asc(c.publishAt), asc(c.id)]))
       .limit(1)
       .then(([row]) => row ?? null);
   const [prev, next] = await Promise.all([nearest(true), nearest(false)]);

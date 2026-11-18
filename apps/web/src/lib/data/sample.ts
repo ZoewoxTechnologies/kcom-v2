@@ -1,14 +1,7 @@
 import { lagosDate } from "@kcom/content";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import type { Capsule, CapsuleListItem, CapsuleSummary, DataSource, SeriesDetail, SeriesSummary } from "./types";
+import type { Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
 
-export const sampleCapsule: CapsuleSummary = {
-  slug: "be-ye-transformed",
-  title: "Be ye transformed",
-  displayDate: "2026-11-14",
-  scriptureRef: "Romans 12:2",
-  scriptureText: "Be ye transformed by the renewing of your mind.",
-};
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const slugOf = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -62,6 +55,8 @@ function build(now: Date): { items: CapsuleListItem[]; series: SeriesSummary[] }
   return { items, series };
 }
 
+const SCRIPTURE = "And be not conformed to this world: but be ye transformed by the renewing of your mind.";
+
 const doc = (...paragraphs: string[]) => ({
   type: "doc",
   content: paragraphs.map((text) => ({ type: "paragraph", content: [{ type: "text", text }] })),
@@ -75,7 +70,7 @@ function toCapsule(c: CapsuleListItem, series: SeriesSummary[]): Capsule {
     title: c.title,
     displayDate: c.displayDate,
     scriptureRef: c.scriptureRef,
-    scriptureText: doc("And be not conformed to this world: but be ye transformed by the renewing of your mind."),
+    scriptureText: doc(SCRIPTURE),
     bibleMeditation: "Romans 12:1-8",
     body: doc(
       "Sample devotional text for layout purposes. Every day the world presses on us, quietly and constantly, asking us to take its shape.",
@@ -94,13 +89,14 @@ const link = ({ slug, title, displayDate, scriptureRef }: CapsuleListItem) => ({
 
 export function createSampleSource(now: () => Date = () => new Date()): DataSource {
   return {
-    latestCapsule: async () => sampleCapsule,
+    async latestCapsule() {
+      const newest = build(now()).items.sort((a, b) => b.displayDate.localeCompare(a.displayDate))[0];
+      return newest ? { ...link(newest), scriptureText: SCRIPTURE } : null;
+    },
     async capsuleBySlug(slug) {
       const { items, series } = build(now());
       const found = items.find((c) => c.slug === slug);
-      if (found) return toCapsule(found, series);
-      // The header's "Today" link points here; keep it working in sample mode.
-      return slug === sampleCapsule.slug ? toCapsule({ ...sampleCapsule, partNumber: null, seriesTitle: null }, series) : null;
+      return found ? toCapsule(found, series) : null;
     },
     async capsuleByDate(date) {
       const { items, series } = build(now());

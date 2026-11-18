@@ -1,7 +1,7 @@
 ---
 import { richTextToPlain } from "../lib/data/client";
 import { richTextToHtml } from "../lib/rich-text";
-import { formatLagosDate, formatLagosShortDate } from "@kcom/content";
+import { dayParts, formatLagosShortDate } from "@kcom/content";
 import type { CapsulePageData } from "../lib/capsule-page";
 import DateNav from "./DateNav.astro";
 import LinkCard from "./LinkCard.astro";
@@ -17,8 +17,7 @@ interface Props {
 }
 const { page, mode, today, shareUrl } = Astro.props;
 const { capsule, prev, next, seriesInfo, past } = page;
-const [weekday = "", dayMonth = ""] = formatLagosDate(capsule.displayDate).split(", ");
-const day = { weekday, weekdayShort: weekday.slice(0, 3), rest: `${dayMonth} ${capsule.displayDate.slice(0, 4)}` };
+const day = dayParts(capsule.displayDate);
 const scripture = richTextToPlain(capsule.scriptureText);
 const meditation = scripture || capsule.bibleMeditation;
 const hasMeditation = Boolean(meditation);
@@ -35,7 +34,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
 {capsule.bannerUrl && <div class="banner"><img src={capsule.bannerUrl} alt="" /></div>}
 <article class:list={["capsule", mode]}>
   {mode === "today" ? (
-    <DateNav weekday={day.weekday} weekdayShort={day.weekdayShort} rest={day.rest} prevHref={prev ? href(prev) : undefined} nextHref={next ? href(next) : undefined} />
+    <DateNav day={day} prevHref={prev ? href(prev) : undefined} nextHref={next ? href(next) : undefined} />
   ) : (
     <nav class="crumbs" aria-label="Breadcrumb">
       <a href="/capsules">Capstone Capsules</a>
@@ -44,7 +43,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
   )}
 
   <header class="head">
-    {mode === "past" && <span class="date"><span class="wd-long">{day.weekday}</span><span class="wd-short">{day.weekdayShort}</span> · {day.rest}</span>}
+    {mode === "past" && <span class="date"><span class="wd-long">{day.weekday}</span><span class="wd-short">{day.weekday.slice(0, 3)}</span> · {day.rest}</span>}
     {mode === "today" && series && <a class="pill" href={`/series/${series.slug}`}><span class="pre">Series · </span>{seriesLabel}</a>}
     <h1>{capsule.title}</h1>
   </header>
@@ -123,7 +122,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
     <form action="/subscribe" method="post">
       <div class="signup-text"><h2>Receive tomorrow’s capsule</h2><p>Every morning at 5 a.m. Free.</p></div>
       <label class="sr-only" for="capsule-email">Email address</label>
-      <input id="capsule-email" class="kc-input" name="email" type="email" placeholder="you@example.com" autocomplete="email" />
+      <input id="capsule-email" class="kc-input" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
       <button type="submit" class="kc-btn kc-btn--primary">Subscribe</button>
     </form>
   </section>

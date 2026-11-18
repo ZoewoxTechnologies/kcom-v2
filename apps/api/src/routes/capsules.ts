@@ -65,7 +65,7 @@ export function capsuleRoutes(db: CapsuleDb) {
     .get("/:slug/neighbours", validate("param", slugParam), async (c) => {
       const capsule = await capsuleBySlug(db, c.req.valid("param").slug);
       if (!capsule) throw notFound("capsule");
-      const { prev, next } = await capsuleNeighbours(db, capsule.publishAt);
+      const { prev, next } = await capsuleNeighbours(db, capsule);
       const link = (row: Capsule | null) => {
         if (!row) return null;
         const { slug, title, scriptureRef } = row;

@@ -296,6 +296,15 @@ describe("public /capsules/:slug/neighbours", () => {
     expect(await get("a")).toMatchObject({ prev: null, next: { slug: "c", displayDate: "2026-01-12" } });
     expect(await get("c")).toMatchObject({ prev: { slug: "a" }, next: null });
   });
+  it("orders capsules with the same publish time by id, so neither is skipped", async () => {
+    const same = "2026-01-10T12:00:00Z";
+    await db.insert(capsules).values([at("x", "published", same), at("y", "published", same), at("z", "published", same)]);
+    const order = (await db.select({ id: capsules.id, slug: capsules.slug }).from(capsules)).sort((a, b) => a.id.localeCompare(b.id)).map((r) => r.slug);
+    const [first, middle, last] = order as [string, string, string];
+    expect(await get(first)).toMatchObject({ prev: null, next: { slug: middle } });
+    expect(await get(middle)).toMatchObject({ prev: { slug: first }, next: { slug: last } });
+    expect(await get(last)).toMatchObject({ prev: { slug: middle }, next: null });
+  });
   it("404s for an unknown or unpublished slug", async () => {
     await db.insert(capsules).values(at("b-draft", "draft", "2026-01-11T12:00:00Z"));
     expect((await call("/capsules/b-draft/neighbours", null)).status).toBe(404);

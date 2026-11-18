@@ -20,6 +20,7 @@ export function richTextToPlain(node: unknown): string {
 
 type Fetch = typeof fetch;
 const PAGE = 100;
+const SERIES_TTL_MS = 5000;
 
 /**
  * Reads the public API through its own route types, so response shapes cannot drift.
@@ -51,10 +52,21 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
     }
   }
 
-  async function allSeries() {
+  /** One /series fetch is shared by calls within a few seconds (a page asks for it more than once). */
+  let seriesCache: { at: number; rows: ReturnType<typeof fetchSeries> } | null = null;
+  async function fetchSeries() {
     const res = await client.series.$get(undefined, signal());
     if (!res.ok) throw new Error(`API /series responded ${res.status}`);
     return res.json();
+  }
+  function allSeries() {
+    const t = now().getTime();
+    if (!seriesCache || t - seriesCache.at > SERIES_TTL_MS) {
+      const rows = fetchSeries();
+      seriesCache = { at: t, rows };
+      rows.catch(() => { if (seriesCache?.rows === rows) seriesCache = null; });
+    }
+    return seriesCache.rows;
   }
 
   type Full = Awaited<ReturnType<Awaited<ReturnType<(typeof client.capsules)[":slug"]["$get"]>>["json"]>>;

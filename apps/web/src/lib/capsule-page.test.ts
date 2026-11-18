@@ -38,7 +38,7 @@ describe("capsule page data", () => {
     expect(ctx.members.map((m) => m.slug)).toContain("s50");
   });
   it("has no series info for a standalone capsule and no past years in sample data", async () => {
-    const p = await loadCapsulePage(src, (await src.capsuleBySlug("be-ye-transformed"))!);
+    const p = await loadCapsulePage(src, { ...(await get("the-renewed-mind-day-9")), series: null });
     expect(p.seriesInfo).toBeNull();
     expect(await onThisDay(src, "2026-11-14")).toEqual([]);
   });
