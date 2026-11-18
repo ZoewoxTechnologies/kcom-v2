@@ -18,7 +18,7 @@ const year = new Date().getFullYear();
         {c.links.map((l) => <a href={l.href}>{l.label}</a>)}
       </div>
     ))}
-    <form class="signup" action="/subscribe" method="get">
+    <form class="signup" action="/subscribe" method="post">
       <label for="footer-email">The daily capsule, by email</label>
       <div class="row">
         <input id="footer-email" class="kc-input" name="email" type="email" placeholder="you@example.com" autocomplete="email" />

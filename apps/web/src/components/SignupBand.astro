@@ -9,7 +9,7 @@ const { title = "Get Capstone Capsules by email", text = "A short word from Scri
 <section class="band" aria-labelledby={`${id}-title`}>
   <h2 id={`${id}-title`}>{title}</h2>
   <p>{text}</p>
-  <form action="/subscribe" method="get">
+  <form action="/subscribe" method="post">
     <label class="sr-only" for={id}>Your email address</label>
     <input id={id} class="kc-input" name="email" type="email" placeholder="Your email address" autocomplete="email" required />
     <button type="submit" class="kc-btn">Subscribe</button>
