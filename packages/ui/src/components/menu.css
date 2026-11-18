@@ -40,6 +40,10 @@
     transform: translateY(-0.1em) rotate(45deg);
   }
 
+  .kc-menu-trigger--no-chevron::before {
+    display: none;
+  }
+
   .kc-menu {
     margin: 0;
     min-inline-size: 12rem;

@@ -128,7 +128,7 @@ describe("account menu", () => {
     vi.stubEnv("VITE_SITE_URL", "https://site.example");
     mockApi(user("editor"));
     renderAt("/");
-    await screen.findByRole("button", { name: /account menu for grace adeyemi/i });
+    await screen.findByRole("button", { name: "Account menu" });
     const menu = screen.getByRole("menu", { hidden: true });
     expect(menu).toHaveTextContent("Grace Adeyemi");
     expect(menu).toHaveTextContent("Editor");
