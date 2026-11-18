@@ -1,7 +1,7 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { describe, expect, it } from "vitest";
 import BaseLayout from "./BaseLayout.astro";
-import { navLinks } from "../lib/site";
+import { navItems } from "../lib/nav";
 
 describe("BaseLayout", () => {
   it("renders header, nav, small CTA and footer around the page", async () => {
@@ -12,7 +12,10 @@ describe("BaseLayout", () => {
     });
     expect(html).toContain('class="skip-link"');
     expect(html).toContain("<header");
-    for (const l of navLinks) expect(html).toContain(`href="${l.href}"`);
+    for (const l of navItems.flatMap((i) => [i, ...(i.children ?? [])])) expect(html).toContain(`href="${l.href}"`);
+    expect(html).toContain("popovertarget");
+    expect(html).not.toMatch(/ClientRouter|view-transition|astro-route-announcer/i);
+    expect(html).not.toContain("Gallery");
     expect(html).toMatch(/class="[^"]*kc-btn kc-btn--primary kc-btn--sm[^"]*"/);
     expect(html).toContain("page body");
     expect(html).toContain("<footer");

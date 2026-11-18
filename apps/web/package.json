@@ -13,13 +13,16 @@
   },
   "dependencies": {
     "@astrojs/node": "^11.1.12",
+    "@kcom/content": "workspace:*",
     "@kcom/ui": "workspace:*",
     "@sentry/astro": "^11.12.0",
     "astro": "^7.4.11",
+    "hono": "^4.6.14",
     "posthog-js": "^1.449.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@kcom/api": "workspace:*",
     "@kcom/config": "workspace:*",
     "eslint": "^10.14.0",
     "typescript": "^5.7.2",

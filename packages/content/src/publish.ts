@@ -17,6 +17,18 @@ export function lagosDate(at: Date): string {
   return new Date(at.getTime() + LAGOS_OFFSET_MS).toISOString().slice(0, 10);
 }
 
+/** A lagosDate string (YYYY-MM-DD) as "Saturday, 14 November". */
+export function formatLagosDate(day: string): string {
+  const d = new Date(`${day}T12:00:00Z`);
+  const part = (o: Intl.DateTimeFormatOptions) => d.toLocaleDateString("en-GB", { ...o, timeZone: "UTC" });
+  return `${part({ weekday: "long" })}, ${part({ day: "numeric" })} ${part({ month: "long" })}`;
+}
+
+/** A lagosDate string (YYYY-MM-DD) as "14 Nov". */
+export function formatLagosShortDate(day: string): string {
+  return new Date(`${day}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+}
+
 /**
  * Turns a title or legacy path segment into a valid capsule slug: lowercase
  * ASCII words separated by hyphens. Accents are stripped; returns "" when
