@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { dataMethods, dataMethodsComplete } from "./types";
 import { createApiSource, emptySource, richTextToPlain, withFallback } from "./client";
 import { resolveSource } from "./index";
-import { sampleCapsule, sampleSource } from "./sample";
+import { sampleSource } from "./sample";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -33,7 +33,7 @@ describe("fallback and switch", () => {
   const down: typeof sampleSource = { ...emptySource, latestCapsule: async () => { throw new Error("down"); } };
   it("falls back to sample data on error", async () => {
     const onError = vi.fn();
-    expect(await withFallback(down, sampleSource, onError).latestCapsule()).toEqual(sampleCapsule);
+    expect(await withFallback(down, sampleSource, onError).latestCapsule()).toEqual(await sampleSource.latestCapsule());
     expect(onError).toHaveBeenCalledOnce();
   });
   it("is not a thenable: awaiting a wrapped source resolves", async () => {

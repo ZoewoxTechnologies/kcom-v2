@@ -1,0 +1,22 @@
+---
+import { lagosDate } from "@kcom/content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import CapsuleView from "../../components/CapsuleView.astro";
+import { data } from "../../lib/data";
+import { loadCapsulePage } from "../../lib/capsule-page";
+import { richTextToPlain } from "../../lib/data/client";
+
+const today = lagosDate(new Date());
+// Today's capsule; before it goes live (or on a gap day) the latest published one stands in.
+let capsule = await data.capsuleByDate(today);
+if (!capsule) {
+  const latest = await data.latestCapsule();
+  capsule = latest ? await data.capsuleBySlug(latest.slug) : null;
+}
+if (!capsule) return Astro.rewrite("/404");
+const page = await loadCapsulePage(data, capsule);
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+---
+<BaseLayout title={capsule.title} description={richTextToPlain(capsule.scriptureText) || capsule.scriptureRef || undefined} current="/capsules/today" bleed>
+  <CapsuleView page={page} mode="today" today={today} shareUrl={new URL(`/capsules/${capsule.slug}`, Astro.url).href} />
+</BaseLayout>

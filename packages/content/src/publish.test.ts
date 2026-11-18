@@ -96,9 +96,9 @@ describe("month and day labels", () => {
 
 describe("dayParts", () => {
   it("splits a Lagos day into weekday and day of the month", () => {
-    expect(dayParts("2026-11-14")).toEqual({ dow: "SAT", n: 14 });
-    expect(dayParts("2026-11-01")).toEqual({ dow: "SUN", n: 1 });
-    expect(dayParts("2028-02-29")).toEqual({ dow: "TUE", n: 29 });
+    expect(dayParts("2026-11-14")).toEqual({ dow: "SAT", n: 14, weekday: "Saturday", rest: "14 November 2026" });
+    expect(dayParts("2026-11-01")).toEqual({ dow: "SUN", n: 1, weekday: "Sunday", rest: "1 November 2026" });
+    expect(dayParts("2028-02-29")).toEqual({ dow: "TUE", n: 29, weekday: "Tuesday", rest: "29 February 2028" });
   });
 });
 

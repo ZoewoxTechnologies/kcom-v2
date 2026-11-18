@@ -111,6 +111,8 @@ export type BlogPost = z.infer<typeof blogPostSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 export type Subscriber = z.infer<typeof subscriberSchema>;
 
+export { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref, richTextHeadingLevel } from "./rich-text.js";
+
 export {
   dayParts,
   formatLagosDate,

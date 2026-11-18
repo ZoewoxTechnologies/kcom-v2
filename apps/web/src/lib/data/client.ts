@@ -1,7 +1,7 @@
 import { hc } from "hono/client";
 import type { App } from "@kcom/api/app";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import { dataMethods, type CapsuleListItem, type CapsuleSummary, type DataSource } from "./types";
+import { dataMethods, type Capsule, type CapsuleListItem, type CapsuleSummary, type DataSource } from "./types";
 
 const BLOCKS = new Set(["paragraph", "heading", "blockquote", "listItem", "bulletList", "orderedList", "codeBlock", "doc"]);
 
@@ -20,6 +20,7 @@ export function richTextToPlain(node: unknown): string {
 
 type Fetch = typeof fetch;
 const PAGE = 100;
+const SERIES_TTL_MS = 5000;
 
 /**
  * Reads the public API through its own route types, so response shapes cannot drift.
@@ -51,13 +52,63 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
     }
   }
 
-  async function allSeries() {
+  /** One /series fetch is shared by calls within a few seconds (a page asks for it more than once). */
+  let seriesCache: { at: number; rows: ReturnType<typeof fetchSeries> } | null = null;
+  async function fetchSeries() {
     const res = await client.series.$get(undefined, signal());
     if (!res.ok) throw new Error(`API /series responded ${res.status}`);
     return res.json();
   }
+  function allSeries() {
+    const t = now().getTime();
+    if (!seriesCache || t - seriesCache.at > SERIES_TTL_MS) {
+      const rows = fetchSeries();
+      seriesCache = { at: t, rows };
+      rows.catch(() => { if (seriesCache?.rows === rows) seriesCache = null; });
+    }
+    return seriesCache.rows;
+  }
+
+  type Full = Awaited<ReturnType<Awaited<ReturnType<(typeof client.capsules)[":slug"]["$get"]>>["json"]>>;
+  async function toCapsule(c: Full): Promise<Capsule> {
+    const series = c.seriesId ? (await allSeries()).find((s) => s.id === c.seriesId) : undefined;
+    return {
+      slug: c.slug,
+      title: c.title,
+      displayDate: c.displayDate,
+      scriptureRef: c.scriptureRef,
+      scriptureText: c.scriptureText,
+      bibleMeditation: c.bibleMeditation,
+      body: c.body,
+      decrees: c.decrees,
+      prayer: c.prayer,
+      authorSource: c.authorSource,
+      series: series ? { slug: series.slug, title: series.title } : null,
+      partNumber: c.partNumber,
+      // The API has no banner field yet; the page hides the banner when it is null.
+      bannerUrl: null,
+    };
+  }
 
   return {
+    async capsuleBySlug(slug) {
+      const res = await client.capsules[":slug"].$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /capsules/${slug} responded ${res.status}`);
+      return toCapsule(await res.json());
+    },
+    async capsuleByDate(date) {
+      const res = await client.capsules.date[":date"].$get({ param: { date } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /capsules/date/${date} responded ${res.status}`);
+      return toCapsule(await res.json());
+    },
+    async capsuleNeighbours(slug) {
+      const res = await client.capsules[":slug"].neighbours.$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /capsules/${slug}/neighbours responded ${res.status}`);
+      return res.json();
+    },
     async latestCapsule(): Promise<CapsuleSummary | null> {
       const res = await client.capsules.latest.$get(undefined, { init: { signal: AbortSignal.timeout(3000) } });
       if (res.status === 404) return null;

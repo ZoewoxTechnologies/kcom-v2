@@ -1,0 +1,24 @@
+---
+interface Props {
+  label: string;
+  title?: string;
+  href?: string;
+  /** Right-aligned text, for "next" cards. */
+  end?: boolean;
+}
+const { label, title, href, end = false } = Astro.props;
+const Tag = href ? "a" : "div";
+---
+<Tag class:list={["link-card", { end, empty: !href }]} href={href}>
+  <span class="label">{label}</span>
+  {title && <span class="title">{title}</span>}
+</Tag>
+<style>
+  .link-card { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-4) var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-surface); color: var(--color-text); text-decoration: none; line-height: 1.4; }
+  a.link-card:hover { border-color: var(--color-primary); }
+  .link-card.empty { background: transparent; border-style: dashed; }
+  .end { text-align: end; }
+  .label { font-size: var(--text-sm); color: var(--color-muted); }
+  .title { font-family: var(--font-title); font-weight: 600; font-size: 1.3rem; }
+  .empty .title { color: var(--color-muted); }
+</style>

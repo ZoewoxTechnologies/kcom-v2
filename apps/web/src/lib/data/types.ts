@@ -41,8 +41,44 @@ export interface SeriesDetail {
   capsules: CapsuleListItem[];
 }
 
+/** A rich-text document (JSON tree); rendered by `richTextToHtml`. */
+export type RichTextDoc = Record<string, unknown>;
+
+/** A published capsule in full. */
+export interface Capsule {
+  slug: string;
+  title: string;
+  /** Calendar day in Africa/Lagos, YYYY-MM-DD. */
+  displayDate: string;
+  scriptureRef: string | null;
+  scriptureText: RichTextDoc | null;
+  /** Passages to read and meditate on. */
+  bibleMeditation: string | null;
+  body: RichTextDoc;
+  decrees: string[];
+  prayer: RichTextDoc | null;
+  authorSource: string | null;
+  series: { slug: string; title: string } | null;
+  partNumber: number | null;
+  /** Optional banner photo; the section is hidden when absent. */
+  bannerUrl: string | null;
+}
+
+/** Enough of a capsule to link to it. */
+export type CapsuleLink = Pick<CapsuleListItem, "slug" | "title" | "displayDate" | "scriptureRef">;
+
+export interface CapsuleNeighbours {
+  prev: CapsuleLink | null;
+  next: CapsuleLink | null;
+}
+
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
+  capsuleBySlug(slug: string): Promise<Capsule | null>;
+  /** The capsule published on a Lagos day (YYYY-MM-DD). */
+  capsuleByDate(date: string): Promise<Capsule | null>;
+  /** The nearest published capsules before and after the one with this slug. */
+  capsuleNeighbours(slug: string): Promise<CapsuleNeighbours | null>;
   /** Live capsules published in a Lagos month (YYYY-MM), newest first. */
   listCapsulesInMonth(month: string): Promise<CapsuleListItem[]>;
   /** Every series with live capsules. */
@@ -54,7 +90,7 @@ export interface DataSource {
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "listCapsulesInMonth", "listSeries", "seriesBySlug"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug"] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */

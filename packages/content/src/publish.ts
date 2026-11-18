@@ -100,10 +100,20 @@ export interface DayParts {
   dow: string;
   /** Day of the month, 1 to 31. */
   n: number;
+  /** Full weekday, e.g. "Saturday". */
+  weekday: string;
+  /** Day, month and year, e.g. "14 November 2026". */
+  rest: string;
 }
 
-/** Weekday abbreviation and day of the month for a lagosDate string (YYYY-MM-DD): "2026-11-14" gives { dow: "SAT", n: 14 }. */
+/** A lagosDate string (YYYY-MM-DD) split for display: "2026-11-14" gives { dow: "SAT", n: 14, weekday: "Saturday", rest: "14 November 2026" }. */
 export function dayParts(day: string): DayParts {
   const d = new Date(`${day}T12:00:00Z`);
-  return { dow: d.toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" }).toUpperCase(), n: d.getUTCDate() };
+  const part = (o: Intl.DateTimeFormatOptions) => d.toLocaleDateString("en-GB", { ...o, timeZone: "UTC" });
+  return {
+    dow: part({ weekday: "short" }).toUpperCase(),
+    n: d.getUTCDate(),
+    weekday: part({ weekday: "long" }),
+    rest: part({ day: "numeric", month: "long", year: "numeric" }),
+  };
 }
