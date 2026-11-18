@@ -280,6 +280,38 @@ describe("public reads never leak drafts or future capsules", () => {
   });
 });
 
+describe("public /capsules/:slug/neighbours", () => {
+  const base = { body: doc("b") };
+  const at = (slug: string, status: "published" | "draft", iso: string) => ({ ...base, title: slug, slug, status, publishAt: new Date(iso) });
+  type Link = { slug: string; displayDate: string } | null;
+  const get = async (slug: string) => (await (await call(`/capsules/${slug}/neighbours`, null)).json()) as { prev: Link; next: Link };
+
+  it("skips drafts and future capsules, and is null at either end", async () => {
+    await db.insert(capsules).values([
+      at("a", "published", "2026-01-10T12:00:00Z"),
+      at("b-draft", "draft", "2026-01-11T12:00:00Z"),
+      at("c", "published", "2026-01-12T12:00:00Z"),
+      at("d-future", "published", "2999-01-01T00:00:00Z"),
+    ]);
+    expect(await get("a")).toMatchObject({ prev: null, next: { slug: "c", displayDate: "2026-01-12" } });
+    expect(await get("c")).toMatchObject({ prev: { slug: "a" }, next: null });
+  });
+  it("orders capsules with the same publish time by id, so neither is skipped", async () => {
+    const same = "2026-01-10T12:00:00Z";
+    await db.insert(capsules).values([at("x", "published", same), at("y", "published", same), at("z", "published", same)]);
+    const order = (await db.select({ id: capsules.id, slug: capsules.slug }).from(capsules)).sort((a, b) => a.id.localeCompare(b.id)).map((r) => r.slug);
+    const [first, middle, last] = order as [string, string, string];
+    expect(await get(first)).toMatchObject({ prev: null, next: { slug: middle } });
+    expect(await get(middle)).toMatchObject({ prev: { slug: first }, next: { slug: last } });
+    expect(await get(last)).toMatchObject({ prev: { slug: middle }, next: null });
+  });
+  it("404s for an unknown or unpublished slug", async () => {
+    await db.insert(capsules).values(at("b-draft", "draft", "2026-01-11T12:00:00Z"));
+    expect((await call("/capsules/b-draft/neighbours", null)).status).toBe(404);
+    expect((await call("/capsules/nope/neighbours", null)).status).toBe(404);
+  });
+});
+
 describe("public /capsules/latest", () => {
   it("404s with the shared not-found shape", async () => {
     const res = await call("/capsules/latest", null);
@@ -321,6 +353,14 @@ describe("series", () => {
     );
     expect((await call("/series/faith", null)).status).toBe(200);
     expect(((await (await call("/series", null)).json()) as unknown[]).length).toBe(1);
+    // Summary covers live capsules only (not the draft): one capsule, Lagos day of 2026-01-01 00:00Z.
+    expect(await (await call("/series/faith", null)).json()).toMatchObject({
+      slug: "faith",
+      capsuleCount: 1,
+      firstDate: "2026-01-01",
+      lastDate: "2026-01-01",
+      latestPart: null,
+    });
     const patched = await call(`/admin/series/${s.id}`, editor, "PATCH", { description: "d" });
     expect(((await patched.json()) as { description: string }).description).toBe("d");
     expect((await call("/admin/series", editor, "POST", { title: "", slug: "x" })).status).toBe(
@@ -395,7 +435,8 @@ describe("publish permission for a writer without it", () => {
 
   it("cannot edit, reschedule or delete published or scheduled capsules", async () => {
     for (const status of ["published", "scheduled"]) {
-      const id = await make({ ...live, status, slug: status });
+      const publishAt = status === "scheduled" ? "2999-01-01T00:00:00Z" : live.publishAt;
+      const id = await make({ ...live, publishAt, status, slug: status });
       for (const patch of [
         { title: "x" },
         { publishAt: "2027-01-01T00:00:00Z" },

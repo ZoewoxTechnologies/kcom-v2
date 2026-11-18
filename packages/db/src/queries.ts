@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, isNull, lt, lte, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, getTableColumns, gt, gte, isNull, lt, lte, max, min, or, sql } from "drizzle-orm";
 import type { AnyPgColumn, PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import * as schema from "./schema.js";
 
@@ -86,19 +86,55 @@ export async function capsuleByRange(db: CapsuleDb, from: Date, to: Date) {
   return row ?? null;
 }
 
-const hasLiveCapsule = () =>
-  sql`exists (select 1 from ${schema.capsules} where ${schema.capsules.seriesId} = ${schema.series.id} and ${isLive(schema.capsules)})`;
+/**
+ * The live capsules just before and just after `capsule` in publishing order (publish_at, then id,
+ * so capsules sharing a timestamp each see the other). Null at either end.
+ */
+export async function capsuleNeighbours(db: CapsuleDb, capsule: { id: string; publishAt: Date }) {
+  const c = schema.capsules;
+  const nearest = (before: boolean) =>
+    db
+      .select()
+      .from(c)
+      .where(
+        and(
+          isLive(c),
+          before
+            ? or(lt(c.publishAt, capsule.publishAt), and(eq(c.publishAt, capsule.publishAt), lt(c.id, capsule.id)))
+            : or(gt(c.publishAt, capsule.publishAt), and(eq(c.publishAt, capsule.publishAt), gt(c.id, capsule.id))),
+        ),
+      )
+      .orderBy(...(before ? [desc(c.publishAt), desc(c.id)] : [asc(c.publishAt), asc(c.id)]))
+      .limit(1)
+      .then(([row]) => row ?? null);
+  const [prev, next] = await Promise.all([nearest(true), nearest(false)]);
+  return { prev, next };
+}
 
-/** Series that have at least one live capsule, so draft-only series stay private. */
+/**
+ * Series with at least one live capsule (draft-only series stay private), each with
+ * figures computed over its live capsules: how many, when the first and latest went live,
+ * and the highest part number.
+ */
+function liveSeriesWithStats(db: CapsuleDb) {
+  return db
+    .select({
+      ...getTableColumns(schema.series),
+      capsuleCount: count(),
+      firstPublishAt: min(schema.capsules.publishAt),
+      lastPublishAt: max(schema.capsules.publishAt),
+      latestPart: max(schema.capsules.partNumber),
+    })
+    .from(schema.series)
+    .innerJoin(schema.capsules, and(eq(schema.capsules.seriesId, schema.series.id), isLive(schema.capsules)))
+    .groupBy(schema.series.id);
+}
+
 export async function listLiveSeries(db: CapsuleDb) {
-  return db.select().from(schema.series).where(hasLiveCapsule()).orderBy(asc(schema.series.title));
+  return liveSeriesWithStats(db).orderBy(asc(schema.series.title));
 }
 
 export async function liveSeriesBySlug(db: CapsuleDb, slug: string) {
-  const [row] = await db
-    .select()
-    .from(schema.series)
-    .where(and(eq(schema.series.slug, slug), hasLiveCapsule()))
-    .limit(1);
+  const [row] = await liveSeriesWithStats(db).where(eq(schema.series.slug, slug)).limit(1);
   return row ?? null;
 }

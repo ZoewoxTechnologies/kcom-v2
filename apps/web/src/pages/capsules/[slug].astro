@@ -1,0 +1,17 @@
+---
+import { lagosDate } from "@kcom/content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import CapsuleView from "../../components/CapsuleView.astro";
+import { data } from "../../lib/data";
+import { loadCapsulePage } from "../../lib/capsule-page";
+import { richTextToPlain } from "../../lib/data/client";
+
+const { slug } = Astro.params;
+const capsule = slug ? await data.capsuleBySlug(slug) : null;
+if (!capsule) return Astro.rewrite("/404");
+const page = await loadCapsulePage(data, capsule);
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+---
+<BaseLayout title={capsule.title} description={richTextToPlain(capsule.scriptureText) || capsule.scriptureRef || undefined} current="/capsules" bleed>
+  <CapsuleView page={page} mode="past" today={lagosDate(new Date())} shareUrl={Astro.url.href} />
+</BaseLayout>

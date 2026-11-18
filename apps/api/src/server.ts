@@ -13,6 +13,7 @@ const app = createApp(createDb(), {
     .map((o) => o.trim())
     .filter(Boolean),
   cloudinary: cloudinaryFromEnv(),
+  internalToken: process.env.INTERNAL_JOB_TOKEN || undefined,
   auth: {
     cookies: {
       secure: process.env.COOKIE_SECURE !== "false",

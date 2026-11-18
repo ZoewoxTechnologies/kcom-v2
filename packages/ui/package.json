@@ -17,6 +17,8 @@
     "./menu": "./src/menu/menu.ts",
     "./fonts": "./src/fonts.ts",
     "./astro/Menu.astro": "./src/astro/Menu.astro",
+    "./astro/Pagination.astro": "./src/astro/Pagination.astro",
+    "./pagination": "./src/lib/pagination.ts",
     "./forms.css": "./src/components/forms.css",
     "./styles.css": "./src/styles.css",
     "./reset.css": "./src/reset.css",

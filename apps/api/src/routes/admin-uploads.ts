@@ -34,6 +34,12 @@ export function adminUploadRoutes(cloudinary: CloudinaryConfig | undefined) {
     hits.set(userId, recent);
     return recent.length > RATE_LIMIT.max;
   };
+  // Drop users with no recent hits so the map cannot grow without bound.
+  const sweep = (now: number) => {
+    for (const [id, times] of hits) {
+      if (times.every((t) => now - t >= RATE_LIMIT.windowMs)) hits.delete(id);
+    }
+  };
 
   return new Hono<AuthEnv>().post(
     "/sign",
@@ -48,6 +54,7 @@ export function adminUploadRoutes(cloudinary: CloudinaryConfig | undefined) {
         throw new HttpError(503, "uploads_unavailable", "uploads are not configured");
       }
       const now = Date.now();
+      sweep(now);
       if (limited(c.var.user.id, now)) {
         c.header("Retry-After", String(Math.ceil(RATE_LIMIT.windowMs / 1000)));
         throw new HttpError(429, "rate_limited", "too many upload requests, try again shortly");

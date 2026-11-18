@@ -1,8 +1,4 @@
 import { z } from "zod";
-import { isCloudinaryImageUrl } from "@kcom/media";
-
-/** Stored image URLs must be Cloudinary delivery URLs. */
-const imageUrlField = z.string().refine(isCloudinaryImageUrl, "must be a Cloudinary image URL");
 
 /** Content model stubs. Fields will grow as the database schema lands. */
 
@@ -30,7 +26,7 @@ export const personSchema = z.object({
   ...base,
   name: z.string().min(1),
   bio: z.string().optional(),
-  photoUrl: imageUrlField.optional(),
+  photoUrl: z.string().url().optional(),
 });
 
 export const seriesSchema = z.object({
@@ -73,19 +69,6 @@ export const blogPostSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 
-export const pageSchema = z.object({
-  ...publishable,
-  body: z.string(),
-});
-
-export const bookSchema = z.object({
-  ...publishable,
-  description: z.string().optional(),
-  coverUrl: imageUrlField.optional(),
-  purchaseUrl: z.string().url().optional(),
-  authorId: id.optional(),
-});
-
 const optionalText = z.string().min(1).nullable().default(null);
 const optionalUrl = z
   .string()
@@ -125,17 +108,26 @@ export type Person = z.infer<typeof personSchema>;
 export type Series = z.infer<typeof seriesSchema>;
 export type Capsule = z.infer<typeof capsuleSchema>;
 export type BlogPost = z.infer<typeof blogPostSchema>;
-export type Page = z.infer<typeof pageSchema>;
-export type Book = z.infer<typeof bookSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 export type Subscriber = z.infer<typeof subscriberSchema>;
 
+export { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref, richTextHeadingLevel } from "./rich-text.js";
+
 export {
+  dayParts,
   formatLagosDate,
   formatLagosShortDate,
   lagosDate,
   lagosDayRange,
+  lagosMonth,
   lagosMonthRange,
+  monthKey,
+  monthLabel,
+  monthName,
+  monthShort,
   nextLagosMidnight,
+  shiftMonth,
+  shortMonthYear,
   slugify,
 } from "./publish.js";
+export type { DayParts } from "./publish.js";

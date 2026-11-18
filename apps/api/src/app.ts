@@ -5,22 +5,38 @@ import { createAuth, type AuthOptions } from "./auth.js";
 import { errorHandler, notFoundHandler } from "./errors.js";
 import { health } from "./routes/health.js";
 import { blogRoutes } from "./routes/blog.js";
+import { bookRoutes } from "./routes/books.js";
 import { capsuleRoutes } from "./routes/capsules.js";
 import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
+import { homepageRoutes } from "./routes/homepage.js";
+import { pageRoutes } from "./routes/pages.js";
+import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
 import type { CloudinaryConfig } from "./uploads/cloudinary.js";
 import { userRoutes } from "./routes/users.js";
+import { internalRoutes } from "./routes/internal.js";
+import { createCapsuleEvents, type CapsuleEvents } from "./capsule-publishing.js";
 
 export type AppOptions = {
   corsOrigins?: string[];
   auth?: AuthOptions;
+  /** Subscribe to "capsule published" here; defaults to a fresh, unsubscribed bus. */
+  capsuleEvents?: CapsuleEvents;
+  /** Bearer token for /internal (Cloud Scheduler). Unset disables /internal. */
+  internalToken?: string;
   cloudinary?: CloudinaryConfig;
 };
 
 export function createApp(
   db: CapsuleDb,
-  { corsOrigins = [], auth = {}, cloudinary }: AppOptions = {},
+  {
+    corsOrigins = [],
+    auth = {},
+    capsuleEvents = createCapsuleEvents(),
+    internalToken,
+    cloudinary,
+  }: AppOptions = {},
 ) {
   const publicCors = cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] });
   // Auth endpoints take credentialed cross-origin calls from the admin UI only.
@@ -50,9 +66,14 @@ export function createApp(
     .notFound(notFoundHandler)
     .route("/", health)
     .route("/blog", blogRoutes(db))
+    .route("/books", bookRoutes(db))
     .route("/capsules", capsuleRoutes(db))
+    .route("/events", eventRoutes(db))
     .route("/series", seriesRoutes(db))
-    .route("/admin", adminRoutes(db, authInstance, cloudinary))
+    .route("/pages", pageRoutes(db))
+    .route("/homepage", homepageRoutes(db))
+    .route("/admin", adminRoutes(db, authInstance, capsuleEvents, cloudinary))
+    .route("/internal", internalRoutes(db, capsuleEvents, internalToken))
     .route("/users", userRoutes(db, authInstance))
     .route("/api/auth", authRoutes(authInstance));
 }
