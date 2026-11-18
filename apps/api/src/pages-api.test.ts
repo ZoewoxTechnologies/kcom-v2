@@ -80,14 +80,10 @@ describe("public pages", () => {
     const listed = (await listRes.json()) as { slug: string }[];
     expect(listed.map((p) => p.slug)).toEqual(["who-we-are"]);
 
-    expect(((await (await call("/pages/who-we-are", null)).json()) as { slug: string }).slug).toBe(
-      "who-we-are",
-    );
-    const sections = (await (await call("/pages/who-we-are/sections", null)).json()) as {
+    const sections = (await (await call("/pages/who-we-are", null)).json()) as {
       sections: { type: string }[];
     };
     expect(sections.sections.map((s) => s.type)).toEqual(["hero", "richText"]);
-    expect((await call("/pages/draft-page/sections", null)).status).toBe(404);
     expect((await call("/pages/draft-page", null)).status).toBe(404);
     expect((await call("/pages/future", null)).status).toBe(404);
   });
@@ -115,15 +111,29 @@ describe("admin pages", () => {
 
     await putSections(row.id, editor, [richSection]);
     const replaced = await putSections(row.id, editor, [
+      { type: "quote", props: { text: "Thy kingdom come", cite: "Matthew 6:10" } },
+      {
+        type: "cardGrid",
+        props: { cards: [{ title: "Pastor", subtitle: "Team", text: "Bio" }] },
+      },
+      { type: "columns", props: { columns: [{ heading: "Publishing", items: ["Books"] }] } },
+      { type: "bankDetails", props: {} },
       { type: "hero", props: { heading: "Hello" } },
       { type: "cta", props: { label: "Give", url: "https://example.test/give" } },
     ]);
     const body = (await replaced.json()) as { sections: { type: string }[] };
-    expect(body.sections.map((s) => s.type)).toEqual(["hero", "cta"]);
+    expect(body.sections.map((s) => s.type)).toEqual([
+      "quote",
+      "cardGrid",
+      "columns",
+      "bankDetails",
+      "hero",
+      "cta",
+    ]);
     const read = (await (await call(`/admin/pages/${row.id}/sections`, editor)).json()) as {
       sections: unknown[];
     };
-    expect(read.sections).toHaveLength(2);
+    expect(read.sections).toHaveLength(6);
     expect((await putSections(row.id, editor, [])).status).toBe(200);
 
     const list = (await (await call("/admin/pages?status=draft", editor)).json()) as {
@@ -158,6 +168,7 @@ describe("admin pages", () => {
   it.each([
     ["unknown section type", [{ type: "script", props: {} }]],
     ["extra section prop", [{ type: "hero", props: { heading: "x", evil: 1 } }]],
+    ["non-http image url", [{ type: "image", props: { url: "javascript:x", alt: "" } }]],
     ["non-http cta url", [{ type: "cta", props: { label: "x", url: "javascript:alert(1)" } }]],
     ["richText not a doc", [{ type: "richText", props: { body: { type: "p" } } }]],
   ])("rejects sections with %s", async (_n, sections) => {

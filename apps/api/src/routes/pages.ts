@@ -1,3 +1,4 @@
+import { Hono } from "hono";
 import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
@@ -9,6 +10,7 @@ import {
   httpUrl,
   idParam,
   notFound,
+  publicCache,
   publicContentRoutes,
   publishStatus,
   richTextSchema,
@@ -19,24 +21,71 @@ import { validate } from "../validate.js";
 
 const text = (max: number) => z.string().trim().min(1).max(max);
 
-/** Each section kind has its own strict props shape; unknown kinds are rejected. */
+const link = z.strictObject({ label: text(100), url: httpUrl });
+const quote = z.strictObject({ text: text(1000), cite: text(200).optional() });
+
+/**
+ * Each section kind has its own strict props shape; unknown kinds are rejected.
+ * The set covers the About, Team and Arms, and Partnership designs:
+ * title band (hero), prose, pull quote, photo, card grids (team members, arms,
+ * ways to partner), headed bullet lists, and the bank-details block.
+ */
 const section = z.discriminatedUnion("type", [
-  z.strictObject({
-    type: z.literal("richText"),
-    props: z.strictObject({ body: richTextSchema }),
-  }),
   z.strictObject({
     type: z.literal("hero"),
     props: z.strictObject({
+      eyebrow: text(100).optional(),
       heading: text(200),
       subheading: text(500).optional(),
+      quote: quote.optional(),
       imageUrl: httpUrl.optional(),
     }),
   }),
   z.strictObject({
-    type: z.literal("cta"),
-    props: z.strictObject({ label: text(100), url: httpUrl }),
+    type: z.literal("richText"),
+    props: z.strictObject({ heading: text(200).optional(), body: richTextSchema }),
   }),
+  z.strictObject({ type: z.literal("quote"), props: quote }),
+  z.strictObject({
+    type: z.literal("image"),
+    props: z.strictObject({
+      url: httpUrl,
+      alt: z.string().trim().max(300),
+      caption: text(300).optional(),
+    }),
+  }),
+  z.strictObject({
+    type: z.literal("cardGrid"),
+    props: z.strictObject({
+      heading: text(200).optional(),
+      intro: text(1000).optional(),
+      cards: z
+        .array(
+          z.strictObject({
+            eyebrow: text(50).optional(),
+            title: text(200),
+            subtitle: text(200).optional(),
+            text: text(2000).optional(),
+            imageUrl: httpUrl.optional(),
+            link: link.optional(),
+          }),
+        )
+        .max(60),
+    }),
+  }),
+  z.strictObject({
+    type: z.literal("columns"),
+    props: z.strictObject({
+      heading: text(200).optional(),
+      intro: text(500).optional(),
+      columns: z
+        .array(z.strictObject({ heading: text(200), items: z.array(text(500)).max(30) }))
+        .max(6),
+    }),
+  }),
+  z.strictObject({ type: z.literal("cta"), props: link.extend({ text: text(500).optional() }) }),
+  /** Bank details come from site settings, so the section itself carries no data. */
+  z.strictObject({ type: z.literal("bankDetails"), props: z.strictObject({}) }),
 ]);
 
 const fields = {
@@ -68,22 +117,26 @@ const sectionsOf = (db: CapsuleDb, pageId: string) =>
     .where(eq(pageSections.pageId, pageId))
     .orderBy(asc(pageSections.position));
 
-/** Public, read-only: live pages by slug, plus each page's ordered sections. */
+/**
+ * Public, read-only. The page and its ordered sections come back in one
+ * response; the list is the shared live-content list.
+ */
 export function pageRoutes(db: CapsuleDb) {
-  return publicContentRoutes({
-    db,
-    table: pages,
-    label: "page",
-    orderBy: [asc(pages.title)],
-  }).get("/:slug/sections", validate("param", slugParam), async (c) => {
-    const [page] = await db
-      .select({ id: pages.id })
-      .from(pages)
-      .where(and(eq(pages.slug, c.req.valid("param").slug), isLive(pages)))
-      .limit(1);
-    if (!page) throw notFound("page");
-    return c.json({ sections: await sectionsOf(db, page.id) });
-  });
+  return new Hono()
+    .use(publicCache)
+    .get("/:slug", validate("param", slugParam), async (c) => {
+      const [page] = await db
+        .select()
+        .from(pages)
+        .where(and(eq(pages.slug, c.req.valid("param").slug), isLive(pages)))
+        .limit(1);
+      if (!page) throw notFound("page");
+      return c.json({ ...page, sections: await sectionsOf(db, page.id) });
+    })
+    .route(
+      "/",
+      publicContentRoutes({ db, table: pages, label: "page", orderBy: [asc(pages.title)] }),
+    );
 }
 
 /**

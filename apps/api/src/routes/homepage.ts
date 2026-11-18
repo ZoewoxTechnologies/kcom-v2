@@ -46,7 +46,11 @@ const list = (db: CapsuleDb) =>
     .from(homepageSections)
     .orderBy(asc(homepageSections.position));
 
-/** Public, read-only: visible sections in display order. */
+/**
+ * Public, read-only: visible sections in display order. Cached for 60 seconds
+ * (`publicCache`), so a reorder or hide in the admin shows on the public site
+ * only after that cache expires.
+ */
 export function homepageRoutes(db: CapsuleDb) {
   return new Hono().use(publicCache).get("/", async (c) => {
     const rows = await list(db);

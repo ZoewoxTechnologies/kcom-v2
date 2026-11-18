@@ -175,7 +175,10 @@ export const homepageSections = pgTable(
     uniqueIndex("homepage_sections_position_idx").on(t.position),
     check(
       "homepage_sections_key_valid",
-      sql`${t.key} IN ('todays_capsule','current_series','past_series','blog','events_books','email_signup')`,
+      sql`${t.key} IN (${sql.join(
+        homepageSectionKeys.map((k) => sql.raw(`'${k}'`)),
+        sql.raw(","),
+      )})`,
     ),
     // Today's Capsule is pinned first and always shown.
     check(
