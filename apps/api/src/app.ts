@@ -8,6 +8,7 @@ import { blogRoutes } from "./routes/blog.js";
 import { capsuleRoutes } from "./routes/capsules.js";
 import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
+import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
 import { userRoutes } from "./routes/users.js";
 
@@ -43,6 +44,7 @@ export function createApp(db: CapsuleDb, { corsOrigins = [], auth = {} }: AppOpt
     .route("/", health)
     .route("/blog", blogRoutes(db))
     .route("/capsules", capsuleRoutes(db))
+    .route("/events", eventRoutes(db))
     .route("/series", seriesRoutes(db))
     .route("/admin", adminRoutes(db, authInstance))
     .route("/users", userRoutes(db, authInstance))
