@@ -6,6 +6,7 @@ export interface ConfirmAction {
   label: ReactNode;
   onSelect: () => void;
   variant?: "primary" | "secondary";
+  disabled?: boolean;
 }
 
 export interface ConfirmDialogProps {
@@ -82,7 +83,11 @@ export function ConfirmDialog({
           <div className="kc-dialog__actions">
             {actions.map((action, i) => (
               <AlertDialog.Action asChild key={i}>
-                <Button variant={action.variant ?? "primary"} onClick={action.onSelect}>
+                <Button
+                  variant={action.variant ?? "primary"}
+                  disabled={action.disabled}
+                  onClick={action.onSelect}
+                >
                   {action.label}
                 </Button>
               </AlertDialog.Action>

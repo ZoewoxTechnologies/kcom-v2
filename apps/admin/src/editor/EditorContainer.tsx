@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from "react";
-import { Button, Dialog, DialogActions, UnsavedChangesPrompt } from "@kcom/ui";
+import { useRef, useState, type ReactNode } from "react";
+import { Button, Dialog, useToast, DialogActions, UnsavedChangesPrompt } from "@kcom/ui";
 import type { DialogSize, DialogVariant } from "@kcom/ui";
 import { useEditorGuard } from "./useEditorGuard";
 
@@ -38,19 +38,49 @@ export function EditorContainer({
   children,
 }: EditorContainerProps) {
   const [closePrompt, setClosePrompt] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { blocker, allowNavigation } = useEditorGuard(dirty);
+  const { toast } = useToast();
   const blocked = blocker.state === "blocked";
   const promptOpen = closePrompt || blocked;
+  // Set once Discard or a successful save has been chosen, so the dialog's own
+  // close event that follows can't undo it.
+  const settled = useRef(false);
+  // A ref, because the dialog reports its close in the same event as the click that starts a save.
+  const savingRef = useRef(false);
+  if (!promptOpen) settled.current = false;
 
-  const finish = () => {
+  const finish = (navigating: boolean) => {
+    settled.current = true;
     allowNavigation();
     setClosePrompt(false);
-    if (blocked) blocker.proceed();
+    if (navigating) blocker.proceed?.();
     else onClose();
   };
   const keepEditing = () => {
+    if (settled.current || savingRef.current) return;
     setClosePrompt(false);
-    if (blocked) blocker.reset();
+    if (blocked) blocker.reset?.();
+  };
+  const saveDraft = async () => {
+    // Remember whether this was a blocked navigation before the save settles.
+    const navigating = blocked;
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      await onSaveDraft();
+    } catch {
+      toast({
+        variant: "error",
+        title: "Couldn\u2019t save your draft",
+        description: "Your changes are still here. Try again.",
+      });
+      return;
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+    finish(navigating);
   };
   const requestClose = () => (dirty ? setClosePrompt(true) : onClose());
 
@@ -78,12 +108,10 @@ export function EditorContainer({
         open={promptOpen}
         onOpenChange={(open) => !open && keepEditing()}
         subject={subject}
-        onSaveDraft={async () => {
-          await onSaveDraft();
-          finish();
-        }}
+        saving={saving}
+        onSaveDraft={saveDraft}
         onKeepEditing={keepEditing}
-        onDiscard={finish}
+        onDiscard={() => finish(blocked)}
       />
     </>
   );

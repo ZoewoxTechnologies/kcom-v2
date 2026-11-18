@@ -22,4 +22,15 @@ describe("useDirtyState", () => {
     expect(result.current.value).toEqual({ a: 2 });
     expect(result.current.dirty).toBe(false);
   });
+
+  it("markSaved then reset in the same tick keeps the saved value", () => {
+    const { result } = renderHook(() => useDirtyState({ a: 1 }));
+    act(() => {
+      result.current.setValue({ a: 2 });
+      result.current.markSaved();
+      result.current.reset();
+    });
+    expect(result.current.value).toEqual({ a: 2 });
+    expect(result.current.dirty).toBe(false);
+  });
 });

@@ -21,6 +21,7 @@ export function useDirtyState<T>(
   const [saved, setSaved] = useState(initial);
   const [value, setValueState] = useState(initial);
   const valueRef = useRef(value);
+  const savedRef = useRef(initial);
 
   const setValue = useCallback((next: T | ((prev: T) => T)) => {
     const resolved = typeof next === "function" ? (next as (prev: T) => T)(valueRef.current) : next;
@@ -32,13 +33,14 @@ export function useDirtyState<T>(
     const baseline = next === undefined ? valueRef.current : next;
     valueRef.current = baseline;
     setValueState(baseline);
+    savedRef.current = baseline;
     setSaved(baseline);
   }, []);
 
   const reset = useCallback(() => {
-    valueRef.current = saved;
-    setValueState(saved);
-  }, [saved]);
+    valueRef.current = savedRef.current;
+    setValueState(savedRef.current);
+  }, []);
 
   return { value, setValue, dirty: !isEqual(value, saved), markSaved, reset };
 }

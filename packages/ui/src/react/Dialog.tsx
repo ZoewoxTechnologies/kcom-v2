@@ -43,7 +43,13 @@ export function Dialog({
   children,
   ...root
 }: DialogProps) {
-  const classes = ["kc-dialog", `kc-dialog--${variant}`, `kc-dialog--${size}`, className]
+  const classes = [
+    "kc-dialog",
+    `kc-dialog--${variant}`,
+    `kc-dialog--${size}`,
+    onClose && "kc-dialog--closable",
+    className,
+  ]
     .filter(Boolean)
     .join(" ");
   const lock = !dismissible

@@ -88,12 +88,17 @@
     color: var(--color-error);
   }
 
+  /* Keeps long titles clear of the close button. */
+  .kc-dialog--closable .kc-dialog__title {
+    padding-inline-end: 2.5rem;
+  }
+
   .kc-dialog__close {
     position: absolute;
-    inset-block-start: 0.75rem;
-    inset-inline-end: 0.75rem;
-    inline-size: 2.5rem;
-    block-size: 2.5rem;
+    inset-block-start: 0.5rem;
+    inset-inline-end: 0.5rem;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
     border: 0;
     border-radius: 50%;
     background: transparent;

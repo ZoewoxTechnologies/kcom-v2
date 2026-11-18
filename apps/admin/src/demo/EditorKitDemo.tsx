@@ -15,7 +15,7 @@ export function EditorKitDemo() {
       </Button>
       {open && (
         <EditorContainer
-          title="Edit event"
+          title="Edit event: Kingdom Capstone Conference 2027 regional gathering and leaders’ summit"
           subject={form.value.title}
           dirty={form.dirty}
           onClose={() => {

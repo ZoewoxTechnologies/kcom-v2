@@ -31,6 +31,7 @@ describe("Dialog", () => {
     const { rerender } = render(<Dialog open title="T" onClose={onClose} />);
     await userEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(document.querySelector(".kc-dialog--closable")).not.toBeNull();
     rerender(<Dialog open title="T" />);
     expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
   });

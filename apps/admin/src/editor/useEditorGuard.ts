@@ -10,6 +10,11 @@ export function useEditorGuard(active: boolean): { blocker: Blocker; allowNaviga
   const bypass = useRef(false);
   const blocker = useBlocker(() => active && !bypass.current);
 
+  // A bypass only covers the close that set it; a new edit session starts guarded again.
+  useEffect(() => {
+    bypass.current = false;
+  }, [active]);
+
   useEffect(() => {
     if (!active) return;
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
