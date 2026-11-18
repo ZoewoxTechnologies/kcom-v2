@@ -17,6 +17,7 @@
     "@kcom/content": "workspace:*",
     "@kcom/db": "workspace:*",
     "@kcom/media": "workspace:*",
+    "@kcom/permissions": "workspace:*",
     "@sentry/node": "^11.12.0",
     "better-auth": "^1.7.25",
     "drizzle-orm": "^0.45.4",
