@@ -4,18 +4,6 @@ export function pageTitle(title?: string): string {
   return title ? `${title} | ${siteName}` : siteName;
 }
 
-/** Top-level links only; dropdowns are added with the site navigation. */
-export const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Capstone Capsules", href: "/capsules" },
-  { label: "Blog", href: "/blog" },
-  { label: "Events", href: "/events" },
-  { label: "Books", href: "/books" },
-  { label: "Partner With Us", href: "/partner" },
-  { label: "Contact", href: "/contact" },
-] as const;
-
 export const footerColumns = [
   {
     heading: "Read",
