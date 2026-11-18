@@ -7,14 +7,14 @@ interface Props {
   value: string | number;
   /** Where the GET form submits; defaults to the current page. */
   action?: string;
-  /** Label beside the select instead of above it. */
-  inline?: boolean;
+  /** Label beside the select instead of above it: always, or only below 48rem ("phone"). */
+  inline?: boolean | "phone";
   class?: string;
 }
 const { name, label, options, value, action, inline = false, class: className } = Astro.props;
 ---
 <form method="get" action={action} class:list={["select-form", className]}>
-  <label class:list={{ inline }}>{label}
+  <label class:list={{ inline: inline === true, phone: inline === "phone" }}>{label}
     <select name={name} data-autosubmit>
       {options.map((o) => <option value={o.value} selected={String(o.value) === String(value)}>{o.label}</option>)}
     </select>
@@ -26,7 +26,8 @@ const { name, label, options, value, action, inline = false, class: className } 
 </script>
 <style>
   label { display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); font-weight: 700; }
-  label.inline { flex-direction: row; align-items: center; gap: 10px; }
+  label.inline, label.phone { flex-direction: row; align-items: center; gap: 10px; }
+  @media (min-width: 48rem) { label.phone { flex-direction: column; align-items: stretch; gap: 6px; } }
   select { font: inherit; padding: 10px 12px; border-radius: var(--radius-field); border: 1px solid var(--color-field); background: var(--color-surface); color: var(--color-text); }
   button { font: inherit; padding: 10px 12px; }
 </style>

@@ -20,7 +20,7 @@ const months = Array.from({ length: 12 }, (_, i) => ({ n: i + 1, key: monthKey(m
   <ArchiveHeader tab="month" intro="Every daily capsule since 2012, to read and share." />
   <div class="layout">
     <nav class="months" aria-label="Months">
-      <SelectForm name="year" label="Year" action="/capsules" options={archiveYears(current).map((y) => ({ value: y, label: y }))} value={month.year} />
+      <SelectForm name="year" label="Year" inline="phone" action="/capsules" options={archiveYears(current).map((y) => ({ value: y, label: y }))} value={month.year} />
       <ul class="grid">
         {months.map((m) => (
           <li>
@@ -51,6 +51,8 @@ const months = Array.from({ length: 12 }, (_, i) => ({ n: i + 1, key: monthKey(m
 <style>
   .layout { max-inline-size: 70rem; inline-size: 100%; margin-inline: auto; display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-7); padding-block: var(--space-4) var(--space-7); }
   .months { flex: 1 1 100%; display: flex; flex-direction: row; align-items: center; gap: var(--space-2); min-inline-size: 0; }
+  .months :global(.select-form) { flex: none; }
+  .months :global(select) { min-inline-size: 6.5rem; }
   .grid { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-2); overflow-x: auto; white-space: nowrap; flex: 1; min-inline-size: 0; padding-block: 2px; }
   .m { display: block; padding: var(--space-2) 14px; border-radius: var(--radius-pill); border: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-text); text-decoration: none; font-size: var(--text-sm); font-weight: 600; text-align: center; }
   a.m:hover { background: var(--color-hover); }
