@@ -46,33 +46,32 @@ const updateBody = z
   .partial()
   .refine((b) => Object.keys(b).length > 0, "no fields to update");
 
-const publicQuery = z.object({ ...pagination(100) });
+const publicQuery = z.object({
+  when: z.enum(["upcoming", "past"]).default("upcoming"),
+  ...pagination(),
+});
 
 const published = eq(events.status, "published");
 
-/** Public, read-only: published events only, split into upcoming and past. */
+/**
+ * Public, read-only: published events only. Not `publicContentRoutes`: events
+ * have no publishAt, and the list is split into upcoming and past.
+ */
 export function eventRoutes(db: CapsuleDb) {
   return new Hono()
     .use(publicCache)
     .get("/", validate("query", publicQuery), async (c) => {
-      const { limit, offset } = c.req.valid("query");
-      const [upcoming, past] = await Promise.all([
-        db
-          .select()
-          .from(events)
-          .where(and(published, gte(events.startsAt, sql`now()`)))
-          .orderBy(asc(events.startsAt))
-          .limit(limit)
-          .offset(offset),
-        db
-          .select()
-          .from(events)
-          .where(and(published, lt(events.startsAt, sql`now()`)))
-          .orderBy(desc(events.startsAt))
-          .limit(limit)
-          .offset(offset),
-      ]);
-      return c.json({ upcoming, past });
+      const { when, limit, offset } = c.req.valid("query");
+      // An event is upcoming until it ends (or starts, when it has no end time).
+      const end = sql`coalesce(${events.endsAt}, ${events.startsAt})`;
+      const rows = await db
+        .select()
+        .from(events)
+        .where(and(published, when === "upcoming" ? gte(end, sql`now()`) : lt(end, sql`now()`)))
+        .orderBy(when === "upcoming" ? asc(events.startsAt) : desc(events.startsAt))
+        .limit(limit)
+        .offset(offset);
+      return c.json(rows);
     })
     .get("/:slug", validate("param", slugParam), async (c) => {
       const [row] = await db
@@ -91,6 +90,7 @@ export const adminEventRoutes = (db: CapsuleDb) =>
     db,
     table: events,
     label: "event",
+    errors: { messages: { check: "end time must not be before start time" } },
     createBody,
     updateBody,
     orderBy: [desc(events.startsAt)],

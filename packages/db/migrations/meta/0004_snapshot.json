@@ -1,5 +1,5 @@
 {
-  "id": "9c3da032-560d-4718-960c-fe636a6f1bd1",
+  "id": "01ad1e9c-dd17-403d-8ea8-d824effe5300",
   "prevId": "6226101b-7393-4cc6-9ddb-a76a73415301",
   "version": "7",
   "dialect": "postgresql",
@@ -752,7 +752,12 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "events_ends_after_start": {
+          "name": "events_ends_after_start",
+          "value": "\"events\".\"ends_at\" IS NULL OR \"events\".\"ends_at\" >= \"events\".\"starts_at\""
+        }
+      },
       "isRLSEnabled": false
     },
     "public.page_sections": {

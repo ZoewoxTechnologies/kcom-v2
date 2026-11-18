@@ -318,5 +318,8 @@ export const events = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index("events_status_starts_at_idx").on(t.status, t.startsAt)],
+  (t) => [
+    index("events_status_starts_at_idx").on(t.status, t.startsAt),
+    check("events_ends_after_start", sql`${t.endsAt} IS NULL OR ${t.endsAt} >= ${t.startsAt}`),
+  ],
 );

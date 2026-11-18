@@ -10,7 +10,8 @@ CREATE TABLE "events" (
 	"status" "publish_status" DEFAULT 'draft' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "events_slug_unique" UNIQUE("slug")
+	CONSTRAINT "events_slug_unique" UNIQUE("slug"),
+	CONSTRAINT "events_ends_after_start" CHECK ("events"."ends_at" IS NULL OR "events"."ends_at" >= "events"."starts_at")
 );
 --> statement-breakpoint
 CREATE INDEX "events_status_starts_at_idx" ON "events" USING btree ("status","starts_at");

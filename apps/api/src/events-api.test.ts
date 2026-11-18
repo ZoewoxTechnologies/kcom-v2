@@ -98,6 +98,14 @@ describe("admin events", () => {
     );
   });
 
+  it("422s when a patch moves the end before the start", async () => {
+    const ev = await json(
+      await call("/admin/events", editor, "POST", valid({ endsAt: "2099-01-02T10:00:00Z" })),
+    );
+    const res = await call(`/admin/events/${ev.id}`, editor, "PATCH", { endsAt: PAST });
+    expect(res.status).toBe(422);
+  });
+
   it("409s on a duplicate slug", async () => {
     await call("/admin/events", editor, "POST", valid());
     expect((await call("/admin/events", editor, "POST", valid())).status).toBe(409);
@@ -136,13 +144,19 @@ describe("public events", () => {
     await mk("soon", FUTURE, "published");
     await mk("done", PAST, "published");
     await mk("hidden", FUTURE, "draft");
+    await call("/admin/events", admin, "POST", {
+      ...valid({ title: "now", slug: "now", startsAt: PAST, status: "published" }),
+      endsAt: FUTURE,
+    });
 
     const res = await call("/events", null);
     expect(res.status).toBe(200);
     expect(res.headers.get("cache-control")).toBe("public, max-age=60");
-    const body = await json<{ upcoming: Ev[]; past: Ev[] }>(res);
-    expect(body.upcoming.map((e) => e.slug)).toEqual(["soon"]);
-    expect(body.past.map((e) => e.slug)).toEqual(["done"]);
+    const slugs = async (when: string) =>
+      (await json<Ev[]>(await call(`/events?when=${when}`, null))).map((e) => e.slug);
+    expect(await slugs("upcoming")).toEqual(["now", "soon"]);
+    expect(await slugs("past")).toEqual(["done"]);
+    expect((await call("/events?when=never", null)).status).toBe(400);
 
     expect((await call("/events/hidden", null)).status).toBe(404);
     expect((await json(await call("/events/soon", null))).title).toBe("soon");
