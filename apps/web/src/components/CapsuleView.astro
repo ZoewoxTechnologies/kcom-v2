@@ -83,7 +83,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
     {prev ? <LinkCard href={href(prev)} label={`← ${mode === "today" ? "Previous · " : ""}${formatLagosShortDate(prev.displayDate)}`} title={prev.title} /> : <span class="gap"></span>}
     {next
       ? <LinkCard end href={href(next)} label={`${mode === "today" ? "Next · " : ""}${formatLagosShortDate(next.displayDate)} →`} title={next.title} />
-      : upcoming ? <LinkCard end label="Next · tomorrow" title="Arrives tomorrow at 5 a.m." /> : <span class="gap"></span>}
+      : upcoming ? <LinkCard end label="Next · tomorrow" title="Arrives at midnight (Lagos time)" /> : <span class="gap"></span>}
   </nav>
 </article>
 
@@ -120,7 +120,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
 {mode === "today" && (
   <section class="signup" aria-label="Email signup">
     <form action="/subscribe" method="post">
-      <div class="signup-text"><h2>Receive tomorrow’s capsule</h2><p>Every morning at 5 a.m. Free.</p></div>
+      <div class="signup-text"><h2>Receive tomorrow’s capsule</h2><p>Every day at midnight, Lagos time. Free.</p></div>
       <label class="sr-only" for="capsule-email">Email address</label>
       <input id="capsule-email" class="kc-input" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
       <button type="submit" class="kc-btn kc-btn--primary">Subscribe</button>
