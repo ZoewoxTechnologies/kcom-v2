@@ -395,7 +395,8 @@ describe("publish permission for a writer without it", () => {
 
   it("cannot edit, reschedule or delete published or scheduled capsules", async () => {
     for (const status of ["published", "scheduled"]) {
-      const id = await make({ ...live, status, slug: status });
+      const publishAt = status === "scheduled" ? "2999-01-01T00:00:00Z" : live.publishAt;
+      const id = await make({ ...live, publishAt, status, slug: status });
       for (const patch of [
         { title: "x" },
         { publishAt: "2027-01-01T00:00:00Z" },
