@@ -15,6 +15,7 @@
     "./dialog.css": "./src/components/dialog.css",
     "./menu.css": "./src/components/menu.css",
     "./menu": "./src/menu/menu.ts",
+    "./fonts": "./src/fonts.ts",
     "./astro/Menu.astro": "./src/astro/Menu.astro",
     "./astro/Pagination.astro": "./src/astro/Pagination.astro",
     "./pagination": "./src/lib/pagination.ts",

@@ -1,29 +1,39 @@
+import { Route, Routes } from "react-router";
 import { ToastProvider } from "@kcom/ui";
-import { ButtonsDemo } from "./demo/ButtonsDemo";
-import { AvatarBadgeTagDemo } from "./demo/AvatarBadgeTagDemo";
-import { DataTableDemo } from "./demo/DataTableDemo";
-import { DialogDemo } from "./demo/DialogDemo";
-import { MenuDemo } from "./demo/MenuDemo";
-import { DateTimePickerDemo } from "./demo/DateTimePickerDemo";
-import { FormFieldsDemo } from "./demo/FormFieldsDemo";
-import { ToastDemo } from "./demo/ToastDemo";
+import { AuthProvider } from "./auth/AuthProvider";
+import { RequireAuth, RequirePermission } from "./auth/guards";
+import { navItems } from "./shell/nav";
+import { Shell } from "./shell/Shell";
+import { DashboardPage } from "./pages/DashboardPage";
+import { DemoPage } from "./pages/DemoPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { SignInPage } from "./pages/SignInPage";
+
+const sections = navItems.filter((item) => item.path !== "/");
 
 export function App() {
   return (
     <ToastProvider>
-      <main style={{ padding: "2rem", fontFamily: "var(--font-body)" }}>
-        <h1 style={{ fontFamily: "var(--font-title)", color: "var(--color-deep-water)" }}>
-          KCOM Admin
-        </h1>
-        <ButtonsDemo />
-        <DataTableDemo />
-        <DialogDemo />
-        <MenuDemo />
-        <FormFieldsDemo />
-        <AvatarBadgeTagDemo />
-        <DateTimePickerDemo />
-        <ToastDemo />
-      </main>
+      <AuthProvider>
+        <Routes>
+          <Route path="/forgot-password" element={<PlaceholderPage title="Forgot password" />} />
+          <Route path="/sign-in" element={<SignInPage />} />
+          {import.meta.env.DEV && <Route path="/demo" element={<DemoPage />} />}
+          <Route element={<RequireAuth />}>
+            <Route element={<Shell />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="profile" element={<PlaceholderPage title="Profile" />} />
+              {sections.map((item) => (
+                <Route key={item.path} element={<RequirePermission permission={item.permission} />}>
+                  <Route path={`${item.path}/*`} element={<PlaceholderPage title={item.label} />} />
+                </Route>
+              ))}
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+          </Route>
+        </Routes>
+      </AuthProvider>
     </ToastProvider>
   );
 }
