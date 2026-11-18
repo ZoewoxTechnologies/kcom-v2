@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, isNull, lt, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, isNull, lt, lte, or, sql } from "drizzle-orm";
 import type { AnyPgColumn, PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import * as schema from "./schema.js";
 
@@ -84,6 +84,20 @@ export async function capsuleByRange(db: CapsuleDb, from: Date, to: Date) {
     .orderBy(desc(schema.capsules.publishAt), desc(schema.capsules.createdAt))
     .limit(1);
   return row ?? null;
+}
+
+/** The live capsules published just before and just after `publishAt` (null at either end). */
+export async function capsuleNeighbours(db: CapsuleDb, publishAt: Date) {
+  const nearest = (before: boolean) =>
+    db
+      .select()
+      .from(schema.capsules)
+      .where(and(isLive(schema.capsules), (before ? lt : gt)(schema.capsules.publishAt, publishAt)))
+      .orderBy((before ? desc : asc)(schema.capsules.publishAt))
+      .limit(1)
+      .then(([row]) => row ?? null);
+  const [prev, next] = await Promise.all([nearest(true), nearest(false)]);
+  return { prev, next };
 }
 
 const hasLiveCapsule = () =>

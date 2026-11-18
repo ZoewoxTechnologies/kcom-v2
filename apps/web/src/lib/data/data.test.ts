@@ -30,7 +30,7 @@ describe("api source", () => {
 });
 
 describe("fallback and switch", () => {
-  const down: typeof sampleSource = { latestCapsule: async () => { throw new Error("down"); } };
+  const down: typeof sampleSource = { ...emptySource, latestCapsule: async () => { throw new Error("down"); } };
   it("falls back to sample data on error", async () => {
     const onError = vi.fn();
     expect(await withFallback(down, sampleSource, onError).latestCapsule()).toEqual(sampleCapsule);
@@ -50,7 +50,7 @@ describe("fallback and switch", () => {
   });
   it("applies the same fallback to every listed method", async () => {
     for (const m of dataMethods) {
-      expect(await (withFallback(down, null)[m] as () => Promise<unknown>)()).toBeNull();
+      expect(await (withFallback(down, null)[m] as () => Promise<unknown>)()).toEqual(m.startsWith("list") ? [] : null);
     }
   });
   it("production never shows sample content when the API is down or empty", async () => {

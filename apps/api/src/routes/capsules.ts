@@ -3,6 +3,7 @@ import { z } from "zod";
 import { lagosDate, lagosDayRange, lagosMonthRange, slug } from "@kcom/content";
 import {
   capsuleByRange,
+  capsuleNeighbours,
   capsuleBySlug,
   latestCapsule,
   listPublishedCapsules,
@@ -60,6 +61,17 @@ export function capsuleRoutes(db: CapsuleDb) {
       const capsule = await capsuleByRange(db, ...lagosDayRange(c.req.valid("param").date));
       if (!capsule) throw notFound("capsule");
       return c.json(present(capsule));
+    })
+    .get("/:slug/neighbours", validate("param", slugParam), async (c) => {
+      const capsule = await capsuleBySlug(db, c.req.valid("param").slug);
+      if (!capsule) throw notFound("capsule");
+      const { prev, next } = await capsuleNeighbours(db, capsule.publishAt);
+      const link = (row: Capsule | null) => {
+        if (!row) return null;
+        const { slug, title, scriptureRef, seriesId, partNumber } = row;
+        return { slug, title, scriptureRef, seriesId, partNumber, displayDate: lagosDate(row.publishAt) };
+      };
+      return c.json({ prev: link(prev), next: link(next) });
     })
     .get("/:slug", validate("param", slugParam), async (c) => {
       const capsule = await capsuleBySlug(db, c.req.valid("param").slug);

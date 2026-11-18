@@ -1,0 +1,32 @@
+---
+interface Props {
+  /** Date label parts; the weekday has a short form for narrow screens. */
+  weekday: string;
+  weekdayShort: string;
+  rest: string;
+  prevHref?: string;
+  nextHref?: string;
+  label?: string;
+}
+const { weekday, weekdayShort, rest, prevHref, nextHref, label = "Capsule date" } = Astro.props;
+---
+<nav class="date-nav" aria-label={label}>
+  {prevHref ? <a class="arrow" href={prevHref} aria-label="Previous day">←</a> : <span class="arrow off" aria-hidden="true">←</span>}
+  <span class="date"><span class="long">{weekday}</span><span class="short">{weekdayShort}</span> · {rest}</span>
+  {nextHref ? <a class="arrow" href={nextHref} aria-label="Next day">→</a> : <span class="arrow off" aria-hidden="true">→</span>}
+</nav>
+<style>
+  .date-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); line-height: 1.4; }
+  .arrow { inline-size: var(--touch-target); block-size: var(--touch-target); display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-line); border-radius: var(--radius-pill); color: var(--color-primary); text-decoration: none; flex: none; }
+  a.arrow:hover { border-color: var(--color-primary); }
+  .arrow.off { opacity: 0.45; }
+  .date { font-size: var(--text-xs); letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); text-align: center; }
+  .short { display: inline; }
+  .long { display: none; }
+  @media (min-width: 48rem) {
+    .date-nav { justify-content: center; }
+    .date { font-size: var(--text-sm); }
+    .short { display: none; }
+    .long { display: inline; }
+  }
+</style>
