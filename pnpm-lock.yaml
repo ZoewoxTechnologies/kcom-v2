@@ -75,6 +75,9 @@ importers:
       '@kcom/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@kcom/media':
+        specifier: workspace:*
+        version: link:../../packages/media
       '@sentry/node':
         specifier: ^11.12.0
         version: 11.12.0(rollup@4.68.3)
@@ -220,6 +223,21 @@ importers:
       tsx:
         specifier: ^4.19.2
         version: 4.23.15
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^5.1.0
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/media:
+    devDependencies:
+      '@kcom/config':
+        specifier: workspace:*
+        version: link:../config
+      eslint:
+        specifier: ^10.14.0
+        version: 10.14.0
       typescript:
         specifier: ^5.7.2
         version: 5.9.3

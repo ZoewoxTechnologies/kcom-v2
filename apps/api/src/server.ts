@@ -2,6 +2,7 @@ import { initSentry } from "./instrument.js";
 import { serve } from "@hono/node-server";
 import { createDb } from "@kcom/db";
 import { createApp } from "./app.js";
+import { cloudinaryFromEnv } from "./uploads/cloudinary.js";
 
 initSentry();
 
@@ -11,6 +12,7 @@ const app = createApp(createDb(), {
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean),
+  cloudinary: cloudinaryFromEnv(),
   auth: {
     cookies: {
       secure: process.env.COOKIE_SECURE !== "false",

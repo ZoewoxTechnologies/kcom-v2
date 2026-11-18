@@ -9,11 +9,19 @@ import { capsuleRoutes } from "./routes/capsules.js";
 import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
 import { seriesRoutes } from "./routes/series.js";
+import type { CloudinaryConfig } from "./uploads/cloudinary.js";
 import { userRoutes } from "./routes/users.js";
 
-export type AppOptions = { corsOrigins?: string[]; auth?: AuthOptions };
+export type AppOptions = {
+  corsOrigins?: string[];
+  auth?: AuthOptions;
+  cloudinary?: CloudinaryConfig;
+};
 
-export function createApp(db: CapsuleDb, { corsOrigins = [], auth = {} }: AppOptions = {}) {
+export function createApp(
+  db: CapsuleDb,
+  { corsOrigins = [], auth = {}, cloudinary }: AppOptions = {},
+) {
   const publicCors = cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] });
   // Auth endpoints take credentialed cross-origin calls from the admin UI only.
   const authCors = cors({
@@ -44,7 +52,7 @@ export function createApp(db: CapsuleDb, { corsOrigins = [], auth = {} }: AppOpt
     .route("/blog", blogRoutes(db))
     .route("/capsules", capsuleRoutes(db))
     .route("/series", seriesRoutes(db))
-    .route("/admin", adminRoutes(db, authInstance))
+    .route("/admin", adminRoutes(db, authInstance, cloudinary))
     .route("/users", userRoutes(db, authInstance))
     .route("/api/auth", authRoutes(authInstance));
 }
