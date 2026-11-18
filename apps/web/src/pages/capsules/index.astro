@@ -1,0 +1,8 @@
+---
+import { lagosMonth } from "@kcom/content";
+import { monthForYear, monthPath } from "../../lib/archive";
+
+const current = lagosMonth();
+const year = Number(Astro.url.searchParams.get("year"));
+return Astro.redirect(monthPath((Number.isInteger(year) && monthForYear(year, current)) || current), 302);
+---

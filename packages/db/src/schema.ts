@@ -153,6 +153,42 @@ export const pageSections = pgTable(
   (t) => [uniqueIndex("page_sections_page_position_idx").on(t.pageId, t.position)],
 );
 
+/** Fixed set of homepage blocks; editors reorder or hide them but never add or remove. */
+export const homepageSectionKeys = [
+  "todays_capsule",
+  "current_series",
+  "past_series",
+  "blog",
+  "events_books",
+  "email_signup",
+] as const;
+export type HomepageSectionKey = (typeof homepageSectionKeys)[number];
+
+export const homepageSections = pgTable(
+  "homepage_sections",
+  {
+    key: text("key").$type<HomepageSectionKey>().primaryKey(),
+    position: integer("position").notNull(),
+    visible: boolean("visible").notNull().default(true),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex("homepage_sections_position_idx").on(t.position),
+    check(
+      "homepage_sections_key_valid",
+      sql`${t.key} IN (${sql.join(
+        homepageSectionKeys.map((k) => sql.raw(`'${k}'`)),
+        sql.raw(","),
+      )})`,
+    ),
+    // Today's Capsule is pinned first and always shown.
+    check(
+      "homepage_sections_capsule_pinned",
+      sql`${t.key} <> 'todays_capsule' OR (${t.position} = 0 AND ${t.visible})`,
+    ),
+  ],
+);
+
 export const books = pgTable("books", {
   id: id(),
   title: text("title").notNull(),
@@ -303,3 +339,24 @@ export const rateLimits = pgTable("rate_limits", {
   count: integer("count").notNull(),
   lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
+
+export const events = pgTable(
+  "events",
+  {
+    id: id(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull().unique(),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    place: text("place"),
+    description: jsonb("description").$type<RichText>(),
+    imageUrl: text("image_url"),
+    status: publishStatus("status").notNull().default("draft"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("events_status_starts_at_idx").on(t.status, t.startsAt),
+    check("events_ends_after_start", sql`${t.endsAt} IS NULL OR ${t.endsAt} >= ${t.startsAt}`),
+  ],
+);

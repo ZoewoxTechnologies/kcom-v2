@@ -14,7 +14,12 @@ export function SignInPage() {
   const { status, signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from ?? "/";
+  const requested = (location.state as { from?: string } | null)?.from;
+  // Only same-site paths: "//host" would be read as another site.
+  const from =
+    typeof requested === "string" && requested.startsWith("/") && !requested.startsWith("//")
+      ? requested
+      : "/";
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -65,9 +70,9 @@ export function SignInPage() {
         <Button type="submit" size="lg" loading={busy}>
           Sign in
         </Button>
-        <Link to="/forgot-password" className="kc-admin-signin__forgot">
-          Forgot password?
-        </Link>
+        <p className="kc-admin-signin__forgot">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
       </form>
     </div>
   );

@@ -104,7 +104,8 @@ export function Shell() {
           <Menu
             className="kc-admin__user"
             align="end"
-            triggerLabel={`Account menu for ${user.name}`}
+            triggerLabel="Account menu"
+            hideChevron
             trigger={<Avatar name={user.name} size="sm" />}
           >
             <MenuLabel className="kc-admin__who">

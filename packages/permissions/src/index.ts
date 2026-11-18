@@ -20,5 +20,8 @@ export const rolePermissions: Record<UserRole, readonly Permission[]> = {
   editor: ["content:read", "content:write", "content:publish"],
 };
 
-export const can = (role: UserRole, permission: Permission) =>
-  rolePermissions[role].includes(permission);
+/** Fails closed: an unknown, empty or missing role is granted nothing. */
+export const can = (role: UserRole, permission: Permission): boolean =>
+  typeof role === "string" && Object.hasOwn(rolePermissions, role)
+    ? rolePermissions[role].includes(permission)
+    : false;

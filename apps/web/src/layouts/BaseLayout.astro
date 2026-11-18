@@ -2,6 +2,8 @@
 import "@kcom/ui/styles.css";
 import "@kcom/ui/button.css";
 import "@kcom/ui/forms.css";
+import "@kcom/ui/menu.css";
+import { fontsHref } from "@kcom/ui/fonts";
 import Analytics from "../components/Analytics.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -11,8 +13,10 @@ interface Props {
   title?: string;
   description?: string;
   current?: string;
+  /** Let the page run edge to edge (banners, tinted bands). */
+  bleed?: boolean;
 }
-const { title, description, current = Astro.url.pathname } = Astro.props;
+const { title, description, current = Astro.url.pathname, bleed = false } = Astro.props;
 ---
 <html lang="en">
   <head>
@@ -23,7 +27,7 @@ const { title, description, current = Astro.url.pathname } = Astro.props;
     <link rel="icon" href="/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Lora:ital@1&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" />
+    <link rel="stylesheet" href={fontsHref} />
     <script is:inline>
       try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch {}
     </script>
@@ -33,7 +37,7 @@ const { title, description, current = Astro.url.pathname } = Astro.props;
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader current={current} />
-    <main id="main"><slot /></main>
+    <main id="main" class:list={{ bleed }}><slot /></main>
     <SiteFooter />
   </body>
 </html>
@@ -42,6 +46,7 @@ const { title, description, current = Astro.url.pathname } = Astro.props;
   .skip-link:focus { top: var(--space-2); }
   main h1 { font-size: clamp(2.25rem, 8vw, var(--text-3xl)); overflow-wrap: anywhere; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  main.bleed { max-width: none; padding: 0; }
   body { min-height: 100vh; display: flex; flex-direction: column; }
   main { flex: 1; width: 100%; box-sizing: border-box; max-width: var(--page-max); margin-inline: auto; padding: var(--space-6) var(--gutter); }
 </style>

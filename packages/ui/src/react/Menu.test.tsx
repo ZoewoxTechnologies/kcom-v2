@@ -49,6 +49,16 @@ describe("Menu align", () => {
     expect(markup()).not.toContain("data-align");
   });
 
+  it("hides the chevron only when asked", () => {
+    const on = renderToStaticMarkup(
+      <Menu trigger="Go" hideChevron>
+        <MenuItem>One</MenuItem>
+      </Menu>,
+    );
+    expect(on).toContain("kc-menu-trigger--no-chevron");
+    expect(markup()).not.toContain("kc-menu-trigger--no-chevron");
+  });
+
   it("positions an end-aligned panel from the viewport's right edge", () => {
     document.body.innerHTML = renderToStaticMarkup(
       <Menu trigger="Go" align="end">

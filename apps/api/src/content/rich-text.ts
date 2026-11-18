@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref, richTextHeadingLevel } from "@kcom/content";
 import type { RichText } from "@kcom/db";
 
 /**
@@ -6,21 +7,8 @@ import type { RichText } from "@kcom/db";
  * Sanitising keeps only known nodes, marks and attributes, and drops links that
  * are not http(s)/mailto, so nothing script-bearing is ever stored.
  */
-const NODES = new Set([
-  "doc",
-  "paragraph",
-  "heading",
-  "text",
-  "bulletList",
-  "orderedList",
-  "listItem",
-  "blockquote",
-  "hardBreak",
-]);
-const MARKS = new Set(["bold", "italic", "underline", "link"]);
 const MAX_DEPTH = 12;
 const MAX_TEXT = 50_000;
-const SAFE_HREF = /^(https?:\/\/|mailto:)[^\s]+$/i;
 
 type Raw = Record<string, unknown>;
 const isObj = (v: unknown): v is Raw => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -29,10 +17,10 @@ function cleanMarks(marks: unknown): Raw[] | undefined {
   if (!Array.isArray(marks)) return undefined;
   const out: Raw[] = [];
   for (const m of marks) {
-    if (!isObj(m) || typeof m.type !== "string" || !MARKS.has(m.type)) continue;
+    if (!isObj(m) || typeof m.type !== "string" || !RICH_TEXT_MARKS.has(m.type)) continue;
     if (m.type === "link") {
       const href = isObj(m.attrs) ? m.attrs.href : undefined;
-      if (typeof href === "string" && SAFE_HREF.test(href)) {
+      if (isSafeHref(href)) {
         out.push({ type: "link", attrs: { href } });
       }
     } else out.push({ type: m.type });
@@ -41,7 +29,7 @@ function cleanMarks(marks: unknown): Raw[] | undefined {
 }
 
 function cleanNode(node: unknown, depth: number): Raw | null {
-  if (!isObj(node) || typeof node.type !== "string" || !NODES.has(node.type) || depth > MAX_DEPTH) {
+  if (!isObj(node) || typeof node.type !== "string" || !RICH_TEXT_NODES.has(node.type) || depth > MAX_DEPTH) {
     return null;
   }
   const out: Raw = { type: node.type };
@@ -54,7 +42,7 @@ function cleanNode(node: unknown, depth: number): Raw | null {
   }
   if (node.type === "heading") {
     const level = isObj(node.attrs) ? node.attrs.level : undefined;
-    out.attrs = { level: level === 1 || level === 2 || level === 3 || level === 4 ? level : 2 };
+    out.attrs = { level: richTextHeadingLevel(level) };
   }
   if (Array.isArray(node.content)) {
     out.content = node.content
