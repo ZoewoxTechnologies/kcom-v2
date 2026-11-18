@@ -75,7 +75,7 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   .menu summary.kc-btn { display: inline-flex; }
   .menu details.group > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 0; }
   .menu details.group > summary::-webkit-details-marker { display: none; }
-  .menu details.group > summary::after { content: ""; inline-size: 0.5em; block-size: 0.5em; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: translateY(-0.1em) rotate(45deg); transition: transform var(--dur-fast) var(--ease-out); }
+  .menu details.group > summary::after { content: ""; margin-inline-end: 0.2em; inline-size: 0.5em; block-size: 0.5em; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: translateY(-0.1em) rotate(45deg); transition: transform var(--dur-fast) var(--ease-out); }
   .menu details.group[open] > summary::after { transform: translateY(0.1em) rotate(-135deg); }
   .menu .group { border-bottom: 1px solid var(--color-line); padding: var(--space-1) 0; }
   .menu .group:last-child { border-bottom: 0; }
