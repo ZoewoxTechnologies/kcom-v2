@@ -144,6 +144,11 @@ describe("/admin/books CRUD", () => {
     expect((await admin(`/${book.id}`, { method: "DELETE" })).status).toBe(404);
   });
 
+  it("rejects a non-Cloudinary coverUrl", async () => {
+    const json = { ...sample, coverUrl: "https://example.org/a.png" };
+    expect((await admin("", { method: "POST", json })).status).toBe(400);
+  });
+
   it("validates input", async () => {
     for (const bad of [
       {},

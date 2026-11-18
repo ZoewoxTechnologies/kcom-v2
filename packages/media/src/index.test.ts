@@ -27,6 +27,13 @@ describe("imageUrl", () => {
       expect(imageUrl(bad, { width: 10 })).toBe(bad);
     }
   });
+  it("pins the cloud name when given", () => {
+    expect(isCloudinaryImageUrl(url, "demo")).toBe(true);
+    expect(isCloudinaryImageUrl(url, "other")).toBe(false);
+    expect(
+      isCloudinaryImageUrl("https://res.cloudinary.com/demo-evil/image/upload/a.png", "demo"),
+    ).toBe(false);
+  });
   it("builds a srcset", () => {
     expect(imageSrcSet(url, [320, 640])).toContain("w_320,f_auto,q_auto/v123/kcom/a.png 320w, ");
   });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cloudinaryImageUrl } from "./schemas.js";
 
 describe("cloudinaryImageUrl", () => {
@@ -18,5 +18,17 @@ describe("cloudinaryImageUrl", () => {
     "not a url",
   ])("rejects %s", (url) => {
     expect(cloudinaryImageUrl.safeParse(url).success).toBe(false);
+  });
+
+  describe("with CLOUDINARY_CLOUD_NAME set", () => {
+    afterEach(() => vi.unstubAllEnvs());
+
+    it("only accepts our own cloud", () => {
+      vi.stubEnv("CLOUDINARY_CLOUD_NAME", "demo");
+      const ok = "https://res.cloudinary.com/demo/image/upload/a.png";
+      const other = "https://res.cloudinary.com/someone-else/image/upload/a.png";
+      expect(cloudinaryImageUrl.safeParse(ok).success).toBe(true);
+      expect(cloudinaryImageUrl.safeParse(other).success).toBe(false);
+    });
   });
 });

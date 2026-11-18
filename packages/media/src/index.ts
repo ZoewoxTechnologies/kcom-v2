@@ -21,11 +21,18 @@ export type ImageTransform = {
 const CLOUDINARY_HOST = "res.cloudinary.com";
 const MARKER = "/image/upload/";
 
-/** True for an https Cloudinary image delivery URL (exact host match). */
-export function isCloudinaryImageUrl(value: string): boolean {
+/**
+ * True for an https Cloudinary image delivery URL (exact host match). With a
+ * `cloudName`, the path must also start with `/<cloudName>/image/upload/`.
+ */
+export function isCloudinaryImageUrl(value: string, cloudName?: string): boolean {
   try {
     const u = new URL(value);
-    return u.protocol === "https:" && u.hostname === CLOUDINARY_HOST && u.pathname.includes(MARKER);
+    return (
+      u.protocol === "https:" &&
+      u.hostname === CLOUDINARY_HOST &&
+      (cloudName ? u.pathname.startsWith(`/${cloudName}${MARKER}`) : u.pathname.includes(MARKER))
+    );
   } catch {
     return false;
   }

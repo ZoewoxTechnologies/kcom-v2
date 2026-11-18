@@ -168,6 +168,14 @@ describe("admin pages", () => {
   it.each([
     ["unknown section type", [{ type: "script", props: {} }]],
     ["extra section prop", [{ type: "hero", props: { heading: "x", evil: 1 } }]],
+    [
+      "non-Cloudinary image url",
+      [{ type: "image", props: { url: "https://example.org/a.png", alt: "" } }],
+    ],
+    [
+      "non-Cloudinary hero image",
+      [{ type: "hero", props: { heading: "x", imageUrl: "https://example.org/a.png" } }],
+    ],
     ["non-http image url", [{ type: "image", props: { url: "javascript:x", alt: "" } }]],
     ["non-http cta url", [{ type: "cta", props: { label: "x", url: "javascript:alert(1)" } }]],
     ["richText not a doc", [{ type: "richText", props: { body: { type: "p" } } }]],
