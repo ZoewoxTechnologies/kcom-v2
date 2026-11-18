@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { dataMethods, dataMethodsComplete } from "./types";
 import { createApiSource, emptySource, richTextToPlain, withFallback } from "./client";
 import { resolveSource } from "./index";
 import { sampleCapsule, sampleSource } from "./sample";
@@ -35,17 +36,23 @@ describe("fallback and switch", () => {
     expect(await withFallback(down, sampleSource, onError).latestCapsule()).toEqual(sampleCapsule);
     expect(onError).toHaveBeenCalledOnce();
   });
-  it("wraps every method, including ones added later", async () => {
-    type Extra = { listThings(): Promise<string[]>; thing(): Promise<string | null> };
-    const bad = { listThings: async () => { throw new Error("x"); }, thing: async () => null } as unknown as Extra;
-    const good = { listThings: async () => ["a"], thing: async () => "t" } as unknown as Extra;
-    const w = withFallback(bad as never, good as never) as unknown as Extra;
-    expect(await w.listThings()).toEqual(["a"]);
-    expect(await w.thing()).toBe("t");
-    const none = withFallback(bad as never, null) as unknown as Extra;
-    expect(await none.listThings()).toEqual([]);
-    expect(await none.thing()).toBeNull();
-    expect(await (emptySource as unknown as Extra).listThings()).toEqual([]);
+  it("is not a thenable: awaiting a wrapped source resolves", async () => {
+    const w = withFallback(down, null);
+    expect(await Promise.resolve(w)).toBe(w);
+    expect(await Promise.resolve(emptySource)).toBe(emptySource);
+  });
+  it("wrappers expose every listed method", () => {
+    expect(dataMethodsComplete).toBe(true);
+    for (const m of dataMethods) {
+      expect(typeof withFallback(down, null)[m]).toBe("function");
+      expect(typeof emptySource[m]).toBe("function");
+    }
+  });
+  it("applies the same fallback to every listed method", async () => {
+    for (const m of dataMethods) {
+      const got = await (withFallback({ ...down, [m]: async () => { throw new Error("down"); } }, null)[m] as () => Promise<unknown>)();
+      expect(got).toEqual(m.startsWith("list") ? [] : null);
+    }
   });
   it("production never shows sample content when the API is down or empty", async () => {
     expect(await withFallback(down, null).latestCapsule()).toBeNull();

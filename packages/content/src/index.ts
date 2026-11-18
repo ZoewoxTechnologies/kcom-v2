@@ -129,6 +129,7 @@ export type Subscriber = z.infer<typeof subscriberSchema>;
 export {
   dayParts,
   formatLagosDate,
+  formatLagosShortDate,
   lagosDate,
   lagosDayRange,
   lagosMonth,

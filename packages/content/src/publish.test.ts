@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayParts, formatLagosDate, lagosDate, lagosDayRange, lagosMonth, lagosMonthRange, monthLabel, nextLagosMidnight, shiftMonth, shortMonthYear, slugify } from "./publish";
+import { dayParts, formatLagosDate, formatLagosShortDate, lagosDate, lagosDayRange, lagosMonth, lagosMonthRange, monthLabel, nextLagosMidnight, shiftMonth, shortMonthYear, slugify } from "./publish";
 
 const next = (iso: string) => nextLagosMidnight(new Date(iso)).toISOString();
 
@@ -49,6 +49,13 @@ describe("formatLagosDate", () => {
   it("formats a Lagos calendar day with weekday", () => {
     expect(formatLagosDate("2026-11-14")).toBe("Saturday, 14 November");
     expect(formatLagosDate("2026-01-01")).toBe("Thursday, 1 January");
+  });
+});
+
+describe("formatLagosShortDate", () => {
+  it("formats day and short month", () => {
+    expect(formatLagosShortDate("2026-11-14")).toBe("14 Nov");
+    expect(formatLagosShortDate("2026-01-01")).toBe("1 Jan");
   });
 });
 
