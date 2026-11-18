@@ -11,18 +11,23 @@ interface Props {
   triggerSize?: "sm" | "md" | "lg";
   triggerClass?: string;
   triggerLabel?: string;
+  /** Which trigger edge the panel lines up with. */
+  align?: "start" | "end";
+  /** Hide the chevron after the trigger (for an avatar or icon trigger). */
+  hideChevron?: boolean;
 }
-const { id, class: className, triggerVariant, triggerSize = "md", triggerClass, triggerLabel } =
+const { id, class: className, triggerVariant, triggerSize = "md", triggerClass, triggerLabel, align = "start", hideChevron = false } =
   Astro.props;
 const triggerClasses = [
   "kc-menu-trigger",
   triggerVariant && `kc-btn kc-btn--${triggerVariant}`,
   triggerVariant && triggerSize !== "md" && `kc-btn--${triggerSize}`,
+  hideChevron && "kc-menu-trigger--no-chevron",
   triggerClass,
 ];
 ---
 
-<div class:list={["kc-menu-wrap", className]} data-kc-menu>
+<div class:list={["kc-menu-wrap", className]} data-kc-menu data-align={align === "end" ? "end" : undefined}>
   <button
     type="button"
     class:list={triggerClasses}

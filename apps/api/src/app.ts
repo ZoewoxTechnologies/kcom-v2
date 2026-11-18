@@ -5,11 +5,13 @@ import { createAuth, type AuthOptions } from "./auth.js";
 import { errorHandler, notFoundHandler } from "./errors.js";
 import { health } from "./routes/health.js";
 import { blogRoutes } from "./routes/blog.js";
+import { bookRoutes } from "./routes/books.js";
 import { capsuleRoutes } from "./routes/capsules.js";
 import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
 import { homepageRoutes } from "./routes/homepage.js";
 import { pageRoutes } from "./routes/pages.js";
+import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
 import { userRoutes } from "./routes/users.js";
 
@@ -44,7 +46,9 @@ export function createApp(db: CapsuleDb, { corsOrigins = [], auth = {} }: AppOpt
     .notFound(notFoundHandler)
     .route("/", health)
     .route("/blog", blogRoutes(db))
+    .route("/books", bookRoutes(db))
     .route("/capsules", capsuleRoutes(db))
+    .route("/events", eventRoutes(db))
     .route("/series", seriesRoutes(db))
     .route("/pages", pageRoutes(db))
     .route("/homepage", homepageRoutes(db))

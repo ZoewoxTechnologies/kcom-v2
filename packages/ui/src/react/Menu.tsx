@@ -15,6 +15,10 @@ export interface MenuProps extends Omit<HTMLAttributes<HTMLDivElement>, "childre
   triggerClassName?: string;
   /** Accessible name for the trigger when it has no text. */
   triggerLabel?: string;
+  /** Which trigger edge the panel lines up with. Use "end" for a trigger at the right of a bar. */
+  align?: "start" | "end";
+  /** Hide the chevron after the trigger (for an avatar or icon trigger). */
+  hideChevron?: boolean;
   children: ReactNode;
 }
 
@@ -25,6 +29,8 @@ export function Menu({
   triggerSize = "md",
   triggerClassName,
   triggerLabel,
+  align = "start",
+  hideChevron = false,
   className,
   children,
   ...rest
@@ -35,13 +41,20 @@ export function Menu({
   useEffect(() => (ref.current ? initMenu(ref.current) : undefined), []);
 
   return (
-    <div {...rest} ref={ref} className={cx("kc-menu-wrap", className)} data-kc-menu>
+    <div
+      {...rest}
+      ref={ref}
+      className={cx("kc-menu-wrap", className)}
+      data-kc-menu
+      data-align={align === "end" ? "end" : undefined}
+    >
       <button
         type="button"
         className={cx(
           "kc-menu-trigger",
           triggerVariant && `kc-btn kc-btn--${triggerVariant}`,
           triggerVariant && triggerSize !== "md" && `kc-btn--${triggerSize}`,
+          hideChevron && "kc-menu-trigger--no-chevron",
           triggerClassName,
         )}
         popoverTarget={id}
