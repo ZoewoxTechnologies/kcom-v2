@@ -49,7 +49,7 @@ const createBody = z.strictObject({
   seriesId: fields.seriesId.default(null),
   partNumber: fields.partNumber.default(null),
   status: fields.status.default("draft"),
-  publishAt: fields.publishAt.default(() => nextLagosMidnight()),
+  publishAt: fields.publishAt.optional(),
 });
 const updateBody = z
   .strictObject(fields)
@@ -69,8 +69,9 @@ const CAPSULE_ERRORS = {
 type Patch = z.infer<typeof updateBody>;
 
 /**
- * Status transitions: draft -> scheduled -> published, and scheduled -> draft
- * (unschedule). Scheduling needs a future time (default: next Lagos midnight);
+ * Status transitions: draft -> scheduled -> published, scheduled -> draft
+ * (unschedule) and published -> draft (unpublish; republishing fires the event
+ * again). Published -> scheduled is rejected. Scheduling needs a future time (default: next Lagos midnight);
  * publishing happens now. Edits that don't set a status keep the schedule.
  */
 function planStatusChange(
@@ -78,7 +79,11 @@ function planStatusChange(
   patch: Patch,
 ): { publishAt?: Date } {
   const now = new Date();
-  if (patch.status === "scheduled" && existing.status !== "published") {
+  const next = patch.status ?? existing.status;
+  if (existing.status === "published" && next === "scheduled") {
+    throw invalid("a published capsule cannot be scheduled; unpublish it to draft first");
+  }
+  if (next === "scheduled") {
     if (patch.publishAt) {
       if (patch.publishAt <= now) throw invalid("publishAt must be in the future to schedule");
       return {};
@@ -122,11 +127,22 @@ export function adminCapsuleRoutes(db: CapsuleDb, events: CapsuleEvents) {
     .post("/", write, validate("json", createBody), async (c) => {
       const body = c.req.valid("json");
       assertCanChange(c, null, body.status);
-      if (body.status === "scheduled" && body.publishAt <= new Date()) {
+      const now = new Date();
+      // Default time: publish now when publishing, else the next Lagos midnight.
+      const publishAt =
+        body.publishAt ?? (body.status === "published" ? now : nextLagosMidnight(now));
+      if (body.status === "scheduled" && publishAt <= now) {
         throw invalid("publishAt must be in the future to schedule");
       }
+      if (body.status === "published" && publishAt > now) {
+        throw invalid("use status scheduled for a future publishAt");
+      }
       try {
-        const [row] = await db.insert(capsules).values(body).returning();
+        const [row] = await db
+          .insert(capsules)
+          .values({ ...body, publishAt })
+          .returning();
+        if (body.status === "published") await events.emitPublished(row!);
         return c.json(present(row!), 201);
       } catch (err) {
         rethrowWriteError(err, CAPSULE_ERRORS);

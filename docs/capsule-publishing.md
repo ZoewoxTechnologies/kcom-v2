@@ -7,7 +7,8 @@
 - Creating a capsule without `publishAt` defaults it to the next 00:00 Africa/Lagos (`nextLagosMidnight` in `@kcom/content`). Editors may pick any later time.
 - Scheduling needs a future `publishAt`. Moving a draft with a stale time to `scheduled` without a new time resets it to the next Lagos midnight.
 - Editing a scheduled capsule (no status in the patch) keeps its `publishAt`. Unscheduling sets `draft` and keeps the time.
-- Publishing manually (`status: "published"`) publishes now; a future `publishAt` is rejected (use `scheduled`).
+- Published capsules cannot be scheduled. Unpublishing (`published` → `draft`, needs `content:publish`) is allowed; publishing it again fires the event again.
+- Publishing manually (`status: "published"`, on create or update) publishes now; a future `publishAt` is rejected (use `scheduled`).
 - Moving out of draft, or changing non-draft content, needs `content:publish` (`assertCanChange`).
 
 ## Publisher
@@ -29,4 +30,4 @@ Store the token in Secret Manager and mount it on the API service as `INTERNAL_J
 
 ## Event
 
-`createApp(db, { capsuleEvents })` takes a bus from `createCapsuleEvents()`. Subscribe with `events.on(({ capsule }) => ...)`. It fires once per publish, from the publisher and from manual publishes. A throwing handler is logged and does not affect the publish or other handlers. Handlers run in-process, so they must be quick or hand work to a queue.
+`createApp(db, { capsuleEvents })` takes a bus from `createCapsuleEvents()`. Subscribe with `events.on(({ capsule }) => ...)`. It fires once per publish, from the publisher and from manual publishes. A throwing handler is logged and does not affect the publish or other handlers. The event is at-most-once: it fires after the database commit, so a crash in between loses it. Add an outbox or retry before anything critical (such as email) depends on it. Handlers run in-process, so they must be quick or hand work to a queue.

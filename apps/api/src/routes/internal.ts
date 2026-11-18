@@ -18,8 +18,9 @@ function sameToken(given: string, expected: string) {
 export function internalRoutes(db: CapsuleDb, events: CapsuleEvents, token?: string) {
   const guard = createMiddleware(async (c, next) => {
     if (!token) throw new HttpError(404, "not_found", "not found");
-    const given = c.req.header("authorization")?.replace(/^Bearer /, "") ?? "";
-    if (!sameToken(given, token)) throw new HttpError(401, "unauthorized", "invalid token");
+    const given = /^Bearer (.+)$/.exec(c.req.header("authorization") ?? "")?.[1];
+    if (!given || !sameToken(given, token))
+      throw new HttpError(401, "unauthorized", "invalid token");
     c.header("Cache-Control", "no-store");
     await next();
   });

@@ -123,6 +123,32 @@ describe("state machine", () => {
     expect(new Date(row.publishAt).getTime()).toBeGreaterThan(Date.now());
   });
 
+  it("rejects published to scheduled, allows unpublish, and needs a future time to reschedule", async () => {
+    const { id } = await create({ slug: "u" });
+    await call(`/admin/capsules/${id}`, "PATCH", { status: "published" });
+    expect((await call(`/admin/capsules/${id}`, "PATCH", { status: "scheduled" })).status).toBe(
+      422,
+    );
+    expect((await call(`/admin/capsules/${id}`, "PATCH", { status: "draft" })).status).toBe(200);
+    const s = await create({ slug: "r", status: "scheduled", publishAt: future });
+    const past = { publishAt: "2020-01-01T00:00:00.000Z" };
+    expect((await call(`/admin/capsules/${s.id}`, "PATCH", past)).status).toBe(422);
+  });
+
+  it("emits on create as published and rejects a future publishAt", async () => {
+    await create({ slug: "now", status: "published" });
+    expect(published).toEqual(["now"]);
+    const res = await call("/admin/capsules", "POST", {
+      title: "T",
+      slug: "f",
+      body: doc,
+      status: "published",
+      publishAt: future,
+    });
+    expect(res.status).toBe(422);
+    expect(published).toEqual(["now"]);
+  });
+
   it("emits once when published manually, and not on later edits", async () => {
     const { id } = await create();
     await call(`/admin/capsules/${id}`, "PATCH", { status: "published" });
@@ -183,6 +209,11 @@ describe("due publisher", () => {
       headers: { authorization: "Bearer nope" },
     });
     expect(wrong.status).toBe(401);
+    const bare = await app.request("/internal/publish-due", {
+      method: "POST",
+      headers: { authorization: "job-token" },
+    });
+    expect(bare.status).toBe(401);
     const ok = await app.request("/internal/publish-due", {
       method: "POST",
       headers: { authorization: "Bearer job-token" },
