@@ -26,6 +26,16 @@ function Demo({ dismissible = true }: { dismissible?: boolean }) {
 }
 
 describe("Dialog", () => {
+  it("shows a × button only when onClose is given, and calls it", async () => {
+    const onClose = vi.fn();
+    const { rerender } = render(<Dialog open title="T" onClose={onClose} />);
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(document.querySelector(".kc-dialog--closable")).not.toBeNull();
+    rerender(<Dialog open title="T" />);
+    expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
+  });
+
   it("closes on Escape and returns focus to the trigger", async () => {
     const user = userEvent.setup();
     render(<Demo />);

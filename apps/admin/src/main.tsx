@@ -11,16 +11,17 @@ import "@kcom/ui/menu.css";
 import "@kcom/ui/forms.css";
 import "@kcom/ui/datetime-picker.css";
 import "./shell/shell.css";
-import { BrowserRouter } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import { App } from "./App";
 import { initSentry } from "./sentry";
 
 initSentry();
 
+// A data router, so editors can block navigation while they have unsaved changes.
+const router = createBrowserRouter([{ path: "*", element: <App /> }]);
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </StrictMode>,
 );

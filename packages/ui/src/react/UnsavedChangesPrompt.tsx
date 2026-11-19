@@ -7,6 +7,8 @@ export interface UnsavedChangesPromptProps {
   /** Name of the thing being edited, quoted in the message. */
   subject?: ReactNode;
   onSaveDraft: () => void;
+  /** A draft save is in flight: every action is disabled. */
+  saving?: boolean;
   onKeepEditing?: () => void;
   onDiscard: () => void;
 }
@@ -17,6 +19,7 @@ export function UnsavedChangesPrompt({
   onOpenChange,
   subject,
   onSaveDraft,
+  saving = false,
   onKeepEditing,
   onDiscard,
 }: UnsavedChangesPromptProps) {
@@ -25,6 +28,7 @@ export function UnsavedChangesPrompt({
       open={open}
       onOpenChange={onOpenChange}
       variant="danger"
+      busy={saving}
       title="Discard your changes?"
       message={
         <>

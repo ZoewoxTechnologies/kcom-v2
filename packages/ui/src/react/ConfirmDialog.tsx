@@ -6,6 +6,7 @@ export interface ConfirmAction {
   label: ReactNode;
   onSelect: () => void;
   variant?: "primary" | "secondary";
+  disabled?: boolean;
 }
 
 export interface ConfirmDialogProps {
@@ -17,6 +18,8 @@ export interface ConfirmDialogProps {
   cancelLabel?: ReactNode;
   /** "danger" styles the confirm action as destructive and moves it to the end of the row. */
   variant?: "default" | "danger";
+  /** Disables every action, for while work started by one of them is pending. */
+  busy?: boolean;
   onConfirm: () => void;
   onCancel?: () => void;
   /** Extra actions shown before cancel and confirm; each closes the dialog. */
@@ -37,6 +40,7 @@ export function ConfirmDialog({
   variant = "default",
   onConfirm,
   onCancel,
+  busy = false,
   actions = [],
 }: ConfirmDialogProps) {
   // There is no trigger, so remember what had focus and hand it back on close.
@@ -50,6 +54,7 @@ export function ConfirmDialog({
       <Button
         variant={danger ? "tertiary" : "primary"}
         className={danger ? "kc-dialog__actions-end" : undefined}
+        disabled={busy}
         onClick={onConfirm}
       >
         {confirmLabel}
@@ -58,7 +63,7 @@ export function ConfirmDialog({
   );
   const cancel = (
     <AlertDialog.Cancel asChild key="cancel">
-      <Button variant="secondary" onClick={onCancel}>
+      <Button variant="secondary" disabled={busy} onClick={onCancel}>
         {cancelLabel}
       </Button>
     </AlertDialog.Cancel>
@@ -82,7 +87,11 @@ export function ConfirmDialog({
           <div className="kc-dialog__actions">
             {actions.map((action, i) => (
               <AlertDialog.Action asChild key={i}>
-                <Button variant={action.variant ?? "primary"} onClick={action.onSelect}>
+                <Button
+                  variant={action.variant ?? "primary"}
+                  disabled={busy || action.disabled}
+                  onClick={action.onSelect}
+                >
                   {action.label}
                 </Button>
               </AlertDialog.Action>
