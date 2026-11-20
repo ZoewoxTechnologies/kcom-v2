@@ -4,7 +4,7 @@ const { hideSignup = false } = Astro.props;
 const year = new Date().getFullYear();
 ---
 <footer class="site-footer">
-  <div class="cols">
+  <div class:list={["cols", { "no-signup": hideSignup }]}>
     <div class="about">
       <div class="brand">
         <img src="/logo.png" alt="" width="44" height="44" />
@@ -81,7 +81,9 @@ const year = new Date().getFullYear();
   #theme-toggle .icon { font-size: 1em; }
   #theme-toggle { --kc-btn-fg: var(--color-on-footer); --kc-btn-border: rgba(255, 255, 255, 0.3); }
   @media (min-width: 64rem) {
-    .cols { grid-template-columns: 1.4fr 1fr 1fr 1.4fr; }
+    /* Design proportions at 1440: about 167 / 119 / 119 / 319. */
+    .cols { grid-template-columns: 1.4fr 1fr 1fr 2.68fr; }
+    .cols.no-signup { grid-template-columns: 1.4fr 1fr 1fr; }
     .signup { order: 0; }
     .row { flex-direction: row; }
     .row :global(.kc-input) { flex: 1; }
