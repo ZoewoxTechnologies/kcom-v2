@@ -1,15 +1,13 @@
 ---
 import { dayParts, lagosDate } from "@kcom/content";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import BlogCard from "../components/BlogCard.astro";
-import CapsuleRow from "../components/CapsuleRow.astro";
-import CardGrid from "../components/CardGrid.astro";
 import HomeSection from "../components/HomeSection.astro";
 import SeriesCard from "../components/SeriesCard.astro";
 import { data } from "../lib/data";
 import { richTextToPlain } from "../lib/data/client";
 import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
-import { defaultSections, sampleBooks, sampleEvents, sectionsFromQuery, visibleSections } from "../lib/homepage";
+import { postKicker } from "../lib/blog";
+import { defaultSections, featuredQuote, sampleBooks, sampleEvents, sectionsFromQuery, visibleSections } from "../lib/homepage";
 
 const today = lagosDate(new Date());
 let capsule = await data.capsuleByDate(today);
@@ -26,8 +24,13 @@ const order = visibleSections(preview ?? defaultSections);
 const allSeries = sortSeries(await data.listSeries(), "newest");
 const current = allSeries.find((s) => s.inProgress) ?? allSeries[0] ?? null;
 const currentDetail = current ? await data.seriesBySlug(current.slug) : null;
-const pastSeries = allSeries.filter((s) => s.slug !== current?.slug).slice(0, 3);
-const posts = await data.listBlogPosts({ limit: 3 });
+const pastSeries = allSeries.filter((s) => s.slug !== current?.slug).slice(0, 4);
+const [post] = await data.listBlogPosts({ limit: 1 });
+const tomorrow = new Date(Date.parse(`${today}T12:00:00Z`) + 86400000).toISOString().slice(0, 10);
+const shortDate = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+const monthDay = (day: string) => ({ mon: new Date(`${day}T12:00:00Z`).toLocaleDateString("en-GB", { month: "short", timeZone: "UTC" }).toUpperCase(), n: day.slice(8) });
+const seriesRows = (currentDetail?.capsules ?? []).filter((c) => c.displayDate <= tomorrow).slice(-4);
+const rowTag = (c: { displayDate: string; partNumber: number | null }) => (c.displayDate === today ? "Today" : c.displayDate === tomorrow ? "Tomorrow" : c.partNumber ? `Day ${c.partNumber}` : "");
 
 const heroDay = capsule ? dayParts(capsule.displayDate) : null;
 const verse = capsule ? richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation : null;
@@ -78,13 +81,12 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
                 </>
               ) : <p class="muted">No series is running right now.</p>}
             </div>
-            {currentDetail && currentDetail.capsules.length > 0 && (
-              <div class="rows">
-                {currentDetail.capsules.slice(-4).map((c) => {
-                  const d = dayParts(c.displayDate);
-                  return <CapsuleRow href={capsulePath(c.slug)} kicker={d.dow} figure={d.n} title={c.title} meta={c.scriptureRef} badge={c.partNumber ? `Day ${c.partNumber}` : null} />;
-                })}
-              </div>
+            {seriesRows.length > 0 && (
+              <ol class="rows">
+                {seriesRows.map((c) => (
+                  <li><span class="date">{shortDate(c.displayDate)}</span><a href={capsulePath(c.slug)}><span class="rt">{c.title}</span>{c.scriptureRef && <span class="rm">{c.scriptureRef}</span>}</a><span class="tag">{rowTag(c)}</span></li>
+                ))}
+              </ol>
             )}
           </div>
         </div>
@@ -94,7 +96,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       <section class="band" aria-label="Explore past series">
         <div class="inner">
           <HomeSection title="Explore past series" more={{ href: "/series", label: "All series →" }} isEmpty={pastSeries.length === 0} empty="Past series will appear here.">
-            <CardGrid>{pastSeries.map((s) => <SeriesCard series={s} />)}</CardGrid>
+            <div class="grid4">{pastSeries.map((s) => <SeriesCard series={s} />)}</div>
           </HomeSection>
         </div>
       </section>
@@ -102,26 +104,36 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     if (key === "blog") return (
       <section class="band" aria-label="From the blog">
         <div class="inner">
-          <HomeSection title="From the blog" more={{ href: "/blog", label: "All posts →" }} isEmpty={posts.length === 0} empty="No posts yet. Check back soon.">
-            <CardGrid>{posts.map((p) => <BlogCard post={p} />)}</CardGrid>
-          </HomeSection>
+          {post ? (
+            <div class="feature">
+              <div class="fcopy">
+                <span class="eyebrow">From the blog{post.tags[0] ? ` · ${post.tags[0]}` : ""}</span>
+                <h2>{post.title}</h2>
+                {post.excerpt && <p>{post.excerpt}</p>}
+                <a class="more" href={`/blog/${post.slug}`}>Read the message →</a>
+              </div>
+              {featuredQuote && <blockquote>“{featuredQuote.text}”<cite>{featuredQuote.ref}</cite></blockquote>}
+            </div>
+          ) : (
+            <HomeSection title="From the blog" isEmpty empty="No posts yet. Check back soon." />
+          )}
         </div>
       </section>
     );
     if (key === "events-books") return (
       <section class="band" aria-label="Upcoming events and books">
         <div class="inner two">
-          <HomeSection title="Upcoming events" level={2} more={{ href: "/events", label: "All events →" }} isEmpty={events.length === 0} empty="No upcoming events right now.">
-            <div class="rows">
+          <HomeSection title="Upcoming events" more={{ href: "/events", label: "All events →" }} moreBelow isEmpty={events.length === 0} empty="No upcoming events right now.">
+            <ul class="events">
               {events.map((e) => {
-                const d = dayParts(e.date);
-                return <CapsuleRow href={`/events/${e.slug}`} kicker={d.dow} figure={d.n} title={e.title} meta={e.meta} />;
+                const d = monthDay(e.date);
+                return <li><a href="/events"><span class="tile"><span class="mon">{d.mon}</span><span class="dn">{d.n}</span></span><span class="et">{e.title}</span><span class="em">{e.meta}</span></a></li>;
               })}
-            </div>
+            </ul>
           </HomeSection>
-          <HomeSection title="Books" level={2} more={{ href: "/books", label: "All books →" }} isEmpty={books.length === 0} empty="Books will be listed here.">
+          <HomeSection title="Books from the ministry" isEmpty={books.length === 0} empty="Books will be listed here.">
             <ul class="books">
-              {books.map((b) => <li><a href={`/books/${b.slug}`}><span class="cover" aria-hidden="true"></span><span class="bt">{b.title}</span></a></li>)}
+              {books.map((b) => <li><a href="/books"><span class="cover" aria-hidden="true"></span><span class="bt">{b.title}</span></a></li>)}
             </ul>
           </HomeSection>
         </div>
@@ -131,7 +143,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       <section class="band signup" aria-label="Email signup">
         <form class="inner narrow" onsubmit="return false">
           <h2>Begin each day in the Word</h2>
-          <p>The daily Capstone Capsule in your inbox. Free, and you can leave any time.</p>
+          <p>The daily Capstone Capsule in your inbox at 5 a.m. Free, and you can leave any time.</p>
           <div class="field">
             <label class="sr-only" for="home-email">Email address</label>
             <input id="home-email" class="kc-input" type="email" placeholder="you@example.com" autocomplete="email" />
@@ -161,9 +173,31 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .split { display: flex; flex-wrap: wrap; gap: var(--space-6); }
   .intro { flex: 1 1 20rem; min-inline-size: 0; display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; }
   .intro h2 { margin: 0; font: 600 2rem / 1.1 var(--font-title); }
-  .rows { flex: 2 1 30rem; min-inline-size: 0; display: flex; flex-direction: column; }
+  .rows { flex: 2 1 30rem; min-inline-size: 0; list-style: none; margin: 0; padding: 0; }
+  .rows li { display: flex; gap: var(--space-4); align-items: baseline; padding: var(--space-3) 0; border-top: 1px solid var(--color-line); }
+  .rows .date { inline-size: 3.5rem; flex: none; font-size: 0.8125rem; letter-spacing: 0.08em; font-variant: small-caps; font-weight: 700; color: var(--color-muted); }
+  .rows a { display: flex; flex-direction: column; color: var(--color-text); text-decoration: none; min-inline-size: 0; }
+  .rows a:hover .rt { color: var(--color-primary); }
+  .rt { font: 600 1.375rem / 1.2 var(--font-title); }
+  .rm { font-size: var(--text-sm); color: var(--color-muted); }
+  .tag { margin-inline-start: auto; flex: none; font-size: 0.8125rem; font-weight: 700; color: var(--color-gold-text); }
+  .grid4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(17.5rem, 100%), 1fr)); gap: var(--space-4); }
+  .feature { background: var(--color-sandstone); color: var(--color-text); border-radius: var(--radius); padding: var(--space-5); display: flex; flex-wrap: wrap; gap: var(--space-6); align-items: center; }
+  .fcopy { flex: 2 1 22rem; min-inline-size: 0; display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; }
+  .fcopy h2 { margin: 0; font: 500 clamp(1.875rem, 5vw, 2.875rem) / 1.08 var(--font-title); }
+  .fcopy p { margin: 0; max-inline-size: 40rem; }
+    blockquote { flex: 1 1 16rem; margin: 0; font: italic 1.5rem / 1.3 var(--font-title); border-top: 2px solid var(--color-gold); padding-top: var(--space-4); }
+  cite { display: block; margin-top: var(--space-2); font: normal 700 0.8125rem var(--font-body, inherit); letter-spacing: 0.1em; font-variant: small-caps; color: var(--color-muted); }
+  .events { list-style: none; margin: 0; padding: 0; }
+  .events a { display: flex; align-items: center; column-gap: var(--space-4); row-gap: 0; padding: var(--space-3) 0; border-top: 1px solid var(--color-line); color: var(--color-text); text-decoration: none; flex-wrap: wrap; }
+  .tile { inline-size: 3.5rem; block-size: 3.5rem; flex: none; border-radius: 12px; background: var(--color-wash); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+  .mon { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; color: var(--color-primary); }
+  .dn { font: 600 1.5rem / 1.1 var(--font-title); }
+  .et { font-weight: 700; flex: 1 1 12rem; }
+  .em { flex-basis: 100%; padding-inline-start: 4.5rem; margin-top: -0.5rem; font-size: var(--text-sm); color: var(--color-muted); }
   .two { display: flex; flex-wrap: wrap; gap: var(--space-7); }
   .two > :global(*) { flex: 1 1 24rem; }
+  .tile, .mon { color: inherit; }
   .books { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
   .books a { display: flex; flex-direction: column; gap: var(--space-2); color: var(--color-text); text-decoration: none; }
   .cover { aspect-ratio: 2 / 3; border-radius: 8px; background: var(--color-wash); border: 1px solid var(--color-line); }

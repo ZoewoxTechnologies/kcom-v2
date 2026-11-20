@@ -40,3 +40,6 @@ export const sampleEvents: HomeEvent[] = [
   { slug: "new-year", title: "New Year Prophetic Message 2027", date: "2027-01-01", meta: "Friday · 9:00 a.m. · online and in person" },
 ];
 export const sampleBooks: HomeBook[] = [{ slug: "war-words", title: "War Words" }, { slug: "vision", title: "Vision for Your Mission" }, { slug: "distinction", title: "Designed for Distinction" }];
+
+/** Pull quote beside the featured post until posts carry their own. */
+export const featuredQuote: { text: string; ref: string } | null = { text: "For there shall be a performance of those things which were told her from the Lord.", ref: "Luke 1:45" };
