@@ -26,7 +26,7 @@ export interface MenuProps extends Omit<HTMLAttributes<HTMLDivElement>, "childre
 export function Menu({
   trigger,
   triggerVariant,
-  triggerSize = "md",
+  triggerSize = "sm",
   triggerClassName,
   triggerLabel,
   align = "start",
@@ -53,7 +53,7 @@ export function Menu({
         className={cx(
           "kc-menu-trigger",
           triggerVariant && `kc-btn kc-btn--${triggerVariant}`,
-          triggerVariant && triggerSize !== "md" && `kc-btn--${triggerSize}`,
+          triggerVariant && triggerSize !== "sm" && `kc-btn--${triggerSize}`,
           hideChevron && "kc-menu-trigger--no-chevron",
           triggerClassName,
         )}

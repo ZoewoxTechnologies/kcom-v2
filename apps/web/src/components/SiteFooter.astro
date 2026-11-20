@@ -1,9 +1,10 @@
 ---
-import { footerColumns, socialLinks, contactPlaceholder, siteName } from "../lib/site";
+import { footerColumns, socialLinks, siteName } from "../lib/site";
+const { hideSignup = false } = Astro.props;
 const year = new Date().getFullYear();
 ---
 <footer class="site-footer">
-  <div class="cols">
+  <div class:list={["cols", { "no-signup": hideSignup }]}>
     <div class="about">
       <div class="brand">
         <img src="/logo.png" alt="" width="44" height="44" />
@@ -18,35 +19,44 @@ const year = new Date().getFullYear();
         {c.links.map((l) => <a href={l.href}>{l.label}</a>)}
       </div>
     ))}
-    <form class="signup" action="/subscribe" method="post">
+    {!hideSignup && <form class="signup" action="/subscribe" method="post">
       <label for="footer-email">The daily capsule, by email</label>
       <div class="row">
         <input id="footer-email" class="kc-input" name="email" type="email" placeholder="you@example.com" autocomplete="email" />
-        <button type="submit" class="kc-btn">Subscribe</button>
+        <button type="submit" class="kc-btn kc-btn--md">Subscribe</button>
       </div>
-    </form>
+    </form>}
   </div>
   <div class="base">
-    <span class="legal"><span>© {year} {siteName}</span><span class="sep" aria-hidden="true"> · </span><span>{contactPlaceholder}</span></span>
+    <span class="legal">© {year} {siteName}</span>
     <span class="social">
       <span class="links">{socialLinks.map((l) => <a href={l.href}>{l.label}</a>)}</span>
-      <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary kc-btn--sm" aria-label="Switch colour theme">Theme</button>
+      <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary" aria-label="Switch colour theme"><span class="icon" aria-hidden="true">☾</span> <span class="label">Dark</span></button>
     </span>
   </div>
 </footer>
 <script is:inline>
-  document.getElementById("theme-toggle")?.addEventListener("click", () => {
+  (() => {
+    const btn = document.getElementById("theme-toggle");
+    if (!btn) return;
     const root = document.documentElement;
-    const dark = root.dataset.theme
-      ? root.dataset.theme === "dark"
-      : matchMedia("(prefers-color-scheme: dark)").matches;
-    const next = dark ? "light" : "dark";
-    root.dataset.theme = next;
-    try { localStorage.setItem("theme", next); } catch {}
-  });
+    const isDark = () => root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    // The button offers the opposite theme: moon and "Dark" in light mode, sun and "Light" in dark mode.
+    const paint = () => {
+      btn.querySelector(".icon").textContent = isDark() ? "☀" : "☾";
+      btn.querySelector(".label").textContent = isDark() ? "Light" : "Dark";
+    };
+    paint();
+    btn.addEventListener("click", () => {
+      const next = isDark() ? "light" : "dark";
+      root.dataset.theme = next;
+      try { localStorage.setItem("theme", next); } catch {}
+      paint();
+    });
+  })();
 </script>
 <style>
-  .site-footer { margin-top: var(--space-6); background: var(--color-footer); color: var(--color-on-footer); padding: var(--space-7) var(--gutter) var(--space-5); display: flex; flex-direction: column; gap: var(--space-6); }
+  .site-footer {background: var(--color-footer); color: var(--color-on-footer); padding: var(--space-7) var(--gutter) var(--space-5); padding-inline: max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter))); display: flex; flex-direction: column; gap: var(--space-6); }
   .cols { display: grid; gap: var(--space-6); font-size: 0.9375rem; grid-template-columns: 1fr; }
   .brand { display: flex; align-items: center; gap: var(--space-3); font-family: var(--font-title); font-weight: 600; font-size: 1.375rem; line-height: 1.05; }
   .brand :global(img) { width: 44px; height: 44px; object-fit: contain; }
@@ -68,16 +78,17 @@ const year = new Date().getFullYear();
   .social { display: flex; gap: var(--space-5); align-items: center; flex-wrap: wrap; }
   .links { display: contents; }
   .legal { display: flex; flex-direction: column; }
-  .sep { display: none; }
+  #theme-toggle .icon { font-size: 1em; }
   #theme-toggle { --kc-btn-fg: var(--color-on-footer); --kc-btn-border: rgba(255, 255, 255, 0.3); }
   @media (min-width: 64rem) {
-    .cols { grid-template-columns: 1.4fr 1fr 1fr 1.4fr; }
+    /* Design proportions at 1440: about 167 / 119 / 119 / 319. */
+    .cols { grid-template-columns: 1.4fr 1fr 1fr 2.68fr; }
+    .cols.no-signup { grid-template-columns: 1.4fr 1fr 1fr; }
     .signup { order: 0; }
     .row { flex-direction: row; }
     .row :global(.kc-input) { flex: 1; }
     .row :global(.kc-btn) { width: auto; }
     .legal { flex-direction: row; }
-    .sep { display: inline; white-space: pre; }
     .base { flex-direction: row; justify-content: space-between; align-items: center; }
   }
 </style>

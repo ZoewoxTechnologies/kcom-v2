@@ -54,7 +54,8 @@ function cleanNode(node: unknown, depth: number): Raw | null {
     // Cloudinary-hosted images only, and alt text is required; otherwise the image is dropped.
     const attrs = isObj(node.attrs) ? node.attrs : {};
     if (typeof attrs.src !== "string" || !isCloudinaryImageUrl(attrs.src)) return null;
-    if (typeof attrs.alt !== "string") return null;
+    const alt = typeof attrs.alt === "string" ? attrs.alt.trim() : "";
+    if (!alt) return null;
     const size = (v: unknown) =>
       Number.isInteger(v) && (v as number) > 0 && (v as number) <= 20_000
         ? (v as number)
@@ -64,7 +65,7 @@ function cleanNode(node: unknown, depth: number): Raw | null {
     out.attrs = {
       // Store the parsed, normalised URL rather than the raw string.
       src: new URL(attrs.src).href,
-      alt: attrs.alt.slice(0, 300),
+      alt: alt.slice(0, 300),
       ...(width && height ? { width, height } : {}),
     };
     return out;

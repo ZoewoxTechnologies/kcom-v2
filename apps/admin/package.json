@@ -12,8 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@kcom/content": "workspace:^",
-    "@kcom/media": "workspace:^",
+    "@kcom/content": "workspace:*",
+    "@kcom/media": "workspace:*",
     "@kcom/permissions": "workspace:*",
     "@kcom/ui": "workspace:*",
     "@sentry/react": "^11.12.0",

@@ -21,6 +21,11 @@ describe("api source", () => {
     expect(await createApiSource("http://api", fetchOf(() => json({}, 404))).latestCapsule()).toBeNull();
     await expect(createApiSource("http://api", fetchOf(() => json({}, 500))).latestCapsule()).rejects.toThrow("500");
   });
+  it("treats a malformed latest capsule as none, so the verse bar never shows an invalid date", async () => {
+    for (const body of [[], {}, { slug: "a", title: "A", displayDate: "", scriptureRef: null }, { slug: "a", title: "A", displayDate: "soon", scriptureRef: null }]) {
+      expect(await createApiSource("http://api", fetchOf(() => json(body))).latestCapsule()).toBeNull();
+    }
+  });
   it("flattens rich text", () => {
     expect(richTextToPlain({ type: "doc", content: [{ type: "paragraph", content: [{ text: "a" }] }, { type: "paragraph", content: [{ text: "b" }] }] })).toBe("a b");
     expect(richTextToPlain(null)).toBe("");

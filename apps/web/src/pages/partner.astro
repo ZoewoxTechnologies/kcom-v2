@@ -1,0 +1,137 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "@kcom/ui/tooltip.css";
+import "../styles/design.css";
+import { bankRows, partnerTypes, sampleSettings, ways } from "../lib/partnership";
+
+const bank = bankRows(sampleSettings);
+---
+<BaseLayout title="Partner With Us" description="Stand with Kingdom Capstone Outreach Ministries as a prayer, prosperity or project partner." current="/partner">
+  <div class="page">
+    <header class="hero">
+      <span class="kicker">Networking visions to reach generations</span>
+      <h1>Partner With Us</h1>
+      <p>Partnership is a relationship of the heart that happens when people share a common vision. Kingdom Capstone Outreach Ministries welcomes every born-again Christian committed to the Word of God, whatever their age, background or country.</p>
+    </header>
+    <section aria-labelledby="ways">
+      <h2 id="ways">Three ways to partner</h2>
+      <div class="ways">
+        {ways.map((w) => (
+          <article>
+            <span class="kicker">{w.n}</span>
+            <h3>{w.title}</h3>
+            <p>{w.text}</p>
+            <a class="cta" href="#join">{w.cta} →</a>
+          </article>
+        ))}
+      </div>
+    </section>
+    <div class="give">
+      {bank.length > 0 && (
+        <section class="panel" aria-labelledby="bank">
+          <span class="kicker">Give by bank transfer</span>
+          <h2 id="bank">Bank details</h2>
+          <dl>{bank.map((r) => <><dt>{r.label}</dt><dd><span>{r.value}</span>
+            <span class="kc-tooltip"><button type="button" class="kc-btn kc-btn--tertiary kc-btn--sm copy" data-copy={r.value} aria-label={`Copy ${r.label}`}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg></button><span class="kc-tooltip__bubble" aria-hidden="true" hidden>Copied</span></span></dd></>)}</dl>
+          <span id="copy-status" class="sr-only" role="status" aria-live="polite"></span>
+          <p class="note">Please use your name and “Partner” as the transfer reference so we can thank you.</p>
+        </section>
+      )}
+      <section class="panel soon" aria-labelledby="online">
+        <span class="kicker">Coming soon</span>
+        <h2 id="online">Give online</h2>
+        <p>Card and recurring giving will appear here, using the gold Give button.</p>
+        <button type="button" class="kc-btn kc-btn--give kc-btn--sm" disabled>Give</button>
+      </section>
+    </div>
+    <section id="join" class="join" aria-labelledby="join-h">
+      <form>
+        <h2 id="join-h">Become a partner</h2>
+        <p>Tell us how you’d like to stand with us and we’ll be in touch.</p>
+        <div class="two">
+          <label class="kc-label">Full name<input class="kc-input" type="text" name="name" autocomplete="name" required /></label>
+          <label class="kc-label">Email address<input class="kc-input" type="email" name="email" autocomplete="email" required /></label>
+        </div>
+        <fieldset>
+          <legend>I’d like to be a</legend>
+          {partnerTypes.map((t, i) => <label class="check"><input type="checkbox" name="type" value={t} checked={i === 0} />{t.replace(/s$/, "")}</label>)}
+        </fieldset>
+        <button class="kc-btn kc-btn--sm send" type="submit" disabled>Send</button>
+      </form>
+    </section>
+  </div>
+</BaseLayout>
+<script>
+  const status = document.getElementById("copy-status");
+  async function copyText(text: string): Promise<boolean> {
+    try { await navigator.clipboard.writeText(text); return true; } catch { /* fall back below */ }
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.cssText = "position:fixed;opacity:0";
+    document.body.append(area);
+    area.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch { /* unsupported */ }
+    area.remove();
+    return ok;
+  }
+  document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((btn) => {
+    const bubble = btn.nextElementSibling as HTMLElement;
+    let timer: number | undefined;
+    btn.addEventListener("click", async () => {
+      if (!(await copyText(btn.dataset.copy ?? ""))) return;
+      bubble.hidden = false;
+      if (status) { status.textContent = ""; requestAnimationFrame(() => (status.textContent = "Copied")); }
+      clearTimeout(timer);
+      timer = window.setTimeout(() => { bubble.hidden = true; if (status) status.textContent = ""; }, 1500);
+    });
+  });
+</script>
+<style>
+  .page { font-size: 17px; line-height: 1.65; display: flex; flex-direction: column; gap: 56px; margin-block-end: calc(var(--space-6) * -1); }
+  .hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); margin-block-start: calc(var(--space-6) * -1); padding-block: 64px; }
+  .hero p { max-inline-size: 680px; font-size: 20px; }
+  .hero h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: 60px; line-height: 1.05; }
+  h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 40px; line-height: 1.65; }
+  h3 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 30px; line-height: 1.65; }
+  p { margin: 0; }
+  .kicker { font-size: 13px; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--d-kicker); }
+  .hero .kicker { font-size: 14px; }
+  #ways { text-align: center; margin-block-end: 24px; }
+  .ways { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+  article { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 14px; padding: 30px; display: flex; flex-direction: column; gap: 12px; }
+  article p { color: var(--d-body); flex: 1; }
+  .cta { font-weight: 600; color: var(--color-primary); text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  .give { display: flex; flex-wrap: wrap; gap: 24px; }
+  .panel { box-sizing: content-box; flex: 3 1 520px; min-inline-size: 0; background: var(--color-sandstone); border: 1px solid var(--d-card-line); border-radius: 14px; padding: 36px; color: var(--color-text); display: flex; flex-direction: column; gap: 18px; }
+  .panel h2 { font-size: 34px; line-height: 1.65; margin-block-start: 4px; }
+  .give .soon { flex: 2 1 320px; background: var(--color-surface); border: 1px dashed var(--color-gold); justify-content: center; gap: 14px; }
+  .soon .kc-btn { align-self: flex-start; }
+  .panel .kicker { align-self: flex-start; }
+  .soon h2 { font-size: 30px; line-height: 1.65; margin: 0; }
+  .soon p { color: var(--color-muted); }
+  dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+  dt { padding-block-start: 14px; border-block-start: 1px solid var(--d-card-line); font-size: 14px; font-weight: 700; color: var(--color-muted); }
+  dd { margin: 0; padding-block: 0 14px; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+  .note { font-size: 15px; color: var(--color-muted); }
+  .join { background: var(--color-footer); color: var(--color-on-footer); box-shadow: 0 0 0 100vmax var(--color-footer); clip-path: inset(0 -100vmax); padding-block: 56px; }
+  .join form { max-inline-size: 760px; margin-inline: auto; display: flex; flex-direction: column; gap: 16px; }
+  .join h2 { font-weight: 500; text-align: center; }
+  .join p { text-align: center; opacity: 0.9; margin-block-end: 8px; }
+  .join .two { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+  .join label.kc-label { display: flex; flex-direction: column; line-height: 1.65; color: var(--color-on-footer); font-size: 14px; font-weight: 700; gap: 6px; }
+  .join .kc-input { block-size: 48px; padding: 12px 14px; border-radius: 10px; border-color: rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 16px; }
+  fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 15px; }
+  legend { font-size: 14px; font-weight: 700; margin-block-end: 8px; }
+  .check { display: flex; align-items: center; gap: 8px; }
+  .check input { inline-size: 20px; block-size: 20px; accent-color: var(--color-footer-gold); }
+  .send { align-self: center; margin-block-start: 8px; --kc-btn-bg: var(--color-footer-button); --kc-btn-fg: var(--color-on-footer-button); }
+  @media (max-width: 47.99rem) { .hero h1 { font-size: 40px; } h2 { font-size: 32px; } .hero p { font-size: 18px; } }
+  @media (min-width: 48rem) {
+    .ways { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .join .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    dl { grid-template-columns: 180px minmax(0, 1fr); }
+    dt, dd { border-block-start: 1px solid var(--d-card-line); padding-block: 14px; }
+  }
+</style>

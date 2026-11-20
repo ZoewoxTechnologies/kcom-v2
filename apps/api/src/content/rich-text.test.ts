@@ -13,11 +13,21 @@ describe("sanitizeRichText images", () => {
   });
 
   it("keeps valid width and height together, drops bad ones, and requires alt", () => {
-    const withSize = doc({ type: "image", attrs: { src: IMG, alt: "", width: 800, height: 600 } });
+    const withSize = doc({
+      type: "image",
+      attrs: { src: IMG, alt: "Pic", width: 800, height: 600 },
+    });
     expect(sanitizeRichText(withSize)).toEqual(withSize);
     const bad = doc({ type: "image", attrs: { src: IMG, alt: "a", width: -1, height: "x" } });
     expect(sanitizeRichText(bad)).toEqual(doc({ type: "image", attrs: { src: IMG, alt: "a" } }));
     expect(sanitizeRichText(doc({ type: "image", attrs: { src: IMG } }))).toEqual(doc());
+    for (const alt of ["", "   ", "\n\t"]) {
+      expect(sanitizeRichText(doc({ type: "image", attrs: { src: IMG, alt } })), alt).toEqual(
+        doc(),
+      );
+    }
+    const padded = sanitizeRichText(doc({ type: "image", attrs: { src: IMG, alt: "  Pic  " } }));
+    expect(padded).toEqual(doc({ type: "image", attrs: { src: IMG, alt: "Pic" } }));
   });
 
   it("stores the normalised URL, not the raw string", () => {

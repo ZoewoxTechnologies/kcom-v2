@@ -1,0 +1,167 @@
+/* Capsule list and calendar. Primitives come from @kcom/ui. */
+@layer components {
+  .kc-capsules,
+  .kc-cal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-inline-size: 0;
+  }
+  .kc-capsules__head,
+  .kc-cal__head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .kc-capsules h1,
+  .kc-cal h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 5vw, 2.375rem);
+    line-height: 1.1;
+  }
+  .kc-capsules__filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: var(--space-3);
+  }
+  .kc-cal__nav {
+    margin-inline-start: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+  /* Borderless icon-only chevron. The ::after keeps the 44px hit area. */
+  .kc-cal__step {
+    inline-size: var(--control-height-sm);
+    padding: 0;
+    text-decoration: none;
+    border-radius: var(--radius-pill);
+
+    &::after {
+      inset-inline: calc((var(--control-height-sm) - var(--touch-target)) / 2);
+    }
+    &:hover:not(:disabled) {
+      background: var(--color-secondary-hover);
+    }
+  }
+  .kc-capsules .kc-table__foot {
+    padding-block: var(--space-4);
+    margin-block-start: var(--space-2);
+  }
+  .kc-cal__key {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    font-size: 0.875rem;
+  }
+  .kc-cal__hint {
+    margin-inline-start: auto;
+    color: var(--color-muted);
+  }
+  .kc-cal__grid {
+    display: grid;
+    gap: 1px;
+    background: var(--color-line);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .kc-cal__dow {
+    padding: var(--space-2);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-muted);
+    background: var(--color-surface);
+  }
+  .kc-cal__day {
+    min-block-size: 6.875rem;
+    min-inline-size: 0;
+    padding: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    background: var(--color-surface);
+  }
+  .kc-cal__day[data-outside] {
+    background: var(--color-page);
+  }
+  .kc-cal__day[data-today] {
+    box-shadow: inset 0 0 0 2px var(--color-gold);
+  }
+  .kc-cal__num {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-muted);
+  }
+  a.kc-cal__add {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    text-decoration: none;
+
+    &:visited {
+      color: var(--color-muted);
+    }
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+  .kc-cal__row {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-column: 1 / -1;
+    gap: 1px;
+  }
+  a.kc-cal__new {
+    text-decoration: none;
+  }
+  .kc-cal__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  a.kc-cal__capsule {
+    display: block;
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    border-inline-start: 4px solid currentColor;
+    background: var(--color-wash);
+    color: var(--color-primary-active);
+
+    &:visited {
+      color: var(--color-primary-active);
+    }
+  }
+  a.kc-cal__capsule--published {
+    background: color-mix(in srgb, var(--color-sage) 22%, var(--color-surface));
+    color: var(--color-text);
+  }
+  a.kc-cal__capsule--scheduled {
+    background: var(--color-wash);
+    color: var(--color-text);
+    cursor: grab;
+  }
+  a.kc-cal__capsule--draft {
+    background: var(--color-sandstone);
+    color: var(--color-gold-text);
+  }
+  .kc-cal__move {
+    align-self: flex-start;
+    padding: 0 var(--space-1);
+    font: inherit;
+    font-size: 0.75rem;
+    color: var(--color-primary);
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}

@@ -1,6 +1,6 @@
 import { HttpError } from "../errors.js";
 
-type PgError = { code?: string; cause?: unknown };
+type PgError = { code?: string; constraint?: string; cause?: unknown };
 
 function pgError(err: unknown): PgError | undefined {
   for (let e = err as PgError | undefined, i = 0; e && i < 4; e = e.cause as PgError, i++) {
@@ -14,6 +14,8 @@ export type WriteErrorOptions = {
   label?: string;
   /** Override the generic messages for a resource-specific rule. */
   messages?: { reference?: string; check?: string };
+  /** Unique-index name → message, for unique rules other than "already exists". */
+  unique?: Record<string, string>;
 };
 
 /**
@@ -23,11 +25,15 @@ export type WriteErrorOptions = {
  */
 export function rethrowWriteError(
   err: unknown,
-  { label = "record", messages }: WriteErrorOptions = {},
+  { label = "record", messages, unique }: WriteErrorOptions = {},
 ): never {
-  switch (pgError(err)?.code) {
-    case "23505":
+  const pg = pgError(err);
+  switch (pg?.code) {
+    case "23505": {
+      const custom = pg.constraint ? unique?.[pg.constraint] : undefined;
+      if (custom) throw new HttpError(409, "conflict", custom);
       throw new HttpError(409, "conflict", `${label} already exists`);
+    }
     case "23503":
       throw new HttpError(
         422,

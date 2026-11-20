@@ -29,7 +29,7 @@ const offset = (page - 1) * SERIES_CAPSULES_PAGE_SIZE;
         <CapsuleRow href={capsulePath(c.slug)} kicker="DAY" figure={c.partNumber ?? offset + i + 1} title={c.title} meta={`${formatLagosDate(c.displayDate)}${c.scriptureRef ? ` · ${c.scriptureRef}` : ""}`} />
       ))}
     </div>
-    <Pagination page={page} pages={pages} path={`/series/${s.slug}`} />
+    <Pagination centered page={page} pages={pages} path={`/series/${s.slug}`} />
   </div>
 </BaseLayout>
 <style>

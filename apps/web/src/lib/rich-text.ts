@@ -46,7 +46,8 @@ function render(node: unknown): string {
     case "image": {
       const a = isNode(node.attrs) ? (node.attrs as Record<string, unknown>) : {};
       if (typeof a.src !== "string" || !isCloudinaryImageUrl(a.src)) return "";
-      const ok = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v) && v > 0;
+      const ok = (v: unknown): v is number =>
+        typeof v === "number" && Number.isInteger(v) && v > 0 && v <= 20_000;
       const size = ok(a.width) && ok(a.height) ? ` width="${a.width}" height="${a.height}"` : "";
       const widths = [480, 800, 1200];
       return `<img src="${esc(imageUrl(a.src, { width: 800 }))}" srcset="${esc(imageSrcSet(a.src, widths))}" sizes="(min-width: 48rem) 42rem, 100vw" alt="${esc(typeof a.alt === "string" ? a.alt : "")}"${size} loading="lazy" decoding="async">`;
