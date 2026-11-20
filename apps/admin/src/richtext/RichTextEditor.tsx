@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
+import { Tooltip } from "@kcom/ui";
 import { EditorContent, useEditor } from "@tiptap/react";
 import type { Editor } from "@tiptap/react";
 import { isSafeHref } from "@kcom/content";
@@ -46,26 +47,13 @@ function withUpload(all: Record<number, Upload>, id: number, u: Upload | null) {
   return next;
 }
 
-function Btn(props: {
+interface Command {
   label: string;
-  active?: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      className="kc-rte__btn"
-      aria-label={props.label}
-      aria-pressed={props.active ?? false}
-      disabled={props.disabled}
-      onMouseDown={(e) => e.preventDefault()}
-      onClick={props.onClick}
-    >
-      {props.children}
-    </button>
-  );
+  /** What the button shows; icon-only ones get a tooltip with the label. */
+  glyph: ReactNode;
+  iconOnly?: boolean;
+  active: boolean;
+  run: () => void;
 }
 
 function Toolbar({
@@ -80,98 +68,144 @@ function Toolbar({
   const [linking, setLinking] = useState(false);
   const [href, setHref] = useState("");
   const [bad, setBad] = useState(false);
+  const [stop, setStop] = useState(0);
+  const bar = useRef<HTMLDivElement>(null);
   const is = (n: string, a?: object) => editor.isActive(n, a);
+  const chain = () => editor.chain().focus();
 
   const applyLink = () => {
-    if (!href.trim()) editor.chain().focus().extendMarkRange("link").unsetLink().run();
-    else if (isSafeHref(href.trim()))
-      editor.chain().focus().extendMarkRange("link").setLink({ href: href.trim() }).run();
+    const value = href.trim();
+    if (!value) chain().extendMarkRange("link").unsetLink().run();
+    else if (isSafeHref(value)) chain().extendMarkRange("link").setLink({ href: value }).run();
     else return setBad(true);
     setLinking(false);
     setBad(false);
   };
 
+  const commands: Command[] = [
+    {
+      label: "Bold",
+      glyph: <b>B</b>,
+      iconOnly: true,
+      active: is("bold"),
+      run: () => chain().toggleBold().run(),
+    },
+    {
+      label: "Italic",
+      glyph: <i>I</i>,
+      iconOnly: true,
+      active: is("italic"),
+      run: () => chain().toggleItalic().run(),
+    },
+    {
+      label: "Underline",
+      glyph: <u>U</u>,
+      iconOnly: true,
+      active: is("underline"),
+      run: () => chain().toggleUnderline().run(),
+    },
+    {
+      label: "Heading 2",
+      glyph: "H2",
+      iconOnly: true,
+      active: is("heading", { level: 2 }),
+      run: () => chain().toggleHeading({ level: 2 }).run(),
+    },
+    {
+      label: "Heading 3",
+      glyph: "H3",
+      iconOnly: true,
+      active: is("heading", { level: 3 }),
+      run: () => chain().toggleHeading({ level: 3 }).run(),
+    },
+    {
+      label: "Scripture quote",
+      glyph: "\u201C Quote",
+      active: is("blockquote"),
+      run: () => chain().toggleBlockquote().run(),
+    },
+    {
+      label: "Bulleted list",
+      glyph: "\u2022 List",
+      active: is("bulletList"),
+      run: () => chain().toggleBulletList().run(),
+    },
+    {
+      label: "Numbered list",
+      glyph: "1.",
+      iconOnly: true,
+      active: is("orderedList"),
+      run: () => chain().toggleOrderedList().run(),
+    },
+    {
+      label: "Link",
+      glyph: "Link",
+      active: is("link"),
+      run: () => {
+        setHref((editor.getAttributes("link").href as string | undefined) ?? "");
+        setLinking((v) => !v);
+        setBad(false);
+      },
+    },
+    { label: "Insert image", glyph: "Image", active: false, run: onPickImage },
+  ];
+
+  const buttons = () =>
+    [...(bar.current?.querySelectorAll<HTMLButtonElement>("button[data-tb]") ?? [])].filter(
+      (b) => !b.disabled,
+    );
+  // Roving tabindex: one tab stop for the toolbar, arrows move within it.
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const all = buttons();
+    const at = all.indexOf(document.activeElement as HTMLButtonElement);
+    if (at < 0) return;
+    const next = {
+      ArrowRight: (at + 1) % all.length,
+      ArrowLeft: (at - 1 + all.length) % all.length,
+      Home: 0,
+      End: all.length - 1,
+    }[e.key];
+    if (next === undefined) return;
+    e.preventDefault();
+    setStop(next);
+    all[next]?.focus();
+  };
+
   return (
-    <div className="kc-rte__toolbar" role="toolbar" aria-label="Formatting">
-      <Btn
-        label="Bold"
-        active={is("bold")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleBold().run()}
-      >
-        <b>B</b>
-      </Btn>
-      <Btn
-        label="Italic"
-        active={is("italic")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-      >
-        <i>I</i>
-      </Btn>
-      <Btn
-        label="Underline"
-        active={is("underline")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-      >
-        <u>U</u>
-      </Btn>
-      <Btn
-        label="Heading 2"
-        active={is("heading", { level: 2 })}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-      >
-        H2
-      </Btn>
-      <Btn
-        label="Heading 3"
-        active={is("heading", { level: 3 })}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-      >
-        H3
-      </Btn>
-      <Btn
-        label="Scripture quote"
-        active={is("blockquote")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-      >
-        “ Quote
-      </Btn>
-      <Btn
-        label="Bulleted list"
-        active={is("bulletList")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-      >
-        • List
-      </Btn>
-      <Btn
-        label="Numbered list"
-        active={is("orderedList")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-      >
-        1. List
-      </Btn>
-      <Btn
-        label="Link"
-        active={is("link")}
-        disabled={disabled}
-        onClick={() => {
-          setHref((editor.getAttributes("link").href as string | undefined) ?? "");
-          setLinking((v) => !v);
-          setBad(false);
-        }}
-      >
-        Link
-      </Btn>
-      <Btn label="Insert image" disabled={disabled} onClick={onPickImage}>
-        Image
-      </Btn>
+    <div
+      ref={bar}
+      className="kc-rte__toolbar"
+      role="toolbar"
+      aria-label="Formatting"
+      onKeyDown={onKeyDown}
+    >
+      {commands.map((c, i) => {
+        const button = (
+          <button
+            type="button"
+            data-tb
+            className="kc-rte__btn"
+            aria-label={c.label}
+            aria-pressed={c.label === "Insert image" ? undefined : c.active}
+            disabled={disabled}
+            tabIndex={i === stop ? 0 : -1}
+            onFocus={() => setStop(i)}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={c.run}
+          >
+            {c.glyph}
+          </button>
+        );
+        return c.iconOnly ? (
+          <Tooltip key={c.label} label={c.label}>
+            {button}
+          </Tooltip>
+        ) : (
+          <span key={c.label} className="kc-rte__item">
+            {button}
+          </span>
+        );
+      })}
       {linking && (
         <form
           className="kc-rte__link"
@@ -185,11 +219,11 @@ function Toolbar({
             type="text"
             aria-label="Link address"
             aria-invalid={bad || undefined}
-            placeholder="https://…"
+            placeholder="https://\u2026"
             value={href}
             onChange={(e) => setHref(e.target.value)}
           />
-          <button type="submit" className="kc-rte__btn">
+          <button type="submit" className="kc-btn kc-btn--secondary">
             Apply
           </button>
           {bad && (
@@ -213,7 +247,9 @@ export function RichTextEditor({
   ...aria
 }: RichTextEditorProps) {
   const [uploads, setUploads] = useState<Record<number, Upload>>({});
-  const [pending, setPending] = useState<{ image: UploadedImage; alt: string; name: string }[]>([]);
+  const [pending, setPending] = useState<
+    { key: number; image: UploadedImage; alt: string; name: string }[]
+  >([]);
   const nextId = useRef(0);
   const fileInput = useRef<HTMLInputElement>(null);
   const onChangeRef = useRef(onChange);
@@ -274,7 +310,7 @@ export function RichTextEditor({
     upload(file, (progress) => set({ name: file.name, progress }))
       .then((image) => {
         // Alt text is required: hold the image until the author describes it.
-        setPending((all) => [...all, { image, alt: "", name: file.name }]);
+        setPending((all) => [...all, { key: id, image, alt: "", name: file.name }]);
         set(null);
       })
       .catch((err: unknown) =>
@@ -310,7 +346,7 @@ export function RichTextEditor({
       </div>
       {pending.map((p, i) => (
         <form
-          key={p.image.src}
+          key={p.key}
           className="kc-rte__upload"
           onSubmit={(e) => {
             e.preventDefault();
@@ -325,7 +361,6 @@ export function RichTextEditor({
           <img src={p.image.src} alt="" className="kc-rte__thumb" />
           <input
             autoFocus
-            required
             aria-label={`Describe ${p.name} for people who cannot see it`}
             placeholder="Describe this image (alt text)"
             value={p.alt}
@@ -333,12 +368,12 @@ export function RichTextEditor({
               setPending((all) => all.map((x, j) => (j === i ? { ...x, alt: e.target.value } : x)))
             }
           />
-          <button type="submit" className="kc-rte__btn">
+          <button type="submit" className="kc-btn kc-btn--secondary" disabled={!p.alt.trim()}>
             Add image
           </button>
           <button
             type="button"
-            className="kc-rte__btn"
+            className="kc-btn kc-btn--secondary"
             onClick={() => setPending((all) => all.filter((_, j) => j !== i))}
           >
             Discard
@@ -354,7 +389,7 @@ export function RichTextEditor({
               </span>
               <button
                 type="button"
-                className="kc-rte__btn"
+                className="kc-btn kc-btn--secondary"
                 onClick={() => setUploads((all) => withUpload(all, Number(id), null))}
               >
                 Dismiss

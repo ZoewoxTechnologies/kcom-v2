@@ -1,11 +1,37 @@
 import { useState } from "react";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { sanitizeRichText } from "../../../api/src/content/rich-text";
+import { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref } from "@kcom/content";
+import { isCloudinaryImageUrl } from "@kcom/media";
 import { useDirtyState } from "../editor";
 import { RichTextEditor, emptyRichText } from "./RichTextEditor";
 import type { RichTextDoc } from "./RichTextEditor";
+
+/** True when every node, mark and attribute is one the stored format allows. */
+function conforms(n: unknown): boolean {
+  const node = n as {
+    type: string;
+    attrs?: Record<string, unknown>;
+    marks?: { type: string; attrs?: { href?: string } }[];
+    content?: unknown[];
+  };
+  if (!RICH_TEXT_NODES.has(node.type)) return false;
+  const keys = Object.keys(node.attrs ?? {});
+  const allowed: Record<string, string[]> = {
+    heading: ["level"],
+    image: ["src", "alt", "width", "height"],
+  };
+  if (keys.some((k) => !(allowed[node.type] ?? []).includes(k))) return false;
+  if (node.type === "image" && !isCloudinaryImageUrl(String(node.attrs?.src))) return false;
+  const marksOk = (node.marks ?? []).every(
+    (m) =>
+      RICH_TEXT_MARKS.has(m.type) &&
+      (m.type !== "link" ||
+        (Object.keys(m.attrs ?? {}).join() === "href" && isSafeHref(m.attrs?.href))),
+  );
+  return marksOk && (node.content ?? []).every(conforms);
+}
 
 const IMG = "https://res.cloudinary.com/demo/image/upload/v1/a.jpg";
 
@@ -79,7 +105,7 @@ function Harness({
 }
 
 describe("RichTextEditor", () => {
-  it("renders every stored node and survives the API sanitiser unchanged", async () => {
+  it("renders every stored node and emits only what the stored format allows", async () => {
     let doc: RichTextDoc | null = null;
     render(<RichTextEditor aria-label="Body" value={full} onChange={(d) => (doc = d)} />);
     await screen.findByRole("textbox");
@@ -90,7 +116,7 @@ describe("RichTextEditor", () => {
     await userEvent.click(screen.getByRole("textbox"));
     await userEvent.keyboard("x");
     await waitFor(() => expect(doc).not.toBeNull());
-    expect(sanitizeRichText(doc)).toEqual(doc);
+    expect(conforms(doc)).toBe(true);
   });
 
   it("is clean until edited, then dirty", async () => {
@@ -145,6 +171,33 @@ describe("RichTextEditor", () => {
     ] as unknown as FileList);
     input.dispatchEvent(new Event("change", { bubbles: true }));
     expect(await screen.findByRole("alert")).toHaveTextContent("PNG, JPEG or WebP");
+  });
+
+  it("will not insert an image with blank alt text", async () => {
+    render(<Harness initial={emptyRichText} upload={() => Promise.resolve({ src: IMG })} />);
+    await screen.findByRole("textbox");
+    await userEvent.upload(
+      screen.getByTestId("rte-file"),
+      new File(["x"], "pic.png", { type: "image/png" }),
+    );
+    const alt = await screen.findByLabelText(/Describe pic.png/);
+    await userEvent.type(alt, "   ");
+    expect(screen.getByRole("button", { name: "Add image" })).toBeDisabled();
+  });
+
+  it("has one toolbar tab stop that moves with the arrow keys", async () => {
+    render(<Harness initial={emptyRichText} />);
+    await screen.findByRole("textbox");
+    const bar = screen.getByRole("toolbar");
+    const buttons = within(bar).getAllByRole("button");
+    expect(buttons.filter((b) => b.tabIndex === 0)).toHaveLength(1);
+    buttons[0]!.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(buttons[1]).toHaveFocus();
+    expect(buttons[1]!.tabIndex).toBe(0);
+    expect(buttons[0]!.tabIndex).toBe(-1);
+    await userEvent.keyboard("{End}");
+    expect(buttons.at(-1)).toHaveFocus();
   });
 
   it("rejects unsafe link addresses", async () => {

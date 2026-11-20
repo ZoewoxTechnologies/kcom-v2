@@ -11,19 +11,31 @@
 .kc-rte__toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
-  padding: 6px;
+  gap: var(--space-1);
+  padding: var(--space-2);
   border-bottom: 1px solid var(--color-line);
   background: var(--color-page);
 }
+.kc-rte__item {
+  display: inline-flex;
+}
 .kc-rte__btn {
-  font: 600 14px var(--font-body);
+  font: 600 var(--text-sm) / 1 var(--font-body);
   color: var(--color-text);
-  padding: 6px 10px;
+  min-block-size: var(--control-height-sm);
+  min-inline-size: var(--control-height-sm);
+  padding-inline: var(--space-3);
   border: 0;
   border-radius: 6px;
   background: transparent;
   cursor: pointer;
+}
+/* Touch targets stay at least 44px. */
+@media (pointer: coarse) {
+  .kc-rte__btn {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+  }
 }
 .kc-rte__btn:hover:not(:disabled) {
   background: var(--color-hover);
@@ -37,21 +49,23 @@
   cursor: not-allowed;
 }
 .kc-rte__btn:focus-visible,
-.kc-rte__link input:focus-visible {
+.kc-rte__link input:focus-visible,
+.kc-rte__upload input:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 1px;
 }
 .kc-rte__link {
   display: flex;
   flex: 1 0 100%;
-  gap: 6px;
+  gap: var(--space-2);
   align-items: center;
-  padding-top: 6px;
+  padding-top: var(--space-2);
 }
-.kc-rte__link input {
+.kc-rte__link input,
+.kc-rte__upload input {
   flex: 1;
-  font: 14px var(--font-body);
-  padding: 6px 10px;
+  font: var(--text-sm) var(--font-body);
+  padding: var(--space-2) var(--space-3);
   border-radius: 8px;
   border: 1px solid var(--color-field);
   background: var(--color-surface);
@@ -74,12 +88,12 @@
 }
 .kc-rte__content {
   outline: 0;
-  font-size: 17px;
+  font-size: var(--text-lg);
   line-height: 1.7;
   min-height: 220px;
 }
 .kc-rte__content > * {
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-3);
 }
 .kc-rte__content > :last-child {
   margin-bottom: 0;
@@ -100,7 +114,7 @@
 }
 .kc-rte__content blockquote {
   border-left: 3px solid var(--color-gold);
-  padding-left: 16px;
+  padding-left: var(--space-4);
   font-family: var(--font-scripture);
   font-style: italic;
 }
@@ -120,8 +134,8 @@
 .kc-rte__upload {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border-top: 1px solid var(--color-line);
   font-size: var(--text-sm);
 }
@@ -134,13 +148,4 @@
   height: 48px;
   object-fit: cover;
   border-radius: 6px;
-}
-form.kc-rte__upload input {
-  flex: 1;
-  font: 14px var(--font-body);
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--color-field);
-  background: var(--color-surface);
-  color: var(--color-text);
 }
