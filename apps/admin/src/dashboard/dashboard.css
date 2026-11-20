@@ -108,7 +108,20 @@
     flex: 1;
     min-inline-size: 0;
     font-weight: 600;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+  }
+  /* Rows read as plain text; the link shows on hover and focus. */
+  .kc-panel__main > a,
+  .kc-panel__main > a:visited {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-primary);
+      text-decoration: underline;
+      text-decoration-color: var(--color-gold);
+      text-underline-offset: 3px;
+    }
   }
   .kc-panel__empty,
   .kc-panel__more {
@@ -121,6 +134,15 @@
   @media (max-width: 47.99rem) {
     .kc-dash__panels {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .kc-panel {
+      padding: var(--space-4);
+    }
+    .kc-panel__row {
+      gap: var(--space-3);
+    }
+    .kc-panel__lead {
+      inline-size: 4.25rem;
     }
   }
 }
