@@ -15,7 +15,7 @@ describe("Tooltip", () => {
     expect(screen.queryByRole("tooltip")).toBeNull();
     await user.hover(button);
     expect(screen.getByRole("tooltip")).toHaveTextContent("Delete event");
-    expect(button).toHaveAttribute("aria-describedby", screen.getByRole("tooltip").id);
+    expect(button).not.toHaveAttribute("aria-describedby");
     await user.unhover(button);
     expect(screen.queryByRole("tooltip")).toBeNull();
   });
@@ -31,5 +31,19 @@ describe("Tooltip", () => {
     expect(screen.getByRole("tooltip")).toBeInTheDocument();
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("tooltip")).toBeNull();
+  });
+
+  it("describes the control when the label adds information", async () => {
+    const user = userEvent.setup();
+    render(
+      <Tooltip label="Removes it for good">
+        <button aria-label="Delete">x</button>
+      </Tooltip>,
+    );
+    await user.hover(screen.getByRole("button"));
+    expect(screen.getByRole("button")).toHaveAttribute(
+      "aria-describedby",
+      screen.getByRole("tooltip").id,
+    );
   });
 });

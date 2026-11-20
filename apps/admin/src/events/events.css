@@ -105,6 +105,9 @@
   text-decoration: none;
   color: var(--color-muted);
 }
+.kc-events__delete::after {
+  inset: -0.375rem;
+}
 .kc-events__delete:hover {
   color: var(--color-error);
 }

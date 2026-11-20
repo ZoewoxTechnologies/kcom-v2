@@ -117,6 +117,14 @@ describe("EventsPage", () => {
     expect(await screen.findByRole("region", { name: "Editing" })).toBeInTheDocument();
   });
 
+  it("shows no trash icon for a new, unsaved event", async () => {
+    setup();
+    await screen.findByText("Conference");
+    await userEvent.click(screen.getAllByRole("button", { name: "New event" })[0]!);
+    const editor = await screen.findByRole("region", { name: "New event" });
+    expect(within(editor).queryByRole("button", { name: "Delete event" })).toBeNull();
+  });
+
   it("creates and publishes an event", async () => {
     setup();
     await screen.findByText("Conference");
