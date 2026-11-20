@@ -99,8 +99,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 2.75rem;
-  block-size: 2.75rem;
+  inline-size: 2rem;
+  block-size: 2rem;
   padding: 0;
   text-decoration: none;
   color: var(--color-muted);

@@ -117,7 +117,7 @@ export function EditorContainer({
         {children}
         <DialogActions>
           {actions}
-          <Button variant="secondary" onClick={requestClose}>
+          <Button size="sm" variant="secondary" onClick={requestClose}>
             Cancel
           </Button>
         </DialogActions>
