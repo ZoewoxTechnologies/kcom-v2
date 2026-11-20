@@ -140,7 +140,7 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
       return sampleBlogPosts.find((b) => b.slug === slug) ?? null;
     },
     async eventBySlug(slug) {
-      return slug === sampleEvent.slug ? sampleEvent : null;
+      return sampleEvents.find((e) => e.slug === slug) ?? null;
     },
   };
 }
@@ -158,5 +158,18 @@ const sampleEvent: EventDetail = {
   programme: "Fri · 6 p.m. · Opening service\nSat · 10 a.m. · Teaching sessions and workshops\nSat · 6 p.m. · Prophetic night",
   relatedPost: null,
 };
+
+/** An event with none of the optional parts, to show they are hidden. */
+const bareEvent: EventDetail = {
+  ...sampleEvent,
+  slug: "prayer-night",
+  title: "Prayer Night",
+  endsAt: null,
+  place: null,
+  description: null,
+  onlineUrl: null,
+  programme: null,
+};
+const sampleEvents = [sampleEvent, bareEvent];
 
 export const sampleSource: DataSource = createSampleSource();
