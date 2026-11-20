@@ -89,7 +89,11 @@ describe("admin uploads", () => {
   });
 
   it("signs without an upload preset when none is configured", async () => {
-    const { uploadPreset: _unused, ...noPreset } = cloudinary;
+    const noPreset = {
+      cloudName: cloudinary.cloudName,
+      apiKey: cloudinary.apiKey,
+      apiSecret: cloudinary.apiSecret,
+    };
     app = createApp(db, {
       corsOrigins: [ORIGIN],
       auth: { secret: "x".repeat(40), baseURL: "http://api.test" },
