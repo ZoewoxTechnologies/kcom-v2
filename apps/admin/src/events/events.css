@@ -46,13 +46,18 @@
   .kc-events__loading {
     color: var(--color-muted);
   }
+  /* The viewport minus what sits above the panel: the shell top bar and page padding (~6.5rem)
+     plus the "Events" heading row and gap (~4.5rem). */
+  .kc-events {
+    --kc-events-above-panel: 11rem;
+  }
   /* Always the full height under the page header; the editor scrolls inside it. */
   .kc-events__side {
     inline-size: 420px;
     flex: none;
     position: sticky;
     inset-block-start: var(--space-4);
-    block-size: calc(100dvh - 11rem);
+    block-size: calc(100dvh - var(--kc-events-above-panel));
     display: flex;
     flex-direction: column;
   }
