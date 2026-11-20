@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { lagosMonthRange } from "@kcom/content";
 
 export type CapsuleStatus = "draft" | "scheduled" | "published";
 
@@ -30,17 +31,27 @@ async function call(path: string, init?: RequestInit): Promise<Response> {
   return res;
 }
 
-async function listAll<T>(path: string): Promise<T[]> {
+async function listAll<T>(path: string, query = ""): Promise<T[]> {
   const out: T[] = [];
   for (let offset = 0; ; offset += PAGE) {
-    const res = await call(`${path}?limit=${PAGE}&offset=${offset}`);
+    const res = await call(`${path}?${query}limit=${PAGE}&offset=${offset}`);
     const { items, total } = (await res.json()) as { items: T[]; total: number };
     out.push(...items);
     if (out.length >= total || items.length === 0) return out;
   }
 }
 
-export const listCapsules = () => listAll<CapsuleSummary>("/capsules");
+/**
+ * Capsules, optionally only those whose Lagos day falls in `month` (YYYY-MM).
+ * The list page still loads everything and filters in the browser; server-side
+ * search and series filters are a follow-up.
+ */
+export function listCapsules(month?: string) {
+  if (!month) return listAll<CapsuleSummary>("/capsules");
+  const [from, to] = lagosMonthRange(month);
+  const q = new URLSearchParams({ from: from.toISOString(), to: to.toISOString() });
+  return listAll<CapsuleSummary>("/capsules", `${q}&`);
+}
 export const listSeries = () => listAll<SeriesSummary>("/series");
 
 /** Moves a scheduled capsule to a new go-live instant. */
@@ -52,15 +63,15 @@ export async function rescheduleCapsule(id: string, publishAt: Date): Promise<Ca
   return (await res.json()) as CapsuleSummary;
 }
 
-/** Capsules and series, loaded once; `replace` swaps in an updated capsule. */
-export function useCapsules() {
+/** Series plus capsules (all, or one Lagos month); `replace` swaps in an updated capsule. */
+export function useCapsules(month?: string) {
   const [capsules, setCapsules] = useState<CapsuleSummary[]>([]);
   const [series, setSeries] = useState<SeriesSummary[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
   const load = useCallback(() => {
     setState("loading");
-    Promise.all([listCapsules(), listSeries()]).then(
+    Promise.all([listCapsules(month), listSeries()]).then(
       ([c, s]) => {
         setCapsules(c);
         setSeries(s);
@@ -68,7 +79,7 @@ export function useCapsules() {
       },
       () => setState("error"),
     );
-  }, []);
+  }, [month]);
   useEffect(load, [load]);
 
   const replace = (next: CapsuleSummary) =>

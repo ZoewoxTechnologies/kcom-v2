@@ -6,7 +6,9 @@ import {
   lagosDay,
   lagosMidnight,
   monthGrid,
+  fullDayLabel,
   shiftMonth,
+  shortDayLabel,
 } from "./days";
 
 describe("Lagos day boundaries", () => {
@@ -65,5 +67,12 @@ describe("month grid", () => {
     expect(shiftMonth("2026-12", 1)).toBe("2027-01");
     expect(shiftMonth("2026-01", -1)).toBe("2025-12");
     expect(addDays("2026-02-28", 1)).toBe("2026-03-01");
+  });
+});
+
+describe("day labels", () => {
+  it("formats short and full labels", () => {
+    expect(shortDayLabel("2026-11-24")).toBe("Tue 24 Nov");
+    expect(fullDayLabel("2026-11-24")).toBe("Tuesday 24 November");
   });
 });

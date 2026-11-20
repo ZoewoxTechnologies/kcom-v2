@@ -13,7 +13,9 @@ import { CapsulesPage } from "./capsules/CapsulesPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { SignInPage } from "./pages/SignInPage";
 
-const sections = navItems.filter((item) => item.path !== "/");
+// Capsules and Calendar have their own pages below.
+const BUILT = new Set(["/", "/capsules", "/calendar"]);
+const sections = navItems.filter((item) => !BUILT.has(item.path));
 
 export function App() {
   return (
@@ -29,6 +31,7 @@ export function App() {
               <Route path="profile" element={<PlaceholderPage title="Profile" />} />
               <Route element={<RequirePermission permission="content:read" />}>
                 <Route path="capsules" element={<CapsulesPage />} />
+                <Route path="capsules/new" element={<CapsuleEditorStubPage />} />
                 <Route path="capsules/:id" element={<CapsuleEditorStubPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
               </Route>

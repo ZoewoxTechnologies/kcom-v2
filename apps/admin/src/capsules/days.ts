@@ -1,34 +1,34 @@
-import { DEFAULT_TIME_ZONE, fromZoneParts, zoneDateKey } from "@kcom/ui";
+import {
+  dayParts,
+  lagosDate,
+  lagosDayRange,
+  monthLabel,
+  monthName,
+  shiftMonth,
+} from "@kcom/content";
+
+export { monthLabel, shiftMonth };
 
 /** Capsule days are Africa/Lagos calendar days; a capsule goes live at 00:00 Lagos. */
-export const CAPSULE_ZONE = DEFAULT_TIME_ZONE;
 
 /** "YYYY-MM-DD" */
 export type DayKey = string;
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const key = (y: number, m: number, d: number): DayKey => `${y}-${pad(m)}-${pad(d)}`;
-const parse = (k: DayKey) => {
-  const [y, m, d] = k.split("-").map(Number);
-  return { y: y!, m: m!, d: d! };
-};
 
 /** The Lagos day an instant falls on. */
-export const lagosDay = (instant: Date | string): DayKey =>
-  zoneDateKey(new Date(instant), CAPSULE_ZONE);
+export const lagosDay = (instant: Date | string): DayKey => lagosDate(new Date(instant));
 
 /** The instant a capsule scheduled for this Lagos day goes live: 00:00 in Lagos. */
-export function lagosMidnight(day: DayKey): Date {
-  const { y, m, d } = parse(day);
-  return fromZoneParts({ year: y, month: m, day: d, hour: 0, minute: 0 }, CAPSULE_ZONE);
-}
+export const lagosMidnight = (day: DayKey): Date => lagosDayRange(day)[0];
 
 /** A day can take a rescheduled capsule only if its midnight has not passed yet. */
 export const canScheduleOn = (day: DayKey, now = new Date()) => lagosMidnight(day) > now;
 
 export function addDays(day: DayKey, n: number): DayKey {
-  const { y, m, d } = parse(day);
-  const t = new Date(Date.UTC(y, m - 1, d + n));
+  const [y, m, d] = day.split("-").map(Number);
+  const t = new Date(Date.UTC(y!, m! - 1, d! + n));
   return key(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate());
 }
 
@@ -38,19 +38,17 @@ export const firstSchedulableDay = (now = new Date()): DayKey => addDays(lagosDa
 /** "YYYY-MM" of a day. */
 export const monthOf = (day: DayKey) => day.slice(0, 7);
 
-export function shiftMonth(month: string, delta: number): string {
-  const [y, m] = month.split("-").map(Number);
-  const t = new Date(Date.UTC(y!, m! - 1 + delta, 1));
-  return `${t.getUTCFullYear()}-${pad(t.getUTCMonth() + 1)}`;
+/** "Tue 24 Nov" */
+export function shortDayLabel(day: DayKey): string {
+  const p = dayParts(day);
+  const dow = p.dow.charAt(0) + p.dow.slice(1).toLowerCase();
+  return `${dow} ${p.n} ${monthName(Number(day.slice(5, 7))).slice(0, 3)}`;
 }
 
-export function monthTitle(month: string): string {
-  const [y, m] = month.split("-").map(Number);
-  return new Intl.DateTimeFormat("en-GB", {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(y!, m! - 1, 1)));
+/** "Tuesday 24 November" */
+export function fullDayLabel(day: DayKey): string {
+  const p = dayParts(day);
+  return `${p.weekday} ${p.n} ${monthName(Number(day.slice(5, 7)))}`;
 }
 
 export interface GridCell {

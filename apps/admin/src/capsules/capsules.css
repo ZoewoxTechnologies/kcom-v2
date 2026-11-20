@@ -46,7 +46,6 @@
   }
   .kc-cal__grid {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 1px;
     background: var(--color-line);
     border: 1px solid var(--color-line);
@@ -80,12 +79,26 @@
     font-weight: 700;
     color: var(--color-muted);
   }
-  .kc-cal__gap {
+  a.kc-cal__add {
     font-size: 0.75rem;
     color: var(--color-muted);
-    border: 1px dashed var(--color-line);
-    border-radius: 8px;
-    padding: var(--space-1) var(--space-2);
+    text-decoration: none;
+
+    &:visited {
+      color: var(--color-muted);
+    }
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+  .kc-cal__row {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-column: 1 / -1;
+    gap: 1px;
+  }
+  a.kc-cal__new {
+    text-decoration: none;
   }
   .kc-cal__item {
     display: flex;
@@ -132,13 +145,5 @@
     border: 0;
     text-decoration: underline;
     cursor: pointer;
-  }
-  .kc-visually-hidden {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 }

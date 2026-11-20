@@ -41,7 +41,9 @@ export function CapsulesPage() {
       );
     const key = (sort?.key ?? "day") as "title" | "status" | "day" | "seriesTitle";
     const factor = sort?.direction === "ascending" ? 1 : -1;
-    return out.sort((a, b) => a[key].localeCompare(b[key]) * factor);
+    // Status sorts in workflow order (draft, scheduled, published), not alphabetically.
+    const value = (r: Row) => (key === "status" ? String(STATUSES.indexOf(r.status)) : r[key]);
+    return out.sort((a, b) => value(a).localeCompare(value(b)) * factor);
   }, [capsules, series, q, status, seriesId, date, sort]);
 
   const filter =
