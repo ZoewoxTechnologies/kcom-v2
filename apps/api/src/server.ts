@@ -13,7 +13,6 @@ const app = createApp(createDb(), {
     .map((o) => o.trim())
     .filter(Boolean),
   cloudinary: cloudinaryFromEnv(),
-  recaptcha: { secret: process.env.RECAPTCHA_SECRET_KEY || undefined },
   internalToken: process.env.INTERNAL_JOB_TOKEN || undefined,
   auth: {
     cookies: {

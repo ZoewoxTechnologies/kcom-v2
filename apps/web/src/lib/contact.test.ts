@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { RATE_LIMITED, VERIFY_FAILED, contactRows, getRecaptchaToken, contactSettings, submitContact, validateContact } from "./contact";
+import { RATE_LIMITED, contactRows, contactSettings, submitContact, validateContact } from "./contact";
 
 const ok = { topic: "prayer", name: "Grace", email: "grace@example.org", message: "Hi" };
 
@@ -31,17 +31,15 @@ describe("submitContact", () => {
     expect(url).toBe("http://api.test/contact");
     expect(JSON.parse(init.body as string)).toEqual({ topic: "prayer", name: "Grace", email: "grace@example.org", message: "Hi", keepPrivate: true });
   });
-  it("sends the honeypot and token only when present", async () => {
+  it("sends the honeypot only when filled", async () => {
     const f = reply(201);
-    await submitContact("http://api.test", input, false, { website: "spam", recaptchaToken: "tok" }, f);
+    await submitContact("http://api.test", input, false, { website: "spam"}, f);
     const [, init] = f.mock.calls[0] as unknown as [string, RequestInit];
-    expect(JSON.parse(init.body as string)).toMatchObject({ website: "spam", recaptchaToken: "tok" });
+    expect(JSON.parse(init.body as string)).toMatchObject({ website: "spam"});
   });
-  it("explains rate limiting and failed verification", async () => {
+  it("explains rate limiting", async () => {
     expect(await submitContact("http://api.test", input, false, {}, reply(429))).toMatchObject({ ok: false, message: RATE_LIMITED });
-    expect(await submitContact("http://api.test", input, false, {}, reply(403))).toMatchObject({ ok: false, message: VERIFY_FAILED });
   });
-  it("gets no token without a site key", async () => expect(await getRecaptchaToken(undefined, "contact")).toBeUndefined());
   it("fails on a server error", async () => {
     expect(await submitContact("http://api.test", input, false, {}, reply(500))).toMatchObject({ ok: false });
   });

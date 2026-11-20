@@ -43,7 +43,6 @@ const social = contactSettings.social;
         <p class="kc-field__error" id="submit-error" role="alert" hidden></p>
         <div class="actions">
           <button class="kc-btn kc-btn--primary kc-btn--sm" type="submit">Send message</button>
-          <span class="note">Spam-protected without puzzles (invisible check).</span>
         </div>
       </form>
       <aside>
@@ -61,7 +60,7 @@ const social = contactSettings.social;
   </div>
 </BaseLayout>
 <script>
-  import { getRecaptchaToken, submitContact, validateContact } from "../lib/contact";
+  import { submitContact, validateContact } from "../lib/contact";
   const form = document.getElementById("contact-form") as HTMLFormElement;
   const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
   const keys = ["topic", "name", "email", "message"] as const;
@@ -107,8 +106,7 @@ const social = contactSettings.social;
     if (first) { (first === "topic" ? form.querySelector<HTMLInputElement>('input[name="topic"]') : field(first))?.focus(); return; }
     sending = true;
     sendBtn.setAttribute("aria-busy", "true");
-    const recaptchaToken = await getRecaptchaToken(import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY, "contact_form");
-    const result = await submitContact(import.meta.env.PUBLIC_API_URL, values(), field("private").checked && !priv.hidden, { website: field("website").value, recaptchaToken });
+    const result = await submitContact(import.meta.env.PUBLIC_API_URL, values(), field("private").checked && !priv.hidden, { website: field("website").value });
     sending = false;
     sendBtn.removeAttribute("aria-busy");
     if (!result.ok) {
@@ -145,7 +143,6 @@ const social = contactSettings.social;
   #private-row { min-block-size: 0; gap: 10px; font-size: 15px; line-height: 1.65; }
   #private-row[hidden], [hidden] { display: none; }
   .hp { position: absolute; inset-inline-start: -10000px; inline-size: 1px; block-size: 1px; overflow: hidden; }
-  .note { font-size: 13px; color: var(--color-muted); }
   .actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
   aside { flex: 2 1 300px; min-inline-size: 0; display: flex; flex-direction: column; gap: 20px; }
   .card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 14px; padding: 28px; display: flex; flex-direction: column; gap: 10px; font-size: 16px; }

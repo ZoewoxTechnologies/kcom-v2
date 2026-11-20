@@ -2,15 +2,6 @@ import { sql } from "drizzle-orm";
 import { rateLimits, type CapsuleDb } from "@kcom/db";
 
 export const CONTACT_RATE_LIMIT = { max: 5, windowMs: 60 * 60 * 1000 };
-export const RECAPTCHA_MIN_SCORE = 0.5;
-const SITEVERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
-
-export type RecaptchaOptions = {
-  /** Unset skips the check (local dev, tests) with a logged warning. */
-  secret?: string;
-  fetcher?: typeof fetch;
-};
-
 /** Client IP as the proxy reports it; the first x-forwarded-for hop, matching the auth rate limiter. */
 export const clientIp = (header: string | undefined) => header?.split(",")[0]?.trim() || "unknown";
 
@@ -31,28 +22,4 @@ export async function overRateLimit(db: CapsuleDb, ip: string, now = Date.now())
     })
     .returning({ count: rateLimits.count });
   return row!.count > CONTACT_RATE_LIMIT.max;
-}
-
-export type RecaptchaVerdict = { ok: true } | { ok: false; reason: string };
-
-export async function verifyRecaptcha(token: string | undefined, { secret, fetcher = fetch }: RecaptchaOptions): Promise<RecaptchaVerdict> {
-  if (!secret) {
-    console.warn("[contact] RECAPTCHA_SECRET_KEY is not set; skipping reCAPTCHA verification");
-    return { ok: true };
-  }
-  if (!token) return { ok: false, reason: "missing token" };
-  try {
-    const res = await fetcher(SITEVERIFY_URL, {
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ secret, response: token }).toString(),
-    });
-    const data = (await res.json()) as { success?: boolean; score?: number };
-    if (data.success !== true) return { ok: false, reason: "token rejected" };
-    const score = data.score ?? 0;
-    return score >= RECAPTCHA_MIN_SCORE ? { ok: true } : { ok: false, reason: `low score ${score}` };
-  } catch (error) {
-    // Fail closed: an unreachable verifier must not open the door to spam.
-    return { ok: false, reason: `verification failed: ${error instanceof Error ? error.message : String(error)}` };
-  }
 }

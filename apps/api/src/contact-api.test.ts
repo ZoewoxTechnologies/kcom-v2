@@ -64,14 +64,6 @@ describe("POST /contact spam protection", () => {
   });
   afterEach(() => vi.restoreAllMocks());
 
-  const withRecaptcha = (verdict: object | Error) => {
-    const fetcher = vi.fn(async () => {
-      if (verdict instanceof Error) throw verdict;
-      return new Response(JSON.stringify(verdict));
-    });
-    return { fetcher, app: createApp(db, { corsOrigins: ["http://web.test"], recaptcha: { secret: "s", fetcher: fetcher as unknown as typeof fetch } }) };
-  };
-
   it("answers a filled honeypot with a normal-looking 201, stores nothing and warns", async () => {
     const res = await post({ ...ok, website: "http://spam.example" });
     expect(res.status).toBe(201);
@@ -102,40 +94,5 @@ describe("POST /contact spam protection", () => {
     for (let i = 0; i < 6; i++) await post(ok);
     await db.update(rateLimits).set({ lastRequest: Date.now() - 2 * 60 * 60 * 1000 });
     expect((await post(ok)).status).toBe(201);
-  });
-
-  it("skips reCAPTCHA with a warning when no secret is configured", async () => {
-    expect((await post(ok)).status).toBe(201);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("RECAPTCHA_SECRET_KEY"));
-  });
-
-  it("accepts a high-scoring token and verifies it with the secret", async () => {
-    const { app: a, fetcher } = withRecaptcha({ success: true, score: 0.9 });
-    expect((await post({ ...ok, recaptchaToken: "tok" }, undefined, a)).status).toBe(201);
-    const [, init] = fetcher.mock.calls[0] as unknown as [string, RequestInit];
-    expect(String(init.body)).toContain("response=tok");
-  });
-
-  it.each([
-    ["a low score", { success: true, score: 0.1 }, "low score"],
-    ["a rejected token", { success: false }, "token rejected"],
-  ])("rejects %s with 403, stores nothing and warns", async (_n, verdict, reason) => {
-    const { app: a } = withRecaptcha(verdict);
-    const res = await post({ ...ok, recaptchaToken: "tok" }, undefined, a);
-    expect(res.status).toBe(403);
-    expect(await db.select().from(contactMessages)).toHaveLength(0);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining(reason));
-  });
-
-  it("rejects a missing token when a secret is configured", async () => {
-    const { app: a, fetcher } = withRecaptcha({ success: true, score: 1 });
-    expect((await post(ok, undefined, a)).status).toBe(403);
-    expect(fetcher).not.toHaveBeenCalled();
-  });
-
-  it("fails closed when Google cannot be reached", async () => {
-    const { app: a } = withRecaptcha(new Error("network down"));
-    expect((await post({ ...ok, recaptchaToken: "tok" }, undefined, a)).status).toBe(403);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("network down"));
   });
 });
