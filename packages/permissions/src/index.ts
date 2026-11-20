@@ -8,6 +8,7 @@ export const permissions = [
   "content:write",
   "content:publish",
   "users:manage",
+  "settings:manage",
 ] as const;
 export type Permission = (typeof permissions)[number];
 
