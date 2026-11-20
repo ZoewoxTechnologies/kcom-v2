@@ -22,7 +22,7 @@ const year = new Date().getFullYear();
       <label for="footer-email">The daily capsule, by email</label>
       <div class="row">
         <input id="footer-email" class="kc-input" name="email" type="email" placeholder="you@example.com" autocomplete="email" />
-        <button type="submit" class="kc-btn">Subscribe</button>
+        <button type="submit" class="kc-btn kc-btn--md">Subscribe</button>
       </div>
     </form>
   </div>
@@ -30,7 +30,7 @@ const year = new Date().getFullYear();
     <span class="legal"><span>© {year} {siteName}</span><span class="sep" aria-hidden="true"> · </span><span>{contactPlaceholder}</span></span>
     <span class="social">
       <span class="links">{socialLinks.map((l) => <a href={l.href}>{l.label}</a>)}</span>
-      <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary kc-btn--sm" aria-label="Switch colour theme">Theme</button>
+      <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary" aria-label="Switch colour theme">Theme</button>
     </span>
   </div>
 </footer>
