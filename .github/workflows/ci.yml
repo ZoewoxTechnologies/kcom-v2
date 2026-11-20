@@ -37,6 +37,7 @@ jobs:
               - '!docs/**'
               - '!brand/**'
               - '!**/*.md'
+              - '!**/.env.example'
               - '!**/*.css'
               - '!.github/**'
               - '!**/Dockerfile'
@@ -50,14 +51,17 @@ jobs:
               - '{apps/web/**,packages/ui/**,packages/config/**,package.json,pnpm-lock.yaml,pnpm-workspace.yaml,turbo.json}'
               - '!**/*.css'
               - '!**/*.md'
+              - '!**/.env.example'
             api:
               - '{apps/api/**,packages/db/**,packages/config/**,package.json,pnpm-lock.yaml,pnpm-workspace.yaml,turbo.json}'
               - '!**/*.css'
               - '!**/*.md'
+              - '!**/.env.example'
             admin:
               - '{apps/admin/**,packages/ui/**,packages/config/**,package.json,pnpm-lock.yaml,pnpm-workspace.yaml,turbo.json}'
               - '!**/*.css'
               - '!**/*.md'
+              - '!**/.env.example'
       - id: out
         env:
           PUSH: ${{ github.event_name == 'push' }}
