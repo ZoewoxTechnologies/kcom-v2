@@ -1,0 +1,13 @@
+/* Colours from the approved designs that have no token yet; dark mode maps them to tokens. */
+:root {
+  --d-kicker: #8a6a24;
+  --d-card-line: #e3cf9f;
+  --d-body: #3c4b4d;
+  --d-cover-1: #dde9ec;
+  --d-cover-2: #f6eedd;
+  --d-cover-3: #e3ece6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --d-kicker: var(--color-gold-text); --d-card-line: var(--color-gold); --d-body: var(--color-muted); --d-cover-1: var(--color-wash); --d-cover-2: var(--color-sandstone); --d-cover-3: var(--color-surface); }
+}
+:root[data-theme="dark"] { --d-kicker: var(--color-gold-text); --d-card-line: var(--color-gold); --d-body: var(--color-muted); --d-cover-1: var(--color-wash); --d-cover-2: var(--color-sandstone); --d-cover-3: var(--color-surface); }
