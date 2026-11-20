@@ -4,6 +4,7 @@ import { slug } from "@kcom/content";
 import { books, type CapsuleDb } from "@kcom/db";
 import {
   adminCrudRoutes,
+  cloudinaryImageUrl,
   httpUrl,
   publicContentRoutes,
   publishStatus,
@@ -14,7 +15,7 @@ const fields = {
   title: z.string().trim().min(1).max(200),
   slug,
   description: richTextSchema.nullable(),
-  coverUrl: httpUrl.max(2000).nullable(),
+  coverUrl: cloudinaryImageUrl.nullable(),
   purchaseUrl: httpUrl.max(2000).nullable(),
   publishedYear: z.number().int().min(1000).max(9999).nullable(),
   authorId: z.uuid().nullable(),

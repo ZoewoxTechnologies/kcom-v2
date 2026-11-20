@@ -6,6 +6,7 @@ import { isLive, pages, pageSections, type CapsuleDb } from "@kcom/db";
 import {
   adminCrudRoutes,
   assertCanChange,
+  cloudinaryImageUrl,
   findById,
   httpUrl,
   idParam,
@@ -38,7 +39,7 @@ const section = z.discriminatedUnion("type", [
       heading: text(200),
       subheading: text(500).optional(),
       quote: quote.optional(),
-      imageUrl: httpUrl.optional(),
+      imageUrl: cloudinaryImageUrl.optional(),
     }),
   }),
   z.strictObject({
@@ -49,7 +50,7 @@ const section = z.discriminatedUnion("type", [
   z.strictObject({
     type: z.literal("image"),
     props: z.strictObject({
-      url: httpUrl,
+      url: cloudinaryImageUrl,
       alt: z.string().trim().max(300),
       caption: text(300).optional(),
     }),
@@ -66,7 +67,7 @@ const section = z.discriminatedUnion("type", [
             title: text(200),
             subtitle: text(200).optional(),
             text: text(2000).optional(),
-            imageUrl: httpUrl.optional(),
+            imageUrl: cloudinaryImageUrl.optional(),
             link: link.optional(),
           }),
         )

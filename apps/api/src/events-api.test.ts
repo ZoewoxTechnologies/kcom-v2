@@ -91,6 +91,7 @@ describe("admin events", () => {
     expect(await bad({ title: "" })).toBe(400);
     expect(await bad({ endsAt: PAST })).toBe(400);
     expect(await bad({ imageUrl: "javascript:alert(1)" })).toBe(400);
+    expect(await bad({ imageUrl: "https://example.org/a.png" })).toBe(400);
     expect(await bad({ status: "scheduled" })).toBe(400);
     expect(await bad({ extra: 1 })).toBe(400);
     expect((await call("/admin/events/not-a-uuid", editor, "PATCH", { title: "x" })).status).toBe(

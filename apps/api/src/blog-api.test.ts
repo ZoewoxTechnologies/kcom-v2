@@ -85,6 +85,11 @@ describe("admin blog", () => {
     expect((page as { items: unknown[] }).items).toHaveLength(1);
   });
 
+  it("rejects a non-Cloudinary heroImageUrl", async () => {
+    const bad = { ...post, heroImageUrl: "https://example.org/a.png" };
+    expect((await send("POST", "/admin/blog", bad)).status).toBe(400);
+  });
+
   it("rejects invalid input with 400", async () => {
     for (const bad of [
       { ...post, slug: "Not A Slug" },

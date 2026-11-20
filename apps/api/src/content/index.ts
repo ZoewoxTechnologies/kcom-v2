@@ -21,6 +21,13 @@ export {
 } from "./crud.js";
 export { assertCanChange, findById, notFound, publicCache } from "./access.js";
 export { richTextSchema, sanitizeRichText } from "./rich-text.js";
-export { httpUrl, idParam, pagination, publishStatus, slugParam } from "./schemas.js";
+export {
+  cloudinaryImageUrl,
+  httpUrl,
+  idParam,
+  pagination,
+  publishStatus,
+  slugParam,
+} from "./schemas.js";
 export { rethrowWriteError, type WriteErrorOptions } from "./write-errors.js";
 export { isLive } from "@kcom/db";

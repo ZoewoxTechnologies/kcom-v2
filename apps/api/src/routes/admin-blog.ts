@@ -2,7 +2,12 @@ import { desc } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
 import { blogPosts, type CapsuleDb } from "@kcom/db";
-import { adminCrudRoutes, httpUrl, publishStatus, richTextSchema } from "../content/index.js";
+import {
+  adminCrudRoutes,
+  cloudinaryImageUrl,
+  publishStatus,
+  richTextSchema,
+} from "../content/index.js";
 
 const text = (max: number) => z.string().trim().max(max);
 
@@ -12,7 +17,7 @@ const fields = {
   date: z.iso.date(),
   excerpt: text(500).min(1).nullable(),
   body: richTextSchema,
-  heroImageUrl: httpUrl.max(2000).nullable(),
+  heroImageUrl: cloudinaryImageUrl.nullable(),
   tags: z.array(text(50).min(1)).max(20),
   authorId: z.uuid().nullable(),
   status: publishStatus,

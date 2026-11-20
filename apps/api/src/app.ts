@@ -13,6 +13,7 @@ import { homepageRoutes } from "./routes/homepage.js";
 import { pageRoutes } from "./routes/pages.js";
 import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
+import type { CloudinaryConfig } from "./uploads/cloudinary.js";
 import { userRoutes } from "./routes/users.js";
 import { internalRoutes } from "./routes/internal.js";
 import { createCapsuleEvents, type CapsuleEvents } from "./capsule-publishing.js";
@@ -24,6 +25,7 @@ export type AppOptions = {
   capsuleEvents?: CapsuleEvents;
   /** Bearer token for /internal (Cloud Scheduler). Unset disables /internal. */
   internalToken?: string;
+  cloudinary?: CloudinaryConfig;
 };
 
 export function createApp(
@@ -33,6 +35,7 @@ export function createApp(
     auth = {},
     capsuleEvents = createCapsuleEvents(),
     internalToken,
+    cloudinary,
   }: AppOptions = {},
 ) {
   const publicCors = cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] });
@@ -69,7 +72,7 @@ export function createApp(
     .route("/series", seriesRoutes(db))
     .route("/pages", pageRoutes(db))
     .route("/homepage", homepageRoutes(db))
-    .route("/admin", adminRoutes(db, authInstance, capsuleEvents))
+    .route("/admin", adminRoutes(db, authInstance, capsuleEvents, cloudinary))
     .route("/internal", internalRoutes(db, capsuleEvents, internalToken))
     .route("/users", userRoutes(db, authInstance))
     .route("/api/auth", authRoutes(authInstance));

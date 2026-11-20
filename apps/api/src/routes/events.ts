@@ -5,7 +5,7 @@ import { slug } from "@kcom/content";
 import { events, type CapsuleDb } from "@kcom/db";
 import {
   adminCrudRoutes,
-  httpUrl,
+  cloudinaryImageUrl,
   notFound,
   pagination,
   publicCache,
@@ -24,7 +24,7 @@ const fields = {
   endsAt: z.coerce.date().nullable(),
   place: z.string().trim().min(1).max(300).nullable(),
   description: richTextSchema.nullable(),
-  imageUrl: httpUrl.nullable(),
+  imageUrl: cloudinaryImageUrl.nullable(),
   status: eventStatus,
 };
 

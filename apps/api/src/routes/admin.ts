@@ -10,13 +10,20 @@ import { adminPageRoutes } from "./pages.js";
 import type { CapsuleEvents } from "../capsule-publishing.js";
 import { adminEventRoutes } from "./events.js";
 import { adminSeriesRoutes } from "./series.js";
+import { adminUploadRoutes } from "./admin-uploads.js";
+import type { CloudinaryConfig } from "../uploads/cloudinary.js";
 
 /**
  * Everything under /admin: signed-in Admin or Editor only (checked once here,
  * responses are `no-store`). Add new content areas with one more `.route()`;
  * their handlers use `requireCan` for finer permissions.
  */
-export function adminRoutes(db: CapsuleDb, auth: Auth, events: CapsuleEvents) {
+export function adminRoutes(
+  db: CapsuleDb,
+  auth: Auth,
+  events: CapsuleEvents,
+  cloudinary?: CloudinaryConfig,
+) {
   return new Hono<AuthEnv>()
     .use(requirePermission(auth, "content:read"))
     .route("/blog", adminBlogRoutes(db))
@@ -25,5 +32,6 @@ export function adminRoutes(db: CapsuleDb, auth: Auth, events: CapsuleEvents) {
     .route("/events", adminEventRoutes(db))
     .route("/series", adminSeriesRoutes(db))
     .route("/pages", adminPageRoutes(db))
-    .route("/homepage", adminHomepageRoutes(db));
+    .route("/homepage", adminHomepageRoutes(db))
+    .route("/uploads", adminUploadRoutes(cloudinary));
 }
