@@ -26,6 +26,9 @@ importers:
 
   apps/admin:
     dependencies:
+      '@kcom/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@kcom/permissions':
         specifier: workspace:*
         version: link:../../packages/permissions
