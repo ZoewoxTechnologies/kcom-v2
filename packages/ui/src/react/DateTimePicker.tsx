@@ -1,6 +1,6 @@
 import * as Popover from "@radix-ui/react-popover";
 import { Button } from "./Button";
-import { useId, useRef, useState, type KeyboardEvent } from "react";
+import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   DEFAULT_TIME_ZONE,
   formatInZone,
@@ -26,6 +26,8 @@ export interface DateTimePickerProps {
   label?: string;
   id?: string;
   disabled?: boolean;
+  /** Error message shown under the picker; marks the trigger invalid. */
+  error?: ReactNode;
   /** Start with the popover open. */
   defaultOpen?: boolean;
 }
@@ -59,10 +61,12 @@ export function DateTimePicker({
   label = "Date and time",
   id,
   disabled,
+  error,
   defaultOpen = false,
 }: DateTimePickerProps) {
   const autoId = useId();
   const triggerId = id ?? autoId;
+  const errorId = error ? `${triggerId}-error` : undefined;
   const current = now ?? new Date();
   const today = toZoneParts(current, timeZone);
   const todayKey = key(today.year, today.month, today.day);
@@ -151,6 +155,8 @@ export function DateTimePicker({
               id={triggerId}
               className="kc-select__control kc-datetime__trigger"
               disabled={disabled}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={errorId}
             >
               {value ? formatInZone(value, timeZone) : "Choose date and time"}
             </button>
@@ -254,6 +260,11 @@ export function DateTimePicker({
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>
+      {error && (
+        <p id={errorId} className="kc-field__error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

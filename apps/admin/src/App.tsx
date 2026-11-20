@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { Route, Routes } from "react-router";
 import { ToastProvider } from "@kcom/ui";
 import { AuthProvider } from "./auth/AuthProvider";
@@ -5,6 +6,7 @@ import { RequireAuth, RequirePermission } from "./auth/guards";
 import { navItems } from "./shell/nav";
 import { Shell } from "./shell/Shell";
 import { DashboardPage } from "./pages/DashboardPage";
+import { EventsPage } from "./events/EventsPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { CalendarPage } from "./capsules/CalendarPage";
@@ -16,6 +18,9 @@ import { SignInPage } from "./pages/SignInPage";
 // Capsules and Calendar have their own pages below.
 const BUILT = new Set(["/", "/capsules", "/calendar"]);
 const sections = navItems.filter((item) => !BUILT.has(item.path));
+
+/** Pages built so far, by nav path. Sections not listed show the placeholder. */
+const pages: Partial<Record<string, ReactElement>> = { "/events": <EventsPage /> };
 
 export function App() {
   return (
@@ -37,7 +42,10 @@ export function App() {
               </Route>
               {sections.map((item) => (
                 <Route key={item.path} element={<RequirePermission permission={item.permission} />}>
-                  <Route path={`${item.path}/*`} element={<PlaceholderPage title={item.label} />} />
+                  <Route
+                    path={`${item.path}/*`}
+                    element={pages[item.path] ?? <PlaceholderPage title={item.label} />}
+                  />
                 </Route>
               ))}
               <Route path="*" element={<NotFoundPage />} />

@@ -1,0 +1,47 @@
+/* Segmented control: one pill track, the active segment filled. Import after tokens.css. */
+@layer components {
+  .kc-segmented {
+    display: inline-flex;
+    padding: 3px;
+    gap: 2px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-pill);
+    background: var(--color-wash);
+  }
+
+  .kc-segmented__option {
+    position: relative;
+    block-size: 2rem;
+    padding-inline: var(--space-4);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-muted);
+    font: 600 var(--text-sm) / 1 var(--font-body);
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      inset-block: -0.375rem;
+    }
+
+    &:hover {
+      color: var(--color-text);
+    }
+
+    &[aria-checked="true"] {
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+  }
+}

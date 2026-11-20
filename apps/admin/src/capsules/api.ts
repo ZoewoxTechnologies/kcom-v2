@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { lagosMonthRange } from "@kcom/content";
+import { apiJson } from "../api/client";
 
 export type CapsuleStatus = "draft" | "scheduled" | "published";
 
@@ -18,24 +19,14 @@ export interface SeriesSummary {
   title: string;
 }
 
-const baseUrl = () => (import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const PAGE = 100;
-
-async function call(path: string, init?: RequestInit): Promise<Response> {
-  const res = await fetch(`${baseUrl()}/admin${path}`, {
-    credentials: "include",
-    ...init,
-    headers: { "content-type": "application/json", ...init?.headers },
-  });
-  if (!res.ok) throw new Error(`request failed (${res.status})`);
-  return res;
-}
 
 async function listAll<T>(path: string, query = ""): Promise<T[]> {
   const out: T[] = [];
   for (let offset = 0; ; offset += PAGE) {
-    const res = await call(`${path}?${query}limit=${PAGE}&offset=${offset}`);
-    const { items, total } = (await res.json()) as { items: T[]; total: number };
+    const { items, total } = await apiJson<{ items: T[]; total: number }>(
+      `/admin${path}?${query}limit=${PAGE}&offset=${offset}`,
+    );
     out.push(...items);
     if (out.length >= total || items.length === 0) return out;
   }
@@ -56,11 +47,10 @@ export const listSeries = () => listAll<SeriesSummary>("/series");
 
 /** Moves a scheduled capsule to a new go-live instant. */
 export async function rescheduleCapsule(id: string, publishAt: Date): Promise<CapsuleSummary> {
-  const res = await call(`/capsules/${id}`, {
+  return apiJson<CapsuleSummary>(`/admin/capsules/${id}`, {
     method: "PATCH",
     body: JSON.stringify({ status: "scheduled", publishAt: publishAt.toISOString() }),
   });
-  return (await res.json()) as CapsuleSummary;
 }
 
 /** Series plus capsules (all, or one Lagos month); `replace` swaps in an updated capsule. */

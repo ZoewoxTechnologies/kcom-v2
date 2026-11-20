@@ -15,6 +15,8 @@
     "./data-table.css": "./src/components/data-table.css",
     "./dialog.css": "./src/components/dialog.css",
     "./menu.css": "./src/components/menu.css",
+    "./tooltip.css": "./src/components/tooltip.css",
+    "./segmented-control.css": "./src/components/segmented-control.css",
     "./menu": "./src/menu/menu.ts",
     "./fonts": "./src/fonts.ts",
     "./astro/Menu.astro": "./src/astro/Menu.astro",
