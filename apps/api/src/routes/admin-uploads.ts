@@ -62,7 +62,7 @@ export function adminUploadRoutes(cloudinary: CloudinaryConfig | undefined) {
       const params = {
         context: `uploaded_by=${c.var.user.id}`,
         timestamp: Math.floor(now / 1000),
-        upload_preset: cloudinary.uploadPreset,
+        ...(cloudinary.uploadPreset ? { upload_preset: cloudinary.uploadPreset } : {}),
       };
       return c.json({
         uploadUrl: `https://api.cloudinary.com/v1_1/${cloudinary.cloudName}/image/upload`,
