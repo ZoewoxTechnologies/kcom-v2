@@ -1,4 +1,4 @@
-import { contactTopics, type ContactTopic } from "@kcom/db/contact-topics";
+import { contactTopicLabels, contactTopics, type ContactTopic } from "@kcom/db/contact-topics";
 
 /** Shaped like the future settings API; replace `contactSettings` with that fetch when it lands. */
 export interface ContactSettings {
@@ -25,16 +25,20 @@ export const contactRows = (s: ContactSettings): Row[] =>
   ([["Email", s.email], ["Phone / WhatsApp", s.phone], ["Address", s.address]] as [string, string | null][])
     .flatMap(([label, v]) => (v?.trim() ? [{ label, value: v.trim() }] : []));
 
-const topicCopy: Record<ContactTopic, { label: string; message: string }> = {
-  question: { label: "A question", message: "Your question" },
-  prayer: { label: "A prayer request", message: "Your prayer request" },
-  testimony: { label: "A testimony", message: "Your testimony" },
-  invitation: { label: "Invitation to minister", message: "Your invitation" },
-  other: { label: "Other", message: "Your message" },
+const topicMessage: Record<ContactTopic, string> = {
+  question: "Your question",
+  prayer: "Your prayer request",
+  testimony: "Your testimony",
+  invitation: "Your invitation",
+  other: "Your message",
 };
 
-/** Topics in display order; the values come from the shared DB list. */
-export const topics = contactTopics.map((value) => ({ value, ...topicCopy[value] }));
+/** Topics in display order; values and labels come from the shared DB list. */
+export const topics = contactTopics.map((value) => ({
+  value,
+  label: contactTopicLabels[value],
+  message: topicMessage[value],
+}));
 
 export type Topic = ContactTopic;
 

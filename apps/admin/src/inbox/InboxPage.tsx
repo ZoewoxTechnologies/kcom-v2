@@ -12,7 +12,7 @@ import {
   useToast,
 } from "@kcom/ui";
 import type { DataTableColumn } from "@kcom/ui";
-import { contactTopics, type ContactTopic } from "@kcom/db/contact-topics";
+import { contactTopicLabels, contactTopics, type ContactTopic } from "@kcom/db/contact-topics";
 import {
   listMessages,
   PAGE_SIZE,
@@ -30,8 +30,7 @@ const STATUS_OPTIONS = [
   { value: "read", label: "Read" },
 ] as const;
 
-const capitalise = (w: string) => w.charAt(0).toUpperCase() + w.slice(1);
-export const topicLabel = (t: ContactTopic) => capitalise(t);
+export const topicLabel = (t: ContactTopic) => contactTopicLabels[t];
 
 const formatDate = (iso: string, time = false) =>
   new Intl.DateTimeFormat("en-GB", {
