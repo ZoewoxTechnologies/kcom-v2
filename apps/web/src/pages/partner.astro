@@ -69,6 +69,10 @@ const bank = bankRows(sampleSettings);
     });
   });
 </script>
+<style is:global>
+  /* The join band sits flush against the footer on this page only. */
+  main:has(.page .join) ~ .site-footer { margin-top: 0; }
+</style>
 <style>
   .page { max-inline-size: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-6); padding-block-end: 0; margin-block-end: calc(var(--space-6) * -1); }
   .hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-3); background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); margin-block-start: calc(var(--space-6) * -1); padding-block: var(--space-6); }
