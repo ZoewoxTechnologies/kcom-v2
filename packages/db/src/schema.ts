@@ -83,6 +83,10 @@ export const capsules = pgTable(
   },
   (t) => [
     uniqueIndex("capsules_legacy_path_idx").on(t.legacyPath),
+    // One published or scheduled capsule per Africa/Lagos calendar day.
+    uniqueIndex("capsules_one_per_lagos_day_idx")
+      .on(sql`((${t.publishAt} AT TIME ZONE 'Africa/Lagos')::date)`)
+      .where(sql`${t.status} <> 'draft'`),
     index("capsules_status_publish_at_idx").on(t.status, t.publishAt),
     check("capsules_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
     check("capsules_title_not_blank", sql`btrim(${t.title}) <> ''`),

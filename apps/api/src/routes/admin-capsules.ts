@@ -1,7 +1,14 @@
 import { Hono } from "hono";
 import { and, count, desc, eq, gte, lt, ne } from "drizzle-orm";
 import { z } from "zod";
-import { CAPSULE_LIMITS, nextLagosMidnight, slug } from "@kcom/content";
+import {
+  CAPSULE_LIMITS,
+  formatLagosShortDate,
+  lagosDate,
+  lagosDayRange,
+  nextLagosMidnight,
+  slug,
+} from "@kcom/content";
 import { capsules, type CapsuleDb } from "@kcom/db";
 import {
   assertCanChange,
@@ -73,6 +80,10 @@ const listQuery = z
 const CAPSULE_ERRORS = {
   label: "capsule slug",
   messages: { reference: "series does not exist", check: "part number needs a series" },
+  unique: {
+    capsules_one_per_lagos_day_idx:
+      "that Lagos day already has a capsule; only one can go live per day",
+  },
 };
 
 type Patch = z.infer<typeof updateBody>;
@@ -107,12 +118,39 @@ function planStatusChange(
   }
   return {};
 }
+/** "13 Nov 2026" */
+const friendlyDay = (at: Date) =>
+  `${formatLagosShortDate(lagosDate(at))} ${lagosDate(at).slice(0, 4)}`;
+const dayTaken = (publishAt: Date, title?: string) =>
+  new HttpError(
+    409,
+    "day_taken",
+    `${friendlyDay(publishAt)} already has ${title ? `“${title}”` : "a capsule"}; only one capsule can go live per Lagos day`,
+  );
 const invalid = (message: string) => new HttpError(422, "invalid_transition", message);
 
 /** Editor/admin endpoints: full access to capsules including drafts and scheduled ones. */
 export function adminCapsuleRoutes(db: CapsuleDb, events: CapsuleEvents) {
   const write = requireCan("content:write");
   const byId = (id: string) => findById(db, capsules, id, "capsule");
+
+  /** One published or scheduled capsule per Lagos day (also enforced by a unique index). */
+  async function assertDayFree(publishAt: Date, exceptId?: string) {
+    const [from, to] = lagosDayRange(lagosDate(publishAt));
+    const [taken] = await db
+      .select({ title: capsules.title })
+      .from(capsules)
+      .where(
+        and(
+          ne(capsules.status, "draft"),
+          gte(capsules.publishAt, from),
+          lt(capsules.publishAt, to),
+          exceptId ? ne(capsules.id, exceptId) : undefined,
+        ),
+      )
+      .limit(1);
+    if (taken) throw dayTaken(publishAt, taken.title);
+  }
 
   return new Hono<AuthEnv>()
     .get("/", validate("query", listQuery), async (c) => {
@@ -150,6 +188,7 @@ export function adminCapsuleRoutes(db: CapsuleDb, events: CapsuleEvents) {
       if (body.status === "published" && publishAt > now) {
         throw invalid("use status scheduled for a future publishAt");
       }
+      if (body.status !== "draft") await assertDayFree(publishAt);
       try {
         const [row] = await db
           .insert(capsules)
@@ -167,6 +206,14 @@ export function adminCapsuleRoutes(db: CapsuleDb, events: CapsuleEvents) {
       const existing = await byId(id);
       assertCanChange(c, existing.status, patch.status);
       const set = { ...patch, ...planStatusChange(existing, patch) };
+      const finalStatus = set.status ?? existing.status;
+      const finalAt = set.publishAt ?? existing.publishAt;
+      if (
+        finalStatus !== "draft" &&
+        (existing.status === "draft" || lagosDate(finalAt) !== lagosDate(existing.publishAt))
+      ) {
+        await assertDayFree(finalAt, id);
+      }
       const publishing = set.status === "published" && existing.status !== "published";
       try {
         // A publishing write only matches while the capsule is not yet published,
