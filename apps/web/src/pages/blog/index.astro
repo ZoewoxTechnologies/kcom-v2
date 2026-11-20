@@ -21,7 +21,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     ) : (
       <p class="empty">No posts yet. Please check back soon.</p>
     )}
-    <Pagination page={page} pages={pages} path="/blog" label="Blog pages" />
+    <Pagination centered page={page} pages={pages} path="/blog" label="Blog pages" />
   </div>
 </BaseLayout>
 <style>

@@ -21,7 +21,7 @@ const { page, pages, items } = paginate(all, Astro.url.searchParams.get("page"),
     </div>
     {all.length === 0 && <p class="empty">No series yet.</p>}
     <div class="grid">{items.map((s) => <SeriesCard series={s} />)}</div>
-    <Pagination page={page} pages={pages} path="/series" query={sort === "newest" ? {} : { sort }} />
+    <Pagination centered page={page} pages={pages} path="/series" query={sort === "newest" ? {} : { sort }} />
   </div>
 </BaseLayout>
 <style>
