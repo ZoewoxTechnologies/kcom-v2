@@ -12,6 +12,7 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
       <span class="eyebrow">About Kingdom Capstone Outreach Ministries</span>
       <h1>{title}</h1>
       {intro && <p class="intro">{intro}</p>}
+      <slot name="band" />
     </div>
   </section>
   <div class:list={["body", { wide }]}>
@@ -26,6 +27,9 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
   .inner { max-inline-size: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-2); }
   .eyebrow { font-size: var(--text-sm); letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
   h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: clamp(2.25rem, 8vw, var(--text-3xl)); line-height: var(--leading-tight); }
+  .inner :global(blockquote) { margin: var(--space-3) 0 0; max-inline-size: 28rem; border-block-start: 2px solid var(--color-gold); padding-block-start: var(--space-3); font-family: var(--font-scripture); font-style: italic; font-size: var(--text-lg); line-height: 1.55; }
+  .inner :global(blockquote cite) { display: block; margin-block-start: var(--space-2); font: 700 var(--text-sm) var(--font-body); font-variant: small-caps; letter-spacing: 0.1em; color: var(--color-muted); }
+  @media (min-width: 64rem) { .inner:has(blockquote) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); column-gap: var(--space-7); align-items: center; } .inner :global(blockquote) { grid-column: 2; grid-row: 1 / span 3; margin: 0; } }
   .intro { margin: 0; max-inline-size: 40rem; font-size: var(--text-lg); }
   .body { max-inline-size: 70rem; margin-inline: auto; padding-block: var(--space-6) var(--space-7); display: flex; flex-direction: column; gap: var(--space-5); }
   .side { display: flex; gap: var(--space-2); flex-wrap: wrap; font-weight: 600; }
