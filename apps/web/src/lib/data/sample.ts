@@ -58,6 +58,11 @@ function build(now: Date): { items: CapsuleListItem[]; series: SeriesSummary[] }
 
 const SCRIPTURE = "And be not conformed to this world: but be ye transformed by the renewing of your mind.";
 
+const bullets = (...items: string[]) => ({
+  type: "bulletList",
+  content: items.map((text) => ({ type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text }] }] })),
+});
+
 const doc = (...paragraphs: string[]) => ({
   type: "doc",
   content: paragraphs.map((text) => ({ type: "paragraph", content: [{ type: "text", text }] })),
@@ -73,10 +78,14 @@ function toCapsule(c: CapsuleListItem, series: SeriesSummary[]): Capsule {
     scriptureRef: c.scriptureRef,
     scriptureText: doc(SCRIPTURE),
     bibleMeditation: "Romans 12:1-8",
-    body: doc(
-      "Sample devotional text for layout purposes. Every day the world presses on us, quietly and constantly, asking us to take its shape.",
-      "Transformation begins in the mind. Not by trying harder, but by letting the Word of God renew the way we think.",
-    ),
+    body: {
+      type: "doc",
+      content: [
+        ...doc("Sample devotional text for layout purposes. Every day the world presses on us, quietly and constantly, asking us to take its shape.").content,
+        bullets("Renew your mind with the Word.", "Refuse the pattern of this world.", "Prove what is good and acceptable."),
+        ...doc("Transformation begins in the mind. Not by trying harder, but by letting the Word of God renew the way we think.").content,
+      ],
+    },
     decrees: (c.partNumber ?? 1) % 2 === 0 ? ["I decree that my mind is renewed daily by the Word of God.", "I refuse to be conformed to the pattern of this world."] : [],
     prayer: doc("Father, thank You for Your Word. Renew my mind today. In Jesus’ name, amen."),
     authorSource: "Sample author",
