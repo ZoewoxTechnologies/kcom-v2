@@ -34,7 +34,17 @@ const capsules = [
   },
 ];
 
-function mockApi() {
+// 22:00 UTC on the 26th is 23:00 on the 26th in Lagos.
+const takenDay = {
+  ...base,
+  id: "d",
+  title: "Taken day",
+  status: "scheduled",
+  publishAt: "2026-11-26T22:00:00Z",
+};
+
+function mockApi(patchStatus = 200, extra: (typeof capsules)[number][] = []) {
+  const all = [...capsules, ...extra];
   const patches: { id: string; body: Record<string, unknown> }[] = [];
   const urls: string[] = [];
   vi.stubGlobal(
@@ -47,11 +57,18 @@ function mockApi() {
         const id = url.split("/").pop()!;
         const body = JSON.parse(String(init.body));
         patches.push({ id, body });
-        return json({ ...capsules.find((c) => c.id === id), ...body });
+        if (patchStatus === 409)
+          return new Response(
+            JSON.stringify({
+              error: { code: "day_taken", message: "2026-11-30 already has “Other”" },
+            }),
+            { status: 409, headers: { "content-type": "application/json" } },
+          );
+        return json({ ...all.find((c) => c.id === id), ...body });
       }
       if (url.includes("/admin/series"))
         return json({ items: [{ id: "s1", title: "Renewing the Mind" }], total: 1 });
-      return json({ items: capsules, total: capsules.length });
+      return json({ items: all, total: all.length });
     }),
   );
   return { patches, urls };
@@ -142,16 +159,35 @@ describe("calendar", () => {
     const { patches } = mockApi();
     renderPage(<CalendarPage />);
     dragTo(await screen.findByRole("link", { name: /Late night/ }), "2026-11-19");
-    expect(await screen.findByText("Pick a day after today")).toBeInTheDocument();
+    expect(await screen.findByText(/Pick a day after today/)).toBeInTheDocument();
     expect(patches).toHaveLength(0);
   });
 
   it("refuses a drop on a day that already has a capsule", async () => {
+    const { patches } = mockApi(200, [takenDay]);
+    renderPage(<CalendarPage />);
+    dragTo(await screen.findByRole("link", { name: /Late night/ }), "2026-11-26");
+    expect(await screen.findByText("Thu 26 Nov already has “Taken day”")).toBeInTheDocument();
+    expect(patches).toHaveLength(0);
+  });
+
+  it("allows a drop on a day that only has a draft", async () => {
     const { patches } = mockApi();
     renderPage(<CalendarPage />);
     dragTo(await screen.findByRole("link", { name: /Late night/ }), "2026-11-26");
-    expect(await screen.findByText("Thu 26 Nov already has “Draft idea”")).toBeInTheDocument();
-    expect(patches).toHaveLength(0);
+    await waitFor(() => expect(patches).toHaveLength(1));
+  });
+
+  it("keeps the Move dialog open and shows the server's 409 message", async () => {
+    mockApi(409);
+    renderPage(<CalendarPage />);
+    await userEvent
+      .setup({ advanceTimers: () => {} })
+      .click(await screen.findByRole("button", { name: /Move Late night to date/ }));
+    fireEvent.change(screen.getByLabelText("Day (Lagos)"), { target: { value: "2026-11-30" } });
+    fireEvent.click(screen.getByRole("button", { name: "Move" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("2026-11-30 already has “Other”");
+    expect(screen.getByLabelText("Day (Lagos)")).toBeInTheDocument();
   });
 
   it("only drags scheduled capsules", async () => {
@@ -219,14 +255,16 @@ describe("Move to date", () => {
   });
 
   it("refuses a day that already has a capsule", async () => {
-    const { patches } = mockApi();
+    const { patches } = mockApi(200, [takenDay]);
     renderPage(<CalendarPage />);
     const { user, dialog } = await open();
     fireEvent.change(within(dialog).getByLabelText("Day (Lagos)"), {
       target: { value: "2026-11-26" },
     });
     await user.click(within(dialog).getByRole("button", { name: "Move" }));
-    expect(await screen.findByText("Thu 26 Nov already has “Draft idea”")).toBeInTheDocument();
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Thu 26 Nov already has “Taken day”",
+    );
     expect(patches).toHaveLength(0);
   });
 

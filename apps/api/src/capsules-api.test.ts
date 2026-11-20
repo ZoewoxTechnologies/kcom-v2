@@ -342,19 +342,6 @@ describe("public /capsules/:slug/neighbours", () => {
     });
     expect(await get("c")).toMatchObject({ prev: { slug: "a" }, next: null });
   });
-  it("orders capsules with the same publish time by id, so neither is skipped", async () => {
-    const same = "2026-01-10T12:00:00Z";
-    await db
-      .insert(capsules)
-      .values([at("x", "published", same), at("y", "published", same), at("z", "published", same)]);
-    const order = (await db.select({ id: capsules.id, slug: capsules.slug }).from(capsules))
-      .sort((a, b) => a.id.localeCompare(b.id))
-      .map((r) => r.slug);
-    const [first, middle, last] = order as [string, string, string];
-    expect(await get(first)).toMatchObject({ prev: null, next: { slug: middle } });
-    expect(await get(middle)).toMatchObject({ prev: { slug: first }, next: { slug: last } });
-    expect(await get(last)).toMatchObject({ prev: { slug: middle }, next: null });
-  });
   it("404s for an unknown or unpublished slug", async () => {
     await db.insert(capsules).values(at("b-draft", "draft", "2026-01-11T12:00:00Z"));
     expect((await call("/capsules/b-draft/neighbours", null)).status).toBe(404);
@@ -499,5 +486,71 @@ describe("publish permission for a writer without it", () => {
         200,
       );
     }
+  });
+});
+
+describe("one capsule per Lagos day", () => {
+  const sched = (slug: string, publishAt: string, status = "scheduled") =>
+    call("/admin/capsules", admin, "POST", valid({ slug, publishAt, status }));
+  const idOf = async (res: Response) => ((await res.json()) as { id: string }).id;
+
+  it("rejects a second scheduled capsule on the same Lagos day", async () => {
+    expect((await sched("a", "2099-05-10T08:00:00Z")).status).toBe(201);
+    const res = await sched("b", "2099-05-10T20:00:00Z");
+    expect(res.status).toBe(409);
+    expect(JSON.stringify(await res.json())).toContain("2099-05-10");
+  });
+
+  it("treats 23:00 UTC as the next Lagos day", async () => {
+    expect((await sched("a", "2099-05-10T22:59:59Z")).status).toBe(201);
+    // 23:00 UTC is 00:00 Lagos on the 11th: a different day.
+    expect((await sched("b", "2099-05-10T23:00:00Z")).status).toBe(201);
+    // 22:00 UTC on the 10th is still the 10th in Lagos, so it collides with "a".
+    expect((await sched("c", "2099-05-10T22:00:00Z")).status).toBe(409);
+    // 22:30 UTC on the 11th is the 11th in Lagos, so it collides with "b".
+    expect((await sched("d", "2099-05-11T22:30:00Z")).status).toBe(409);
+  });
+
+  it("allows drafts on an occupied day but not scheduling them there", async () => {
+    await sched("a", "2099-05-10T08:00:00Z");
+    const draft = await call(
+      "/admin/capsules",
+      admin,
+      "POST",
+      valid({ slug: "d", publishAt: "2099-05-10T09:00:00Z" }),
+    );
+    expect(draft.status).toBe(201);
+    const id = await idOf(draft);
+    const res = await call(`/admin/capsules/${id}`, admin, "PATCH", { status: "scheduled" });
+    expect(res.status).toBe(409);
+  });
+
+  it("rejects rescheduling onto an occupied day, allows a free day and same-day moves", async () => {
+    await sched("a", "2099-05-10T08:00:00Z");
+    const id = await idOf(await sched("b", "2099-05-12T08:00:00Z"));
+    const patch = (publishAt: string) =>
+      call(`/admin/capsules/${id}`, admin, "PATCH", { publishAt });
+    expect((await patch("2099-05-10T10:00:00Z")).status).toBe(409);
+    expect((await patch("2099-05-12T15:00:00Z")).status).toBe(200);
+    expect((await patch("2099-05-13T08:00:00Z")).status).toBe(200);
+  });
+
+  it("enforces the rule in the database too", async () => {
+    await db.insert(capsules).values({
+      title: "x",
+      slug: "x",
+      body: doc("x") as never,
+      status: "scheduled",
+      publishAt: new Date("2099-05-10T08:00:00Z"),
+    });
+    await expect(
+      db.insert(capsules).values({
+        title: "y",
+        slug: "y",
+        body: doc("y") as never,
+        status: "published",
+        publishAt: new Date("2099-05-10T21:00:00Z"),
+      }),
+    ).rejects.toThrow();
   });
 });
