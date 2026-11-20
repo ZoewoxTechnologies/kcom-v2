@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { aboutLinks } from "../lib/about";
+
+interface Props { title: string; description: string; intro?: string; wide?: boolean }
+const { title, description, intro, wide = false } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+---
+<BaseLayout title={title} description={description} current="/about">
+  <section class="band">
+    <div class="inner">
+      <span class="eyebrow">About Kingdom Capstone Outreach Ministries</span>
+      <h1>{title}</h1>
+      {intro && <p class="intro">{intro}</p>}
+    </div>
+  </section>
+  <div class:list={["body", { wide }]}>
+    <nav class="side" aria-label="About">
+      {aboutLinks.map((l) => <a href={l.href} aria-current={l.href === path ? "page" : undefined}>{l.label}</a>)}
+    </nav>
+    <div class="content"><slot /></div>
+  </div>
+</BaseLayout>
+<style>
+  .band { background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); margin-block-start: calc(var(--space-6) * -1); padding: var(--space-6) 0; }
+  .inner { max-inline-size: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-2); }
+  .eyebrow { font-size: var(--text-sm); letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: clamp(2.25rem, 8vw, var(--text-3xl)); line-height: var(--leading-tight); }
+  .intro { margin: 0; max-inline-size: 40rem; font-size: var(--text-lg); }
+  .body { max-inline-size: 70rem; margin-inline: auto; padding-block: var(--space-6) var(--space-7); display: flex; flex-direction: column; gap: var(--space-5); }
+  .side { display: flex; gap: var(--space-2); flex-wrap: wrap; font-weight: 600; }
+  .side a { color: var(--color-primary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: 10px; }
+  .side a[aria-current] { color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-line); box-shadow: inset 3px 0 0 var(--color-gold); }
+  .content { min-inline-size: 0; display: flex; flex-direction: column; gap: var(--space-5); }
+  @media (min-width: 64rem) {
+    .body { flex-direction: row; gap: var(--space-7); padding-block-start: var(--space-7); }
+    .side { flex-direction: column; flex: 0 0 14rem; gap: 2px; }
+    .content { flex: 1; }
+  }
+</style>

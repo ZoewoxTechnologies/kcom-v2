@@ -1,0 +1,42 @@
+---
+import AboutLayout from "../../components/AboutLayout.astro";
+import LinkCard from "../../components/LinkCard.astro";
+import { getAbout } from "../../lib/about";
+const { team, arms } = await getAbout();
+const initials = (n: string) => n.replace(/^(Dr|Brother|Sister|Pastor|Prophet)\.?\s+/i, "").split(/\s+/).slice(0, 2).map((w) => w[0]).join("");
+---
+<AboutLayout title="Team and Arms" description="The team and ministry arms of Kingdom Capstone Outreach Ministries." intro="Kingdom Capstone Outreach Ministries is served by a vibrant team. Here are some of its members.">
+  <ul class="team">
+    {team.map((p) => (
+      <li class="person">
+        <div class="photo">{p.photoUrl ? <img src={p.photoUrl} alt="" loading="lazy" /> : <span aria-hidden="true">{initials(p.name)}</span>}</div>
+        <div class="info"><h3>{p.name}</h3><span class="role">{p.role}</span><p>{p.bio}</p></div>
+      </li>
+    ))}
+  </ul>
+  <h2>Ministry Arms</h2>
+  <p class="lead">Kingdom Capstone Outreach Ministries is made up of several arms, each carrying out a part of the work: the perfecting of the church and the equipping of the saints for the work of the ministry.</p>
+  <ul class="arms">
+    {arms.map((a) => (
+      <li class="arm"><span class="abbr">{a.abbr}</span><h3>{a.name}</h3><p>{a.text}</p></li>
+    ))}
+  </ul>
+  <LinkCard href="/about" label="Back to About" title="Who We Are" />
+</AboutLayout>
+<style>
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
+  h2 { margin: var(--space-4) 0 0; font-family: var(--font-title); font-weight: 600; font-size: var(--text-2xl); }
+  h3 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 1.4rem; line-height: 1.15; }
+  p { margin: 0; }
+  .lead { max-inline-size: 45rem; }
+  .person, .arm { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
+  .photo { aspect-ratio: 4 / 5; background: linear-gradient(170deg, var(--color-wash), var(--color-sage)); display: flex; align-items: center; justify-content: center; font-family: var(--font-title); font-size: 3rem; color: var(--color-primary); }
+  .photo img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+  .info { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-1); line-height: 1.4; }
+  .role { font-size: var(--text-sm); letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  .info p { font-size: 0.9375rem; color: var(--color-muted); }
+  .arm { padding: var(--space-5); gap: var(--space-2); }
+  .abbr { inline-size: 3rem; block-size: 3rem; border-radius: 12px; background: var(--color-wash); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-family: var(--font-title); font-weight: 600; font-size: var(--text-sm); }
+  @media (min-width: 40rem) { .team, .arms { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) { .arms { grid-template-columns: repeat(3, minmax(0, 1fr)); } .team { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+</style>

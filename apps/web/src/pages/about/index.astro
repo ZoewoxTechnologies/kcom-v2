@@ -1,0 +1,36 @@
+---
+import AboutLayout from "../../components/AboutLayout.astro";
+import LinkCard from "../../components/LinkCard.astro";
+const pillars = ["Revelation", "Restoration", "Revival"];
+---
+<AboutLayout title="Who We Are" description="Kingdom Capstone Outreach Ministries is a prophetic, teaching and intercessory outreach." intro="A prophetic, teaching and intercessory outreach, encouraging, equipping and motivating individuals and churches to operate in the realms of grace and glory.">
+  <div class="prose">
+    <p>Kingdom Capstone Outreach Ministries is a prophetic, teaching and intercessory outreach with a mandate to encourage, equip and motivate individuals and churches to operate in the realms of grace and glory, from the divine platforms of power, purity and perfection in Christ.</p>
+    <p>Inspired by Matthew 6:10, we seek to touch and transform lives with the prophetic messages of revelation, restoration and revival.</p>
+  </div>
+  <ul class="pillars">{pillars.map((p) => <li>{p}</li>)}</ul>
+  <section class="vision">
+    <span class="label">The vision</span>
+    <blockquote>For the earth shall be filled with the knowledge of the glory of the Lord, as the waters cover the sea.<cite>Habakkuk 2:14</cite></blockquote>
+  </section>
+  <section class="mission">
+    <span class="label">The mission</span>
+    <p>To publish and proclaim the prophetic Word of God with power and proof, and to prepare the saints for the Second Coming of the Lord Jesus Christ.</p>
+  </section>
+  <div class="prose"><p>For over 20 years we have been discovering more of our Heavenly Father’s love and the revelation of His eternal purpose, and we have seen diverse lives changed by the power of His Word.</p></div>
+  <LinkCard end href="/about/team" label="Next in About" title="Team and Arms" />
+</AboutLayout>
+<style>
+  .prose { max-inline-size: 45rem; display: flex; flex-direction: column; gap: var(--space-4); }
+  .prose p { margin: 0; }
+  .pillars { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+  .pillars li { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: var(--space-4) var(--space-2); text-align: center; font-family: var(--font-title); font-weight: 600; font-size: var(--text-lg); }
+  .label { font-size: var(--text-xs); letter-spacing: 0.14em; font-weight: 700; text-transform: uppercase; color: var(--color-muted); }
+  .vision { display: flex; flex-direction: column; gap: var(--space-3); align-items: center; text-align: center; border-block-start: 2px solid var(--color-gold); padding-block-start: var(--space-5); }
+  blockquote { margin: 0; font-family: var(--font-title); font-style: italic; font-size: var(--text-xl); line-height: 1.25; }
+  cite { display: block; margin-block-start: var(--space-3); font: 700 var(--text-sm) var(--font-body); font-variant: small-caps; letter-spacing: 0.1em; color: var(--color-gold-text); }
+  .mission { background: var(--color-bar); color: var(--color-on-bar); border-radius: var(--radius); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); align-items: center; text-align: center; }
+  .mission .label { color: var(--color-bar-gold); }
+  .mission p { margin: 0; font-family: var(--font-title); font-size: var(--text-xl); line-height: 1.3; }
+  @media (min-width: 48rem) { blockquote { font-size: var(--text-2xl); } .mission p { font-size: var(--text-2xl); } .mission { padding: var(--space-6); } }
+</style>
