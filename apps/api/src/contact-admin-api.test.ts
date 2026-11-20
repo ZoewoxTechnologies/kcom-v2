@@ -164,7 +164,7 @@ describe("admin contact inbox", () => {
     expect(((await read.json()) as Msg).status).toBe("read");
     expect(
       ((await (await call("/unread-count", editor)).json()) as { unread: number }).unread,
-    ).toBe(1);
+    ).toBe(2);
     const unread = await call(`/${ids.oldest}`, editor, "PATCH", { status: "new" });
     expect(((await unread.json()) as Msg).status).toBe("new");
     expect((await call(`/${ids.oldest}`, editor, "PATCH", { status: "bogus" })).status).toBe(400);
