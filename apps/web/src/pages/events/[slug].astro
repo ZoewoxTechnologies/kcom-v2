@@ -15,7 +15,7 @@ const rows = programmeRows(event.programme);
 const description = event.description ? richTextToPlain(event.description).slice(0, 160) || undefined : undefined;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title={event.title} description={description} current="/events" bleed>
+<BaseLayout title={event.title} description={description} current="/events">
   <section class="hero">
     <div class="hero-in">
       <div class="badge" aria-hidden="true"><span>{badge.month}</span><strong>{badge.day}</strong><span>{badge.year}</span></div>
@@ -30,7 +30,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       </div>
     </div>
   </section>
-  <div class="band">
   <div class="cols">
     <article class="main">
       {event.imageUrl && <img class="img" src={event.imageUrl} alt="" />}
@@ -59,14 +58,12 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       )}
     </aside>
   </div>
-  </div>
 </BaseLayout>
 <style>
-  .hero { background: var(--color-wash); padding: 56px var(--gutter); }
+  .hero { background: var(--color-wash); padding-block: 56px; margin-block-start: calc(-1 * var(--space-6)); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); }
   .main h2 { margin-block-start: 12px; line-height: 1.65; }
-  .hero-in, .cols { max-inline-size: var(--page-max); margin-inline: auto; }
+  
   .hero-in { padding-inline: 0; }
-  .band { padding-inline: var(--gutter); }
   .hero-in { display: flex; gap: var(--space-5); align-items: center; flex-wrap: wrap; }
   .badge { inline-size: 7.5rem; flex: none; border-radius: var(--radius); background: var(--color-primary); color: #fff; display: flex; flex-direction: column; align-items: center; padding-block: 1rem; line-height: 1.1; }
   .badge span:first-child { font-size: 0.875rem; font-weight: 700; letter-spacing: 0.12em; color: #e3c88a; }
