@@ -4,6 +4,14 @@ import { rateLimits, type CapsuleDb } from "@kcom/db";
 export const CONTACT_RATE_LIMIT = { max: 5, windowMs: 60 * 60 * 1000 };
 export const DEFAULT_TRUSTED_PROXY_HOPS = 1;
 
+/** TRUSTED_PROXY_HOPS must be a positive integer; anything else falls back to the default with a warning. */
+export function parseTrustedProxyHops(raw: string | undefined): number {
+  if (raw === undefined || raw.trim() === "") return DEFAULT_TRUSTED_PROXY_HOPS;
+  if (/^[1-9]\d*$/.test(raw.trim())) return Number(raw.trim());
+  console.warn(`[contact] invalid TRUSTED_PROXY_HOPS "${raw}"; using ${DEFAULT_TRUSTED_PROXY_HOPS}`);
+  return DEFAULT_TRUSTED_PROXY_HOPS;
+}
+
 /**
  * Client IP from the RIGHT of x-forwarded-for: each trusted proxy appends the address it saw, so the entry
  * `hops` from the end is the one our own proxy recorded; anything to its left is client-supplied and ignored.

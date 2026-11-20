@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { contactMessages, rateLimits } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
-import { clientIp } from "./contact-spam.js";
+import { clientIp, parseTrustedProxyHops } from "./contact-spam.js";
 
 const ok = { topic: "prayer", name: "Grace", email: "grace@example.org", message: "Please pray." };
 
@@ -140,4 +140,21 @@ describe("clientIp", () => {
     expect(clientIp("a, b", 0, "s")).toBe("s");
   });
   it("is undefined with nothing usable", () => expect(clientIp(undefined, 1)).toBeUndefined());
+});
+
+describe("parseTrustedProxyHops", () => {
+  it("defaults to 1 when unset or blank", () => {
+    expect(parseTrustedProxyHops(undefined)).toBe(1);
+    expect(parseTrustedProxyHops("  ")).toBe(1);
+  });
+  it("accepts positive integers", () => {
+    expect(parseTrustedProxyHops("2")).toBe(2);
+    expect(parseTrustedProxyHops(" 3 ")).toBe(3);
+  });
+  it.each(["0", "-1", "1.5", "two", "1e2"])("falls back to 1 with a warning for %s", (raw) => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(parseTrustedProxyHops(raw)).toBe(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("TRUSTED_PROXY_HOPS"));
+    warn.mockRestore();
+  });
 });
