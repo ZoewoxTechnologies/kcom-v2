@@ -1,0 +1,86 @@
+/* Borderless pagination: plain page numbers, a filled circle for the current page,
+   chevron-only prev/next. Shared by the React <Pagination> and the Astro one.
+   Markup: nav.kc-pagination > (a|button).kc-pagination__item, .kc-pagination__gap.
+   Items are 32px visually with a 44px hit area. Import after tokens.css. */
+@layer components {
+  .kc-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .kc-pagination__item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 2rem;
+    block-size: 2rem;
+    padding: 0 var(--space-1);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-text);
+    font: 500 var(--text-sm) / 1 var(--font-body);
+    font-variant-numeric: tabular-nums;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-out);
+
+    /* 44px hit area without growing the visual size */
+    &::after {
+      content: "";
+      position: absolute;
+      inset-block: calc((2rem - var(--touch-target)) / 2);
+      inset-inline: min(0px, calc((2rem - var(--touch-target)) / 2));
+    }
+
+    &:hover {
+      background: var(--color-hover);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    &[aria-current="page"] {
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+      font-weight: 700;
+      cursor: default;
+    }
+
+    &[aria-disabled="true"],
+    &:disabled {
+      color: var(--color-muted);
+      opacity: 0.4;
+      background: transparent;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    svg {
+      inline-size: 1rem;
+      block-size: 1rem;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+
+  .kc-pagination__gap {
+    min-inline-size: 1.5rem;
+    text-align: center;
+    color: var(--color-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kc-pagination__item {
+      transition-duration: 0.01ms;
+    }
+  }
+}

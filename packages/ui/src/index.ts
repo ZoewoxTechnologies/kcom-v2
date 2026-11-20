@@ -37,7 +37,6 @@ export {
   TableEmpty,
   TablePagination,
   TableWrap,
-  pageItems,
 } from "./react/DataTable";
 export type {
   DataTableColumn,
@@ -47,6 +46,8 @@ export type {
   SortableThProps,
   TablePaginationProps,
 } from "./react/DataTable";
+export { Pagination } from "./react/Pagination";
+export type { PaginationProps } from "./react/Pagination";
 export { ConfirmDialog } from "./react/ConfirmDialog";
 export type { ConfirmAction, ConfirmDialogProps } from "./react/ConfirmDialog";
 export { Menu, MenuItem, MenuLabel, MenuSeparator } from "./react/Menu";

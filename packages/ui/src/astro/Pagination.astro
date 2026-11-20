@@ -1,4 +1,5 @@
 ---
+import "../components/pagination.css";
 import { pageWindow } from "../lib/pagination";
 
 interface Props {
@@ -17,22 +18,19 @@ const href = (n: number) => {
   const s = q.toString();
   return s ? `${path}?${s}` : path;
 };
+const item = "kc-pagination__item";
 ---
 {pages > 1 && (
-  <nav class="pagination" aria-label={label}>
-    {page > 1 && <a class="step" rel="prev" href={href(page - 1)} aria-label="Previous page">‹</a>}
+  <nav class="kc-pagination" aria-label={label}>
+    {page > 1
+      ? <a class={item} rel="prev" href={href(page - 1)} aria-label="Previous page"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" /></svg></a>
+      : <span class={item} aria-disabled="true" aria-label="Previous page"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" /></svg></span>}
     {pageWindow(page, pages).map((n) =>
-      n === null ? <span class="gap" aria-hidden="true">…</span>
-      : n === page ? <a href={href(n)} aria-current="page" aria-label={`Page ${n}`} class="cur">{n}</a>
-      : <a href={href(n)} aria-label={`Page ${n}`}>{n}</a>,
+      n === null ? <span class="kc-pagination__gap" aria-hidden="true">…</span>
+      : <a class={item} href={href(n)} aria-label={`Page ${n}`} aria-current={n === page ? "page" : undefined}>{n}</a>,
     )}
-    {page < pages && <a class="step" rel="next" href={href(page + 1)} aria-label="Next page">›</a>}
+    {page < pages
+      ? <a class={item} rel="next" href={href(page + 1)} aria-label="Next page"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6 3l5 5-5 5" /></svg></a>
+      : <span class={item} aria-disabled="true" aria-label="Next page"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6 3l5 5-5 5" /></svg></span>}
   </nav>
 )}
-<style>
-  .pagination { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; font-weight: 600; }
-  a { inline-size: var(--touch-target); block-size: var(--touch-target); border-radius: var(--radius-pill); border: 1px solid var(--color-line); display: flex; align-items: center; justify-content: center; text-decoration: none; }
-  a:hover { background: var(--color-hover); }
-  .cur, .cur:hover { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
-  .gap { align-self: center; padding: var(--space-2); }
-</style>
