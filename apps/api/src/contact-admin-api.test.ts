@@ -107,25 +107,45 @@ describe("admin contact inbox", () => {
     expect((await call("?topic=nope", admin)).status).toBe(400);
   });
 
-  it("hides private messages without prayer:read, everywhere", async () => {
-    const seen = await list("", editor);
-    expect(seen.items.map((m) => m.name)).toEqual(["read", "prayer", "oldest"]);
-    expect(seen.total).toBe(3);
-    expect((await list("?topic=prayer", editor)).items.map((m) => m.name)).toEqual(["prayer"]);
-    expect((await call(`/${ids.secret}`, editor)).status).toBe(404);
-    expect((await call(`/${ids.secret}`, editor, "PATCH", { status: "read" })).status).toBe(404);
-    expect(
-      ((await (await call("/unread-count", editor)).json()) as { unread: number }).unread,
-    ).toBe(2);
+  it("shows editors and admins every message, private ones included", async () => {
+    for (const cookie of [editor, admin]) {
+      const seen = await list("", cookie);
+      expect(seen.items.map((m) => m.name)).toEqual(["read", "secret", "prayer", "oldest"]);
+      expect(seen.total).toBe(4);
+      expect((await list("?topic=prayer", cookie)).items.map((m) => m.name)).toEqual([
+        "secret",
+        "prayer",
+      ]);
+      const res = await call(`/${ids.secret}`, cookie);
+      expect(res.status).toBe(200);
+      expect(((await res.json()) as Msg).keepPrivate).toBe(true);
+      expect(
+        ((await (await call("/unread-count", cookie)).json()) as { unread: number }).unread,
+      ).toBe(3);
+    }
   });
 
-  it("shows private messages to the prayer team", async () => {
-    const res = await call(`/${ids.secret}`, admin);
-    expect(res.status).toBe(200);
-    expect(((await res.json()) as Msg).keepPrivate).toBe(true);
-    expect(((await (await call("/unread-count", admin)).json()) as { unread: number }).unread).toBe(
-      3,
+  it("hides private messages from any role without prayer:read", async () => {
+    // Guards the filter itself, which stays in place for a future narrower role.
+    const { rolePermissions } = await import("./permissions.js");
+    const saved = rolePermissions.editor;
+    (rolePermissions as Record<string, readonly string[]>).editor = saved.filter(
+      (p) => p !== "prayer:read",
     );
+    try {
+      expect((await list("", editor)).items.map((m) => m.name)).toEqual([
+        "read",
+        "prayer",
+        "oldest",
+      ]);
+      expect((await call(`/${ids.secret}`, editor)).status).toBe(404);
+      expect((await call(`/${ids.secret}`, editor, "PATCH", { status: "read" })).status).toBe(404);
+      expect(
+        ((await (await call("/unread-count", editor)).json()) as { unread: number }).unread,
+      ).toBe(2);
+    } finally {
+      (rolePermissions as Record<string, readonly string[]>).editor = saved;
+    }
   });
 
   it("gets one message and 404s for unknown ids", async () => {

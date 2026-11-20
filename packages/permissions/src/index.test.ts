@@ -10,9 +10,9 @@ describe("permissions", () => {
     expect(can("editor", "users:manage")).toBe(false);
     expect(can("editor", "content:write")).toBe(true);
   });
-  it("lets editors read the inbox but only admins read private prayer requests", () => {
+  it("lets editors and admins read the inbox, including private prayer requests", () => {
     expect(can("editor", "inbox:read")).toBe(true);
-    expect(can("editor", "prayer:read")).toBe(false);
+    expect(can("editor", "prayer:read")).toBe(true);
     expect(can("admin", "prayer:read")).toBe(true);
   });
   it("fails closed for anything that is not a known role", () => {
