@@ -123,6 +123,8 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`API /capsules/latest responded ${res.status}`);
       const c = await res.json();
+      // The verse bar renders this on every page: a malformed body must read as no capsule, never as "Invalid Date".
+      if (!c || typeof c.slug !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(String(c.displayDate))) return null;
       return {
         slug: c.slug,
         title: c.title,
