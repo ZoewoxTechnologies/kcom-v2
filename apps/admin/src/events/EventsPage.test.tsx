@@ -59,9 +59,12 @@ beforeEach(() => {
     vi.fn(async (url: string, init?: RequestInit) => {
       const method = init?.method ?? "GET";
       if (new URL(url).pathname === "/admin/blog")
-        return new Response(JSON.stringify({ items: [{ id: "p1", title: "Recap", status: "published" }], total: 1 }), {
-          headers: { "content-type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ items: [{ id: "p1", title: "Recap", status: "published" }], total: 1 }),
+          {
+            headers: { "content-type": "application/json" },
+          },
+        );
       const path = new URL(url).pathname.replace("/admin/events", "") || "/";
       const body = init?.body ? JSON.parse(String(init.body)) : undefined;
       calls.push({ method, path, body });

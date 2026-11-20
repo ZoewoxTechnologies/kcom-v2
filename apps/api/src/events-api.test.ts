@@ -105,7 +105,11 @@ describe("admin events", () => {
         "/admin/events",
         editor,
         "POST",
-        valid({ allDay: true, onlineUrl: "https://example.org/live", programme: "Fri · 6 p.m. · Open" }),
+        valid({
+          allDay: true,
+          onlineUrl: "https://example.org/live",
+          programme: "Fri · 6 p.m. · Open",
+        }),
       ),
     );
     expect(ev).toMatchObject({

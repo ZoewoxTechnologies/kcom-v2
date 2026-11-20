@@ -1,0 +1,60 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { data } from "../../lib/data";
+import { richTextToPlain } from "../../lib/data/client";
+import { richTextToHtml } from "../../lib/rich-text";
+import { eventWhen, programmeRows } from "../../lib/event-page";
+
+const { slug } = Astro.params;
+const event = slug ? await data.eventBySlug(slug) : null;
+if (!event) return Astro.rewrite("/404");
+const when = eventWhen(event);
+const html = event.description ? richTextToHtml(event.description) : "";
+const rows = programmeRows(event.programme);
+const description = event.description ? richTextToPlain(event.description).slice(0, 160) || undefined : undefined;
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+---
+<BaseLayout title={event.title} description={description}>
+  <article class="event">
+    <span class="kicker">Event</span>
+    <h1>{event.title}</h1>
+    <p class="when">{when}{event.place && <> · {event.place}</>}{event.onlineUrl && <> · also online</>}</p>
+    {event.imageUrl && <img class="hero" src={event.imageUrl} alt="" />}
+    {html && <div class="prose" set:html={html} />}
+    {rows.length > 0 && (
+      <section aria-labelledby="programme">
+        <h2 id="programme">Programme</h2>
+        <dl class="programme">
+          {rows.map((r) => (<><dt>{r.time}</dt><dd>{r.item}</dd></>))}
+        </dl>
+      </section>
+    )}
+    {event.onlineUrl && (
+      <section aria-labelledby="online">
+        <h2 id="online">Join online</h2>
+        <p><a class="btn" href={event.onlineUrl} rel="noopener">Open the online link</a></p>
+      </section>
+    )}
+    {event.relatedPost && (
+      <aside class="after" aria-labelledby="after">
+        <span class="kicker" id="after">After the event</span>
+        <a href={`/blog/${event.relatedPost.slug}`}>{event.relatedPost.title}</a>
+      </aside>
+    )}
+  </article>
+</BaseLayout>
+<style>
+  .event { max-inline-size: 45rem; margin-inline: auto; display: flex; flex-direction: column; gap: 1.25rem; padding-block: var(--space-5) var(--space-6); font-size: 1.0625rem; line-height: 1.7; }
+  .kicker { font-size: 0.8125rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; line-height: 1.05; }
+  h2 { margin: var(--space-3) 0 0; font-family: var(--font-title); font-weight: 600; font-size: 1.75rem; line-height: 1.15; }
+  .when { margin: 0; color: var(--color-muted); }
+  .hero { inline-size: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius); display: block; background: var(--color-wash); }
+  .prose :global(p) { margin: 0 0 1rem; }
+  .programme { margin: 0; display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr; }
+  .programme dt, .programme dd { margin: 0; padding-block: 0.75rem; border-block-start: 1px solid var(--color-line); }
+  .programme dt { font-weight: 700; }
+  .btn { display: inline-block; padding: 0.7rem 1.4rem; border-radius: 999px; background: var(--color-primary); color: #fff; text-decoration: none; font-weight: 600; }
+  .after { display: flex; flex-direction: column; gap: 0.25rem; padding: var(--space-4); border-radius: var(--radius); background: var(--color-wash); }
+  .after a { color: var(--color-primary); }
+</style>

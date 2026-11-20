@@ -162,6 +162,25 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       const p = await res.json();
       return { ...toBlogSummary(p), body: p.body };
     },
+    async eventBySlug(slug) {
+      const res = await client.events[":slug"].$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /events/${slug} responded ${res.status}`);
+      const e = await res.json();
+      return {
+        slug: e.slug,
+        title: e.title,
+        startsAt: e.startsAt,
+        endsAt: e.endsAt,
+        allDay: e.allDay,
+        place: e.place,
+        description: e.description,
+        imageUrl: e.imageUrl,
+        onlineUrl: e.onlineUrl,
+        programme: e.programme,
+        relatedPost: e.relatedPost,
+      };
+    },
   };
 }
 

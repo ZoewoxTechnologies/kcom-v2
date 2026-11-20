@@ -109,7 +109,12 @@ export const adminEventRoutes = (db: CapsuleDb) =>
     db,
     table: events,
     label: "event",
-    errors: { messages: { reference: "related post does not exist", check: "end time must not be before start time" } },
+    errors: {
+      messages: {
+        reference: "related post does not exist",
+        check: "end time must not be before start time",
+      },
+    },
     createBody,
     updateBody,
     orderBy: [desc(events.startsAt)],

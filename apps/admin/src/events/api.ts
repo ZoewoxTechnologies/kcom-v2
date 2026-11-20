@@ -39,9 +39,9 @@ export interface PostOption {
 
 /** Published posts, for linking an event to its write-up. */
 export const listPostOptions = () =>
-  apiJson<{ items: (PostOption & { status: string })[] }>("/admin/blog?status=published&limit=100").then(
-    (r) => r.items.map(({ id, title }) => ({ id, title })),
-  );
+  apiJson<{ items: (PostOption & { status: string })[] }>(
+    "/admin/blog?status=published&limit=100",
+  ).then((r) => r.items.map(({ id, title }) => ({ id, title })));
 
 const call = <T>(path: string, init?: RequestInit) => apiJson<T>(`/admin/events${path}`, init);
 

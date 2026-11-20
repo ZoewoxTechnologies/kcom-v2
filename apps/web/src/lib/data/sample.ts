@@ -1,7 +1,7 @@
 import { lagosDate } from "@kcom/content";
 import { sampleBlogPosts } from "./sample-blog";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import type { Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
+import type { EventDetail, Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
 
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -139,7 +139,24 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
     async blogPostBySlug(slug) {
       return sampleBlogPosts.find((b) => b.slug === slug) ?? null;
     },
+    async eventBySlug(slug) {
+      return slug === sampleEvent.slug ? sampleEvent : null;
+    },
   };
 }
+
+const sampleEvent: EventDetail = {
+  slug: "kingdom-capstone-conference-2027",
+  title: "Kingdom Capstone Conference 2027",
+  startsAt: "2027-03-12T17:00:00Z",
+  endsAt: "2027-03-14T13:00:00Z",
+  allDay: false,
+  place: "Venue to be announced",
+  description: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Three days of teaching, prophecy and intercession." }] }] },
+  imageUrl: null,
+  onlineUrl: "https://example.org/live",
+  programme: "Fri · 6 p.m. · Opening service\nSat · 10 a.m. · Teaching sessions and workshops\nSat · 6 p.m. · Prophetic night",
+  relatedPost: null,
+};
 
 export const sampleSource: DataSource = createSampleSource();
