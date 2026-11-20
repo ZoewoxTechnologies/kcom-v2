@@ -48,11 +48,17 @@ const full: RichTextDoc = {
         },
       ],
     },
-    { type: "image", attrs: { src: IMG, alt: "a" } },
+    { type: "image", attrs: { src: IMG, alt: "a", width: 800, height: 600 } },
   ],
 };
 
-function Harness({ initial, upload }: { initial: RichTextDoc; upload?: () => Promise<string> }) {
+function Harness({
+  initial,
+  upload,
+}: {
+  initial: RichTextDoc;
+  upload?: () => Promise<{ src: string; width?: number; height?: number }>;
+}) {
   const form = useDirtyState(initial);
   const [last, setLast] = useState<RichTextDoc | null>(null);
   return (
@@ -97,13 +103,29 @@ describe("RichTextEditor", () => {
   });
 
   it("inserts an uploaded image", async () => {
-    render(<Harness initial={emptyRichText} upload={() => Promise.resolve(IMG)} />);
+    render(
+      <Harness
+        initial={emptyRichText}
+        upload={() => Promise.resolve({ src: IMG, width: 800, height: 600 })}
+      />,
+    );
     await screen.findByRole("textbox");
     await userEvent.upload(
       screen.getByTestId("rte-file"),
       new File(["x"], "pic.png", { type: "image/png" }),
     );
+    const alt = await screen.findByLabelText(/Describe pic.png/);
+    await userEvent.click(screen.getByRole("button", { name: "Add image" }));
+    expect(screen.getByTestId("json").textContent).not.toContain(IMG); // alt text is required first
+    await userEvent.type(alt, "A pic");
+    await userEvent.click(screen.getByRole("button", { name: "Add image" }));
     await waitFor(() => expect(screen.getByTestId("json").textContent).toContain(IMG));
+    expect(JSON.parse(screen.getByTestId("json").textContent!).content[0].attrs).toEqual({
+      src: IMG,
+      alt: "A pic",
+      width: 800,
+      height: 600,
+    });
   });
 
   it("shows an error for a failed upload and for a wrong file type", async () => {

@@ -163,6 +163,9 @@ importers:
       '@kcom/content':
         specifier: workspace:*
         version: link:../../packages/content
+      '@kcom/media':
+        specifier: workspace:^
+        version: link:../../packages/media
       '@kcom/ui':
         specifier: workspace:*
         version: link:../../packages/ui

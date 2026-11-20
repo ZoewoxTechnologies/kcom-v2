@@ -1,10 +1,15 @@
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 
-/** Block image holding only what the stored format keeps: `src` and `alt`. */
+/** Block image holding only what the stored format keeps: `src`, `alt`, and optional `width`/`height`. */
 const StoredImage = Image.extend({
   addAttributes() {
-    return { src: { default: null }, alt: { default: null } };
+    return {
+      src: { default: null },
+      alt: { default: "" },
+      width: { default: null },
+      height: { default: null },
+    };
   },
 }).configure({ inline: false, allowBase64: false });
 
@@ -36,6 +41,10 @@ type Node = { type?: string; attrs?: Record<string, unknown>; marks?: Node[]; co
 export function toStoredDoc<T extends Node>(node: T): T {
   const out: Node = { ...node };
   if (out.type === "orderedList") delete out.attrs;
+  if (out.type === "image" && out.attrs) {
+    const { src, alt, width, height } = out.attrs;
+    out.attrs = { src, alt: alt ?? "", ...(width && height ? { width, height } : {}) };
+  }
   if (out.type === "link" && out.attrs) out.attrs = { href: out.attrs.href };
   if (out.marks) out.marks = out.marks.map(toStoredDoc);
   if (out.content) out.content = out.content.map(toStoredDoc);

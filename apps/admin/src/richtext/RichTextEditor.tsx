@@ -6,6 +6,7 @@ import { isSafeHref } from "@kcom/content";
 import { richTextExtensions, toStoredDoc } from "./extensions";
 import { cleanPastedHtml } from "./cleanPaste";
 import { uploadImage as defaultUpload, validateImageFile } from "./uploadImage";
+import type { UploadedImage } from "./uploadImage";
 import "./rich-text-editor.css";
 
 /** The stored rich-text document (see `@kcom/content`). */
@@ -23,8 +24,8 @@ export interface RichTextEditorProps {
   "aria-describedby"?: string;
   "aria-invalid"?: true;
   placeholder?: string;
-  /** Uploads an image and resolves to its URL. Defaults to Cloudinary via the admin API. */
-  upload?: (file: File, onProgress: (fraction: number) => void) => Promise<string>;
+  /** Uploads an image and resolves to its URL and size. Defaults to Cloudinary via the admin API. */
+  upload?: (file: File, onProgress: (fraction: number) => void) => Promise<UploadedImage>;
   disabled?: boolean;
 }
 
@@ -212,6 +213,7 @@ export function RichTextEditor({
   ...aria
 }: RichTextEditorProps) {
   const [uploads, setUploads] = useState<Record<number, Upload>>({});
+  const [pending, setPending] = useState<{ image: UploadedImage; alt: string; name: string }[]>([]);
   const nextId = useRef(0);
   const fileInput = useRef<HTMLInputElement>(null);
   const onChangeRef = useRef(onChange);
@@ -270,12 +272,9 @@ export function RichTextEditor({
     if (invalid) return set({ name: file.name, progress: 0, error: invalid });
     set({ name: file.name, progress: 0 });
     upload(file, (progress) => set({ name: file.name, progress }))
-      .then((src) => {
-        editor
-          ?.chain()
-          .focus()
-          .setImage({ src, alt: file.name.replace(/\.[^.]+$/, "") })
-          .run();
+      .then((image) => {
+        // Alt text is required: hold the image until the author describes it.
+        setPending((all) => [...all, { image, alt: "", name: file.name }]);
         set(null);
       })
       .catch((err: unknown) =>
@@ -309,6 +308,43 @@ export function RichTextEditor({
       >
         <EditorContent editor={editor} />
       </div>
+      {pending.map((p, i) => (
+        <form
+          key={p.image.src}
+          className="kc-rte__upload"
+          onSubmit={(e) => {
+            e.preventDefault();
+            editor
+              .chain()
+              .focus()
+              .setImage({ ...p.image, alt: p.alt.trim() })
+              .run();
+            setPending((all) => all.filter((_, j) => j !== i));
+          }}
+        >
+          <img src={p.image.src} alt="" className="kc-rte__thumb" />
+          <input
+            autoFocus
+            required
+            aria-label={`Describe ${p.name} for people who cannot see it`}
+            placeholder="Describe this image (alt text)"
+            value={p.alt}
+            onChange={(e) =>
+              setPending((all) => all.map((x, j) => (j === i ? { ...x, alt: e.target.value } : x)))
+            }
+          />
+          <button type="submit" className="kc-rte__btn">
+            Add image
+          </button>
+          <button
+            type="button"
+            className="kc-rte__btn"
+            onClick={() => setPending((all) => all.filter((_, j) => j !== i))}
+          >
+            Discard
+          </button>
+        </form>
+      ))}
       {Object.entries(uploads).map(([id, u]) => (
         <div key={id} className="kc-rte__upload" role={u.error ? "alert" : "status"}>
           {u.error ? (

@@ -51,12 +51,20 @@ function cleanNode(node: unknown, depth: number): Raw | null {
     out.attrs = { level: richTextHeadingLevel(level) };
   }
   if (node.type === "image") {
-    // Only Cloudinary-hosted images are kept; an image with any other source is dropped.
+    // Cloudinary-hosted images only, and alt text is required; otherwise the image is dropped.
     const attrs = isObj(node.attrs) ? node.attrs : {};
     if (typeof attrs.src !== "string" || !isCloudinaryImageUrl(attrs.src)) return null;
+    if (typeof attrs.alt !== "string") return null;
+    const size = (v: unknown) =>
+      Number.isInteger(v) && (v as number) > 0 && (v as number) <= 20_000
+        ? (v as number)
+        : undefined;
+    const width = size(attrs.width);
+    const height = size(attrs.height);
     out.attrs = {
       src: attrs.src,
-      ...(typeof attrs.alt === "string" ? { alt: attrs.alt.slice(0, 300) } : {}),
+      alt: attrs.alt.slice(0, 300),
+      ...(width && height ? { width, height } : {}),
     };
     return out;
   }

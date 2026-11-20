@@ -10,6 +10,12 @@ interface SignResponse {
   maxBytes: number;
 }
 
+export interface UploadedImage {
+  src: string;
+  width?: number;
+  height?: number;
+}
+
 export class UploadError extends Error {}
 
 /** Checks the file against the shared upload rules; returns an error message or null. */
@@ -21,11 +27,11 @@ export function validateImageFile(file: File): string | null {
   return null;
 }
 
-/** Signs with the API, then posts straight to Cloudinary. Resolves to the secure image URL. */
+/** Signs with the API, then posts straight to Cloudinary. Resolves to the secure image URL and its size. */
 export async function uploadImage(
   file: File,
   onProgress?: (fraction: number) => void,
-): Promise<string> {
+): Promise<UploadedImage> {
   const invalid = validateImageFile(file);
   if (invalid) throw new UploadError(invalid);
   const signRes = await fetch(`${apiUrl()}/admin/uploads/sign`, {
@@ -48,7 +54,7 @@ export async function uploadImage(
   form.append("signature", sign.signature);
   for (const [k, v] of Object.entries(sign.params)) form.append(k, String(v));
 
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<UploadedImage>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", sign.uploadUrl);
     xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(e.loaded / e.total);
@@ -56,8 +62,14 @@ export async function uploadImage(
       reject(new UploadError("Upload failed. Check your connection and try again."));
     xhr.onload = () => {
       try {
-        const url = (JSON.parse(xhr.responseText) as { secure_url?: string }).secure_url;
-        if (xhr.status >= 200 && xhr.status < 300 && url) return resolve(url);
+        const r = JSON.parse(xhr.responseText) as {
+          secure_url?: string;
+          width?: number;
+          height?: number;
+        };
+        if (xhr.status >= 200 && xhr.status < 300 && r.secure_url) {
+          return resolve({ src: r.secure_url, width: r.width, height: r.height });
+        }
       } catch {
         /* fall through */
       }
