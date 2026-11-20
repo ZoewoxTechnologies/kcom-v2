@@ -1,0 +1,65 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { bankRows, contactRows, sampleSettings, ways } from "../lib/partnership";
+
+const bank = bankRows(sampleSettings);
+const contact = contactRows(sampleSettings);
+---
+<BaseLayout title="Partner With Us" description="Stand with Kingdom Capstone Outreach Ministries as a prayer, prosperity or project partner." current="/partner">
+  <div class="page">
+    <header>
+      <span class="kicker">Networking visions to reach generations</span>
+      <h1>Partner With Us</h1>
+      <p>Partnership is a relationship of the heart that happens when people share a common vision. Kingdom Capstone Outreach Ministries welcomes every born-again Christian committed to the Word of God, whatever their age, background or country.</p>
+    </header>
+    <section aria-labelledby="ways">
+      <h2 id="ways">Three ways to partner</h2>
+      <div class="ways">
+        {ways.map((w) => (
+          <article>
+            <span class="kicker">{w.n}</span>
+            <h3>{w.title}</h3>
+            <p>{w.text}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+    {bank.length > 0 && (
+      <section class="panel" aria-labelledby="bank">
+        <span class="kicker">Give by bank transfer</span>
+        <h2 id="bank">Bank details</h2>
+        <dl>{bank.map((r) => <><dt>{r.label}</dt><dd>{r.value}</dd></>)}</dl>
+        <p class="note">Please use your name and “Partner” as the transfer reference so we can thank you.</p>
+      </section>
+    )}
+    {contact.length > 0 && (
+      <section class="panel plain" aria-labelledby="contact">
+        <h2 id="contact">Talk to us</h2>
+        <dl>{contact.map((r) => <><dt>{r.label}</dt><dd>{r.label === "Email" ? <a href={`mailto:${r.value}`}>{r.value}</a> : r.label === "Phone" ? <a href={`tel:${r.value.replace(/[^+\d]/g, "")}`}>{r.value}</a> : r.value}</dd></>)}</dl>
+      </section>
+    )}
+  </div>
+</BaseLayout>
+<style>
+  .page { max-inline-size: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-5) var(--space-7); }
+  header { display: flex; flex-direction: column; gap: var(--space-3); max-inline-size: 44rem; }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; }
+  h2 { margin: 0 0 var(--space-3); font: 600 1.75rem / 1.15 var(--font-title); }
+  h3 { margin: 0; font: 600 1.5rem / 1.15 var(--font-title); }
+  p { margin: 0; }
+  .kicker { font-size: 0.8125rem; letter-spacing: 0.08em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  .ways { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
+  article { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); }
+  article p { color: var(--color-muted); }
+  .panel { background: var(--color-sandstone); border: 1px solid var(--color-gold); border-radius: var(--radius); padding: var(--space-5); color: var(--color-text); }
+  .panel.plain { background: var(--color-surface); color: var(--color-text); border-color: var(--color-line); }
+  dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+  dt { padding-block-start: var(--space-3); border-block-start: 1px solid var(--color-line); font-size: 0.875rem; font-weight: 700; opacity: 0.75; }
+  dd { margin: 0; padding-block: var(--space-1) var(--space-3); font-size: 1.125rem; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .note { margin-block-start: var(--space-3); font-size: 0.9375rem; opacity: 0.8; }
+  @media (min-width: 48rem) {
+    .ways { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    dl { grid-template-columns: 12rem minmax(0, 1fr); }
+    dt, dd { padding-block: var(--space-3); border-block-start: 1px solid var(--color-line); }
+  }
+</style>

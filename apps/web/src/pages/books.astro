@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { data } from "../lib/data";
+
+const books = await data.listBooks();
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+---
+<BaseLayout title="Books" description="Books and mini-books from Kingdom Capstone Outreach Ministries." current="/books">
+  <div class="books">
+    <header>
+      <h1>Books</h1>
+      {books.length > 0 && <span class="count">{books.length} {books.length === 1 ? "title" : "titles"}</span>}
+    </header>
+    {books.length === 0 && <p class="empty">No books yet. Please check back soon.</p>}
+    <ul class="grid">
+      {books.map((b) => (
+        <li>
+          {b.purchaseUrl ? <a class="cover" href={b.purchaseUrl} rel="noopener" aria-label={`Get ${b.title}`}>{b.coverUrl ? <img src={b.coverUrl} alt="" loading="lazy" /> : <span>{b.title}</span>}</a>
+            : <span class="cover">{b.coverUrl ? <img src={b.coverUrl} alt="" loading="lazy" /> : <span>{b.title}</span>}</span>}
+          <h2>{b.title}</h2>
+          {b.publishedYear && <span class="meta">{b.publishedYear}</span>}
+          {b.description && <p>{b.description}</p>}
+          {b.purchaseUrl && <a class="get" href={b.purchaseUrl} rel="noopener">Get a copy →</a>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>
+<style>
+  .books { display: flex; flex-direction: column; gap: var(--space-5); padding-block: var(--space-5) var(--space-7); }
+  header { display: flex; align-items: baseline; gap: var(--space-4); flex-wrap: wrap; }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; }
+  .count, .meta { color: var(--color-muted); font-size: 0.875rem; }
+  .empty { color: var(--color-muted); }
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: var(--space-5) var(--space-4); }
+  li { display: flex; flex-direction: column; gap: var(--space-2); }
+  .cover { aspect-ratio: 2 / 3; border-radius: 8px; background: var(--color-wash); border: 1px solid var(--color-line); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: var(--space-3); text-align: center; font: 600 1.125rem / 1.2 var(--font-title); color: var(--color-text); text-decoration: none; }
+  .cover img { inline-size: 100%; block-size: 100%; object-fit: cover; margin: calc(var(--space-3) * -1); inline-size: calc(100% + var(--space-3) * 2); block-size: calc(100% + var(--space-3) * 2); max-inline-size: none; }
+  h2 { margin: 0; font: 600 1.3125rem / 1.15 var(--font-title); }
+  p { margin: 0; font-size: 0.9375rem; color: var(--color-muted); }
+  .get { font-weight: 700; font-size: 0.9375rem; color: var(--color-primary); }
+</style>

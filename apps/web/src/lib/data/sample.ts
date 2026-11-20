@@ -1,7 +1,7 @@
 import { lagosDate } from "@kcom/content";
 import { sampleBlogPosts } from "./sample-blog";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import type { Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
+import type { Book, Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
 
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -97,6 +97,17 @@ function toCapsule(c: CapsuleListItem, series: SeriesSummary[]): Capsule {
 
 const link = ({ slug, title, displayDate, scriptureRef }: CapsuleListItem) => ({ slug, title, displayDate, scriptureRef });
 
+const sampleBooks: Book[] = [
+  "Alone With God", "Divine Help", "Holistic Growth", "Peak Performance Gateway", "Power of Peak Thinking", "Rock of Ages", "The Control Room", "The Inner Life", "The Renewed Mind", "Thirty Dominion Quotes",
+].map((title, i) => ({
+  slug: slugOf(title),
+  title,
+  description: "Sample description of the book, for layout purposes.",
+  coverUrl: null,
+  purchaseUrl: i % 3 === 0 ? null : "https://example.com/buy",
+  publishedYear: 2012 + i,
+}));
+
 export function createSampleSource(now: () => Date = () => new Date()): DataSource {
   return {
     async latestCapsule() {
@@ -132,6 +143,9 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
       const { items, series } = build(now());
       const found = series.find((s) => s.slug === slug);
       return found ? { series: found, capsules: inSeriesOrder(items.filter((c) => c.seriesTitle === found.title)) } : null;
+    },
+    async listBooks() {
+      return sampleBooks;
     },
     async listBlogPosts({ limit = 20, offset = 0 } = {}) {
       return sampleBlogPosts.slice(offset, offset + limit).map((b) => ({ slug: b.slug, title: b.title, date: b.date, excerpt: b.excerpt, heroImageUrl: b.heroImageUrl, tags: b.tags }));
