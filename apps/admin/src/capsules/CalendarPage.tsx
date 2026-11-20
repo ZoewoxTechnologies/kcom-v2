@@ -25,6 +25,20 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export const newCapsulePath = (day?: DayKey) =>
   day ? `/capsules/new?day=${day}` : "/capsules/new";
 
+function Chevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d={direction === "left" ? "M10 3 5 8l5 5" : "M6 3l5 5-5 5"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 /** Month calendar of capsules by Lagos day. Scheduled capsules can be dragged, or moved by date. */
 export function CalendarPage() {
   const { user } = useAuth();
@@ -90,23 +104,27 @@ export function CalendarPage() {
         <h1>{monthLabel(month)}</h1>
         <div className="kc-cal__nav">
           <Button
-            variant="secondary"
+            variant="tertiary"
+            size="sm"
+            className="kc-cal__step"
             aria-label="Previous month"
             onClick={() => setMonth(shiftMonth(month, -1))}
           >
-            ‹
+            <Chevron direction="left" />
           </Button>
-          <Button variant="secondary" onClick={() => setMonth(monthOf(today))}>
+          <Button variant="secondary" size="sm" onClick={() => setMonth(monthOf(today))}>
             Today
           </Button>
           <Button
-            variant="secondary"
+            variant="tertiary"
+            size="sm"
+            className="kc-cal__step"
             aria-label="Next month"
             onClick={() => setMonth(shiftMonth(month, 1))}
           >
-            ›
+            <Chevron direction="right" />
           </Button>
-          <Link className="kc-btn kc-btn--primary kc-cal__new" to={newCapsulePath()}>
+          <Link className="kc-btn kc-btn--primary kc-btn--sm kc-cal__new" to={newCapsulePath()}>
             New capsule
           </Link>
         </div>
@@ -221,10 +239,11 @@ export function CalendarPage() {
             onChange={(e) => setMoveDay(e.target.value)}
           />
           <DialogActions>
-            <Button variant="secondary" onClick={() => setMoving(null)}>
+            <Button variant="secondary" size="sm" onClick={() => setMoving(null)}>
               Cancel
             </Button>
             <Button
+              size="sm"
               disabled={!moveDay || moveDay < minDay}
               onClick={() => {
                 const target = moving;

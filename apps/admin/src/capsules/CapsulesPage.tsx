@@ -79,6 +79,7 @@ export function CapsulesPage() {
       </header>
       <form className="kc-capsules__filters" role="search" onSubmit={(e) => e.preventDefault()}>
         <TextField
+          size="sm"
           label="Search"
           type="search"
           placeholder="Title"
@@ -86,6 +87,7 @@ export function CapsulesPage() {
           onChange={(e) => filter(setQ)(e.target.value)}
         />
         <SelectField
+          size="sm"
           label="Status"
           value={status}
           onChange={(e) => filter(setStatus)(e.target.value)}
@@ -98,6 +100,7 @@ export function CapsulesPage() {
           ))}
         </SelectField>
         <SelectField
+          size="sm"
           label="Series"
           value={seriesId}
           onChange={(e) => filter(setSeriesId)(e.target.value)}
@@ -110,6 +113,7 @@ export function CapsulesPage() {
           ))}
         </SelectField>
         <TextField
+          size="sm"
           label="Date (Lagos)"
           type="date"
           value={date}

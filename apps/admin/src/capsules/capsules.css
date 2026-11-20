@@ -31,13 +31,31 @@
     margin-inline-start: auto;
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-4);
+  }
+  /* Borderless icon-only chevron. The ::after keeps the 44px hit area. */
+  .kc-cal__step {
+    inline-size: var(--control-height-sm);
+    padding: 0;
+    text-decoration: none;
+    border-radius: var(--radius-pill);
+
+    &::after {
+      inset-inline: calc((var(--control-height-sm) - var(--touch-target)) / 2);
+    }
+    &:hover:not(:disabled) {
+      background: var(--color-secondary-hover);
+    }
+  }
+  .kc-capsules .kc-table__foot {
+    padding-block: var(--space-4);
+    margin-block-start: var(--space-2);
   }
   .kc-cal__key {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-4);
     font-size: 0.875rem;
   }
   .kc-cal__hint {
