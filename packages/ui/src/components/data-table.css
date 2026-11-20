@@ -1,7 +1,7 @@
 /* Data table for admin lists. Wrap a semantic <table class="kc-table"> in
    .kc-table-wrap (scrolls sideways on narrow screens). Sortable headers are
    <th aria-sort> holding a .kc-table__sort button. Selected rows use
-   data-selected="true" (announced by a hidden label in the first cell). Pagination is .kc-pager. Import after tokens.css. */
+   data-selected="true" (announced by a hidden label in the first cell). The footer is .kc-table__foot (pair with pagination.css). Import after tokens.css. */
 @layer components {
   .kc-table-wrap {
     overflow-x: auto;
@@ -135,21 +135,10 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border-block-start: 1px solid var(--color-line);
+    margin-block-start: var(--space-4);
+    padding: var(--space-3) var(--space-4) var(--space-4);
     color: var(--color-muted);
     font-size: var(--text-sm);
-  }
-
-  .kc-pager {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .kc-pager__gap {
-    padding: 0 var(--space-1);
   }
 
   @media (prefers-reduced-motion: reduce) {

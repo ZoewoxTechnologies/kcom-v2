@@ -5,7 +5,6 @@ import {
   SortableTh,
   TableEmpty,
   TablePagination,
-  pageItems,
   type DataTableColumn,
 } from "./DataTable";
 
@@ -105,12 +104,6 @@ describe("building blocks", () => {
     );
     expect(html).toContain('aria-sort="descending"');
     expect(html).toContain('scope="col"');
-  });
-
-  it("windows page numbers for long lists", () => {
-    expect(pageItems(1, 3)).toEqual([1, 2, 3]);
-    expect(pageItems(1, 53)).toEqual([1, 2, "gap", 53]);
-    expect(pageItems(27, 53)).toEqual([1, "gap", 26, 27, 28, "gap", 53]);
   });
 
   it("pagination shows range, current page and disabled edges", () => {
