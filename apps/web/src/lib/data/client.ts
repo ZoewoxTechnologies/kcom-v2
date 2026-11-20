@@ -179,6 +179,20 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
         sampleUrl: null,
       }));
     },
+    async listEvents(when) {
+      const res = await client.events.$get({ query: { when, limit: "100", offset: "0" } }, signal());
+      if (!res.ok) throw new Error(`API /events responded ${res.status}`);
+      return (await res.json()).map((e) => ({
+        slug: e.slug,
+        title: e.title,
+        startsAt: e.startsAt,
+        endsAt: e.endsAt,
+        allDay: e.allDay,
+        place: e.place,
+        summary: richTextToPlain(e.description) || null,
+        online: e.onlineUrl !== null,
+      }));
+    },
     async eventBySlug(slug) {
       const res = await client.events[":slug"].$get({ param: { slug } }, signal());
       if (res.status === 404) return null;
