@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { capsuleSchema } from "@kcom/content";
+import { capsuleSchema, lagosDate } from "@kcom/content";
 import type { RawNode } from "./extract.ts";
 import { htmlToDoc, nodeText } from "./html.ts";
 import { findMissingFiles, parseSeriesTitle, splitScripture, transformCapsules } from "./transform.ts";
@@ -105,11 +105,31 @@ describe("transformCapsules", () => {
     expect(r.stats).toMatchObject({ nodes: 5, migrated: 4, skipped: 1 });
   });
 
-  it("keeps same-day capsules, offsetting the later publishAt and warning", () => {
-    const d = transformCapsules([node(1, "One", `${scripture}<p>a</p>`), node(2, "Two", `${scripture}<p>b</p>`, { field_daily_digest_date: [{ field_daily_digest_date_value: "2015-03-11 00:00:00" }] })]);
-    const [a, b] = d.capsules;
-    expect(b!.publishAt.getTime() - a!.publishAt.getTime()).toBe(60_000);
-    expect(d.issues.filter((i) => i.code === "duplicate-date").map((i) => i.nid)).toEqual([2]);
+  const on = (date: string) => ({ field_daily_digest_date: [{ field_daily_digest_date_value: `${date} 00:00:00` }] });
+
+  it("moves a same-day capsule to the next free Lagos day and warns", () => {
+    const d = transformCapsules([
+      node(1, "One", `${scripture}<p>a</p>`, on("2015-03-11")),
+      node(2, "Two", `${scripture}<p>b</p>`, on("2015-03-11")),
+      node(3, "Three", `${scripture}<p>c</p>`, on("2015-03-12")),
+      node(4, "Four", `${scripture}<p>d</p>`, on("2015-03-11")),
+    ]);
+    const days = Object.fromEntries(d.capsules.map((c) => [c.legacyNid, lagosDate(c.publishAt)]));
+    // 12 Mar is taken by nid 3, so nid 2 goes to the 13th and nid 4 to the 14th.
+    expect(days).toEqual({ 1: "2015-03-11", 2: "2015-03-13", 3: "2015-03-12", 4: "2015-03-14" });
+    expect(d.capsules.every((c) => c.status === "published")).toBe(true);
+    expect(d.issues.filter((i) => i.code === "duplicate-date").map((i) => i.nid)).toEqual([2, 4]);
+  });
+
+  it("imports a same-day capsule as a draft when no free day is near", () => {
+    // 1 Mar to 1 Apr (32 days) are all taken, so a second capsule on 1 Mar finds nothing in the next 31 days.
+    const nodes = Array.from({ length: 32 }, (_, i) =>
+      node(i + 1, `T${i}`, `${scripture}<p>x</p>`, on(new Date(Date.UTC(2015, 2, 1 + i)).toISOString().slice(0, 10))),
+    );
+    nodes.push(node(100, "Dup", `${scripture}<p>y</p>`, on("2015-03-01")));
+    const d = transformCapsules(nodes);
+    expect(d.capsules.find((c) => c.legacyNid === 100)?.status).toBe("draft");
+    expect(d.issues.find((i) => i.nid === 100)?.detail).toMatch(/draft/);
   });
 
   it("skips and reports fields over the shared limits", () => {

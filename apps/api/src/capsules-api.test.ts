@@ -498,7 +498,7 @@ describe("one capsule per Lagos day", () => {
     expect((await sched("a", "2099-05-10T08:00:00Z")).status).toBe(201);
     const res = await sched("b", "2099-05-10T20:00:00Z");
     expect(res.status).toBe(409);
-    expect(JSON.stringify(await res.json())).toContain("2099-05-10");
+    expect(JSON.stringify(await res.json())).toContain("10 May 2099");
   });
 
   it("treats 23:00 UTC as the next Lagos day", async () => {

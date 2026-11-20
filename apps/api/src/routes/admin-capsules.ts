@@ -1,7 +1,14 @@
 import { Hono } from "hono";
 import { and, count, desc, eq, gte, lt, ne } from "drizzle-orm";
 import { z } from "zod";
-import { CAPSULE_LIMITS, lagosDate, lagosDayRange, nextLagosMidnight, slug } from "@kcom/content";
+import {
+  CAPSULE_LIMITS,
+  formatLagosShortDate,
+  lagosDate,
+  lagosDayRange,
+  nextLagosMidnight,
+  slug,
+} from "@kcom/content";
 import { capsules, type CapsuleDb } from "@kcom/db";
 import {
   assertCanChange,
@@ -111,11 +118,14 @@ function planStatusChange(
   }
   return {};
 }
+/** "13 Nov 2026" */
+const friendlyDay = (at: Date) =>
+  `${formatLagosShortDate(lagosDate(at))} ${lagosDate(at).slice(0, 4)}`;
 const dayTaken = (publishAt: Date, title?: string) =>
   new HttpError(
     409,
     "day_taken",
-    `${lagosDate(publishAt)} already has ${title ? `“${title}”` : "a capsule"}; only one capsule can go live per Lagos day`,
+    `${friendlyDay(publishAt)} already has ${title ? `“${title}”` : "a capsule"}; only one capsule can go live per Lagos day`,
   );
 const invalid = (message: string) => new HttpError(422, "invalid_transition", message);
 
