@@ -34,7 +34,10 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
     )}
   </nav>
   <details class="menu">
-    <summary class="kc-btn kc-btn--secondary kc-btn--sm">Menu</summary>
+    <summary class="menu-toggle" role="button" aria-label="Open menu" aria-expanded="false">
+      <svg class="icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      <svg class="icon-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </summary>
     <nav aria-label="Main mobile">
       {navItems.map((item) =>
         item.children ? (
@@ -57,6 +60,15 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   </a>
   <a class="cta kc-btn kc-btn--primary kc-btn--sm" href="/capsules/today">Today’s Capsule</a>
 </header>
+<script>
+  document.querySelectorAll<HTMLDetailsElement>("details.menu").forEach((d) => {
+    const toggle = d.querySelector("summary.menu-toggle");
+    d.addEventListener("toggle", () => {
+      toggle?.setAttribute("aria-expanded", String(d.open));
+      toggle?.setAttribute("aria-label", d.open ? "Close menu" : "Open menu");
+    });
+  });
+</script>
 <style>
   .verse-bar { background: var(--color-bar); color: var(--color-on-bar); padding: var(--space-2) var(--gutter); padding-inline: max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter))); display: flex; gap: var(--space-4); align-items: center; font-size: var(--text-sm); }
   .verse-bar .date { font-variant: small-caps; letter-spacing: 0.1em; font-weight: 700; color: var(--color-bar-gold); }
@@ -77,7 +89,10 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   .menu nav { position: absolute; right: 0; top: calc(100% + var(--space-2)); width: min(18rem, 85vw); background: var(--color-raised); border: 1px solid var(--color-line); border-radius: var(--radius); box-shadow: var(--shadow-menu); padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; font-family: var(--font-title); font-size: 1.375rem; max-height: calc(100dvh - 8rem); overflow-y: auto; }
   .main-nav :global(.kc-menu-wrap.is-current .kc-menu-trigger) { border-bottom: 2px solid var(--color-gold); border-radius: 0; }
   .main-nav :global(.kc-menu-trigger) { font-weight: 600; font-size: 0.9375rem; color: var(--color-text); }
-  .menu summary.kc-btn { display: inline-flex; }
+  .menu .menu-toggle { display: flex; align-items: center; justify-content: center; inline-size: 44px; block-size: 44px; border-radius: var(--radius-pill); color: var(--color-text); cursor: pointer; margin-inline-end: calc(var(--space-2) * -1); }
+  .menu .menu-toggle:hover { background: var(--color-hover); }
+  .menu .icon-close, .menu[open] .icon-open { display: none; }
+  .menu[open] .icon-close { display: block; }
   .menu details.group > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 0; }
   .menu details.group > summary::-webkit-details-marker { display: none; }
   .menu details.group > summary::after { content: ""; margin-inline-end: 0.2em; inline-size: 0.5em; block-size: 0.5em; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: translateY(-0.1em) rotate(45deg); transition: transform var(--dur-fast) var(--ease-out); }

@@ -37,4 +37,11 @@ describe("BaseLayout", () => {
     expect(withFooter).toContain('id="footer-email"');
     expect(without).not.toContain('id="footer-email"');
   });
+
+  it("opens the phone menu with an icon-only toggle", async () => {
+    const container = await AstroContainer.create();
+    const html = await container.renderToString(BaseLayout, { props: { title: "Test" } });
+    expect(html).toMatch(/<summary[^>]*aria-label="Open menu"[^>]*aria-expanded="false"/);
+    expect(html).not.toContain(">Menu<");
+  });
 });
