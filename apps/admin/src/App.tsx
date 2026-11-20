@@ -5,6 +5,7 @@ import { RequireAuth, RequirePermission } from "./auth/guards";
 import { navItems } from "./shell/nav";
 import { Shell } from "./shell/Shell";
 import { DashboardPage } from "./pages/DashboardPage";
+import { EventsPage } from "./events/EventsPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
@@ -26,7 +27,16 @@ export function App() {
               <Route path="profile" element={<PlaceholderPage title="Profile" />} />
               {sections.map((item) => (
                 <Route key={item.path} element={<RequirePermission permission={item.permission} />}>
-                  <Route path={`${item.path}/*`} element={<PlaceholderPage title={item.label} />} />
+                  <Route
+                    path={`${item.path}/*`}
+                    element={
+                      item.path === "/events" ? (
+                        <EventsPage />
+                      ) : (
+                        <PlaceholderPage title={item.label} />
+                      )
+                    }
+                  />
                 </Route>
               ))}
               <Route path="*" element={<NotFoundPage />} />
