@@ -92,7 +92,9 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     .meta { font-size: 13px; }
     .text p, .details { display: none; }
     .side { grid-column: 2; margin-block-start: -10px; }
-    .cal { position: relative; block-size: auto; inline-size: auto; min-block-size: 0; padding: 0; border: 0; border-radius: 0; background: none; justify-self: start; font-size: 14px; font-weight: 600; color: var(--color-primary); text-decoration: underline; }
+    .cal { position: relative; block-size: auto; min-block-size: 0; padding: 0; border: 0; border-radius: 0; background: none; align-self: flex-start; inline-size: fit-content; font-size: 14px; font-weight: 600; color: var(--color-primary); text-decoration: underline; }
+    /* 14px link, 44px touch target: grow the hit area vertically only. */
+    .cal::after { inset-block: -15px; }
     .past a { flex-wrap: wrap; gap: 4px 16px; }
     .date { inline-size: 100%; }
     .title { font-size: 20px; }
