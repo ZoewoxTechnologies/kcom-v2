@@ -43,7 +43,7 @@ const bank = bankRows(sampleSettings);
       </section>
     </div>
     <section id="join" class="join" aria-labelledby="join-h">
-      <form method="post" action="/partner">
+      <form>
         <h2 id="join-h">Become a partner</h2>
         <p>Tell us how you’d like to stand with us and we’ll be in touch.</p>
         <div class="two">
@@ -54,7 +54,7 @@ const bank = bankRows(sampleSettings);
           <legend>I’d like to be a</legend>
           {partnerTypes.map((t, i) => <label class="check"><input type="checkbox" name="type" value={t} checked={i === 0} />{t.replace(/s$/, "")}</label>)}
         </fieldset>
-        <button class="kc-btn kc-btn--sm send" type="submit">Send</button>
+        <button class="kc-btn kc-btn--sm send" type="submit" disabled>Send</button>
       </form>
     </section>
   </div>
