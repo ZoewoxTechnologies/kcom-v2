@@ -32,7 +32,13 @@ describe("latestCapsule visibility", () => {
     const d = await createTestDb();
     await d.insert(capsules).values([
       { ...base, title: "draft", slug: "draft", publishAt: past, status: "draft" },
-      { ...base, title: "sched", slug: "sched", publishAt: past, status: "scheduled" },
+      {
+        ...base,
+        title: "sched",
+        slug: "sched",
+        publishAt: new Date("2026-01-02T00:00:00Z"),
+        status: "scheduled",
+      },
       {
         ...base,
         title: "future-publish",
@@ -43,7 +49,13 @@ describe("latestCapsule visibility", () => {
     ]);
     expect(await latestCapsule(d)).toBeNull();
     await d.insert(capsules).values([
-      { ...base, title: "old", slug: "old", status: "published", publishAt: past },
+      {
+        ...base,
+        title: "old",
+        slug: "old",
+        status: "published",
+        publishAt: new Date("2026-01-03T00:00:00Z"),
+      },
       {
         ...base,
         title: "ok",
