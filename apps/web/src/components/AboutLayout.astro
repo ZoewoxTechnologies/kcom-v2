@@ -6,8 +6,7 @@ interface Props { title: string; description: string; intro?: string; /** Cap th
 const { title, description, intro, reading = false } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 ---
-<BaseLayout title={title} description={description} current="/about" bleed>
-  <div class="page">
+<BaseLayout title={title} description={description} current="/about">
   <section class="band">
     <div class:list={["inner", { quoted: Astro.slots.has("band") }]}>
       <div class="head">
@@ -25,10 +24,8 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
     </nav>
     <div class:list={["content", { reading }]}><slot /></div>
   </div>
-  </div>
 </BaseLayout>
 <style>
-  .page { box-sizing: content-box; max-inline-size: var(--page-max); margin-inline: auto; padding: var(--space-6) var(--gutter) 0; }
   .band { background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); margin-block-start: calc(var(--space-6) * -1); padding: var(--space-6) 0; }
   .inner { display: flex; flex-direction: column; gap: var(--space-5); }
   .head { display: flex; flex-direction: column; gap: var(--space-4); }
