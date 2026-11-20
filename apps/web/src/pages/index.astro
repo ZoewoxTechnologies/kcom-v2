@@ -1,7 +1,179 @@
 ---
+import { dayParts, lagosDate } from "@kcom/content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import BlogCard from "../components/BlogCard.astro";
+import CapsuleRow from "../components/CapsuleRow.astro";
+import CardGrid from "../components/CardGrid.astro";
+import HomeSection from "../components/HomeSection.astro";
+import SeriesCard from "../components/SeriesCard.astro";
+import { data } from "../lib/data";
+import { richTextToPlain } from "../lib/data/client";
+import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
+import { defaultSections, sampleBooks, sampleEvents, sectionsFromQuery, visibleSections } from "../lib/homepage";
+
+const today = lagosDate(new Date());
+let capsule = await data.capsuleByDate(today);
+if (!capsule) {
+  const latest = await data.latestCapsule();
+  capsule = latest ? await data.capsuleBySlug(latest.slug) : null;
+}
+const neighbours = capsule ? await data.capsuleNeighbours(capsule.slug) : null;
+
+// The section list comes from the pages API once it exists; `?sections=` previews an arrangement outside production.
+const preview = import.meta.env.PROD ? null : sectionsFromQuery(Astro.url.searchParams.get("sections"));
+const order = visibleSections(preview ?? defaultSections);
+
+const allSeries = sortSeries(await data.listSeries(), "newest");
+const current = allSeries.find((s) => s.inProgress) ?? allSeries[0] ?? null;
+const currentDetail = current ? await data.seriesBySlug(current.slug) : null;
+const pastSeries = allSeries.filter((s) => s.slug !== current?.slug).slice(0, 3);
+const posts = await data.listBlogPosts({ limit: 3 });
+
+const heroDay = capsule ? dayParts(capsule.displayDate) : null;
+const verse = capsule ? richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation : null;
+const events = sampleEvents;
+const books = sampleBooks;
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout>
-  <h1>Kingdom Capstone Outreach Ministries</h1>
-  <p>New site coming soon.</p>
+<BaseLayout title="Home" current="/" bleed>
+  {order.map((key) => {
+    if (key === "today") return (
+      <section class="band wash" aria-label="Today’s Capsule">
+        <div class="inner hero">
+          {capsule ? (
+            <>
+              <div class="photo" aria-hidden="true">{capsule.bannerUrl && <img src={capsule.bannerUrl} alt="" />}</div>
+              <div class="copy">
+                <span class="eyebrow">Today’s Capsule · {heroDay!.rest}</span>
+                <h1>{capsule.title}</h1>
+                <span class="rule" aria-hidden="true"></span>
+                {verse && <p class="verse">{verse}</p>}
+                {capsule.scriptureRef && <span class="ref">{capsule.scriptureRef}</span>}
+                <div class="actions">
+                  <a class="kc-btn kc-btn--primary kc-btn--sm" href="/capsules/today">Read today’s capsule</a>
+                  {neighbours?.prev && <a class="more" href={capsulePath(neighbours.prev.slug)}>Yesterday’s capsule →</a>}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div class="copy">
+              <h1>Kingdom Capstone Outreach Ministries</h1>
+              <p class="muted">Today’s capsule isn’t available yet. Please check back soon.</p>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+    if (key === "current-series") return (
+      <section class="band" aria-label="Current series">
+        <div class="inner">
+          <div class="split">
+            <div class="intro">
+              <span class="eyebrow">Current series</span>
+              {current ? (
+                <>
+                  <h2>{current.title}</h2>
+                  {current.description && <p class="muted">{current.description}</p>}
+                  <a class="more" href={seriesPath(current.slug)}>See the whole series →</a>
+                </>
+              ) : <p class="muted">No series is running right now.</p>}
+            </div>
+            {currentDetail && currentDetail.capsules.length > 0 && (
+              <div class="rows">
+                {currentDetail.capsules.slice(-4).map((c) => {
+                  const d = dayParts(c.displayDate);
+                  return <CapsuleRow href={capsulePath(c.slug)} kicker={d.dow} figure={d.n} title={c.title} meta={c.scriptureRef} badge={c.partNumber ? `Day ${c.partNumber}` : null} />;
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+    if (key === "past-series") return (
+      <section class="band" aria-label="Explore past series">
+        <div class="inner">
+          <HomeSection title="Explore past series" more={{ href: "/series", label: "All series →" }} isEmpty={pastSeries.length === 0} empty="Past series will appear here.">
+            <CardGrid>{pastSeries.map((s) => <SeriesCard series={s} />)}</CardGrid>
+          </HomeSection>
+        </div>
+      </section>
+    );
+    if (key === "blog") return (
+      <section class="band" aria-label="From the blog">
+        <div class="inner">
+          <HomeSection title="From the blog" more={{ href: "/blog", label: "All posts →" }} isEmpty={posts.length === 0} empty="No posts yet. Check back soon.">
+            <CardGrid>{posts.map((p) => <BlogCard post={p} />)}</CardGrid>
+          </HomeSection>
+        </div>
+      </section>
+    );
+    if (key === "events-books") return (
+      <section class="band" aria-label="Upcoming events and books">
+        <div class="inner two">
+          <HomeSection title="Upcoming events" level={2} more={{ href: "/events", label: "All events →" }} isEmpty={events.length === 0} empty="No upcoming events right now.">
+            <div class="rows">
+              {events.map((e) => {
+                const d = dayParts(e.date);
+                return <CapsuleRow href={`/events/${e.slug}`} kicker={d.dow} figure={d.n} title={e.title} meta={e.meta} />;
+              })}
+            </div>
+          </HomeSection>
+          <HomeSection title="Books" level={2} more={{ href: "/books", label: "All books →" }} isEmpty={books.length === 0} empty="Books will be listed here.">
+            <ul class="books">
+              {books.map((b) => <li><a href={`/books/${b.slug}`}><span class="cover" aria-hidden="true"></span><span class="bt">{b.title}</span></a></li>)}
+            </ul>
+          </HomeSection>
+        </div>
+      </section>
+    );
+    return (
+      <section class="band signup" aria-label="Email signup">
+        <form class="inner narrow" onsubmit="return false">
+          <h2>Begin each day in the Word</h2>
+          <p>The daily Capstone Capsule in your inbox. Free, and you can leave any time.</p>
+          <div class="field">
+            <label class="sr-only" for="home-email">Email address</label>
+            <input id="home-email" class="kc-input" type="email" placeholder="you@example.com" autocomplete="email" />
+            <button type="button" class="kc-btn kc-btn--sm" disabled>Subscribe</button>
+          </div>
+        </form>
+      </section>
+    );
+  })}
 </BaseLayout>
+<style>
+  .band { padding: var(--space-7) var(--gutter); }
+  .wash { background: var(--color-wash); }
+  .inner { max-inline-size: 75rem; margin-inline: auto; }
+  .hero { display: flex; flex-wrap: wrap; gap: var(--space-6); align-items: center; }
+  .photo { flex: 1 1 26rem; min-inline-size: 0; aspect-ratio: 4 / 3; border-radius: var(--radius); background: linear-gradient(160deg, var(--color-sage), var(--color-primary)); overflow: hidden; }
+  .photo img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+  .copy { flex: 1 1 24rem; min-inline-size: 0; display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; }
+  .copy h1 { margin: 0; font: 500 clamp(2.25rem, 7vw, 4rem) / 1.02 var(--font-title); }
+  .rule { inline-size: 3rem; block-size: 2px; background: var(--color-gold); }
+  .eyebrow { font-size: 0.8125rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  .verse { margin: 0; font: italic 1.25rem / 1.6 var(--font-title); }
+  .ref { font-size: 0.8125rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-muted); }
+  .actions { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; margin-top: var(--space-2); }
+  .more { font-weight: 600; color: var(--color-primary); text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  .muted { margin: 0; color: var(--color-muted); }
+  .split { display: flex; flex-wrap: wrap; gap: var(--space-6); }
+  .intro { flex: 1 1 20rem; min-inline-size: 0; display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; }
+  .intro h2 { margin: 0; font: 600 2rem / 1.1 var(--font-title); }
+  .rows { flex: 2 1 30rem; min-inline-size: 0; display: flex; flex-direction: column; }
+  .two { display: flex; flex-wrap: wrap; gap: var(--space-7); }
+  .two > :global(*) { flex: 1 1 24rem; }
+  .books { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+  .books a { display: flex; flex-direction: column; gap: var(--space-2); color: var(--color-text); text-decoration: none; }
+  .cover { aspect-ratio: 2 / 3; border-radius: 8px; background: var(--color-wash); border: 1px solid var(--color-line); }
+  .bt { font: 600 1.0625rem / 1.2 var(--font-title); }
+  .signup { background: var(--color-footer); color: var(--color-on-footer); }
+  .narrow { max-inline-size: 47rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-3); }
+  .narrow h2 { margin: 0; font: 500 clamp(1.75rem, 5vw, 2.75rem) / 1.1 var(--font-title); }
+  .narrow p { margin: 0; opacity: 0.9; }
+  .field { display: flex; gap: 10px; inline-size: 100%; max-inline-size: 32rem; flex-wrap: wrap; }
+  .field .kc-input { flex: 1 1 14rem; min-inline-size: 0; }
+  .field .kc-btn { background: var(--color-footer-button); color: var(--color-on-footer-button); }
+  @media (min-width: 48rem) { .band { padding: var(--space-8) var(--space-6); } .intro h2 { font-size: 2.5rem; } .verse { font-size: 1.3125rem; } }
+</style>
