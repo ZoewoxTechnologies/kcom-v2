@@ -125,7 +125,9 @@ describe("sign in", () => {
     await userEvent.type(await screen.findByLabelText(/email address/i), "grace@example.com");
     await userEvent.type(screen.getByLabelText(/password/i), "correct-horse-battery");
     await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
-    expect(await screen.findByRole("heading", { name: /welcome/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: /good (morning|afternoon|evening)/i }),
+    ).toBeInTheDocument();
   });
 });
 

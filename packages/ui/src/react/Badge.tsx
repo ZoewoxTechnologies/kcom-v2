@@ -1,7 +1,7 @@
 import type { HTMLAttributes } from "react";
 
 export type BadgeVariant =
-  "draft" | "scheduled" | "published" | "confirmed" | "pending" | "unsubscribed";
+  "draft" | "scheduled" | "published" | "missing" | "confirmed" | "pending" | "unsubscribed";
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant: BadgeVariant;

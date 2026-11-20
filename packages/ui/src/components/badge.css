@@ -1,4 +1,4 @@
-/* Status badge: .kc-badge plus a status (draft, scheduled, published, confirmed,
+/* Status badge: .kc-badge plus a status (draft, scheduled, published, missing, confirmed,
    pending, unsubscribed). Each status also has its own marker shape, so the
    state is not carried by colour alone. Tag chip: .kc-tag. Import after tokens.css. */
 @layer components {
@@ -56,6 +56,30 @@
 
     &::before {
       border-radius: 50%;
+    }
+  }
+
+  /* Missing: nothing is scheduled; a cross. */
+  .kc-badge--missing {
+    --kc-badge-bg: color-mix(in srgb, var(--color-error) 14%, var(--color-surface));
+    --kc-badge-fg: var(--color-error);
+
+    &::before {
+      background: currentColor;
+      clip-path: polygon(
+        14% 0,
+        50% 36%,
+        86% 0,
+        100% 14%,
+        64% 50%,
+        100% 86%,
+        86% 100%,
+        50% 64%,
+        14% 100%,
+        0 86%,
+        36% 50%,
+        0 14%
+      );
     }
   }
 
