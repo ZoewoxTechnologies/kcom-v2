@@ -7,7 +7,11 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-3); /* equals the 2 × 6px hit-area bleed, so hit areas never overlap */
+  }
+
+  .kc-pagination--center {
+    justify-content: center;
   }
 
   .kc-pagination__item {
