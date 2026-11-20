@@ -175,9 +175,7 @@ export function EventsPage() {
     <section className="kc-events">
       <header className="kc-events__head">
         <h1>Events</h1>
-        <Button size="sm" onClick={() => select("new")}>
-          New event
-        </Button>
+        <Button onClick={() => select("new")}>New event</Button>
       </header>
       <div className="kc-events__body">
         <div className="kc-events__list">
@@ -191,7 +189,7 @@ export function EventsPage() {
           {loadFailed ? (
             <div className="kc-events__error" role="alert">
               <strong>Couldn&rsquo;t load events</strong>
-              <Button size="sm" variant="secondary" onClick={() => void load()}>
+              <Button variant="secondary" onClick={() => void load()}>
                 Retry
               </Button>
             </div>
@@ -371,7 +369,6 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
         onDelete && canDelete ? (
           <Tooltip label="Delete event">
             <Button
-              size="sm"
               variant="tertiary"
               className="kc-events__delete"
               aria-label="Delete event"
@@ -399,15 +396,10 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
         <>
           {published && canPublish && (
             <>
-              <Button
-                size="sm"
-                disabled={saving}
-                onClick={saveAndClose("published", "Event saved")}
-              >
+              <Button disabled={saving} onClick={saveAndClose("published", "Event saved")}>
                 Save changes
               </Button>
               <Button
-                size="sm"
                 variant="tertiary"
                 disabled={saving}
                 onClick={saveAndClose("draft", "Event unpublished")}
@@ -419,17 +411,12 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
           {!published && (
             <>
               {canPublish && (
-                <Button
-                  size="sm"
-                  disabled={saving}
-                  onClick={saveAndClose("published", "Event published")}
-                >
+                <Button disabled={saving} onClick={saveAndClose("published", "Event published")}>
                   Publish
                 </Button>
               )}
               {canWrite && (
                 <Button
-                  size="sm"
                   variant={canPublish ? "tertiary" : "primary"}
                   disabled={saving}
                   onClick={saveAndClose("draft", "Draft saved")}

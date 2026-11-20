@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calendarHref, directionsHref, eventBadge, eventWhen, programmeRows } from "./event-page";
+import { calendarHref, directionsHref, eventBadge, eventListBadge, eventListWhen, eventListWhere, eventMonthYear, eventWhen, programmeRows } from "./event-page";
 
 describe("eventWhen", () => {
   it("spans days, hides times for all day, shows times otherwise", () => {
@@ -49,5 +49,23 @@ describe("badge, calendar and directions", () => {
       "DTSTART;VALUE=DATE:20270312",
     );
     expect(directionsHref("A B")).toContain("query=A%20B");
+  });
+});
+
+describe("event list helpers", () => {
+  it("badge: padded day and weekday, short span across days", () => {
+    expect(eventListBadge({ startsAt: "2027-01-01T08:00:00Z", endsAt: null })).toEqual({ month: "JAN", day: "01", weekday: "Friday" });
+    expect(eventListBadge({ startsAt: "2027-03-12T17:00:00Z", endsAt: "2027-03-14T13:00:00Z" }).weekday).toBe("Fri – Sun");
+  });
+  it("when: time, day range or all day", () => {
+    expect(eventListWhen({ startsAt: "2026-12-06T09:00:00Z", endsAt: null, allDay: false })).toBe("10:00 a.m.");
+    expect(eventListWhen({ startsAt: "2027-03-12T17:00:00Z", endsAt: "2027-03-14T13:00:00Z", allDay: false })).toBe("12–14 March");
+    expect(eventListWhen({ startsAt: "2027-03-12T10:00:00Z", endsAt: null, allDay: true })).toBe("All day");
+  });
+  it("where and month/year", () => {
+    expect(eventListWhere({ place: "Hall", online: true })).toBe("Hall and online");
+    expect(eventListWhere({ place: null, online: true })).toBe("Online");
+    expect(eventListWhere({ place: null, online: false })).toBeNull();
+    expect(eventMonthYear("2025-11-14T17:00:00Z")).toBe("Nov 2025");
   });
 });
