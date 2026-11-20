@@ -203,10 +203,7 @@ export function EventsPage() {
           ) : (
             <aside className="kc-events__empty">
               <h2>No event selected</h2>
-              <p>Pick an event on the left to edit it, or start a new one.</p>
-              <Button size="sm" onClick={() => select("new")}>
-                New event
-              </Button>
+              <p>Pick an event on the left to edit it, or click New event.</p>
             </aside>
           )}
         </div>
