@@ -370,3 +370,28 @@ export const events = pgTable(
     check("events_ends_after_start", sql`${t.endsAt} IS NULL OR ${t.endsAt} >= ${t.startsAt}`),
   ],
 );
+
+export const contactTopic = pgEnum("contact_topic", [
+  "question",
+  "prayer",
+  "testimony",
+  "invitation",
+  "other",
+]);
+export const contactMessageStatus = pgEnum("contact_message_status", ["new", "read"]);
+
+export const contactMessages = pgTable(
+  "contact_messages",
+  {
+    id: id(),
+    topic: contactTopic("topic").notNull(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    message: text("message").notNull(),
+    /** Prayer requests the sender wants kept to the prayer team. */
+    keepPrivate: boolean("keep_private").notNull().default(false),
+    status: contactMessageStatus("status").notNull().default("new"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("contact_messages_status_created_at_idx").on(t.status, t.createdAt)],
+);

@@ -45,3 +45,45 @@ export function validateContact(i: ContactInput): ContactErrors {
   if (!i.message.trim()) e.message = "Please write a message.";
   return e;
 }
+
+export type ContactResult =
+  | { ok: true }
+  | { ok: false; fieldErrors: ContactErrors; message: string };
+
+export const SEND_FAILED = "Sorry, your message could not be sent. Please try again in a moment.";
+
+/** POST the message to the API. Only a 2xx response is `ok`; everything else, including network errors, is a failure. */
+export async function submitContact(
+  apiUrl: string | undefined,
+  input: ContactInput,
+  keepPrivate: boolean,
+  fetcher: typeof fetch = fetch,
+): Promise<ContactResult> {
+  const fail = (fieldErrors: ContactErrors = {}): ContactResult => ({ ok: false, fieldErrors, message: SEND_FAILED });
+  if (!apiUrl) return fail();
+  try {
+    const res = await fetcher(`${apiUrl.replace(/\/+$/, "")}/contact`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        topic: input.topic,
+        name: input.name.trim(),
+        email: input.email.trim(),
+        message: input.message.trim(),
+        keepPrivate,
+      }),
+    });
+    if (res.ok) return { ok: true };
+    if (res.status === 400) {
+      const data = (await res.json().catch(() => null)) as { error?: { details?: { path: string; message: string }[] } } | null;
+      const fieldErrors: ContactErrors = {};
+      for (const d of data?.error?.details ?? []) {
+        if (d.path === "topic" || d.path === "name" || d.path === "email" || d.path === "message") fieldErrors[d.path] ??= d.message;
+      }
+      return fail(fieldErrors);
+    }
+    return fail();
+  } catch {
+    return fail();
+  }
+}
