@@ -31,7 +31,7 @@
     --color-focus: #7f6020; /* focus ring: 3:1 against page */
     --color-sage: #7d9f86;
     --color-gold: #c4a15a; /* rules, underlines, focus ring: never body text */
-    --color-gold-text: #7f6020; /* gold used as text */
+    --color-gold-text: #8a6a24; /* gold used as text */
     --color-sandstone: #f6eedd;
     --color-sandstone-hover: #efe2c6;
     --color-sandstone-active: #e8d7b2;
@@ -66,13 +66,16 @@
     --font-scripture: "Lora", Georgia, serif;
     --text-xs: 0.75rem;
     --text-sm: 0.875rem;
-    --text-base: 1rem;
+    --text-base: 1rem; /* controls and compact UI */
+    --text-body: 1.0625rem; /* page body copy, 17px */
+    --text-reading: 1.125rem; /* long-form capsule, today and blog copy, 18px */
     --text-lg: 1.125rem;
     --text-xl: 1.625rem;
     --text-2xl: 2rem;
     --text-3xl: 3.25rem;
     --leading-tight: 1.1;
-    --leading-body: 1.6;
+    --leading-body: 1.65;
+    --leading-reading: 1.7;
 
     /* Spacing (4px scale) */
     --space-1: 0.25rem;
