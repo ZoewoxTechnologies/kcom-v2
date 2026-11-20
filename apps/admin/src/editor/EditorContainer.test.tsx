@@ -199,7 +199,7 @@ describe("EditorContainer inline", () => {
     );
     expect(screen.getByRole("region", { name: "Editing" })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    await userEvent.click(screen.getByRole("button", { name: "Close panel" }));
     expect(await screen.findByText("Discard your changes?")).toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
   });

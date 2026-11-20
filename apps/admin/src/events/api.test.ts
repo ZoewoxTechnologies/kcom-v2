@@ -1,13 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { plainToRichText, richTextToPlain, slugify } from "./api";
+import { plainToRichText, richTextToPlain } from "./api";
 
 describe("event helpers", () => {
-  it("slugifies titles", () => {
-    expect(slugify("Kingdom Capstone Conference 2027!")).toBe("kingdom-capstone-conference-2027");
-    expect(slugify("Café Night")).toBe("cafe-night");
-    expect(slugify("***")).toBe("");
-  });
-
   it("round-trips plain text through a rich-text document", () => {
     const doc = plainToRichText("First line\nSecond line");
     expect(doc).toMatchObject({

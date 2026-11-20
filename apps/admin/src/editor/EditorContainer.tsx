@@ -11,6 +11,8 @@ export interface EditorContainerProps {
   dirty: boolean;
   /** Called once the editor may close: clean close, or after Save draft / Discard. */
   onClose: () => void;
+  /** Label for the prompt's save action; use "Save changes" for an item that is already live. */
+  saveLabel?: ReactNode;
   /** Saves without publishing. The editor closes when it resolves. */
   onSaveDraft: () => void | Promise<void>;
   /** "inline" renders in place (no overlay) instead of as a dialog. */
@@ -30,6 +32,7 @@ export function EditorContainer({
   title,
   description,
   subject,
+  saveLabel,
   dirty,
   onClose,
   onSaveDraft,
@@ -92,6 +95,7 @@ export function EditorContainer({
       open={promptOpen}
       onOpenChange={(open) => !open && keepEditing()}
       subject={subject}
+      saveLabel={saveLabel}
       saving={saving}
       onSaveDraft={saveDraft}
       onKeepEditing={keepEditing}
@@ -115,7 +119,7 @@ export function EditorContainer({
             <button
               type="button"
               className="kc-editor-inline__close"
-              aria-label="Close"
+              aria-label="Close panel"
               onClick={requestClose}
             >
               ×

@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { ToastProvider } from "@kcom/ui";
 import { EventsPage, formatEventDates } from "./EventsPage";
+import type { UserRole } from "@kcom/permissions";
 import type { EventRecord } from "./api";
 
 const future = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
@@ -19,11 +20,19 @@ const make = (over: Partial<EventRecord>): EventRecord => ({
   ...over,
 });
 
+let role: UserRole = "admin";
+vi.mock("../auth/AuthProvider", () => ({
+  useAuth: () => ({ user: { id: "u", name: "Grace", email: "g@x.org", role } }),
+}));
+
 let store: EventRecord[];
+let failNext: { method: string; status: number } | null = null;
 let calls: { method: string; path: string; body?: Record<string, unknown> }[];
 
 beforeEach(() => {
   calls = [];
+  role = "admin";
+  failNext = null;
   store = [
     make({ id: "1", title: "Conference", status: "draft" }),
     make({
@@ -48,6 +57,14 @@ beforeEach(() => {
       const path = new URL(url).pathname.replace("/admin/events", "") || "/";
       const body = init?.body ? JSON.parse(String(init.body)) : undefined;
       calls.push({ method, path, body });
+      if (failNext && failNext.method === method) {
+        const { status } = failNext;
+        failNext = null;
+        return new Response(JSON.stringify({ error: { code: "conflict", message: "taken" } }), {
+          status,
+          headers: { "content-type": "application/json" },
+        });
+      }
       const json = (b: unknown, status = 200) =>
         new Response(JSON.stringify(b), {
           status,
@@ -146,7 +163,7 @@ describe("EventsPage", () => {
     await userEvent.keyboard("{Escape}");
     expect(screen.getByRole("region", { name: "Editing" })).toBeInTheDocument();
     await userEvent.type(within(dialog).getByLabelText(/Title/), " 2");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Close panel" }));
     expect(await screen.findByText("Discard your changes?")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Discard" }));
     await waitFor(() => expect(screen.queryByRole("region", { name: "Editing" })).toBeNull());
@@ -160,6 +177,95 @@ describe("EventsPage", () => {
     await userEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
     expect(screen.queryByText("Discard your changes?")).toBeNull();
     await waitFor(() => expect(screen.queryByRole("region", { name: "Editing" })).toBeNull());
+  });
+});
+
+async function pickStart(dialog: HTMLElement) {
+  await userEvent.click(within(dialog).getByRole("button", { name: "Starts" }));
+  await userEvent.click(await screen.findByRole("button", { name: "Next month" }));
+  await userEvent.click(screen.getByRole("button", { name: /^15 / }));
+  await userEvent.keyboard("{Escape}");
+}
+
+describe("EventsPage editing", () => {
+  it("creates and publishes with a slug and published status", async () => {
+    setup();
+    await screen.findByText("Conference");
+    await userEvent.click(screen.getAllByRole("button", { name: "New event" })[0]!);
+    const editor = await screen.findByRole("region", { name: "New event" });
+    await userEvent.type(within(editor).getByLabelText(/Title/), "Prayer Night");
+    await pickStart(editor);
+    await userEvent.click(within(editor).getByRole("button", { name: "Publish" }));
+    await waitFor(() => expect(calls.find((c) => c.method === "POST")).toBeTruthy());
+    expect(calls.find((c) => c.method === "POST")!.body).toMatchObject({
+      title: "Prayer Night",
+      slug: "prayer-night",
+      status: "published",
+    });
+  });
+
+  it("shows a duplicate-title error on 409 and keeps the editor open", async () => {
+    setup();
+    await screen.findByText("Conference");
+    await userEvent.click(screen.getAllByRole("button", { name: "New event" })[0]!);
+    const editor = await screen.findByRole("region", { name: "New event" });
+    await userEvent.type(within(editor).getByLabelText(/Title/), "Conference");
+    await pickStart(editor);
+    failNext = { method: "POST", status: 409 };
+    await userEvent.click(within(editor).getByRole("button", { name: "Publish" }));
+    expect(await within(editor).findByText(/already uses this title/)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "New event" })).toBeInTheDocument();
+  });
+
+  it("unpublishes a published event", async () => {
+    setup();
+    await userEvent.click(await screen.findByText("Thanksgiving"));
+    const editor = await screen.findByRole("region", { name: "Editing" });
+    await userEvent.click(within(editor).getByRole("button", { name: "Unpublish" }));
+    await waitFor(() => expect(calls.find((c) => c.method === "PATCH")).toBeTruthy());
+    expect(calls.find((c) => c.method === "PATCH")!.body).toMatchObject({ status: "draft" });
+  });
+
+  it("leaves the description out of the save when it was not edited", async () => {
+    store[0]!.description = {
+      type: "doc",
+      content: [{ type: "heading", content: [{ type: "text", text: "Rich" }] }],
+    };
+    setup();
+    await userEvent.click(await screen.findByText("Conference"));
+    const editor = await screen.findByRole("region", { name: "Editing" });
+    await userEvent.type(within(editor).getByLabelText(/Title/), " 2");
+    await userEvent.click(within(editor).getByRole("button", { name: "Save draft" }));
+    await waitFor(() => expect(calls.find((c) => c.method === "PATCH")).toBeTruthy());
+    expect(calls.find((c) => c.method === "PATCH")!.body).not.toHaveProperty("description");
+  });
+
+  it('labels the prompt\'s save action "Save changes" for a published event', async () => {
+    setup();
+    await userEvent.click(await screen.findByText("Thanksgiving"));
+    const editor = await screen.findByRole("region", { name: "Editing" });
+    await userEvent.type(within(editor).getByLabelText(/Title/), " 2");
+    await userEvent.click(within(editor).getByRole("button", { name: "Close panel" }));
+    const prompt = await screen.findByRole("alertdialog");
+    expect(within(prompt).getByRole("button", { name: "Save changes" })).toBeInTheDocument();
+  });
+
+  it("offers Retry when loading fails, instead of the empty state", async () => {
+    const real = globalThis.fetch;
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(new Error("offline")));
+    setup();
+    expect(await screen.findByText("Couldn\u2019t load events")).toBeInTheDocument();
+    expect(screen.queryByText("No upcoming events")).toBeNull();
+    vi.stubGlobal("fetch", real);
+  });
+
+  it("hides publishing actions for a role without publish permission", async () => {
+    role = "viewer" as UserRole;
+    setup();
+    await userEvent.click(await screen.findByText("Conference"));
+    const editor = await screen.findByRole("region", { name: "Editing" });
+    expect(within(editor).queryByRole("button", { name: "Publish" })).toBeNull();
+    expect(within(editor).queryByRole("button", { name: "Delete" })).toBeNull();
   });
 });
 

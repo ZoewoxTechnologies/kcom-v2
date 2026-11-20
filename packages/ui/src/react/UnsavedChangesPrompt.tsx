@@ -6,6 +6,8 @@ export interface UnsavedChangesPromptProps {
   onOpenChange: (open: boolean) => void;
   /** Name of the thing being edited, quoted in the message. */
   subject?: ReactNode;
+  /** Label for the save action; "Save draft" unless the item is already live. */
+  saveLabel?: ReactNode;
   onSaveDraft: () => void;
   /** A draft save is in flight: every action is disabled. */
   saving?: boolean;
@@ -18,6 +20,7 @@ export function UnsavedChangesPrompt({
   open,
   onOpenChange,
   subject,
+  saveLabel = "Save draft",
   onSaveDraft,
   saving = false,
   onKeepEditing,
@@ -40,7 +43,7 @@ export function UnsavedChangesPrompt({
           If you close now, those changes will be lost.
         </>
       }
-      actions={[{ label: "Save draft", onSelect: onSaveDraft }]}
+      actions={[{ label: saveLabel, onSelect: onSaveDraft }]}
       cancelLabel="Keep editing"
       onCancel={onKeepEditing}
       confirmLabel="Discard"

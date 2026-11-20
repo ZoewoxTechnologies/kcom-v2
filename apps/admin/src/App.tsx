@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { Route, Routes } from "react-router";
 import { ToastProvider } from "@kcom/ui";
 import { AuthProvider } from "./auth/AuthProvider";
@@ -12,6 +13,9 @@ import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { SignInPage } from "./pages/SignInPage";
 
 const sections = navItems.filter((item) => item.path !== "/");
+
+/** Pages built so far, by nav path. Sections not listed show the placeholder. */
+const pages: Partial<Record<string, ReactElement>> = { "/events": <EventsPage /> };
 
 export function App() {
   return (
@@ -29,13 +33,7 @@ export function App() {
                 <Route key={item.path} element={<RequirePermission permission={item.permission} />}>
                   <Route
                     path={`${item.path}/*`}
-                    element={
-                      item.path === "/events" ? (
-                        <EventsPage />
-                      ) : (
-                        <PlaceholderPage title={item.label} />
-                      )
-                    }
+                    element={pages[item.path] ?? <PlaceholderPage title={item.label} />}
                   />
                 </Route>
               ))}

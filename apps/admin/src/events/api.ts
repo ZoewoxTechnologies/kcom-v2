@@ -1,3 +1,5 @@
+import { apiJson } from "../api/client";
+
 export type EventStatus = "draft" | "published";
 
 export interface EventRecord {
@@ -17,38 +19,17 @@ export interface EventInput {
   startsAt: string;
   endsAt: string | null;
   place: string | null;
-  description: Record<string, unknown> | null;
+  /** Left out when unchanged, so existing rich content is never overwritten. */
+  description?: Record<string, unknown> | null;
   status: EventStatus;
 }
 
-/** A failed API call; `code` is the API's error code, such as "conflict". */
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-    readonly code?: string,
-  ) {
-    super(message);
-  }
-}
+const call = <T>(path: string, init?: RequestInit) => apiJson<T>(`/admin/events${path}`, init);
 
-const baseUrl = () => (import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "");
-
-async function call<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${baseUrl()}/admin/events${path}`, {
-    credentials: "include",
-    ...init,
-    headers: { "content-type": "application/json", ...init?.headers },
-  });
-  if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as {
-      error?: { code?: string; message?: string };
-    } | null;
-    throw new ApiError(body?.error?.message ?? "request failed", res.status, body?.error?.code);
-  }
-  return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
-}
-
+/**
+ * The API pages lists (100 at most per request). The admin list loads one page;
+ * the ministry has far fewer events than that. Add paging here if it ever grows.
+ */
 export const listEvents = () =>
   call<{ items: EventRecord[]; total: number }>("?limit=100").then((r) => r.items);
 
@@ -59,16 +40,6 @@ export const updateEvent = (id: string, input: Partial<EventInput>) =>
   call<EventRecord>(`/${id}`, { method: "PATCH", body: JSON.stringify(input) });
 
 export const deleteEvent = (id: string) => call<void>(`/${id}`, { method: "DELETE" });
-
-/** Lowercase ASCII words joined by hyphens, as the API requires for slugs. */
-export function slugify(input: string): string {
-  return input
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 type Node = { type?: string; text?: string; content?: Node[] };
 
