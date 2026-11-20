@@ -21,14 +21,15 @@ describe("Button", () => {
     expect(html).toContain("kc-btn__spinner");
   });
 
-  it("defaults to md with no size class", () => {
+  it("defaults to sm with no size class", () => {
     const html = renderToStaticMarkup(<Button>Go</Button>);
     expect(html).not.toContain("kc-btn--sm");
+    expect(html).not.toContain("kc-btn--md");
     expect(html).not.toContain("kc-btn--lg");
   });
 
-  it("applies sm and lg size classes", () => {
-    expect(renderToStaticMarkup(<Button size="sm">Go</Button>)).toContain("kc-btn--sm");
+  it("applies md and lg size classes", () => {
+    expect(renderToStaticMarkup(<Button size="md">Go</Button>)).toContain("kc-btn--md");
     expect(renderToStaticMarkup(<Button size="lg">Go</Button>)).toContain("kc-btn--lg");
   });
 });

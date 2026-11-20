@@ -1,26 +1,20 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, Link, RouterProvider } from "react-router";
-import { ToastProvider } from "@kcom/ui";
 import { EditorContainer } from "./EditorContainer";
 import { useDirtyState } from "./useDirtyState";
 
-function Harness({
-  onClose,
-  onSaveDraft,
-}: {
-  onClose: () => void;
-  onSaveDraft: () => void | Promise<void>;
-}) {
+function Harness({ onClose, variant }: { onClose: () => void; variant?: "inline" }) {
   const form = useDirtyState({ title: "Conference" });
   return (
     <EditorContainer
+      variant={variant}
       title="Edit event"
       subject={form.value.title}
       dirty={form.dirty}
       onClose={onClose}
-      onSaveDraft={onSaveDraft}
+      headerActions={<button type="button">Header tool</button>}
     >
       <input
         aria-label="Title"
@@ -32,18 +26,14 @@ function Harness({
   );
 }
 
-function setup(onSaveDraft: () => void | Promise<void> = vi.fn()) {
+function setup(variant?: "inline") {
   const onClose = vi.fn();
   const router = createMemoryRouter([
-    { path: "/", element: <Harness onClose={onClose} onSaveDraft={onSaveDraft} /> },
+    { path: "/", element: <Harness onClose={onClose} variant={variant} /> },
     { path: "/elsewhere", element: <p>Elsewhere page</p> },
   ]);
-  render(
-    <ToastProvider>
-      <RouterProvider router={router} />
-    </ToastProvider>,
-  );
-  return { onClose, onSaveDraft, router, user: userEvent.setup() };
+  render(<RouterProvider router={router} />);
+  return { onClose, router, user: userEvent.setup() };
 }
 
 describe("EditorContainer", () => {
@@ -64,8 +54,8 @@ describe("EditorContainer", () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it("Keep editing dismisses the prompt, Discard closes, Save draft saves then closes", async () => {
-    const { onClose, onSaveDraft, user } = setup();
+  it("Keep editing dismisses the prompt and Discard closes", async () => {
+    const { onClose, user } = setup();
     await user.type(screen.getByLabelText("Title"), "x");
     await user.click(screen.getByRole("button", { name: "Close" }));
     await user.click(screen.getByRole("button", { name: "Keep editing" }));
@@ -73,13 +63,8 @@ describe("EditorContainer", () => {
     expect(onClose).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: "Close" }));
-    await user.click(screen.getByRole("button", { name: "Save draft" }));
-    expect(onSaveDraft).toHaveBeenCalled();
-    expect(onClose).toHaveBeenCalledTimes(1);
-
-    await user.click(screen.getByRole("button", { name: "Close" }));
     await user.click(screen.getByRole("button", { name: "Discard" }));
-    expect(onClose).toHaveBeenCalledTimes(2);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it("Esc and click-outside never close the editor", async () => {
@@ -131,44 +116,25 @@ describe("EditorContainer", () => {
     await user.click(screen.getByRole("link", { name: "Elsewhere" }));
     expect(screen.getByText("Discard your changes?")).toBeInTheDocument();
   });
+});
 
-  it("Save draft on a blocked navigation waits for the save, then navigates", async () => {
-    let finishSave!: () => void;
-    const { router, user } = setup(() => new Promise<void>((resolve) => (finishSave = resolve)));
-    await user.type(screen.getByLabelText("Title"), "x");
-    await user.click(screen.getByRole("link", { name: "Elsewhere" }));
-    await user.click(screen.getByRole("button", { name: "Save draft" }));
-    expect(screen.getByText("Discard your changes?")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Save draft" })).toBeDisabled();
-    expect(router.state.location.pathname).toBe("/");
-    finishSave();
-    await waitFor(() => expect(router.state.location.pathname).toBe("/elsewhere"));
+describe("EditorContainer inline", () => {
+  it("renders in place with no overlay and no Cancel, with header tools beside ×", async () => {
+    const { user } = setup("inline");
+    expect(screen.getByRole("region", { name: "Edit event" })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Cancel" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Header tool" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Close panel" }));
   });
 
-  it("a failed save stays in the editor and shows an error toast", async () => {
-    const { onClose, router, user } = setup(() => Promise.reject(new Error("offline")));
+  it("still guards closing when dirty", async () => {
+    const { onClose, user } = setup("inline");
     await user.type(screen.getByLabelText("Title"), "x");
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
-    await user.click(screen.getByRole("button", { name: "Save draft" }));
-    expect(await screen.findByText(/save your draft/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Close panel" }));
+    expect(await screen.findByText("Discard your changes?")).toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
-    expect(router.state.location.pathname).toBe("/");
-    expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
-  });
-
-  it("disables every prompt action while a save is pending", async () => {
-    let finishSave!: () => void;
-    const { onClose, user } = setup(() => new Promise<void>((resolve) => (finishSave = resolve)));
-    await user.type(screen.getByLabelText("Title"), "x");
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
-    await user.click(screen.getByRole("button", { name: "Save draft" }));
-    for (const name of ["Save draft", "Keep editing", "Discard"]) {
-      expect(screen.getByRole("button", { name })).toBeDisabled();
-    }
     await user.click(screen.getByRole("button", { name: "Discard" }));
-    expect(onClose).not.toHaveBeenCalled();
-    expect(screen.getByText("Discard your changes?")).toBeInTheDocument();
-    finishSave();
-    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

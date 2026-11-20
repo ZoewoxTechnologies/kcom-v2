@@ -3,6 +3,7 @@ import "@kcom/ui/styles.css";
 import "@kcom/ui/button.css";
 import "@kcom/ui/forms.css";
 import "@kcom/ui/menu.css";
+import "@kcom/ui/pagination.css";
 import { fontsHref } from "@kcom/ui/fonts";
 import Analytics from "../components/Analytics.astro";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -15,8 +16,10 @@ interface Props {
   current?: string;
   /** Let the page run edge to edge (banners, tinted bands). */
   bleed?: boolean;
+  /** The page already renders its own email signup, so the footer omits its one. */
+  hideSignup?: boolean;
 }
-const { title, description, current = Astro.url.pathname, bleed = false } = Astro.props;
+const { title, description, current = Astro.url.pathname, bleed = false, hideSignup = false } = Astro.props;
 ---
 <html lang="en">
   <head>
@@ -38,7 +41,7 @@ const { title, description, current = Astro.url.pathname, bleed = false } = Astr
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader current={current} />
     <main id="main" class:list={{ bleed }}><slot /></main>
-    <SiteFooter />
+    <SiteFooter hideSignup={hideSignup} />
   </body>
 </html>
 <style is:global>
@@ -47,6 +50,6 @@ const { title, description, current = Astro.url.pathname, bleed = false } = Astr
   main h1 { font-size: clamp(2.25rem, 8vw, var(--text-3xl)); overflow-wrap: anywhere; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   main.bleed { max-width: none; padding: 0; }
-  body { min-height: 100vh; display: flex; flex-direction: column; }
+  body { min-height: 100dvh; display: flex; flex-direction: column; }
   main { flex: 1; width: 100%; box-sizing: border-box; max-width: var(--page-max); margin-inline: auto; padding: var(--space-6) var(--gutter); }
 </style>

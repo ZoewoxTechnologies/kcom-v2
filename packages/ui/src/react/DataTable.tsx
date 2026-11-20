@@ -1,4 +1,4 @@
-import { Button } from "./Button";
+import { Pagination } from "./Pagination";
 import type { KeyboardEvent, ReactNode, ThHTMLAttributes } from "react";
 
 export type SortDirection = "ascending" | "descending" | "none";
@@ -45,18 +45,6 @@ export function TableEmpty({
   );
 }
 
-/** Page numbers to show: first, last, and a window around the current page. */
-export function pageItems(page: number, pageCount: number): (number | "gap")[] {
-  const keep = new Set([1, pageCount, page - 1, page, page + 1]);
-  const pages = [...keep].filter((p) => p >= 1 && p <= pageCount).sort((a, b) => a - b);
-  const items: (number | "gap")[] = [];
-  pages.forEach((p, i) => {
-    if (i > 0 && p - pages[i - 1]! > 1) items.push("gap");
-    items.push(p);
-  });
-  return items;
-}
-
 export interface TablePaginationProps {
   page: number;
   pageSize: number;
@@ -64,7 +52,7 @@ export interface TablePaginationProps {
   onPageChange: (page: number) => void;
 }
 
-/** "Showing 1–25 of 1,312" with previous/next and page buttons. Pages are 1-based. */
+/** "Showing 1–25 of 1,312" with a borderless <Pagination>. Pages are 1-based. */
 export function TablePagination({ page, pageSize, total, onPageChange }: TablePaginationProps) {
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -75,44 +63,7 @@ export function TablePagination({ page, pageSize, total, onPageChange }: TablePa
       <span>
         Showing {fmt(from)}–{fmt(to)} of {fmt(total)}
       </span>
-      <nav className="kc-pager" aria-label="Pages">
-        <Button
-          variant="secondary"
-          size="sm"
-          aria-label="Previous page"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
-        >
-          ‹
-        </Button>
-        {pageItems(page, pageCount).map((item, i) =>
-          item === "gap" ? (
-            <span key={`gap-${i}`} className="kc-pager__gap" aria-hidden="true">
-              …
-            </span>
-          ) : (
-            <Button
-              key={item}
-              variant={item === page ? "primary" : "secondary"}
-              size="sm"
-              aria-current={item === page ? "page" : undefined}
-              aria-label={`Page ${item}`}
-              onClick={() => onPageChange(item)}
-            >
-              {fmt(item)}
-            </Button>
-          ),
-        )}
-        <Button
-          variant="secondary"
-          size="sm"
-          aria-label="Next page"
-          disabled={page >= pageCount}
-          onClick={() => onPageChange(page + 1)}
-        >
-          ›
-        </Button>
-      </nav>
+      <Pagination page={page} pageCount={pageCount} onPageChange={onPageChange} />
     </div>
   );
 }

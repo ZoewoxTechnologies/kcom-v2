@@ -91,3 +91,21 @@ describe("DateTimePicker", () => {
     expect(onChange).toHaveBeenCalledWith(new Date("2026-11-24T17:00:00Z"));
   });
 });
+
+describe("DateTimePicker error", () => {
+  it("marks the trigger invalid and describes it with the error", () => {
+    render(
+      <DateTimePicker
+        label="Starts"
+        value={null}
+        onChange={() => {}}
+        error="Choose a start time."
+      />,
+    );
+    const trigger = screen.getByRole("button", { name: "Starts" });
+    expect(trigger).toHaveAttribute("aria-invalid", "true");
+    const error = screen.getByRole("alert");
+    expect(error).toHaveTextContent("Choose a start time.");
+    expect(trigger).toHaveAttribute("aria-describedby", error.id);
+  });
+});

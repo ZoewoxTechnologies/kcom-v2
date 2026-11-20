@@ -123,6 +123,8 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`API /capsules/latest responded ${res.status}`);
       const c = await res.json();
+      // The verse bar renders this on every page: a malformed body must read as no capsule, never as "Invalid Date".
+      if (!c || typeof c.slug !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(String(c.displayDate))) return null;
       return {
         slug: c.slug,
         title: c.title,
@@ -161,6 +163,54 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       if (!res.ok) throw new Error(`API /blog/${slug} responded ${res.status}`);
       const p = await res.json();
       return { ...toBlogSummary(p), body: p.body };
+    },
+    async listBooks() {
+      const res = await client.books.$get({ query: { limit: "100", offset: "0" } }, signal());
+      if (!res.ok) throw new Error(`API /books responded ${res.status}`);
+      return (await res.json()).map((b) => ({
+        slug: b.slug,
+        title: b.title,
+        description: richTextToPlain(b.description) || null,
+        coverUrl: b.coverUrl,
+        purchaseUrl: b.purchaseUrl,
+        publishedYear: b.publishedYear,
+        kind: null,
+        author: null,
+        sampleUrl: null,
+      }));
+    },
+    async listEvents(when) {
+      const res = await client.events.$get({ query: { when, limit: "100", offset: "0" } }, signal());
+      if (!res.ok) throw new Error(`API /events responded ${res.status}`);
+      return (await res.json()).map((e) => ({
+        slug: e.slug,
+        title: e.title,
+        startsAt: e.startsAt,
+        endsAt: e.endsAt,
+        allDay: e.allDay,
+        place: e.place,
+        summary: richTextToPlain(e.description) || null,
+        online: e.onlineUrl !== null,
+      }));
+    },
+    async eventBySlug(slug) {
+      const res = await client.events[":slug"].$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /events/${slug} responded ${res.status}`);
+      const e = await res.json();
+      return {
+        slug: e.slug,
+        title: e.title,
+        startsAt: e.startsAt,
+        endsAt: e.endsAt,
+        allDay: e.allDay,
+        place: e.place,
+        description: e.description,
+        imageUrl: e.imageUrl,
+        onlineUrl: e.onlineUrl,
+        programme: e.programme,
+        relatedPost: e.relatedPost,
+      };
     },
   };
 }

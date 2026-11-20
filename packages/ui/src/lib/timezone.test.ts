@@ -40,7 +40,7 @@ describe("Lagos (UTC+1, no DST)", () => {
     const text = formatInZone(new Date("2026-03-01T23:00:00Z"), LAGOS);
     expect(text).toContain("2 Mar 2026");
     expect(text).toContain("00:00");
-    expect(text).toContain("GMT+1");
+    expect(text).not.toContain("GMT");
   });
 });
 

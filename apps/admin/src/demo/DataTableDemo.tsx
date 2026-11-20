@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, DataTable } from "@kcom/ui";
+import { Button, DataTable, Pagination } from "@kcom/ui";
 import type { DataTableColumn, DataTableSort } from "@kcom/ui";
 
 type Subscriber = { id: number; name: string; email: string; joined: string; status: string };
@@ -62,11 +62,14 @@ export function DataTableDemo() {
         selectedRowId={selected}
         onRowClick={(r) => setSelected(r.id)}
         rowAction={(r) => (
-          <Button variant="secondary" size="sm" aria-label={`Edit ${r.name}`}>
+          <Button variant="secondary" aria-label={`Edit ${r.name}`}>
             Edit
           </Button>
         )}
       />
+
+      <h3>Pagination</h3>
+      <PaginationExample />
 
       <h3>Empty</h3>
       <DataTable
@@ -79,4 +82,9 @@ export function DataTableDemo() {
       />
     </section>
   );
+}
+
+function PaginationExample() {
+  const [page, setPage] = useState(1);
+  return <Pagination page={page} pageCount={40} onPageChange={setPage} />;
 }

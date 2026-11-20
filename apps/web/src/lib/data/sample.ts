@@ -1,7 +1,7 @@
 import { lagosDate } from "@kcom/content";
 import { sampleBlogPosts } from "./sample-blog";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import type { Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
+import type { Book, EventDetail, EventSummary, Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
 
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -58,6 +58,11 @@ function build(now: Date): { items: CapsuleListItem[]; series: SeriesSummary[] }
 
 const SCRIPTURE = "And be not conformed to this world: but be ye transformed by the renewing of your mind.";
 
+const bullets = (...items: string[]) => ({
+  type: "bulletList",
+  content: items.map((text) => ({ type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text }] }] })),
+});
+
 const doc = (...paragraphs: string[]) => ({
   type: "doc",
   content: paragraphs.map((text) => ({ type: "paragraph", content: [{ type: "text", text }] })),
@@ -73,10 +78,14 @@ function toCapsule(c: CapsuleListItem, series: SeriesSummary[]): Capsule {
     scriptureRef: c.scriptureRef,
     scriptureText: doc(SCRIPTURE),
     bibleMeditation: "Romans 12:1-8",
-    body: doc(
-      "Sample devotional text for layout purposes. Every day the world presses on us, quietly and constantly, asking us to take its shape.",
-      "Transformation begins in the mind. Not by trying harder, but by letting the Word of God renew the way we think.",
-    ),
+    body: {
+      type: "doc",
+      content: [
+        ...doc("Sample devotional text for layout purposes. Every day the world presses on us, quietly and constantly, asking us to take its shape.").content,
+        bullets("Renew your mind with the Word.", "Refuse the pattern of this world.", "Prove what is good and acceptable."),
+        ...doc("Transformation begins in the mind. Not by trying harder, but by letting the Word of God renew the way we think.").content,
+      ],
+    },
     decrees: (c.partNumber ?? 1) % 2 === 0 ? ["I decree that my mind is renewed daily by the Word of God.", "I refuse to be conformed to the pattern of this world."] : [],
     prayer: doc("Father, thank You for Your Word. Renew my mind today. In Jesus’ name, amen."),
     authorSource: "Sample author",
@@ -87,6 +96,20 @@ function toCapsule(c: CapsuleListItem, series: SeriesSummary[]): Capsule {
 }
 
 const link = ({ slug, title, displayDate, scriptureRef }: CapsuleListItem) => ({ slug, title, displayDate, scriptureRef });
+
+const sampleBooks: Book[] = [
+  "Alone With God", "Divine Help", "Holistic Growth", "Peak Performance Gateway", "Power of Peak Thinking", "Rock of Ages", "The Control Room", "The Inner Life", "The Renewed Mind", "Thirty Dominion Quotes",
+].map((title, i) => ({
+  slug: slugOf(title),
+  title,
+  description: "Sample description of the book, for layout purposes.",
+  coverUrl: null,
+  purchaseUrl: i % 3 === 0 ? null : "https://example.com/buy",
+  publishedYear: 2012 + i,
+  kind: (["Book", "Mini-book", "Mini-book", "New Year message"] as const)[i % 4],
+  author: "Dr. Adetokunbo O. Ilesanmi",
+  sampleUrl: i === 1 ? "https://example.com/sample" : null,
+}));
 
 export function createSampleSource(now: () => Date = () => new Date()): DataSource {
   return {
@@ -124,13 +147,64 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
       const found = series.find((s) => s.slug === slug);
       return found ? { series: found, capsules: inSeriesOrder(items.filter((c) => c.seriesTitle === found.title)) } : null;
     },
+    async listBooks() {
+      return sampleBooks;
+    },
     async listBlogPosts({ limit = 20, offset = 0 } = {}) {
       return sampleBlogPosts.slice(offset, offset + limit).map((b) => ({ slug: b.slug, title: b.title, date: b.date, excerpt: b.excerpt, heroImageUrl: b.heroImageUrl, tags: b.tags }));
     },
     async blogPostBySlug(slug) {
       return sampleBlogPosts.find((b) => b.slug === slug) ?? null;
     },
+    async listEvents(when) {
+      const t = now().getTime();
+      const over = (e: EventSummary) => new Date(e.endsAt ?? e.startsAt).getTime() < t;
+      const rows = [...sampleEventList].filter((e) => over(e) === (when === "past"));
+      return rows.sort((a, b) => (when === "past" ? -1 : 1) * a.startsAt.localeCompare(b.startsAt));
+    },
+    async eventBySlug(slug) {
+      return sampleEvents.find((e) => e.slug === slug) ?? null;
+    },
   };
 }
+
+const sampleEvent: EventDetail = {
+  slug: "kingdom-capstone-conference-2027",
+  title: "Kingdom Capstone Conference 2027",
+  startsAt: "2027-03-12T17:00:00Z",
+  endsAt: "2027-03-14T13:00:00Z",
+  allDay: false,
+  place: "Venue to be announced",
+  description: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Three days of teaching, prophecy and intercession." }] }] },
+  imageUrl: null,
+  onlineUrl: "https://example.org/live",
+  programme: "Fri · 6 p.m. · Opening service\nSat · 10 a.m. · Teaching sessions and workshops\nSat · 6 p.m. · Prophetic night",
+  relatedPost: null,
+};
+
+/** An event with none of the optional parts, to show they are hidden. */
+const bareEvent: EventDetail = {
+  ...sampleEvent,
+  slug: "prayer-night",
+  title: "Prayer Night",
+  endsAt: null,
+  place: null,
+  description: null,
+  onlineUrl: null,
+  programme: null,
+};
+const sampleEvents = [sampleEvent, bareEvent];
+
+const listed = (slug: string, title: string, startsAt: string, endsAt: string | null, place: string | null, summary: string | null, online = false): EventSummary =>
+  ({ slug, title, startsAt, endsAt, allDay: false, place, summary, online });
+const sampleEventList: EventSummary[] = [
+  listed("end-of-year-thanksgiving-service", "End-of-Year Thanksgiving Service", "2026-12-06T09:00:00Z", null, "Venue to be announced", "A morning of thanksgiving for all the Lord has done in 2026."),
+  listed("new-year-prophetic-message-2027", "New Year Prophetic Message 2027", "2027-01-01T08:00:00Z", null, null, "The word for the year, published on the blog the same day.", true),
+  listed("kingdom-capstone-conference-2027", "Kingdom Capstone Conference 2027", "2027-03-12T17:00:00Z", "2027-03-14T13:00:00Z", "Venue to be announced", "Three days of teaching, prophecy and intercession. Registration opens in January.", true),
+  listed("kingdom-capstone-conference-2025", "Kingdom Capstone Conference 2025", "2025-11-14T17:00:00Z", "2025-11-16T13:00:00Z", null, null),
+  listed("fire-force-convention", "FIRE Force Convention", "2025-08-15T17:00:00Z", null, null, null),
+  listed("salti-graduation", "SALTI Graduation", "2025-06-14T10:00:00Z", null, null, null),
+  listed("new-year-prophetic-message-2025", "New Year Prophetic Message 2025", "2025-01-01T08:00:00Z", null, null, null),
+];
 
 export const sampleSource: DataSource = createSampleSource();

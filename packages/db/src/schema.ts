@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { contactTopics } from "./contact-topics.js";
 import { userRoles, type UserRole } from "@kcom/permissions";
 import {
   bigint,
@@ -83,6 +84,10 @@ export const capsules = pgTable(
   },
   (t) => [
     uniqueIndex("capsules_legacy_path_idx").on(t.legacyPath),
+    // One published or scheduled capsule per Africa/Lagos calendar day.
+    uniqueIndex("capsules_one_per_lagos_day_idx")
+      .on(sql`((${t.publishAt} AT TIME ZONE 'Africa/Lagos')::date)`)
+      .where(sql`${t.status} <> 'draft'`),
     index("capsules_status_publish_at_idx").on(t.status, t.publishAt),
     check("capsules_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
     check("capsules_title_not_blank", sql`btrim(${t.title}) <> ''`),
@@ -351,6 +356,12 @@ export const events = pgTable(
     place: text("place"),
     description: jsonb("description").$type<RichText>(),
     imageUrl: text("image_url"),
+    allDay: boolean("all_day").notNull().default(false),
+    /** Where to join online; set means the event is also online. */
+    onlineUrl: text("online_url"),
+    /** One "time · item" line per entry. */
+    programme: text("programme"),
+    relatedPostId: uuid("related_post_id").references(() => blogPosts.id, { onDelete: "set null" }),
     status: publishStatus("status").notNull().default("draft"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -359,4 +370,23 @@ export const events = pgTable(
     index("events_status_starts_at_idx").on(t.status, t.startsAt),
     check("events_ends_after_start", sql`${t.endsAt} IS NULL OR ${t.endsAt} >= ${t.startsAt}`),
   ],
+);
+
+export const contactTopic = pgEnum("contact_topic", contactTopics);
+export const contactMessageStatus = pgEnum("contact_message_status", ["new", "read"]);
+
+export const contactMessages = pgTable(
+  "contact_messages",
+  {
+    id: id(),
+    topic: contactTopic("topic").notNull(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    message: text("message").notNull(),
+    /** Prayer requests the sender wants kept to the prayer team. */
+    keepPrivate: boolean("keep_private").notNull().default(false),
+    status: contactMessageStatus("status").notNull().default("new"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("contact_messages_status_created_at_idx").on(t.status, t.createdAt)],
 );

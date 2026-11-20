@@ -1,0 +1,70 @@
+import {
+  dayParts,
+  lagosDate,
+  lagosDayRange,
+  monthLabel,
+  monthName,
+  shiftMonth,
+} from "@kcom/content";
+
+export { monthLabel, shiftMonth };
+
+/** Capsule days are Africa/Lagos calendar days; a capsule goes live at 00:00 Lagos. */
+
+/** "YYYY-MM-DD" */
+export type DayKey = string;
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const key = (y: number, m: number, d: number): DayKey => `${y}-${pad(m)}-${pad(d)}`;
+
+/** The Lagos day an instant falls on. */
+export const lagosDay = (instant: Date | string): DayKey => lagosDate(new Date(instant));
+
+/** The instant a capsule scheduled for this Lagos day goes live: 00:00 in Lagos. */
+export const lagosMidnight = (day: DayKey): Date => lagosDayRange(day)[0];
+
+/** A day can take a rescheduled capsule only if its midnight has not passed yet. */
+export const canScheduleOn = (day: DayKey, now = new Date()) => lagosMidnight(day) > now;
+
+export function addDays(day: DayKey, n: number): DayKey {
+  const [y, m, d] = day.split("-").map(Number);
+  const t = new Date(Date.UTC(y!, m! - 1, d! + n));
+  return key(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate());
+}
+
+/** First Lagos day on which a capsule can still be scheduled: tomorrow. */
+export const firstSchedulableDay = (now = new Date()): DayKey => addDays(lagosDay(now), 1);
+
+/** "YYYY-MM" of a day. */
+export const monthOf = (day: DayKey) => day.slice(0, 7);
+
+/** "Tue 24 Nov" */
+export function shortDayLabel(day: DayKey): string {
+  const p = dayParts(day);
+  const dow = p.dow.charAt(0) + p.dow.slice(1).toLowerCase();
+  return `${dow} ${p.n} ${monthName(Number(day.slice(5, 7))).slice(0, 3)}`;
+}
+
+/** "Tuesday 24 November" */
+export function fullDayLabel(day: DayKey): string {
+  const p = dayParts(day);
+  return `${p.weekday} ${p.n} ${monthName(Number(day.slice(5, 7)))}`;
+}
+
+export interface GridCell {
+  day: DayKey;
+  inMonth: boolean;
+}
+
+/** Monday-first weeks covering the month; leading and trailing days are outside it. */
+export function monthGrid(month: string): GridCell[] {
+  const [y, m] = month.split("-").map(Number);
+  const lead = (new Date(Date.UTC(y!, m! - 1, 1)).getUTCDay() + 6) % 7;
+  const length = new Date(Date.UTC(y!, m!, 0)).getUTCDate();
+  const total = Math.ceil((lead + length) / 7) * 7;
+  const start = key(y!, m!, 1);
+  return Array.from({ length: total }, (_, i) => {
+    const day = addDays(start, i - lead);
+    return { day, inMonth: monthOf(day) === month };
+  });
+}
