@@ -3,6 +3,7 @@ import type { DragEvent } from "react";
 import { Link } from "react-router";
 import { can } from "@kcom/permissions";
 import { Badge, Button, Dialog, DialogActions, TextField, useToast } from "@kcom/ui";
+import { ApiError } from "../api/client";
 import { useAuth } from "../auth/AuthProvider";
 import { capsuleEditPath, rescheduleCapsule, useCapsules } from "./api";
 import type { CapsuleSummary } from "./api";
@@ -49,6 +50,7 @@ export function CalendarPage() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [moving, setMoving] = useState<CapsuleSummary | null>(null);
   const [moveDay, setMoveDay] = useState("");
+  const [moveError, setMoveError] = useState<string | null>(null);
   const today = lagosDay(new Date());
   const minDay = firstSchedulableDay();
 
@@ -61,21 +63,14 @@ export function CalendarPage() {
     return map;
   }, [capsules]);
 
-  async function moveTo(capsule: CapsuleSummary, day: DayKey) {
-    if (lagosDay(capsule.publishAt) === day) return;
-    if (!canScheduleOn(day)) {
-      toast({
-        variant: "error",
-        title: "Pick a day after today",
-        description: "Capsules publish at midnight Lagos time.",
-      });
-      return;
-    }
-    const taken = byDay.get(day)?.find((c) => c.id !== capsule.id);
-    if (taken) {
-      toast({ variant: "error", title: `${shortDayLabel(day)} already has “${taken.title}”` });
-      return;
-    }
+  /** Moves a capsule; returns why it could not be moved, or null on success. */
+  async function moveTo(capsule: CapsuleSummary, day: DayKey): Promise<string | null> {
+    if (lagosDay(capsule.publishAt) === day) return null;
+    if (!canScheduleOn(day))
+      return "Pick a day after today. Capsules publish at midnight Lagos time.";
+    // One capsule per day: drafts do not hold a day.
+    const taken = byDay.get(day)?.find((c) => c.id !== capsule.id && c.status !== "draft");
+    if (taken) return `${shortDayLabel(day)} already has “${taken.title}”`;
     try {
       replace(await rescheduleCapsule(capsule.id, lagosMidnight(day)));
       toast({
@@ -83,8 +78,11 @@ export function CalendarPage() {
         title: "Capsule moved",
         description: `“${capsule.title}” is now scheduled for ${shortDayLabel(day)}.`,
       });
-    } catch {
-      toast({ variant: "error", title: "Could not reschedule the capsule" });
+      return null;
+    } catch (err) {
+      return err instanceof ApiError && err.status === 409
+        ? err.message
+        : "Could not reschedule the capsule";
     }
   }
 
@@ -92,7 +90,8 @@ export function CalendarPage() {
     event.preventDefault();
     const capsule = capsules.find((c) => c.id === dragId);
     setDragId(null);
-    if (capsule) void moveTo(capsule, day);
+    if (capsule)
+      void moveTo(capsule, day).then((error) => error && toast({ variant: "error", title: error }));
   };
 
   const cells = monthGrid(month);
@@ -227,7 +226,10 @@ export function CalendarPage() {
       {moving && (
         <Dialog
           open
-          onOpenChange={(o) => !o && setMoving(null)}
+          onOpenChange={(o) => {
+            if (!o) setMoving(null);
+            setMoveError(null);
+          }}
           title="Move to date"
           description={`“${moving.title}” will publish at midnight Lagos time on the day you choose.`}
         >
@@ -236,7 +238,11 @@ export function CalendarPage() {
             type="date"
             min={minDay}
             value={moveDay}
-            onChange={(e) => setMoveDay(e.target.value)}
+            error={moveError}
+            onChange={(e) => {
+              setMoveDay(e.target.value);
+              setMoveError(null);
+            }}
           />
           <DialogActions>
             <Button variant="secondary" size="sm" onClick={() => setMoving(null)}>
@@ -246,9 +252,10 @@ export function CalendarPage() {
               size="sm"
               disabled={!moveDay || moveDay < minDay}
               onClick={() => {
-                const target = moving;
-                setMoving(null);
-                void moveTo(target, moveDay);
+                void moveTo(moving, moveDay).then((error) => {
+                  if (error) setMoveError(error);
+                  else setMoving(null);
+                });
               }}
             >
               Move

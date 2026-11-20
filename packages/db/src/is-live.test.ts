@@ -14,7 +14,13 @@ describe("isLive", () => {
       { title: "a", slug: "live", body, status: "published", publishAt: past },
       { title: "b", slug: "future", body, status: "published", publishAt: future },
       { title: "c", slug: "draft", body, status: "draft", publishAt: past },
-      { title: "d", slug: "sched", body, status: "scheduled", publishAt: past },
+      {
+        title: "d",
+        slug: "sched",
+        body,
+        status: "scheduled",
+        publishAt: new Date("2020-01-02T00:00:00Z"),
+      },
     ]);
     const rows = await db.select({ slug: capsules.slug }).from(capsules).where(isLive(capsules));
     expect(rows).toEqual([{ slug: "live" }]);
