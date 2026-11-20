@@ -99,11 +99,17 @@ export function EventsPage() {
   const editing = selected && selected !== "new" ? events?.find((e) => e.id === selected) : null;
 
   const columns: DataTableColumn<EventRecord>[] = [
-    { key: "date", header: "Date", render: (e) => formatEventDates(e.startsAt, e.endsAt) },
+    {
+      key: "date",
+      header: "Date",
+      width: "9rem",
+      render: (e) => formatEventDates(e.startsAt, e.endsAt),
+    },
     { key: "title", header: "Event", accessor: (e) => e.title },
     {
       key: "status",
       header: "Status",
+      width: "7rem",
       render: (e) => <Badge variant={e.status}>{statusLabel[e.status]}</Badge>,
     },
   ];
@@ -159,24 +165,26 @@ export function EventsPage() {
             />
           )}
         </div>
-        <aside className="kc-events__empty" aria-label="Event editor">
-          <span aria-hidden="true">📅</span>
-          <h2>No event selected</h2>
-          <p>Pick an event on the left to edit it, or start a new one.</p>
-          <Button onClick={() => setSelected("new")}>New event</Button>
-        </aside>
+        <div className="kc-events__side">
+          {selected && (selected === "new" || editing) ? (
+            <EventEditor
+              key={selected}
+              event={editing ?? null}
+              onClose={() => setSelected(null)}
+              onSaved={async () => {
+                await load();
+              }}
+              onDelete={editing ? () => setDeleting(editing) : undefined}
+            />
+          ) : (
+            <aside className="kc-events__empty" aria-label="No event selected">
+              <h2>No event selected</h2>
+              <p>Pick an event on the left to edit it, or start a new one.</p>
+              <Button onClick={() => setSelected("new")}>New event</Button>
+            </aside>
+          )}
+        </div>
       </div>
-      {selected && (selected === "new" || editing) && (
-        <EventEditor
-          key={selected}
-          event={editing ?? null}
-          onClose={() => setSelected(null)}
-          onSaved={async () => {
-            await load();
-          }}
-          onDelete={editing ? () => setDeleting(editing) : undefined}
-        />
-      )}
       <ConfirmDialog
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
@@ -263,7 +271,8 @@ function EventEditor({ event, onClose, onSaved, onDelete }: EditorProps) {
   const published = saved?.status === "published";
   return (
     <EditorContainer
-      title={saved ? "Edit event" : "New event"}
+      variant="inline"
+      title={saved ? "Editing" : "New event"}
       subject={v.title || undefined}
       dirty={form.dirty}
       onClose={onClose}
@@ -298,7 +307,12 @@ function EventEditor({ event, onClose, onSaved, onDelete }: EditorProps) {
             </>
           )}
           {onDelete && (
-            <Button variant="secondary" disabled={saving} onClick={onDelete}>
+            <Button
+              variant="tertiary"
+              className="kc-dialog__actions-end"
+              disabled={saving}
+              onClick={onDelete}
+            >
               Delete
             </Button>
           )}
@@ -339,7 +353,7 @@ function EventEditor({ event, onClose, onSaved, onDelete }: EditorProps) {
             )}
           </div>
         </div>
-        <p className="kc-events__hint">Times are in WAT.</p>
+        <p className="kc-events__hint">Times are in Lagos time.</p>
         <TextField
           label="Venue"
           optional

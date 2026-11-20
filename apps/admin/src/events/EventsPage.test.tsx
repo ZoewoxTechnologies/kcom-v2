@@ -97,14 +97,14 @@ describe("EventsPage", () => {
     await screen.findByText("Conference");
     expect(screen.getByText("No event selected")).toBeInTheDocument();
     await userEvent.click(screen.getByText("Conference"));
-    expect(await screen.findByRole("dialog", { name: "Edit event" })).toBeInTheDocument();
+    expect(await screen.findByRole("region", { name: "Editing" })).toBeInTheDocument();
   });
 
   it("creates and publishes an event", async () => {
     setup();
     await screen.findByText("Conference");
     await userEvent.click(screen.getAllByRole("button", { name: "New event" })[0]!);
-    const dialog = await screen.findByRole("dialog", { name: "New event" });
+    const dialog = await screen.findByRole("region", { name: "New event" });
     await userEvent.type(within(dialog).getByLabelText(/Title/), "Prayer Night");
     // Start time is required.
     await userEvent.click(within(dialog).getByRole("button", { name: "Publish" }));
@@ -115,7 +115,7 @@ describe("EventsPage", () => {
   it("saves edits to an existing event and publishes it", async () => {
     setup();
     await userEvent.click(await screen.findByText("Conference"));
-    const dialog = await screen.findByRole("dialog", { name: "Edit event" });
+    const dialog = await screen.findByRole("region", { name: "Editing" });
     await userEvent.type(within(dialog).getByLabelText(/Description/), "Three days");
     await userEvent.click(within(dialog).getByRole("button", { name: "Publish" }));
     await waitFor(() => expect(calls.find((c) => c.method === "PATCH")).toBeTruthy());
@@ -123,13 +123,13 @@ describe("EventsPage", () => {
     expect(patch.path).toBe("/1");
     expect(patch.body).toMatchObject({ status: "published" });
     expect(JSON.stringify(patch.body?.description)).toContain("Three days");
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Edit event" })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Editing" })).toBeNull());
   });
 
   it("deletes after confirming", async () => {
     setup();
     await userEvent.click(await screen.findByText("Conference"));
-    const dialog = await screen.findByRole("dialog", { name: "Edit event" });
+    const dialog = await screen.findByRole("region", { name: "Editing" });
     await userEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
     await userEvent.click(
       await screen.findByRole("button", { name: "Delete", description: undefined }),
@@ -142,24 +142,24 @@ describe("EventsPage", () => {
   it("asks before closing with unsaved edits, and Esc never closes", async () => {
     setup();
     await userEvent.click(await screen.findByText("Conference"));
-    const dialog = await screen.findByRole("dialog", { name: "Edit event" });
+    const dialog = await screen.findByRole("region", { name: "Editing" });
     await userEvent.keyboard("{Escape}");
-    expect(screen.getByRole("dialog", { name: "Edit event" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Editing" })).toBeInTheDocument();
     await userEvent.type(within(dialog).getByLabelText(/Title/), " 2");
     await userEvent.click(within(dialog).getByRole("button", { name: "Close" }));
     expect(await screen.findByText("Discard your changes?")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Discard" }));
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Edit event" })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Editing" })).toBeNull());
     expect(calls.some((c) => c.method === "PATCH")).toBe(false);
   });
 
   it("closes a clean editor without asking", async () => {
     setup();
     await userEvent.click(await screen.findByText("Conference"));
-    const dialog = await screen.findByRole("dialog", { name: "Edit event" });
+    const dialog = await screen.findByRole("region", { name: "Editing" });
     await userEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
     expect(screen.queryByText("Discard your changes?")).toBeNull();
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Edit event" })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Editing" })).toBeNull());
   });
 });
 

@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 import { Button, Dialog, useToast, DialogActions, UnsavedChangesPrompt } from "@kcom/ui";
 import type { DialogSize, DialogVariant } from "@kcom/ui";
 import { useEditorGuard } from "./useEditorGuard";
@@ -13,7 +13,8 @@ export interface EditorContainerProps {
   onClose: () => void;
   /** Saves without publishing. The editor closes when it resolves. */
   onSaveDraft: () => void | Promise<void>;
-  variant?: DialogVariant;
+  /** "inline" renders in place (no overlay) instead of as a dialog. */
+  variant?: DialogVariant | "inline";
   size?: DialogSize;
   /** Primary actions shown beside Cancel, such as Save. */
   actions?: ReactNode;
@@ -37,6 +38,7 @@ export function EditorContainer({
   actions,
   children,
 }: EditorContainerProps) {
+  const headingId = useId();
   const [closePrompt, setClosePrompt] = useState(false);
   const [saving, setSaving] = useState(false);
   const { blocker, allowNavigation } = useEditorGuard(dirty);
@@ -85,6 +87,52 @@ export function EditorContainer({
   };
   const requestClose = () => (dirty ? setClosePrompt(true) : onClose());
 
+  const prompt = (
+    <UnsavedChangesPrompt
+      open={promptOpen}
+      onOpenChange={(open) => !open && keepEditing()}
+      subject={subject}
+      saving={saving}
+      onSaveDraft={saveDraft}
+      onKeepEditing={keepEditing}
+      onDiscard={() => finish(blocked)}
+    />
+  );
+  const cancel = (
+    <Button variant="secondary" onClick={requestClose}>
+      Cancel
+    </Button>
+  );
+
+  if (variant === "inline") {
+    return (
+      <>
+        <section className="kc-editor-inline" aria-labelledby={headingId}>
+          <header className="kc-editor-inline__head">
+            <h2 id={headingId} className="kc-editor-inline__title">
+              {title}
+            </h2>
+            <button
+              type="button"
+              className="kc-editor-inline__close"
+              aria-label="Close"
+              onClick={requestClose}
+            >
+              ×
+            </button>
+          </header>
+          {description ? <p>{description}</p> : null}
+          {children}
+          <div className="kc-dialog__actions">
+            {actions}
+            {cancel}
+          </div>
+        </section>
+        {prompt}
+      </>
+    );
+  }
+
   return (
     <>
       <Dialog
@@ -100,20 +148,10 @@ export function EditorContainer({
         {children}
         <DialogActions>
           {actions}
-          <Button variant="secondary" onClick={requestClose}>
-            Cancel
-          </Button>
+          {cancel}
         </DialogActions>
       </Dialog>
-      <UnsavedChangesPrompt
-        open={promptOpen}
-        onOpenChange={(open) => !open && keepEditing()}
-        subject={subject}
-        saving={saving}
-        onSaveDraft={saveDraft}
-        onKeepEditing={keepEditing}
-        onDiscard={() => finish(blocked)}
-      />
+      {prompt}
     </>
   );
 }

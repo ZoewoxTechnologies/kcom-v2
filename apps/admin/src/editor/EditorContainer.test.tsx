@@ -172,3 +172,35 @@ describe("EditorContainer", () => {
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 });
+
+describe("EditorContainer inline", () => {
+  it("renders in place without an overlay and still guards closing", async () => {
+    const onClose = vi.fn();
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: (
+          <EditorContainer
+            variant="inline"
+            title="Editing"
+            dirty
+            onClose={onClose}
+            onSaveDraft={vi.fn()}
+          >
+            <p>Fields</p>
+          </EditorContainer>
+        ),
+      },
+    ]);
+    render(
+      <ToastProvider>
+        <RouterProvider router={router} />
+      </ToastProvider>,
+    );
+    expect(screen.getByRole("region", { name: "Editing" })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(await screen.findByText("Discard your changes?")).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});
