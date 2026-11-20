@@ -31,7 +31,7 @@ export function App() {
               <Route path="profile" element={<PlaceholderPage title="Profile" />} />
               <Route element={<RequirePermission permission="content:read" />}>
                 <Route path="capsules" element={<CapsulesPage />} />
-                <Route path="capsules/new" element={<CapsuleEditorStubPage />} />
+                <Route path="capsules/new" element={<CapsuleEditorStubPage isNew />} />
                 <Route path="capsules/:id" element={<CapsuleEditorStubPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
               </Route>
