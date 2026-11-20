@@ -2,10 +2,11 @@ import { Hono } from "hono";
 import { and, asc, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
-import { events, type CapsuleDb } from "@kcom/db";
+import { blogPosts, events, isLive, type CapsuleDb } from "@kcom/db";
 import {
   adminCrudRoutes,
   cloudinaryImageUrl,
+  httpUrl,
   notFound,
   pagination,
   publicCache,
@@ -25,6 +26,12 @@ const fields = {
   place: z.string().trim().min(1).max(300).nullable(),
   description: richTextSchema.nullable(),
   imageUrl: cloudinaryImageUrl.nullable(),
+  allDay: z.boolean(),
+  /** Where to join online; set means the event is also online. */
+  onlineUrl: httpUrl.nullable(),
+  /** One "time · item" line per entry. */
+  programme: z.string().trim().min(1).max(4000).nullable(),
+  relatedPostId: z.uuid().nullable(),
   status: eventStatus,
 };
 
@@ -35,6 +42,10 @@ const createBody = z
     place: fields.place.default(null),
     description: fields.description.default(null),
     imageUrl: fields.imageUrl.default(null),
+    allDay: fields.allDay.default(false),
+    onlineUrl: fields.onlineUrl.default(null),
+    programme: fields.programme.default(null),
+    relatedPostId: fields.relatedPostId.default(null),
     status: fields.status.default("draft"),
   })
   .refine((b) => !b.endsAt || b.endsAt >= b.startsAt, {
@@ -80,7 +91,15 @@ export function eventRoutes(db: CapsuleDb) {
         .where(and(published, eq(events.slug, c.req.valid("param").slug)))
         .limit(1);
       if (!row) throw notFound("event");
-      return c.json(row);
+      // The related post is only shown once it is live.
+      const [relatedPost] = row.relatedPostId
+        ? await db
+            .select({ slug: blogPosts.slug, title: blogPosts.title })
+            .from(blogPosts)
+            .where(and(isLive(blogPosts), eq(blogPosts.id, row.relatedPostId)))
+            .limit(1)
+        : [];
+      return c.json({ ...row, relatedPost: relatedPost ?? null });
     });
 }
 
@@ -90,7 +109,7 @@ export const adminEventRoutes = (db: CapsuleDb) =>
     db,
     table: events,
     label: "event",
-    errors: { messages: { check: "end time must not be before start time" } },
+    errors: { messages: { reference: "related post does not exist", check: "end time must not be before start time" } },
     createBody,
     updateBody,
     orderBy: [desc(events.startsAt)],

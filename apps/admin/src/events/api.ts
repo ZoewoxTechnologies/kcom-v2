@@ -10,6 +10,10 @@ export interface EventRecord {
   endsAt: string | null;
   place: string | null;
   description: Record<string, unknown> | null;
+  allDay: boolean;
+  onlineUrl: string | null;
+  programme: string | null;
+  relatedPostId: string | null;
   status: EventStatus;
 }
 
@@ -21,8 +25,23 @@ export interface EventInput {
   place: string | null;
   /** Left out when unchanged, so existing rich content is never overwritten. */
   description?: Record<string, unknown> | null;
+  allDay: boolean;
+  onlineUrl: string | null;
+  programme: string | null;
+  relatedPostId: string | null;
   status: EventStatus;
 }
+
+export interface PostOption {
+  id: string;
+  title: string;
+}
+
+/** Published posts, for linking an event to its write-up. */
+export const listPostOptions = () =>
+  apiJson<{ items: (PostOption & { status: string })[] }>("/admin/blog?status=published&limit=100").then(
+    (r) => r.items.map(({ id, title }) => ({ id, title })),
+  );
 
 const call = <T>(path: string, init?: RequestInit) => apiJson<T>(`/admin/events${path}`, init);
 

@@ -16,6 +16,10 @@ const make = (over: Partial<EventRecord>): EventRecord => ({
   endsAt: null,
   place: null,
   description: null,
+  allDay: false,
+  onlineUrl: null,
+  programme: null,
+  relatedPostId: null,
   status: "draft",
   ...over,
 });
@@ -54,6 +58,10 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (url: string, init?: RequestInit) => {
       const method = init?.method ?? "GET";
+      if (new URL(url).pathname === "/admin/blog")
+        return new Response(JSON.stringify({ items: [{ id: "p1", title: "Recap", status: "published" }], total: 1 }), {
+          headers: { "content-type": "application/json" },
+        });
       const path = new URL(url).pathname.replace("/admin/events", "") || "/";
       const body = init?.body ? JSON.parse(String(init.body)) : undefined;
       calls.push({ method, path, body });
@@ -149,6 +157,28 @@ describe("EventsPage", () => {
     expect(patch.body).toMatchObject({ status: "published" });
     expect(JSON.stringify(patch.body?.description)).toContain("Three days");
     await waitFor(() => expect(screen.queryByRole("region", { name: "Editing" })).toBeNull());
+  });
+
+  it("saves all day, online link, programme and related post", async () => {
+    setup();
+    await userEvent.click(await screen.findByText("Conference"));
+    const dialog = await screen.findByRole("region", { name: "Editing" });
+    await userEvent.click(within(dialog).getByLabelText("All day"));
+    await userEvent.type(within(dialog).getByLabelText(/Also online/), "not a link");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Publish" }));
+    expect(await within(dialog).findByText(/starting with https/)).toBeInTheDocument();
+    await userEvent.clear(within(dialog).getByLabelText(/Also online/));
+    await userEvent.type(within(dialog).getByLabelText(/Also online/), "https://example.org/live");
+    await userEvent.type(within(dialog).getByLabelText(/Programme/), "Fri · 6 p.m. · Opening");
+    await userEvent.selectOptions(within(dialog).getByLabelText(/Related blog post/), "p1");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Publish" }));
+    await waitFor(() => expect(calls.find((c) => c.method === "PATCH")).toBeTruthy());
+    expect(calls.find((c) => c.method === "PATCH")!.body).toMatchObject({
+      allDay: true,
+      onlineUrl: "https://example.org/live",
+      programme: "Fri · 6 p.m. · Opening",
+      relatedPostId: "p1",
+    });
   });
 
   it("deletes after confirming", async () => {

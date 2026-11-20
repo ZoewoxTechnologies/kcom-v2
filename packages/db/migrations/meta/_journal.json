@@ -43,6 +43,13 @@
       "when": 1794975925098,
       "tag": "0005_homepage_sections",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795172719880,
+      "tag": "0006_event_fields",
+      "breakpoints": true
     }
   ]
 }
