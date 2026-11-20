@@ -7,13 +7,13 @@ const bank = bankRows(sampleSettings);
 ---
 <BaseLayout title="Partner With Us" description="Stand with Kingdom Capstone Outreach Ministries as a prayer, prosperity or project partner." current="/partner">
   <div class="page">
-    <header>
+    <header class="hero">
       <span class="kicker">Networking visions to reach generations</span>
       <h1>Partner With Us</h1>
       <p>Partnership is a relationship of the heart that happens when people share a common vision. Kingdom Capstone Outreach Ministries welcomes every born-again Christian committed to the Word of God, whatever their age, background or country.</p>
     </header>
     <section aria-labelledby="ways">
-      <h2 id="ways">Three ways to partner</h2>
+      <h2 id="ways" class="center">Three ways to partner</h2>
       <div class="ways">
         {ways.map((w) => (
           <article>
@@ -25,15 +25,23 @@ const bank = bankRows(sampleSettings);
         ))}
       </div>
     </section>
-    {bank.length > 0 && (
-      <section class="panel" aria-labelledby="bank">
-        <span class="kicker">Give by bank transfer</span>
-        <h2 id="bank">Bank details</h2>
-        <dl>{bank.map((r) => <><dt>{r.label}</dt><dd><span>{r.value}</span>
-          <span class="kc-tooltip"><button type="button" class="kc-btn kc-btn--tertiary kc-btn--sm copy" data-copy={r.value} aria-label={`Copy ${r.label}`}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg></button><span class="kc-tooltip__bubble" role="status" hidden>Copied</span></span></dd></>)}</dl>
-        <p class="note">Please use your name and “Partner” as the transfer reference so we can thank you.</p>
+    <div class="give">
+      {bank.length > 0 && (
+        <section class="panel" aria-labelledby="bank">
+          <span class="kicker">Give by bank transfer</span>
+          <h2 id="bank">Bank details</h2>
+          <dl>{bank.map((r) => <><dt>{r.label}</dt><dd><span>{r.value}</span>
+            <span class="kc-tooltip"><button type="button" class="kc-btn kc-btn--tertiary kc-btn--sm copy" data-copy={r.value} aria-label={`Copy ${r.label}`}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg></button><span class="kc-tooltip__bubble" role="status" hidden>Copied</span></span></dd></>)}</dl>
+          <p class="note">Please use your name and “Partner” as the transfer reference so we can thank you.</p>
+        </section>
+      )}
+      <section class="panel soon" aria-labelledby="online">
+        <span class="kicker">Coming in a later release</span>
+        <h2 id="online">Give online</h2>
+        <p>Card and recurring giving will appear here, using the gold Give button.</p>
+        <button type="button" class="kc-btn kc-btn--give kc-btn--sm" disabled>Give</button>
       </section>
-    )}
+    </div>
     <section id="join" class="join" aria-labelledby="join-h">
       <form method="post" action="/partner">
         <h2 id="join-h">Become a partner</h2>
@@ -62,8 +70,15 @@ const bank = bankRows(sampleSettings);
   });
 </script>
 <style>
-  .page { max-inline-size: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-5) var(--space-7); }
-  header { display: flex; flex-direction: column; gap: var(--space-3); max-inline-size: 44rem; }
+  .page { max-inline-size: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-6); padding-block-end: 0; margin-block-end: calc(var(--space-6) * -1); }
+  .hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-3); background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); margin-block-start: calc(var(--space-6) * -1); padding-block: var(--space-6); }
+  .hero p { max-inline-size: 42rem; font-size: 1.125rem; }
+  .give { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+  .give .panel { flex: 3 1 20rem; min-inline-size: 0; }
+  .give .soon { flex: 2 1 16rem; background: var(--color-surface); color: var(--color-text); border: 1px dashed var(--color-gold); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-3); }
+  .soon h2 { margin: 0; }
+  .soon p { color: var(--color-muted); }
+  h2.center, #ways { text-align: center; }
   h1 { margin: 0; font-family: var(--font-title); font-weight: 500; }
   h2 { margin: 0 0 var(--space-3); font: 600 1.75rem / 1.15 var(--font-title); }
   h3 { margin: 0; font: 600 1.5rem / 1.15 var(--font-title); }

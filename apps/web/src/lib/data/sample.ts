@@ -108,7 +108,7 @@ const sampleBooks: Book[] = [
   publishedYear: 2012 + i,
   kind: (["Book", "Mini-book", "Mini-book", "New Year message"] as const)[i % 4],
   author: "Dr. Adetokunbo O. Ilesanmi",
-  sampleUrl: i === 0 ? "https://example.com/sample" : null,
+  sampleUrl: i === 1 ? "https://example.com/sample" : null,
 }));
 
 export function createSampleSource(now: () => Date = () => new Date()): DataSource {
