@@ -13,6 +13,7 @@ const app = createApp(createDb(), {
     .map((o) => o.trim())
     .filter(Boolean),
   cloudinary: cloudinaryFromEnv(),
+  trustedProxyHops: process.env.TRUSTED_PROXY_HOPS ? Number(process.env.TRUSTED_PROXY_HOPS) : undefined,
   internalToken: process.env.INTERNAL_JOB_TOKEN || undefined,
   auth: {
     cookies: {

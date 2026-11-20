@@ -33,9 +33,9 @@ describe("submitContact", () => {
   });
   it("sends the honeypot only when filled", async () => {
     const f = reply(201);
-    await submitContact("http://api.test", input, false, { website: "spam"}, f);
+    await submitContact("http://api.test", input, false, { hp_url: "spam" }, f);
     const [, init] = f.mock.calls[0] as unknown as [string, RequestInit];
-    expect(JSON.parse(init.body as string)).toMatchObject({ website: "spam"});
+    expect(JSON.parse(init.body as string)).toMatchObject({ hp_url: "spam" });
   });
   it("explains rate limiting", async () => {
     expect(await submitContact("http://api.test", input, false, {}, reply(429))).toMatchObject({ ok: false, message: RATE_LIMITED });

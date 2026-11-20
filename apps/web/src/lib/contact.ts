@@ -57,7 +57,7 @@ export type ContactResult =
 
 export const RATE_LIMITED = "You have sent several messages recently. Please try again later.";
 /** Spam-protection field sent with the message: the hidden honeypot. */
-export interface SpamFields { website?: string }
+export interface SpamFields { hp_url?: string }
 
 export const SEND_FAILED = "Sorry, your message could not be sent. Please try again in a moment.";
 
@@ -81,7 +81,7 @@ export async function submitContact(
         email: input.email.trim(),
         message: input.message.trim(),
         keepPrivate,
-        ...(spam.website ? { website: spam.website } : {}),
+        ...(spam.hp_url ? { hp_url: spam.hp_url } : {}),
       }),
     });
     if (res.ok) return { ok: true };

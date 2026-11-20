@@ -39,7 +39,7 @@ const social = contactSettings.social;
           <p class="kc-field__error" id="c-message-error" hidden></p>
         </div>
         <label class="kc-choice" id="private-row" hidden><input type="checkbox" name="private" />Keep my request private to the prayer team</label>
-        <div class="hp" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
+        <div class="hp" aria-hidden="true"><label>Leave this field empty<input type="text" name="hp_url" tabindex="-1" autocomplete="off" /></label></div>
         <p class="kc-field__error" id="submit-error" role="alert" hidden></p>
         <div class="actions">
           <button class="kc-btn kc-btn--primary kc-btn--sm" type="submit">Send message</button>
@@ -106,7 +106,7 @@ const social = contactSettings.social;
     if (first) { (first === "topic" ? form.querySelector<HTMLInputElement>('input[name="topic"]') : field(first))?.focus(); return; }
     sending = true;
     sendBtn.setAttribute("aria-busy", "true");
-    const result = await submitContact(import.meta.env.PUBLIC_API_URL, values(), field("private").checked && !priv.hidden, { website: field("website").value });
+    const result = await submitContact(import.meta.env.PUBLIC_API_URL, values(), field("private").checked && !priv.hidden, { hp_url: field("hp_url").value });
     sending = false;
     sendBtn.removeAttribute("aria-busy");
     if (!result.ok) {
