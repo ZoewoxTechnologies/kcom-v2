@@ -99,6 +99,39 @@ describe("admin events", () => {
     );
   });
 
+  it("stores the extra fields, validates them and 422s on an unknown related post", async () => {
+    const ev = await json<Ev & Record<string, unknown>>(
+      await call(
+        "/admin/events",
+        editor,
+        "POST",
+        valid({
+          allDay: true,
+          onlineUrl: "https://example.org/live",
+          programme: "Fri · 6 p.m. · Open",
+        }),
+      ),
+    );
+    expect(ev).toMatchObject({
+      allDay: true,
+      onlineUrl: "https://example.org/live",
+      programme: "Fri · 6 p.m. · Open",
+      relatedPostId: null,
+    });
+    const bad = async (over: Record<string, unknown>) =>
+      (await call("/admin/events", editor, "POST", valid(over))).status;
+    expect(await bad({ onlineUrl: "javascript:alert(1)" })).toBe(400);
+    expect(await bad({ allDay: "yes" })).toBe(400);
+    expect(await bad({ relatedPostId: "nope" })).toBe(400);
+    expect(
+      await bad({ slug: "other", relatedPostId: "00000000-0000-4000-8000-000000000000" }),
+    ).toBe(422);
+    const cleared = await json<Record<string, unknown>>(
+      await call(`/admin/events/${ev.id}`, editor, "PATCH", { onlineUrl: null, programme: null }),
+    );
+    expect(cleared).toMatchObject({ onlineUrl: null, programme: null, allDay: true });
+  });
+
   it("422s when a patch moves the end before the start", async () => {
     const ev = await json(
       await call("/admin/events", editor, "POST", valid({ endsAt: "2099-01-02T10:00:00Z" })),

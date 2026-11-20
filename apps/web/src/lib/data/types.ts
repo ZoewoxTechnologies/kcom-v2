@@ -88,6 +88,24 @@ export interface BlogPost extends BlogPostSummary {
   body: RichTextDoc;
 }
 
+/** A published event in full. Optional parts are null when not set. */
+export interface EventDetail {
+  slug: string;
+  title: string;
+  startsAt: string;
+  endsAt: string | null;
+  allDay: boolean;
+  place: string | null;
+  description: RichTextDoc | null;
+  imageUrl: string | null;
+  /** Join link when the event is also online. */
+  onlineUrl: string | null;
+  /** One "time · item" line per entry. */
+  programme: string | null;
+  /** The write-up, once it is published. */
+  relatedPost: { slug: string; title: string } | null;
+}
+
 export interface BlogListQuery {
   limit?: number;
   offset?: number;
@@ -108,13 +126,14 @@ export interface DataSource {
   /** Published posts, newest first. */
   listBlogPosts(query?: BlogListQuery): Promise<BlogPostSummary[]>;
   blogPostBySlug(slug: string): Promise<BlogPost | null>;
+  eventBySlug(slug: string): Promise<EventDetail | null>;
 }
 
 /**
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "eventBySlug"] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */
