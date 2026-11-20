@@ -80,9 +80,9 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
   <ShareLinks url={shareUrl} title={capsule.title} />
 
   <nav class="more" aria-label={mode === "today" ? "More capsules" : "Previous and next"}>
-    {prev ? <LinkCard href={href(prev)} label={`← ${mode === "today" ? "Previous · " : ""}${formatLagosShortDate(prev.displayDate)}`} title={prev.title} /> : <span class="gap"></span>}
+    {prev ? <LinkCard dir="prev" href={href(prev)} label={`${mode === "today" ? "Previous · " : ""}${formatLagosShortDate(prev.displayDate)}`} title={prev.title} /> : <span class="gap"></span>}
     {next
-      ? <LinkCard end href={href(next)} label={`${mode === "today" ? "Next · " : ""}${formatLagosShortDate(next.displayDate)} →`} title={next.title} />
+      ? <LinkCard dir="next" end href={href(next)} label={`${mode === "today" ? "Next · " : ""}${formatLagosShortDate(next.displayDate)}`} title={next.title} />
       : upcoming ? <LinkCard end label="Next · tomorrow" title="Arrives at midnight (Lagos time)" /> : <span class="gap"></span>}
   </nav>
 </article>

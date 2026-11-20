@@ -1,7 +1,7 @@
 import { lagosDate } from "@kcom/content";
 import { sampleBlogPosts } from "./sample-blog";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import type { Book, Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
+import type { Book, EventDetail, Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
 
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -156,7 +156,37 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
     async blogPostBySlug(slug) {
       return sampleBlogPosts.find((b) => b.slug === slug) ?? null;
     },
+    async eventBySlug(slug) {
+      return sampleEvents.find((e) => e.slug === slug) ?? null;
+    },
   };
 }
+
+const sampleEvent: EventDetail = {
+  slug: "kingdom-capstone-conference-2027",
+  title: "Kingdom Capstone Conference 2027",
+  startsAt: "2027-03-12T17:00:00Z",
+  endsAt: "2027-03-14T13:00:00Z",
+  allDay: false,
+  place: "Venue to be announced",
+  description: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Three days of teaching, prophecy and intercession." }] }] },
+  imageUrl: null,
+  onlineUrl: "https://example.org/live",
+  programme: "Fri · 6 p.m. · Opening service\nSat · 10 a.m. · Teaching sessions and workshops\nSat · 6 p.m. · Prophetic night",
+  relatedPost: null,
+};
+
+/** An event with none of the optional parts, to show they are hidden. */
+const bareEvent: EventDetail = {
+  ...sampleEvent,
+  slug: "prayer-night",
+  title: "Prayer Night",
+  endsAt: null,
+  place: null,
+  description: null,
+  onlineUrl: null,
+  programme: null,
+};
+const sampleEvents = [sampleEvent, bareEvent];
 
 export const sampleSource: DataSource = createSampleSource();

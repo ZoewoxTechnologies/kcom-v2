@@ -355,6 +355,12 @@ export const events = pgTable(
     place: text("place"),
     description: jsonb("description").$type<RichText>(),
     imageUrl: text("image_url"),
+    allDay: boolean("all_day").notNull().default(false),
+    /** Where to join online; set means the event is also online. */
+    onlineUrl: text("online_url"),
+    /** One "time · item" line per entry. */
+    programme: text("programme"),
+    relatedPostId: uuid("related_post_id").references(() => blogPosts.id, { onDelete: "set null" }),
     status: publishStatus("status").notNull().default("draft"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
