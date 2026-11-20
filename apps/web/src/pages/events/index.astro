@@ -1,0 +1,102 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/design.css";
+import { data } from "../../lib/data";
+import { calendarHref, eventListBadge, eventListWhen, eventListWhere, eventMonthYear } from "../../lib/event-page";
+
+const [upcoming, past] = await Promise.all([data.listEvents("upcoming"), data.listEvents("past")]);
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+---
+<BaseLayout title="Events" description="Conferences, conventions, services and seminars from Kingdom Capstone Outreach Ministries." current="/events">
+  <section class="hero">
+    <span class="kicker">Join us</span>
+    <h1>Events</h1>
+    <p>Conferences, conventions, services and seminars. Join us in person or online.</p>
+  </section>
+  <div class="body">
+    <h2 id="upcoming">Upcoming</h2>
+    {upcoming.length === 0 && <p class="empty">No upcoming events right now. Please check back soon.</p>}
+    {upcoming.map((e, i) => {
+      const b = eventListBadge(e);
+      const where = eventListWhere(e);
+      return (
+        <article class:list={["card", { next: i === 0 }]}>
+          <div class="badge" aria-hidden="true"><span>{b.month}</span><strong>{b.day}</strong><span>{b.weekday}</span></div>
+          <div class="text">
+            <h3>{e.title}</h3>
+            <span class="meta">{eventListWhen(e)}{where && <> · {where}</>}</span>
+            {e.summary && <p>{e.summary}</p>}
+          </div>
+          <div class="side">
+            <a class="kc-btn kc-btn--secondary kc-btn--sm cal" href={calendarHref(e)} download={`${e.slug}.ics`}>Add to calendar</a>
+            <a class="details" href={`/events/${e.slug}`} aria-label={`Details: ${e.title}`}>Details →</a>
+          </div>
+        </article>
+      );
+    })}
+    {past.length > 0 && (
+      <>
+        <h2 id="past" class="past-h">Past events</h2>
+        <ul class="past">
+          {past.map((e) => (
+            <li><a href={`/events/${e.slug}`}><span class="date">{eventMonthYear(e.startsAt)}</span><span class="title">{e.title}</span><span class="more">Details →</span></a></li>
+          ))}
+        </ul>
+      </>
+    )}
+  </div>
+</BaseLayout>
+<style>
+  .badge { --badge-gold: #e3c88a; }
+  .hero { background: var(--color-wash); padding-block: 56px; margin-block-start: calc(-1 * var(--space-6)); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); display: flex; flex-direction: column; gap: 10px; font-size: 17px; line-height: 1.6; }
+  .kicker { display: none; font-size: 12px; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--d-kicker); }
+  .hero h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: clamp(2.25rem, 6vw, 3.75rem); line-height: 1.05; }
+  .hero p { margin: 0; max-inline-size: 640px; font-size: 19px; }
+  .body { padding-block: 48px 72px; display: flex; flex-direction: column; gap: 28px; font-size: 17px; line-height: 1.6; }
+  h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 36px; line-height: normal; }
+  .past-h { margin-block-start: 24px; }
+  .empty { margin: 0; color: var(--color-muted); }
+  .card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 28px; display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+  .card.next { border: 2px solid var(--color-gold); }
+  .badge { inline-size: 96px; flex: none; border-radius: 12px; background: var(--color-primary); color: var(--color-on-primary); display: flex; flex-direction: column; align-items: center; padding-block: 12px; line-height: 1.1; }
+  .badge span:first-child { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--badge-gold); }
+  .badge strong { font-family: var(--font-title); font-weight: 600; font-size: 44px; }
+  .badge span:last-child { font-size: 12px; opacity: 0.85; }
+  .text { flex: 1 1 420px; min-inline-size: 0; display: flex; flex-direction: column; gap: 8px; }
+  h3 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 30px; line-height: 1.15; }
+  .meta { font-size: 15px; color: var(--color-muted); }
+  .text p { margin: 4px 0 0; }
+  .side { display: flex; flex-direction: column; gap: 10px; flex: none; }
+  .details { font-size: 15px; font-weight: 600; text-align: center; }
+  .cal { text-align: center; }
+  .past { list-style: none; margin: 0; padding: 0; }
+  .past a { display: flex; gap: 24px; align-items: baseline; padding-block: 14px; border-block-start: 1px solid var(--color-line); color: var(--color-text); text-decoration: none; }
+  .date { inline-size: 120px; flex: none; font-size: 14px; font-weight: 700; color: var(--color-muted); }
+  .title { font-family: var(--font-title); font-weight: 600; font-size: 22px; }
+  .more { margin-inline-start: auto; font-size: 14px; color: var(--color-primary); }
+  @media (max-width: 47.99rem) {
+    .hero { padding-block: 24px; gap: 8px; }
+    .kicker { display: block; }
+    .hero h1 { font-size: 38px; }
+    .hero p { display: none; }
+    h2 { font-size: 28px; }
+    .body { padding-block: 20px 56px; gap: 12px; }
+    .card, .card.next { padding: 16px; gap: 14px; display: grid; grid-template-columns: 60px minmax(0, 1fr); align-items: start; border-width: 1px; }
+    .card.next { border: 2px solid var(--color-gold); padding: 15px; }
+    .badge { grid-row: span 2; inline-size: 60px; border-radius: 10px; padding-block: 8px; }
+    .badge span:first-child { font-size: 11px; }
+    .badge strong { font-size: 28px; }
+    .badge span:last-child { display: none; }
+    .text { flex: none; gap: 2px; line-height: 1.35; }
+    h3 { font-size: 21px; line-height: 1.35; }
+    .meta { font-size: 13px; }
+    .text p, .details { display: none; }
+    .side { grid-column: 2; margin-block-start: -10px; }
+    .cal { all: unset; box-sizing: border-box; font-size: 14px; font-weight: 600; color: var(--color-primary); text-decoration: underline; cursor: pointer; }
+    .past a { flex-wrap: wrap; gap: 4px 16px; }
+    .date { inline-size: 100%; }
+    .title { font-size: 20px; }
+  }
+  @media (prefers-color-scheme: dark) { :global(:root:not([data-theme="light"])) .badge { --badge-gold: var(--color-on-primary); } }
+  :global(:root[data-theme="dark"]) .badge { --badge-gold: var(--color-on-primary); }
+</style>
