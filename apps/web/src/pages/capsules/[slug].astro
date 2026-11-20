@@ -12,6 +12,6 @@ if (!capsule) return Astro.rewrite("/404");
 const page = await loadCapsulePage(data, capsule);
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title={capsule.title} description={richTextToPlain(capsule.scriptureText) || capsule.scriptureRef || undefined} current="/capsules" bleed>
+<BaseLayout title={capsule.title} description={richTextToPlain(capsule.scriptureText) || capsule.scriptureRef || undefined} current="/capsules" bleed hideSignup>
   <CapsuleView page={page} mode="past" today={lagosDate(new Date())} shareUrl={Astro.url.href} />
 </BaseLayout>

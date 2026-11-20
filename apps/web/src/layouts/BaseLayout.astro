@@ -15,8 +15,10 @@ interface Props {
   current?: string;
   /** Let the page run edge to edge (banners, tinted bands). */
   bleed?: boolean;
+  /** The page already renders its own email signup, so the footer omits its one. */
+  hideSignup?: boolean;
 }
-const { title, description, current = Astro.url.pathname, bleed = false } = Astro.props;
+const { title, description, current = Astro.url.pathname, bleed = false, hideSignup = false } = Astro.props;
 ---
 <html lang="en">
   <head>
@@ -38,7 +40,7 @@ const { title, description, current = Astro.url.pathname, bleed = false } = Astr
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader current={current} />
     <main id="main" class:list={{ bleed }}><slot /></main>
-    <SiteFooter />
+    <SiteFooter hideSignup={hideSignup} />
   </body>
 </html>
 <style is:global>
