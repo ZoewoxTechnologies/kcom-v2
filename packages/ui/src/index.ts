@@ -29,15 +29,15 @@ export { Avatar, initialsOf } from "./react/Avatar";
 export type { AvatarProps, AvatarSize } from "./react/Avatar";
 export { Badge } from "./react/Badge";
 export type { BadgeProps, BadgeVariant } from "./react/Badge";
+export { CountBadge } from "./react/CountBadge";
+export type { CountBadgeProps } from "./react/CountBadge";
+export { ButtonLink } from "./react/ButtonLink";
+export type { ButtonLinkProps } from "./react/ButtonLink";
+export { IconButton } from "./react/IconButton";
+export type { IconButtonProps } from "./react/IconButton";
 export { Tag } from "./react/Tag";
 export type { TagProps } from "./react/Tag";
-export {
-  DataTable,
-  SortableTh,
-  TableEmpty,
-  TablePagination,
-  TableWrap,
-} from "./react/DataTable";
+export { DataTable, SortableTh, TableEmpty, TablePagination, TableWrap } from "./react/DataTable";
 export type {
   DataTableColumn,
   DataTableProps,

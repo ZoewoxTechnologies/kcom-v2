@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { Avatar, Button, Menu, MenuItem, MenuLabel, MenuSeparator, Tag } from "@kcom/ui";
+import {
+  Avatar,
+  Button,
+  CountBadge,
+  Menu,
+  MenuItem,
+  MenuLabel,
+  MenuSeparator,
+  Tag,
+} from "@kcom/ui";
 import { useAuth } from "../auth/AuthProvider";
+import { can } from "@kcom/permissions";
+import { useUnreadCount } from "../inbox/unread";
 import { navFor, navItemFor } from "./nav";
 
 const PHONE_QUERY = "(max-width: 47.99rem)";
@@ -28,6 +39,7 @@ export function Shell() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const unread = useUnreadCount(!!user && can(user.role, "inbox:read"), pathname);
 
   const burgerRef = useRef<HTMLButtonElement>(null);
   const phone = useIsPhone();
@@ -81,6 +93,7 @@ export function Shell() {
               className="kc-admin__link"
             >
               {item.label}
+              {item.path === "/inbox" && <CountBadge count={unread} label="unread messages" />}
             </NavLink>
           ))}
         </nav>

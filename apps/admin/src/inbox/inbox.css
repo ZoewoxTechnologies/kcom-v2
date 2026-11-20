@@ -1,0 +1,124 @@
+/* Admin Inbox: message list beside the open message. Mirrors the Events page layout. */
+@layer components {
+  .kc-inbox {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    --kc-inbox-above-panel: 11rem;
+  }
+  .kc-inbox__head h1 {
+    margin: 0;
+  }
+  .kc-inbox__body {
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+  .kc-inbox__list {
+    flex: 1;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .kc-inbox__list .kc-table {
+    min-inline-size: 0;
+  }
+  .kc-inbox__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-3);
+  }
+  .kc-inbox__unread {
+    font-weight: 700;
+  }
+  .kc-inbox__private {
+    margin-inline-start: var(--space-2);
+  }
+  .kc-inbox__loading {
+    color: var(--color-muted);
+  }
+  .kc-inbox__error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+  }
+  .kc-inbox__side {
+    inline-size: 420px;
+    flex: none;
+    position: sticky;
+    inset-block-start: var(--space-4);
+    max-block-size: calc(100dvh - var(--kc-inbox-above-panel));
+    display: flex;
+    flex-direction: column;
+  }
+  .kc-inbox__side > * {
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
+  }
+  .kc-inbox__message,
+  .kc-inbox__empty {
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+  }
+  .kc-inbox__message {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .kc-inbox__message header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  .kc-inbox__message h2,
+  .kc-inbox__empty h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+  .kc-inbox__meta {
+    margin: var(--space-1) 0 0;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+  .kc-inbox__text {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .kc-inbox__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    text-align: center;
+    color: var(--color-muted);
+  }
+  .kc-inbox__empty p {
+    margin: 0;
+  }
+  @media (max-width: 63.99rem) {
+    .kc-inbox__body {
+      flex-direction: column;
+    }
+    .kc-inbox__side {
+      inline-size: 100%;
+      position: static;
+      max-block-size: none;
+    }
+    .kc-inbox__side > * {
+      overflow-y: visible;
+    }
+  }
+}

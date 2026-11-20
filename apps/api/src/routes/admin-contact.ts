@@ -64,19 +64,14 @@ export const adminContactRoutes = (db: CapsuleDb) => {
     .get("/:id", validate("param", idParam), async (c) =>
       c.json(await one(c, c.req.valid("param").id)),
     )
-    .patch(
-      "/:id",
-      validate("param", idParam),
-      validate("json", statusBody),
-      async (c) => {
-        const { id } = c.req.valid("param");
-        await one(c, id);
-        const [row] = await db
-          .update(contactMessages)
-          .set({ status: c.req.valid("json").status })
-          .where(eq(contactMessages.id, id))
-          .returning();
-        return c.json(row);
-      },
-    );
+    .patch("/:id", validate("param", idParam), validate("json", statusBody), async (c) => {
+      const { id } = c.req.valid("param");
+      await one(c, id);
+      const [row] = await db
+        .update(contactMessages)
+        .set({ status: c.req.valid("json").status })
+        .where(eq(contactMessages.id, id))
+        .returning();
+      return c.json(row);
+    });
 };
