@@ -28,7 +28,7 @@
   /* Draft: hollow dot. */
   .kc-badge--draft {
     --kc-badge-bg: var(--color-sandstone);
-    --kc-badge-fg: var(--color-gold-text);
+    --kc-badge-fg: var(--color-gold-text-tint);
 
     &::before {
       border: 2px solid currentColor;
@@ -73,7 +73,7 @@
   /* Pending: diamond. */
   .kc-badge--pending {
     --kc-badge-bg: var(--color-sandstone);
-    --kc-badge-fg: var(--color-gold-text);
+    --kc-badge-fg: var(--color-gold-text-tint);
 
     &::before {
       clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);

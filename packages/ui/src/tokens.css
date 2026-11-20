@@ -31,7 +31,8 @@
     --color-focus: #7f6020; /* focus ring: 3:1 against page */
     --color-sage: #7d9f86;
     --color-gold: #c4a15a; /* rules, underlines, focus ring: never body text */
-    --color-gold-text: #7f6020; /* gold used as text */
+    --color-gold-text: #8a6a24; /* gold used as text on the page and white surfaces */
+    --color-gold-text-tint: #775a1c; /* gold text on sandstone, wash and hover surfaces: 4.5:1 on all of them */
     --color-sandstone: #f6eedd;
     --color-sandstone-hover: #efe2c6;
     --color-sandstone-active: #e8d7b2;
@@ -151,6 +152,7 @@
       --color-gold: #d4b46e;
       --color-focus: #d4b46e;
       --color-gold-text: #d9bc7a;
+      --color-gold-text-tint: #d9bc7a;
       --color-sandstone: #2a2519;
       --color-sandstone-hover: #342d1e;
       --color-sandstone-active: #3d3523;
@@ -192,6 +194,7 @@
     --color-gold: #d4b46e;
     --color-focus: #d4b46e;
     --color-gold-text: #d9bc7a;
+    --color-gold-text-tint: #d9bc7a;
     --color-sandstone: #2a2519;
     --color-sandstone-hover: #342d1e;
     --color-sandstone-active: #3d3523;
