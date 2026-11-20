@@ -12,6 +12,7 @@ import { adminRoutes } from "./routes/admin.js";
 import { homepageRoutes } from "./routes/homepage.js";
 import { pageRoutes } from "./routes/pages.js";
 import { contactRoutes } from "./routes/contact.js";
+import type { RecaptchaOptions } from "./contact-spam.js";
 import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
 import type { CloudinaryConfig } from "./uploads/cloudinary.js";
@@ -27,6 +28,8 @@ export type AppOptions = {
   /** Bearer token for /internal (Cloud Scheduler). Unset disables /internal. */
   internalToken?: string;
   cloudinary?: CloudinaryConfig;
+  /** reCAPTCHA v3 for POST /contact; no secret skips the check. */
+  recaptcha?: RecaptchaOptions;
 };
 
 export function createApp(
@@ -37,6 +40,7 @@ export function createApp(
     capsuleEvents = createCapsuleEvents(),
     internalToken,
     cloudinary,
+    recaptcha,
   }: AppOptions = {},
 ) {
   const publicCors = cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] });
@@ -77,7 +81,7 @@ export function createApp(
     .route("/blog", blogRoutes(db))
     .route("/books", bookRoutes(db))
     .route("/capsules", capsuleRoutes(db))
-    .route("/contact", contactRoutes(db))
+    .route("/contact", contactRoutes(db, recaptcha))
     .route("/events", eventRoutes(db))
     .route("/series", seriesRoutes(db))
     .route("/pages", pageRoutes(db))

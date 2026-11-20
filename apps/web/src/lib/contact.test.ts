@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { contactRows, contactSettings, submitContact, validateContact } from "./contact";
+import { RATE_LIMITED, VERIFY_FAILED, contactRows, getRecaptchaToken, contactSettings, submitContact, validateContact } from "./contact";
 
 const ok = { topic: "prayer", name: "Grace", email: "grace@example.org", message: "Hi" };
 
@@ -26,25 +26,36 @@ describe("submitContact", () => {
 
   it("posts the trimmed values and succeeds on 201", async () => {
     const f = reply(201, { id: "1" });
-    expect(await submitContact("http://api.test/", input, true, f)).toEqual({ ok: true });
+    expect(await submitContact("http://api.test/", input, true, {}, f)).toEqual({ ok: true });
     const [url, init] = f.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("http://api.test/contact");
     expect(JSON.parse(init.body as string)).toEqual({ topic: "prayer", name: "Grace", email: "grace@example.org", message: "Hi", keepPrivate: true });
   });
+  it("sends the honeypot and token only when present", async () => {
+    const f = reply(201);
+    await submitContact("http://api.test", input, false, { website: "spam", recaptchaToken: "tok" }, f);
+    const [, init] = f.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(init.body as string)).toMatchObject({ website: "spam", recaptchaToken: "tok" });
+  });
+  it("explains rate limiting and failed verification", async () => {
+    expect(await submitContact("http://api.test", input, false, {}, reply(429))).toMatchObject({ ok: false, message: RATE_LIMITED });
+    expect(await submitContact("http://api.test", input, false, {}, reply(403))).toMatchObject({ ok: false, message: VERIFY_FAILED });
+  });
+  it("gets no token without a site key", async () => expect(await getRecaptchaToken(undefined, "contact")).toBeUndefined());
   it("fails on a server error", async () => {
-    expect(await submitContact("http://api.test", input, false, reply(500))).toMatchObject({ ok: false });
+    expect(await submitContact("http://api.test", input, false, {}, reply(500))).toMatchObject({ ok: false });
   });
   it("surfaces field errors from a 400", async () => {
     const f = reply(400, { error: { details: [{ path: "email", message: "Bad email" }] } });
-    expect(await submitContact("http://api.test", input, false, f)).toMatchObject({ ok: false, fieldErrors: { email: "Bad email" } });
+    expect(await submitContact("http://api.test", input, false, {}, f)).toMatchObject({ ok: false, fieldErrors: { email: "Bad email" } });
   });
   it("fails when the network throws", async () => {
     const f = vi.fn(async () => { throw new TypeError("offline"); });
-    expect(await submitContact("http://api.test", input, false, f)).toMatchObject({ ok: false });
+    expect(await submitContact("http://api.test", input, false, {}, f)).toMatchObject({ ok: false });
   });
   it("fails without an API url, never posting", async () => {
     const f = reply(201);
-    expect(await submitContact(undefined, input, false, f)).toMatchObject({ ok: false });
+    expect(await submitContact(undefined, input, false, {}, f)).toMatchObject({ ok: false });
     expect(f).not.toHaveBeenCalled();
   });
 });
