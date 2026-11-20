@@ -1,6 +1,9 @@
-import { CAPSULE_LIMITS, capsuleSchema, lagosDayRange, slugify, type Capsule } from "@kcom/content";
+import { CAPSULE_LIMITS, capsuleSchema, lagosDate, lagosDayRange, slugify, type Capsule } from "@kcom/content";
 import { CAPSULE_TYPE, type RawNode } from "./extract.ts";
 import { decodeEntities, htmlToDoc, nodeText, textDoc, type RichNode } from "./html.ts";
+
+/** How far past a shared date to look for a free Lagos day before importing as a draft. */
+const DUPLICATE_SEARCH_DAYS = 31;
 
 export type IssueLevel = "error" | "warning";
 export interface Issue {
@@ -235,24 +238,33 @@ export function transformCapsules(nodes: RawNode[]): TransformResult {
     drafts.push({ capsule: parsed.data, date, series: parseSeriesTitle(parsed.data.title) });
   }
 
-  // Two capsules on one day would collide; keep both and nudge later ones by a minute each.
+  // One published capsule per Lagos day (a unique index enforces it). The first capsule
+  // (lowest nid) keeps its day; each later one moves to the next free day, or becomes a
+  // draft when none is free within DUPLICATE_SEARCH_DAYS.
   const byDate = new Map<string, typeof drafts>();
   for (const d of drafts) byDate.set(d.date, [...(byDate.get(d.date) ?? []), d]);
-  for (const [date, group] of byDate) {
-    if (group.length < 2) continue;
-    group.sort((a, b) => (a.capsule.legacyNid ?? 0) - (b.capsule.legacyNid ?? 0));
-    for (let i = 1; i < group.length; i++) {
-      const first = group[0]?.capsule;
-      const later = group[i]?.capsule;
-      if (!first || !later) continue;
-      later.publishAt = new Date(later.publishAt.getTime() + i * 60 * 1000);
-      issues.push({
-        nid: later.legacyNid ?? 0,
-        title: later.title,
-        level: "warning",
-        code: "duplicate-date",
-        detail: `${date} is shared with nid ${first.legacyNid} "${first.title}"; publishAt moved +${i} min`,
-      });
+  const taken = new Set(byDate.keys());
+  const later = [...byDate.values()]
+    .filter((g) => g.length > 1)
+    .flatMap((g) => g.sort((a, b) => (a.capsule.legacyNid ?? 0) - (b.capsule.legacyNid ?? 0)).slice(1))
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.capsule.legacyNid ?? 0) - (b.capsule.legacyNid ?? 0));
+  for (const d of later) {
+    const first = byDate.get(d.date)![0]!.capsule;
+    let day = d.date;
+    let free: string | null = null;
+    for (let n = 0; n < DUPLICATE_SEARCH_DAYS && !free; n++) {
+      day = lagosDate(lagosDayRange(day)[1]);
+      if (!taken.has(day)) free = day;
+    }
+    const c = d.capsule;
+    const shared = `${d.date} is shared with nid ${first.legacyNid} "${first.title}"`;
+    if (free) {
+      taken.add(free);
+      c.publishAt = lagosDayRange(free)[0];
+      issues.push({ nid: c.legacyNid ?? 0, title: c.title, level: "warning", code: "duplicate-date", detail: `${shared}; moved to ${free}` });
+    } else {
+      c.status = "draft";
+      issues.push({ nid: c.legacyNid ?? 0, title: c.title, level: "warning", code: "duplicate-date", detail: `${shared}; no free day within ${DUPLICATE_SEARCH_DAYS} days, imported as a draft` });
     }
   }
 
