@@ -53,7 +53,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .hero h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: clamp(2.25rem, 6vw, 3.75rem); line-height: 1.05; }
   .hero p { margin: 0; max-inline-size: 640px; font-size: 19px; }
   .body { padding-block: 48px 72px; display: flex; flex-direction: column; gap: 28px; font-size: 17px; line-height: 1.6; }
-  h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 36px; line-height: normal; }
+  h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 36px; line-height: 1.6; }
   .past-h { margin-block-start: 24px; }
   .empty { margin: 0; color: var(--color-muted); }
   .card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 28px; display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
@@ -73,7 +73,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .past a { display: flex; gap: 24px; align-items: baseline; padding-block: 14px; border-block-start: 1px solid var(--color-line); color: var(--color-text); text-decoration: none; }
   .date { inline-size: 120px; flex: none; font-size: 14px; font-weight: 700; color: var(--color-muted); }
   .title { font-family: var(--font-title); font-weight: 600; font-size: 22px; }
-  .more { margin-inline-start: auto; font-size: 14px; color: var(--color-primary); }
+  .more { margin-inline-start: auto; font-size: 15px; font-weight: 600; color: var(--color-primary); }
   @media (max-width: 47.99rem) {
     .hero { padding-block: 24px; gap: 8px; }
     .kicker { display: block; }
@@ -92,7 +92,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     .meta { font-size: 13px; }
     .text p, .details { display: none; }
     .side { grid-column: 2; margin-block-start: -10px; }
-    .cal { all: unset; box-sizing: border-box; font-size: 14px; font-weight: 600; color: var(--color-primary); text-decoration: underline; cursor: pointer; }
+    .cal { position: relative; block-size: auto; inline-size: auto; min-block-size: 0; padding: 0; border: 0; border-radius: 0; background: none; justify-self: start; font-size: 14px; font-weight: 600; color: var(--color-primary); text-decoration: underline; }
     .past a { flex-wrap: wrap; gap: 4px 16px; }
     .date { inline-size: 100%; }
     .title { font-size: 20px; }
