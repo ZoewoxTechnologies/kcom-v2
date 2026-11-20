@@ -7,6 +7,7 @@
     ".": "./src/index.ts",
     "./tokens.css": "./src/tokens.css",
     "./button.css": "./src/components/button.css",
+    "./a11y.css": "./src/components/a11y.css",
     "./avatar.css": "./src/components/avatar.css",
     "./badge.css": "./src/components/badge.css",
     "./datetime-picker.css": "./src/components/datetime-picker.css",

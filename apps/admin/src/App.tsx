@@ -9,10 +9,15 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { EventsPage } from "./events/EventsPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { CalendarPage } from "./capsules/CalendarPage";
+import { CapsuleEditorStubPage } from "./capsules/CapsuleEditorStubPage";
+import { CapsulesPage } from "./capsules/CapsulesPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { SignInPage } from "./pages/SignInPage";
 
-const sections = navItems.filter((item) => item.path !== "/");
+// Capsules and Calendar have their own pages below.
+const BUILT = new Set(["/", "/capsules", "/calendar"]);
+const sections = navItems.filter((item) => !BUILT.has(item.path));
 
 /** Pages built so far, by nav path. Sections not listed show the placeholder. */
 const pages: Partial<Record<string, ReactElement>> = { "/events": <EventsPage /> };
@@ -29,6 +34,12 @@ export function App() {
             <Route element={<Shell />}>
               <Route index element={<DashboardPage />} />
               <Route path="profile" element={<PlaceholderPage title="Profile" />} />
+              <Route element={<RequirePermission permission="content:read" />}>
+                <Route path="capsules" element={<CapsulesPage />} />
+                <Route path="capsules/new" element={<CapsuleEditorStubPage isNew />} />
+                <Route path="capsules/:id" element={<CapsuleEditorStubPage />} />
+                <Route path="calendar" element={<CalendarPage />} />
+              </Route>
               {sections.map((item) => (
                 <Route key={item.path} element={<RequirePermission permission={item.permission} />}>
                   <Route
