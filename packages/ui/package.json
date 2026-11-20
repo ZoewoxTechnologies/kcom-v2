@@ -12,6 +12,7 @@
     "./badge.css": "./src/components/badge.css",
     "./datetime-picker.css": "./src/components/datetime-picker.css",
     "./toast.css": "./src/components/toast.css",
+    "./pagination.css": "./src/components/pagination.css",
     "./data-table.css": "./src/components/data-table.css",
     "./dialog.css": "./src/components/dialog.css",
     "./menu.css": "./src/components/menu.css",
