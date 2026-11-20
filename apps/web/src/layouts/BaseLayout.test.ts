@@ -23,4 +23,26 @@ describe("BaseLayout", () => {
     expect(html).toContain(`© ${new Date().getFullYear()}`);
     expect(html).toContain("<title>Test | Kingdom Capstone Outreach Ministries</title>");
   });
+  it("links the search button, offers the Dark theme and omits placeholder contact text", async () => {
+    const container = await AstroContainer.create();
+    const html = await container.renderToString(BaseLayout, { props: { title: "Test" } });
+    expect(html).toMatch(/class="search"[^>]*href="\/search"|href="\/search"[^>]*class="search"/);
+    expect(html).toContain(">Dark<");
+    expect(html).not.toContain("coming soon");
+  });
+
+  it("shows the footer signup unless the page has its own", async () => {
+    const container = await AstroContainer.create();
+    const withFooter = await container.renderToString(BaseLayout, { props: {} });
+    const without = await container.renderToString(BaseLayout, { props: { hideSignup: true } });
+    expect(withFooter).toContain('id="footer-email"');
+    expect(without).not.toContain('id="footer-email"');
+  });
+
+  it("opens the phone menu with an icon-only toggle", async () => {
+    const container = await AstroContainer.create();
+    const html = await container.renderToString(BaseLayout, { props: { title: "Test" } });
+    expect(html).toMatch(/<summary[^>]*aria-label="Open menu"[^>]*aria-expanded="false"/);
+    expect(html).not.toContain(">Menu<");
+  });
 });
