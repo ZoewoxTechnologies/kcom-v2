@@ -9,6 +9,10 @@ describe("contact", () => {
     expect(contactRows({ email: " ", phone: null, address: null, social: [] })).toEqual([]);
   });
   it("accepts a complete message", () => expect(validateContact(ok)).toEqual({}));
+  it("requires a topic", () => {
+    expect(validateContact({ ...ok, topic: "" }).topic).toMatch(/Choose/);
+    expect(validateContact({ ...ok, topic: "other" })).toEqual({});
+  });
   it("flags each problem", () => {
     expect(Object.keys(validateContact({ topic: "", name: " ", email: "grace@", message: "" }))).toEqual(["topic", "name", "email", "message"]);
     expect(validateContact({ ...ok, email: "" }).email).toMatch(/enter your email/);

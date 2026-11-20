@@ -5,7 +5,6 @@ import { contactRows, contactSettings, topics } from "../lib/contact";
 
 const rows = contactRows(contactSettings);
 const social = contactSettings.social;
-const defaultTopic = "question";
 ---
 <BaseLayout title="Contact Us" description="Send Kingdom Capstone Outreach Ministries a question, testimony or prayer request." current="/contact">
   <div class="page">
@@ -18,7 +17,7 @@ const defaultTopic = "question";
         <fieldset class="kc-fieldset" aria-describedby="topic-error">
           <legend>I’m writing about</legend>
           {topics.map((t) => (
-            <label class="kc-choice kc-choice--pill"><input type="radio" name="topic" value={t.value} checked={t.value === defaultTopic} data-message={t.message} />{t.label}</label>
+            <label class="kc-choice kc-choice--pill"><input type="radio" name="topic" value={t.value} data-message={t.message} />{t.label}</label>
           ))}
         </fieldset>
         <p id="topic-error" class="kc-field__error" hidden></p>
@@ -35,7 +34,7 @@ const defaultTopic = "question";
           </div>
         </div>
         <div class="kc-field">
-          <label class="kc-label" for="c-message" id="c-message-label">Your question</label>
+          <label class="kc-label" for="c-message" id="c-message-label">Your message</label>
           <textarea class="kc-textarea" id="c-message" name="message" rows="6" required></textarea>
           <p class="kc-field__error" id="c-message-error" hidden></p>
         </div>
