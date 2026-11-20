@@ -11,6 +11,17 @@ Writes one JSON file per published node to `data/legacy/extract/<type>/<nid>.jso
 count and date range. The dump is parsed directly, so no MySQL or Docker is needed.
 `data/legacy/` is gitignored: the dump and its output contain personal data.
 
+## Environment variables
+
+The scripts read these from the shell (no `.env` file is loaded):
+
+| Variable        | Used by            | Default                 | Purpose                                                          |
+| --------------- | ------------------ | ----------------------- | ---------------------------------------------------------------- |
+| `LEGACY_SQL`    | extract            | none (required)         | Path to the Drupal MySQL dump.                                   |
+| `EXTRACT_DIR`   | extract, transform | `data/legacy/extract`   | Where extract writes, and transform reads, node JSON.            |
+| `LEGACY_FILES`  | transform          | `data/legacy/files`     | Folder with the legacy public files, used to check images exist. |
+| `TRANSFORM_DIR` | transform          | `data/legacy/transform` | Where transform writes `capsules`, `series` and `report` JSON.   |
+
 ## Transform
 
 ```bash
