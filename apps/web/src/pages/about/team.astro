@@ -21,7 +21,7 @@ const initials = (n: string) => n.replace(/^(Dr|Brother|Sister|Pastor|Prophet)\.
       <li class="arm"><span class="abbr">{a.abbr}</span><h3>{a.name}</h3><p>{a.text}</p></li>
     ))}
   </ul>
-  <LinkCard href="/about" label="Back to About" title="Who We Are" />
+  <LinkCard dir="prev" href="/about" label="Back to About" title="Who We Are" />
 </AboutLayout>
 <style>
   ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
