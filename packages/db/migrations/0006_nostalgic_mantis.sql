@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "capsules_one_per_lagos_day_idx" ON "capsules" USING btree ((("publish_at" AT TIME ZONE 'Africa/Lagos')::date)) WHERE "capsules"."status" <> 'draft';
