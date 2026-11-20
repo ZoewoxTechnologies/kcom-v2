@@ -1,0 +1,252 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+---
+<BaseLayout title="Search" description="Search capsules, blog posts, series, events, books and About pages." current="/search">
+  <div class="search" data-search>
+    <section class="band">
+      <form role="search" action="/search" method="get" class="form">
+        <label for="sq" class="kc-label">Search the site</label>
+        <div class="row">
+          <input id="sq" name="q" type="search" class="kc-input kc-input--lg" autocomplete="off" autofocus />
+          <button type="submit" class="kc-btn kc-btn--sm kc-btn--primary">Search</button>
+        </div>
+        <p class="status" role="status" aria-live="polite" data-status>
+          <noscript>Search needs JavaScript. Please enable it to search the site.</noscript>
+        </p>
+      </form>
+    </section>
+
+    <div class="body" hidden data-body>
+      <aside aria-label="Filters" class="filters" data-filters>
+        <fieldset class="kc-fieldset types" data-types>
+          <legend>Type</legend>
+        </fieldset>
+        <div class="kc-field">
+          <label class="kc-label" for="sy">Year</label>
+          <div class="kc-select"><select id="sy" class="kc-select__control kc-select__control--sm" data-year><option value="">Any year</option></select></div>
+        </div>
+        <div class="kc-field">
+          <label class="kc-label" for="ss">Series</label>
+          <div class="kc-select"><select id="ss" class="kc-select__control kc-select__control--sm" data-series><option value="">Any series</option></select></div>
+        </div>
+        <a href="/search" class="clear" data-clear hidden>Clear filters</a>
+      </aside>
+
+      <section aria-label="Results" class="results">
+        <div data-results></div>
+        <button type="button" class="kc-btn kc-btn--sm kc-btn--secondary more" data-more hidden>Show more results</button>
+        <div class="empty" data-empty hidden>
+          <span class="empty-title" data-empty-title></span>
+          <span class="empty-help">Try fewer or different words, a Bible reference such as “Romans 12”, or <a href="/series">browse by series</a>.</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+<script>
+  type Filters = Record<string, { [value: string]: number }>;
+  interface Hit { url: string; excerpt: string; meta: { title?: string; type?: string; date?: string } }
+  interface Found { results: { data(): Promise<Hit> }[]; filters: Filters; totalFilters: Filters }
+  interface Pagefind { options(o: object): Promise<void>; filters(): Promise<Filters>; debouncedSearch(q: string | null, o?: object, ms?: number): Promise<Found | null> }
+
+  const root = document.querySelector<HTMLElement>("[data-search]")!;
+  const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+  const input = $<HTMLInputElement>("#sq");
+  const status = $("[data-status]");
+  const body = $("[data-body]");
+  const typesBox = $("[data-types]");
+  const year = $<HTMLSelectElement>("[data-year]");
+  const series = $<HTMLSelectElement>("[data-series]");
+  const clear = $("[data-clear]");
+  const results = $("[data-results]");
+  const more = $<HTMLButtonElement>("[data-more]");
+  const empty = $("[data-empty]");
+  const emptyTitle = $("[data-empty-title]");
+
+  const PAGE = 10;
+  const TYPE_LABELS: Record<string, string> = { Capsule: "Capsules", Blog: "Blog", Series: "Series", Event: "Events", Book: "Books", Page: "Pages" };
+  const TYPE_ORDER = Object.keys(TYPE_LABELS);
+  const params = new URL(location.href).searchParams;
+  const selected = new Set(params.getAll("type"));
+  year.dataset.want = params.get("year") ?? "";
+  series.dataset.want = params.get("series") ?? "";
+  input.value = params.get("q") ?? "";
+
+  let pf: Pagefind | null = null;
+  let totals: Filters = {};
+  let found: Found | null = null;
+  let shown = 0;
+  let token = 0;
+
+  const el = (tag: string, cls?: string, text?: string) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  };
+  const dateLabel = (d?: string) => (d && /^\d{4}-\d{2}-\d{2}$/.test(d) ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(d)) : (d ?? ""));
+
+  function syncUrl() {
+    const u = new URL(location.href);
+    u.search = "";
+    if (input.value.trim()) u.searchParams.set("q", input.value.trim());
+    for (const t of selected) u.searchParams.append("type", t);
+    if (year.value) u.searchParams.set("year", year.value);
+    if (series.value) u.searchParams.set("series", series.value);
+    history.replaceState(null, "", u);
+  }
+
+  function fillSelect(sel: HTMLSelectElement, any: string, counts: { [value: string]: number }, newestFirst: boolean) {
+    const want = sel.value || sel.dataset.want || "";
+    sel.dataset.want = "";
+    const keys = Object.keys(counts).sort((a, b) => (newestFirst ? b.localeCompare(a) : a.localeCompare(b)));
+    if (want && !keys.includes(want)) keys.push(want);
+    sel.replaceChildren(new Option(any, ""), ...keys.map((k) => new Option(k, k)));
+    sel.value = want;
+  }
+
+  function fillTypes(counts: { [value: string]: number }, totals: { [value: string]: number }) {
+    typesBox.querySelectorAll("label").forEach((l) => l.remove());
+    for (const type of Object.keys(totals).sort((a, b) => TYPE_ORDER.indexOf(a) - TYPE_ORDER.indexOf(b))) {
+      const label = el("label", "kc-choice");
+      const box = el("input") as HTMLInputElement;
+      box.type = "checkbox";
+      box.checked = selected.size === 0 || selected.has(type);
+      box.addEventListener("change", () => {
+        const boxes = [...typesBox.querySelectorAll<HTMLInputElement>("input")];
+        const on = boxes.filter((b) => b.checked);
+        selected.clear();
+        if (on.length && on.length < boxes.length) on.forEach((b) => selected.add(b.closest("label")!.querySelector<HTMLElement>(".count")!.dataset.type!));
+        void run(false);
+      });
+      const count = el("span", "count", String(counts[type] ?? 0));
+      count.dataset.type = type;
+      label.append(box, TYPE_LABELS[type] ?? type, count);
+      typesBox.append(label);
+    }
+  }
+
+  async function renderMore() {
+    if (!found) return;
+    const next = found.results.slice(shown, shown + PAGE);
+    const hits = await Promise.all(next.map((r) => r.data()));
+    for (const h of hits) {
+      const a = el("a", "hit") as HTMLAnchorElement;
+      a.href = h.url;
+      const meta = el("span", "hit-meta");
+      meta.append(el("span", "chip", h.meta.type ?? ""), el("span", "date", dateLabel(h.meta.date)));
+      const title = el("span", "hit-title", h.meta.title ?? h.url);
+      const ex = el("span", "excerpt");
+      ex.innerHTML = h.excerpt; // Pagefind escapes content and only adds <mark>
+      a.append(meta, title, ex);
+      results.append(a);
+    }
+    shown += next.length;
+    more.hidden = shown >= found.results.length;
+  }
+
+  async function run(refill: boolean) {
+    const q = input.value.trim();
+    const mine = ++token;
+    syncUrl();
+    if (!pf) return;
+    if (!q) {
+      found = null;
+      body.hidden = true;
+      status.textContent = "";
+      return;
+    }
+    const filters: Record<string, unknown> = {};
+    if (selected.size) filters.type = { any: [...selected] };
+    if (year.value) filters.year = year.value;
+    if (series.value) filters.series = series.value;
+    const res = await pf.debouncedSearch(q, { filters }, 250);
+    if (!res || mine !== token) return;
+    found = res;
+    shown = 0;
+    results.replaceChildren();
+    body.hidden = false;
+    if (refill) {
+      fillTypes(res.filters.type ?? {}, totals.type ?? {});
+      fillSelect(year, "Any year", totals.year ?? {}, true);
+      fillSelect(series, "Any series", totals.series ?? {}, false);
+    } else {
+      typesBox.querySelectorAll<HTMLElement>(".count").forEach((c) => {
+        c.textContent = String(res.filters.type?.[c.dataset.type ?? ""] ?? 0);
+      });
+    }
+    clear.hidden = !(selected.size || year.value || series.value);
+    const n = res.results.length;
+    empty.hidden = n > 0;
+    emptyTitle.textContent = `No results for “${q}”`;
+    status.textContent = n ? `${n} ${n === 1 ? "result" : "results"} for “${q}”` : "";
+    await renderMore();
+  }
+
+  more.addEventListener("click", () => void renderMore());
+  year.addEventListener("change", () => void run(false));
+  series.addEventListener("change", () => void run(false));
+  input.addEventListener("input", () => void run(true));
+  input.form!.addEventListener("submit", (e) => {
+    e.preventDefault();
+    void run(true);
+  });
+  clear.addEventListener("click", (e) => {
+    e.preventDefault();
+    selected.clear();
+    year.value = series.value = "";
+    void run(false);
+  });
+
+  (async () => {
+    try {
+      const url = "/pagefind/pagefind.js"; // built by scripts/search-index.ts after astro build
+      pf = (await import(/* @vite-ignore */ url)) as Pagefind;
+      await pf.options({ excerptLength: 24 });
+      totals = await pf.filters();
+    } catch {
+      status.textContent = "Search is not available right now.";
+      return;
+    }
+    void run(true);
+  })();
+</script>
+<style is:global>
+  .search { display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-5) var(--space-7); }
+  .search .band { background: var(--color-wash); border-radius: var(--radius); padding: var(--space-6) var(--space-6) var(--space-5); }
+  .search .band, .search .form { min-inline-size: 0; }
+  .search .form { display: flex; flex-direction: column; gap: 10px; }
+  .search .row { display: flex; gap: 10px; max-inline-size: 760px; }
+  .search .row .kc-input { flex: 1; min-inline-size: 0; font-size: 1.25rem; }
+  .search .row .kc-btn { align-self: center; flex: none; }
+  .search .status { margin: 0; min-block-size: 1.5em; font-size: 0.9375rem; color: var(--color-muted); }
+  .search .body { display: flex; flex-wrap: wrap; gap: 48px; }
+  .search .body[hidden] { display: none; }
+  .search .filters { flex: 1 1 220px; max-inline-size: 250px; display: flex; flex-direction: column; gap: var(--space-5); font-size: 0.9375rem; }
+  .search .types { display: flex; flex-direction: column; gap: 0; }
+  .search .types legend { font-weight: 700; margin-block-end: var(--space-2); padding: 0; }
+  .search .types .kc-choice { min-block-size: 2rem; }
+  .search .count { margin-inline-start: auto; color: var(--color-muted); }
+  .search .clear { font-weight: 600; }
+  .search .results { flex: 999 1 560px; min-inline-size: 0; display: flex; flex-direction: column; }
+  .search .hit { display: flex; flex-direction: column; gap: 6px; padding: 22px 0; border-top: 1px solid var(--color-line); color: var(--color-text); text-decoration: none; }
+  .search .hit:hover .hit-title { color: var(--color-primary); }
+  .search .hit-meta { display: flex; gap: 10px; align-items: center; font-size: 0.8125rem; font-weight: 700; }
+  .search .chip { color: var(--color-primary); background: var(--color-hover); border-radius: var(--radius-pill); padding: 2px 10px; }
+  .search .date { letter-spacing: 0.08em; font-variant: small-caps; color: var(--color-gold-text); }
+  .search .hit-title { font: 600 1.625rem / 1.2 var(--font-title); overflow-wrap: anywhere; }
+  .search .excerpt { font-size: 1rem; color: color-mix(in srgb, var(--color-text) 53%, var(--color-muted)); }
+  .search .excerpt mark { background: var(--color-sandstone); color: var(--color-text); border-bottom: 2px solid var(--color-gold); padding: 0 2px; }
+  .search .more { align-self: center; margin-block-start: var(--space-5); }
+  .search .empty { margin-block-start: var(--space-7); border: 1px dashed var(--color-field); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: var(--space-2); background: var(--color-surface); }
+  .search .empty[hidden], .search .more[hidden], .search .clear[hidden] { display: none; }
+  .search .empty-title { font: 600 1.625rem / 1.2 var(--font-title); }
+  .search .empty-help { color: var(--color-muted); }
+  @media (max-width: 47.99rem) {
+    .search .band { padding: var(--space-5) var(--space-4); }
+    .search .body { gap: var(--space-5); }
+    .search .filters { max-inline-size: none; flex-basis: 100%; }
+  }
+</style>
