@@ -54,7 +54,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
                 {capsule.scriptureRef && <span class="ref">{capsule.scriptureRef}</span>}
                 <div class="actions">
                   <a class="kc-btn kc-btn--primary kc-btn--sm" href="/capsules/today">Read today’s capsule</a>
-                  {neighbours?.prev && <a class="more" href={capsulePath(neighbours.prev.slug)}>Yesterday’s capsule →</a>}
+                  {neighbours?.prev && <a class="more yday" href={capsulePath(neighbours.prev.slug)}>Yesterday’s capsule →</a>}
                 </div>
               </div>
             </>
@@ -143,7 +143,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       <section class="band signup" aria-label="Email signup">
         <form class="inner narrow" onsubmit="return false">
           <h2>Begin each day in the Word</h2>
-          <p>The daily Capstone Capsule in your inbox at 5 a.m. Free, and you can leave any time.</p>
+          <p>The daily Capstone Capsule in your inbox every day at midnight, Lagos time. Free, and you can leave any time.</p>
           <div class="field">
             <label class="sr-only" for="home-email">Email address</label>
             <input id="home-email" class="kc-input" type="email" placeholder="you@example.com" autocomplete="email" />
@@ -170,7 +170,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .actions { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; margin-top: var(--space-2); }
   .more { font-weight: 600; color: var(--color-primary); text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 5px; }
   .muted { margin: 0; color: var(--color-muted); }
-  .split { display: flex; flex-wrap: wrap; gap: var(--space-6); }
+  .split { display: flex; flex-wrap: wrap; gap: var(--space-6); border-bottom: 1px solid var(--color-line); padding-bottom: var(--space-7); }
   .intro { flex: 1 1 20rem; min-inline-size: 0; display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; }
   .intro h2 { margin: 0; font: 600 2rem / 1.1 var(--font-title); }
   .rows { flex: 2 1 30rem; min-inline-size: 0; list-style: none; margin: 0; padding: 0; }
@@ -209,5 +209,10 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .field { display: flex; gap: 10px; inline-size: 100%; max-inline-size: 32rem; flex-wrap: wrap; }
   .field .kc-input { flex: 1 1 14rem; min-inline-size: 0; }
   .field .kc-btn { background: var(--color-footer-button); color: var(--color-on-footer-button); }
+  @media (max-width: 47.999rem) {
+    .yday, blockquote { display: none; }
+    .grid4 > :nth-child(n + 3) { display: none; }
+    .narrow { align-items: flex-start; text-align: start; }
+  }
   @media (min-width: 48rem) { .band { padding: var(--space-8) var(--space-6); } .intro h2 { font-size: 2.5rem; } .verse { font-size: 1.3125rem; } }
 </style>
