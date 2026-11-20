@@ -57,6 +57,13 @@
       "when": 1795174448974,
       "tag": "0007_event_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795215690483,
+      "tag": "0008_contact_messages",
+      "breakpoints": true
     }
   ]
 }

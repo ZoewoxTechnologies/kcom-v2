@@ -1,0 +1,58 @@
+import { beforeEach, describe, expect, it } from "vitest";
+import { contactMessages } from "@kcom/db";
+import { createTestDb } from "@kcom/db/test-db";
+import { createApp } from "./app.js";
+
+const ok = { topic: "prayer", name: "Grace", email: "grace@example.org", message: "Please pray." };
+
+let db: Awaited<ReturnType<typeof createTestDb>>;
+let app: ReturnType<typeof createApp>;
+beforeEach(async () => {
+  db = await createTestDb();
+  app = createApp(db, { corsOrigins: ["http://web.test"] });
+});
+
+const post = (body: unknown) =>
+  app.request("/contact", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: "http://web.test" },
+    body: JSON.stringify(body),
+  });
+
+describe("POST /contact", () => {
+  it("stores the message and returns 201 with its id", async () => {
+    const res = await post({ ...ok, name: "  Grace  ", keepPrivate: true });
+    expect(res.status).toBe(201);
+    const { id } = (await res.json()) as { id: string };
+    const rows = await db.select().from(contactMessages);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ id, topic: "prayer", name: "Grace", email: "grace@example.org", keepPrivate: true, status: "new" });
+    expect(rows[0]!.createdAt).toBeInstanceOf(Date);
+  });
+
+  it("defaults keepPrivate to false", async () => {
+    await post(ok);
+    expect((await db.select().from(contactMessages))[0]!.keepPrivate).toBe(false);
+  });
+
+  it("answers 400 with field errors and stores nothing", async () => {
+    const res = await post({ topic: "nope", name: " ", email: "grace@", message: "" });
+    expect(res.status).toBe(400);
+    const { error } = (await res.json()) as { error: { details: { path: string }[] } };
+    expect(error.details.map((d) => d.path).sort()).toEqual(["email", "message", "name", "topic"]);
+    expect(await db.select().from(contactMessages)).toHaveLength(0);
+  });
+
+  it("rejects unknown fields such as status", async () => {
+    expect((await post({ ...ok, status: "read" })).status).toBe(400);
+  });
+
+  it("allows the web origin to POST cross-origin", async () => {
+    const res = await app.request("/contact", {
+      method: "OPTIONS",
+      headers: { origin: "http://web.test", "access-control-request-method": "POST", "access-control-request-headers": "content-type" },
+    });
+    expect(res.headers.get("access-control-allow-origin")).toBe("http://web.test");
+    expect(res.headers.get("access-control-allow-methods")).toContain("POST");
+  });
+});

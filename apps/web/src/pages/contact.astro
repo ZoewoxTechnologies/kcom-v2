@@ -39,6 +39,7 @@ const social = contactSettings.social;
           <p class="kc-field__error" id="c-message-error" hidden></p>
         </div>
         <label class="kc-choice" id="private-row" hidden><input type="checkbox" name="private" />Keep my request private to the prayer team</label>
+        <p class="kc-field__error" id="submit-error" role="alert" hidden></p>
         <div class="actions">
           <button class="kc-btn kc-btn--primary kc-btn--sm" type="submit">Send message</button>
         </div>
@@ -58,7 +59,7 @@ const social = contactSettings.social;
   </div>
 </BaseLayout>
 <script>
-  import { validateContact } from "../lib/contact";
+  import { submitContact, validateContact } from "../lib/contact";
   const form = document.getElementById("contact-form") as HTMLFormElement;
   const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
   const keys = ["topic", "name", "email", "message"] as const;
@@ -91,13 +92,28 @@ const social = contactSettings.social;
       check("topic");
     }),
   );
-  form.addEventListener("submit", (e) => {
+  const submitError = document.getElementById("submit-error")!;
+  const sendBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  let sending = false;
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (sending) return;
+    submitError.hidden = true;
     const errors = validateContact(values());
     keys.forEach((k) => show(k, errors[k]));
     const first = keys.find((k) => errors[k]);
     if (first) { (first === "topic" ? form.querySelector<HTMLInputElement>('input[name="topic"]') : field(first))?.focus(); return; }
-    // TODO: POST the validated values to the contact API endpoint once it exists, and show the error state on failure.
+    sending = true;
+    sendBtn.setAttribute("aria-busy", "true");
+    const result = await submitContact(import.meta.env.PUBLIC_API_URL, values(), field("private").checked && !priv.hidden);
+    sending = false;
+    sendBtn.removeAttribute("aria-busy");
+    if (!result.ok) {
+      keys.forEach((k) => show(k, result.fieldErrors[k]));
+      submitError.textContent = result.message;
+      submitError.hidden = false;
+      return;
+    }
     document.getElementById("success-name")!.textContent = values().name.trim().split(/\s+/)[0];
     document.getElementById("contact-success")!.hidden = false;
   });
