@@ -1,0 +1,47 @@
+/** Shaped like the future settings API; replace `contactSettings` with that fetch when it lands. */
+export interface ContactSettings {
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  social: { label: string; href: string }[];
+}
+
+export const contactSettings: ContactSettings = {
+  email: "hello@example.org",
+  phone: "+00 000 000 0000",
+  address: "Sample Street, Sample City",
+  social: [
+    { label: "Facebook", href: "https://facebook.com" },
+    { label: "YouTube", href: "https://youtube.com" },
+  ],
+};
+
+export interface Row { label: string; value: string }
+
+/** Contact rows with a value; empty list hides the block. */
+export const contactRows = (s: ContactSettings): Row[] =>
+  ([["Email", s.email], ["Phone / WhatsApp", s.phone], ["Address", s.address]] as [string, string | null][])
+    .flatMap(([label, v]) => (v?.trim() ? [{ label, value: v.trim() }] : []));
+
+export const topics = [
+  { value: "question", label: "A question", message: "Your question" },
+  { value: "prayer", label: "A prayer request", message: "Your prayer request" },
+  { value: "testimony", label: "A testimony", message: "Your testimony" },
+  { value: "invitation", label: "Invitation to minister", message: "Your invitation" },
+  { value: "other", label: "Other", message: "Your message" },
+] as const;
+
+export type Topic = (typeof topics)[number]["value"];
+
+export interface ContactInput { topic: string; name: string; email: string; message: string }
+export type ContactErrors = Partial<Record<"topic" | "name" | "email" | "message", string>>;
+
+export function validateContact(i: ContactInput): ContactErrors {
+  const e: ContactErrors = {};
+  if (!topics.some((t) => t.value === i.topic)) e.topic = "Choose what you are writing about.";
+  if (!i.name.trim()) e.name = "Please enter your name.";
+  if (!i.email.trim()) e.email = "Please enter your email address.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(i.email.trim())) e.email = "Please enter a full email address.";
+  if (!i.message.trim()) e.message = "Please write a message.";
+  return e;
+}
