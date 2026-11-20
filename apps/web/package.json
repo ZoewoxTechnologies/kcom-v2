@@ -14,7 +14,7 @@
   "dependencies": {
     "@astrojs/node": "^11.1.12",
     "@kcom/content": "workspace:*",
-    "@kcom/media": "workspace:^",
+    "@kcom/media": "workspace:*",
     "@kcom/ui": "workspace:*",
     "@sentry/astro": "^11.12.0",
     "astro": "^7.4.11",

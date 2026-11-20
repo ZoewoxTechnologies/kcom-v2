@@ -20,6 +20,15 @@ describe("sanitizeRichText images", () => {
     expect(sanitizeRichText(doc({ type: "image", attrs: { src: IMG } }))).toEqual(doc());
   });
 
+  it("stores the normalised URL, not the raw string", () => {
+    const raw = "HTTPS://res.cloudinary.com:443/demo/image/upload/a b.jpg";
+    const out = sanitizeRichText(doc({ type: "image", attrs: { src: raw, alt: "x" } })) as {
+      content: { attrs: { src: string } }[];
+    };
+    expect(out.content[0]?.attrs.src).toBe(new URL(raw).href);
+    expect(out.content[0]?.attrs.src).not.toBe(raw);
+  });
+
   it("drops images from other hosts and non-https sources", () => {
     for (const src of [
       "https://evil.test/a.png",

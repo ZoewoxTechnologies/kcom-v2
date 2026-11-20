@@ -62,7 +62,8 @@ function cleanNode(node: unknown, depth: number): Raw | null {
     const width = size(attrs.width);
     const height = size(attrs.height);
     out.attrs = {
-      src: attrs.src,
+      // Store the parsed, normalised URL rather than the raw string.
+      src: new URL(attrs.src).href,
       alt: attrs.alt.slice(0, 300),
       ...(width && height ? { width, height } : {}),
     };
