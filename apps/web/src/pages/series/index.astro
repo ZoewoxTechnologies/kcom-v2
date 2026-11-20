@@ -25,7 +25,7 @@ const { page, pages, items } = paginate(all, Astro.url.searchParams.get("page"),
   </div>
 </BaseLayout>
 <style>
-  .body { max-inline-size: 70rem; inline-size: 100%; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-5); padding-block: var(--space-4) var(--space-8); }
+  .body { inline-size: 100%; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-5); padding-block: var(--space-4) var(--space-8); }
   .bar { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
   .count { color: var(--color-muted); font-size: 0.9375rem; }
   .bar :global(.sort) { margin-inline-start: auto; }

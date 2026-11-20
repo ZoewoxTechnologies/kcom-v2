@@ -61,7 +61,7 @@ const months = Array.from({ length: 12 }, (_, i) => ({ n: i + 1, key: monthKey(m
   window.addEventListener("load", centre);
 </script>
 <style>
-  .layout { max-inline-size: 70rem; inline-size: 100%; margin-inline: auto; display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-7); padding-block: var(--space-4) var(--space-8); }
+  .layout { inline-size: 100%; margin-inline: auto; display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-7); padding-block: var(--space-4) var(--space-8); }
   .months { flex: 1 1 100%; display: flex; flex-direction: row; align-items: center; gap: var(--space-2); min-inline-size: 0; }
   .months :global(.select-form) { flex: none; }
   .months :global(select) { min-inline-size: 6.5rem; }
