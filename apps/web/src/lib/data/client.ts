@@ -162,6 +162,21 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       const p = await res.json();
       return { ...toBlogSummary(p), body: p.body };
     },
+    async listBooks() {
+      const res = await client.books.$get({ query: { limit: "100", offset: "0" } }, signal());
+      if (!res.ok) throw new Error(`API /books responded ${res.status}`);
+      return (await res.json()).map((b) => ({
+        slug: b.slug,
+        title: b.title,
+        description: richTextToPlain(b.description) || null,
+        coverUrl: b.coverUrl,
+        purchaseUrl: b.purchaseUrl,
+        publishedYear: b.publishedYear,
+        kind: null,
+        author: null,
+        sampleUrl: null,
+      }));
+    },
     async eventBySlug(slug) {
       const res = await client.events[":slug"].$get({ param: { slug } }, signal());
       if (res.status === 404) return null;

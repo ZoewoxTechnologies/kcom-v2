@@ -111,6 +111,24 @@ export interface BlogListQuery {
   offset?: number;
 }
 
+/** A published book, as listed on the Books page. */
+export interface Book {
+  slug: string;
+  title: string;
+  /** Plain-text blurb. */
+  description: string | null;
+  coverUrl: string | null;
+  purchaseUrl: string | null;
+  publishedYear: number | null;
+  /** Not in the API yet: null there, so the kind label and filter stay hidden. */
+  kind: BookKind | null;
+  author: string | null;
+  sampleUrl: string | null;
+}
+
+export const bookKinds = ["Book", "Mini-book", "New Year message"] as const;
+export type BookKind = (typeof bookKinds)[number];
+
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
   capsuleBySlug(slug: string): Promise<Capsule | null>;
@@ -126,6 +144,8 @@ export interface DataSource {
   /** Published posts, newest first. */
   listBlogPosts(query?: BlogListQuery): Promise<BlogPostSummary[]>;
   blogPostBySlug(slug: string): Promise<BlogPost | null>;
+  /** Published books, A to Z. */
+  listBooks(): Promise<Book[]>;
   eventBySlug(slug: string): Promise<EventDetail | null>;
 }
 
@@ -133,7 +153,7 @@ export interface DataSource {
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "eventBySlug"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug"] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */
