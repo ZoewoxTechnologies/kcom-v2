@@ -3,10 +3,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title="Search" description="Search capsules, blog posts, series, events, books and About pages." current="/search">
+<BaseLayout bleed title="Search" description="Search capsules, blog posts, series, events, books and About pages." current="/search">
   <div class="search" data-search>
     <section class="band">
-      <form role="search" action="/search" method="get" class="form">
+      <form role="search" action="/search" method="get" class="form inner">
         <label for="sq" class="kc-label">Search the site</label>
         <div class="row">
           <input id="sq" name="q" type="search" class="kc-input kc-input--lg" autocomplete="off" autofocus />
@@ -18,7 +18,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       </form>
     </section>
 
-    <div class="body" hidden data-body>
+    <div class="body inner" hidden data-body>
       <aside aria-label="Filters" class="filters" data-filters>
         <fieldset class="kc-fieldset types" data-types>
           <legend>Type</legend>
@@ -31,7 +31,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
           <label class="kc-label" for="ss">Series</label>
           <div class="kc-select"><select id="ss" class="kc-select__control kc-select__control--sm" data-series><option value="">Any series</option></select></div>
         </div>
-        <a href="/search" class="clear" data-clear hidden>Clear filters</a>
+        <a href="/search" class="clear" data-clear>Clear filters</a>
       </aside>
 
       <section aria-label="Results" class="results">
@@ -177,7 +177,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
         c.textContent = String(res.filters.type?.[c.dataset.type ?? ""] ?? 0);
       });
     }
-    clear.hidden = !(selected.size || year.value || series.value);
     const n = res.results.length;
     empty.hidden = n > 0;
     emptyTitle.textContent = `No results for “${q}”`;
@@ -214,15 +213,16 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   })();
 </script>
 <style is:global>
-  .search { display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-5) var(--space-7); }
-  .search .band { background: var(--color-wash); border-radius: var(--radius); padding: var(--space-6) var(--space-6) var(--space-5); }
+  .search { display: flex; flex-direction: column; }
+  .search .inner { box-sizing: border-box; inline-size: 100%; max-inline-size: var(--page-max); margin-inline: auto; padding-inline: var(--gutter); }
+  .search .band { background: var(--color-wash); padding-block: 40px 32px; }
   .search .band, .search .form { min-inline-size: 0; }
   .search .form { display: flex; flex-direction: column; gap: 10px; }
   .search .row { display: flex; gap: 10px; max-inline-size: 760px; }
   .search .row .kc-input { flex: 1; min-inline-size: 0; block-size: 57px; padding: 14px 18px; border-radius: 12px; font-size: 1.25rem; }
   .search .row .kc-btn { align-self: stretch; block-size: auto; flex: none; }
   .search .status { margin: 0; min-block-size: 1.5em; font-size: 0.9375rem; color: var(--color-muted); }
-  .search .body { display: flex; flex-wrap: wrap; gap: 48px; }
+  .search .body { display: flex; flex-wrap: wrap; gap: 48px; padding-block: 32px 72px; }
   .search .body[hidden] { display: none; }
   .search .filters { flex: 1 1 220px; max-inline-size: 250px; display: flex; flex-direction: column; gap: var(--space-5); font-size: 0.9375rem; }
   .search .types { display: flex; flex-direction: column; gap: 0; }
@@ -241,11 +241,11 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .search .excerpt mark { background: var(--color-sandstone); color: var(--color-text); border-bottom: 2px solid var(--color-gold); padding: 0 2px; }
   .search .more { align-self: center; margin-block-start: var(--space-5); }
   .search .empty { margin-block-start: var(--space-7); border: 1px dashed var(--color-field); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: var(--space-2); background: var(--color-surface); }
-  .search .empty[hidden], .search .more[hidden], .search .clear[hidden] { display: none; }
+  .search .empty[hidden], .search .more[hidden] { display: none; }
   .search .empty-title { font: 600 1.625rem / 1.2 var(--font-title); }
   .search .empty-help { color: var(--color-muted); }
   @media (max-width: 47.99rem) {
-    .search .band { padding: var(--space-5) var(--space-4); }
+    .search .band { padding-block: var(--space-5) var(--space-4); }
     .search .body { gap: var(--space-5); }
     .search .filters { max-inline-size: none; flex-basis: 100%; }
   }
