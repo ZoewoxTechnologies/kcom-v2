@@ -95,6 +95,40 @@ describe("admin capsule CRUD", () => {
     expect((await call(`/admin/capsules/${row.id}`, editor)).status).toBe(404);
   });
 
+  it("filters the list by publishAt range, half-open", async () => {
+    const at = (slug: string, publishAt: string) =>
+      call("/admin/capsules", editor, "POST", valid({ slug, publishAt, status: "draft" }));
+    // Lagos midnight of 1 Dec is 23:00 UTC on 30 Nov.
+    await at("last-of-nov", "2026-11-30T22:59:00Z");
+    await at("first-of-dec", "2026-11-30T23:00:00Z");
+    await at("first-of-jan", "2026-12-31T23:00:00Z");
+    const slugs = async (qs: string) =>
+      (
+        (await (await call(`/admin/capsules?${qs}`, editor)).json()) as {
+          items: { slug: string }[];
+          total: number;
+        }
+      ).items
+        .map((i) => i.slug)
+        .sort();
+    expect(await slugs("from=2026-11-30T23:00:00Z&to=2026-12-31T23:00:00Z")).toEqual([
+      "first-of-dec",
+    ]);
+    expect(await slugs("from=2026-11-30T23:00:00Z")).toEqual(["first-of-dec", "first-of-jan"]);
+    expect(await slugs("to=2026-11-30T23:00:00Z")).toEqual(["last-of-nov"]);
+    const total = (await (
+      await call("/admin/capsules?to=2026-11-30T23:00:00Z", editor)
+    ).json()) as {
+      total: number;
+    };
+    expect(total.total).toBe(1);
+    expect((await call("/admin/capsules?from=nope", editor)).status).toBe(400);
+    expect(
+      (await call("/admin/capsules?from=2026-12-01T00:00:00Z&to=2026-11-01T00:00:00Z", editor))
+        .status,
+    ).toBe(400);
+  });
+
   it("404s on unknown ids and 400s on malformed ones", async () => {
     const missing = "00000000-0000-4000-8000-000000000000";
     expect((await call(`/admin/capsules/${missing}`, editor, "PATCH", { title: "x" })).status).toBe(
@@ -282,24 +316,40 @@ describe("public reads never leak drafts or future capsules", () => {
 
 describe("public /capsules/:slug/neighbours", () => {
   const base = { body: doc("b") };
-  const at = (slug: string, status: "published" | "draft", iso: string) => ({ ...base, title: slug, slug, status, publishAt: new Date(iso) });
+  const at = (slug: string, status: "published" | "draft", iso: string) => ({
+    ...base,
+    title: slug,
+    slug,
+    status,
+    publishAt: new Date(iso),
+  });
   type Link = { slug: string; displayDate: string } | null;
-  const get = async (slug: string) => (await (await call(`/capsules/${slug}/neighbours`, null)).json()) as { prev: Link; next: Link };
+  const get = async (slug: string) =>
+    (await (await call(`/capsules/${slug}/neighbours`, null)).json()) as { prev: Link; next: Link };
 
   it("skips drafts and future capsules, and is null at either end", async () => {
-    await db.insert(capsules).values([
-      at("a", "published", "2026-01-10T12:00:00Z"),
-      at("b-draft", "draft", "2026-01-11T12:00:00Z"),
-      at("c", "published", "2026-01-12T12:00:00Z"),
-      at("d-future", "published", "2999-01-01T00:00:00Z"),
-    ]);
-    expect(await get("a")).toMatchObject({ prev: null, next: { slug: "c", displayDate: "2026-01-12" } });
+    await db
+      .insert(capsules)
+      .values([
+        at("a", "published", "2026-01-10T12:00:00Z"),
+        at("b-draft", "draft", "2026-01-11T12:00:00Z"),
+        at("c", "published", "2026-01-12T12:00:00Z"),
+        at("d-future", "published", "2999-01-01T00:00:00Z"),
+      ]);
+    expect(await get("a")).toMatchObject({
+      prev: null,
+      next: { slug: "c", displayDate: "2026-01-12" },
+    });
     expect(await get("c")).toMatchObject({ prev: { slug: "a" }, next: null });
   });
   it("orders capsules with the same publish time by id, so neither is skipped", async () => {
     const same = "2026-01-10T12:00:00Z";
-    await db.insert(capsules).values([at("x", "published", same), at("y", "published", same), at("z", "published", same)]);
-    const order = (await db.select({ id: capsules.id, slug: capsules.slug }).from(capsules)).sort((a, b) => a.id.localeCompare(b.id)).map((r) => r.slug);
+    await db
+      .insert(capsules)
+      .values([at("x", "published", same), at("y", "published", same), at("z", "published", same)]);
+    const order = (await db.select({ id: capsules.id, slug: capsules.slug }).from(capsules))
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((r) => r.slug);
     const [first, middle, last] = order as [string, string, string];
     expect(await get(first)).toMatchObject({ prev: null, next: { slug: middle } });
     expect(await get(middle)).toMatchObject({ prev: { slug: first }, next: { slug: last } });

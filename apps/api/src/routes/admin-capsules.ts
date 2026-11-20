@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { and, count, desc, eq, ne } from "drizzle-orm";
+import { and, count, desc, eq, gte, lt, ne } from "drizzle-orm";
 import { z } from "zod";
 import { CAPSULE_LIMITS, nextLagosMidnight, slug } from "@kcom/content";
 import { capsules, type CapsuleDb } from "@kcom/db";
@@ -56,10 +56,19 @@ const updateBody = z
   .partial()
   .refine((b) => Object.keys(b).length > 0, "no fields to update");
 
-const listQuery = z.object({
-  status: fields.status.optional(),
-  ...pagination(),
-});
+/**
+ * `from` (inclusive) and `to` (exclusive) bound publishAt, so the calendar can load one month.
+ * Search and series filters for the list page still run in the browser; moving them
+ * server-side is a follow-up.
+ */
+const listQuery = z
+  .object({
+    status: fields.status.optional(),
+    from: z.coerce.date().optional(),
+    to: z.coerce.date().optional(),
+    ...pagination(),
+  })
+  .refine((q) => !q.from || !q.to || q.from < q.to, "from must be before to");
 
 const CAPSULE_ERRORS = {
   label: "capsule slug",
@@ -107,8 +116,12 @@ export function adminCapsuleRoutes(db: CapsuleDb, events: CapsuleEvents) {
 
   return new Hono<AuthEnv>()
     .get("/", validate("query", listQuery), async (c) => {
-      const { status, limit, offset } = c.req.valid("query");
-      const where = status ? eq(capsules.status, status) : undefined;
+      const { status, from, to, limit, offset } = c.req.valid("query");
+      const where = and(
+        status ? eq(capsules.status, status) : undefined,
+        from ? gte(capsules.publishAt, from) : undefined,
+        to ? lt(capsules.publishAt, to) : undefined,
+      );
       const [rows, [counted]] = await Promise.all([
         db
           .select()

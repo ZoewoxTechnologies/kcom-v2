@@ -96,7 +96,6 @@ export function DialogDemo() {
           open={promptOpen}
           onOpenChange={setPromptOpen}
           subject="Kingdom Capstone Conference 2027"
-          onSaveDraft={close}
           onDiscard={close}
         />
       </div>

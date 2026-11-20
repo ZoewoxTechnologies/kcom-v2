@@ -66,7 +66,7 @@ export function nextZoneMidnight(now: Date, timeZone: string): Date {
   return fromZoneParts({ ...p, day: p.day + 1, hour: 0, minute: 0 }, timeZone);
 }
 
-/** "Fri, 20 Nov 2026, 06:00 GMT+1" */
+/** "Fri, 20 Nov 2026, 06:00", in the given zone. The zone is named by the surrounding label, not repeated here. */
 export function formatInZone(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-GB", {
     timeZone,
@@ -77,7 +77,6 @@ export function formatInZone(date: Date, timeZone: string): string {
     hour: "2-digit",
     minute: "2-digit",
     hourCycle: "h23",
-    timeZoneName: "short",
   }).format(date);
 }
 

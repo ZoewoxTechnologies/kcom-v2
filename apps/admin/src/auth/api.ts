@@ -1,4 +1,5 @@
 import type { UserRole } from "@kcom/permissions";
+import { apiFetch } from "../api/client";
 
 export interface SessionUser {
   id: string;
@@ -7,15 +8,7 @@ export interface SessionUser {
   role: UserRole;
 }
 
-const baseUrl = () => (import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "");
-
-async function call(path: string, init?: RequestInit): Promise<Response> {
-  return fetch(`${baseUrl()}/api/auth${path}`, {
-    credentials: "include",
-    ...init,
-    headers: { "content-type": "application/json", ...init?.headers },
-  });
-}
+const call = (path: string, init?: RequestInit) => apiFetch(`/api/auth${path}`, init);
 
 /** The signed-in user, or null when there is no valid session. */
 export async function getSession(): Promise<SessionUser | null> {

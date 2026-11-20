@@ -1,0 +1,22 @@
+/* Tooltip: a small label under an icon-only control. Import after tokens.css. */
+@layer components {
+  .kc-tooltip {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .kc-tooltip__bubble {
+    position: absolute;
+    inset-block-start: calc(100% + var(--space-1));
+    inset-inline-end: 0;
+    z-index: 60;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-field);
+    background: var(--color-bar);
+    color: var(--color-on-bar);
+    font: 500 var(--text-xs) / 1.3 var(--font-body);
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: var(--shadow-menu);
+  }
+}
