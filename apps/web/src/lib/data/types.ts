@@ -102,7 +102,14 @@ export interface Book {
   coverUrl: string | null;
   purchaseUrl: string | null;
   publishedYear: number | null;
+  /** Not in the API yet: null there, so the kind label and filter stay hidden. */
+  kind: BookKind | null;
+  author: string | null;
+  sampleUrl: string | null;
 }
+
+export const bookKinds = ["Book", "Mini-book", "New Year message"] as const;
+export type BookKind = (typeof bookKinds)[number];
 
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;

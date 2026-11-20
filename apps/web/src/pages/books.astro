@@ -1,42 +1,85 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import BookCover from "../components/BookCover.astro";
+import "@kcom/ui/segmented-control.css";
 import { data } from "../lib/data";
+import { featuredBook, hasKinds, kindFilters, parseKind } from "../lib/books";
 
-const books = await data.listBooks();
+const all = await data.listBooks();
+const kind = parseKind(Astro.url.searchParams.get("kind"));
+const books = kind ? all.filter((b) => b.kind === kind) : all;
+const featured = featuredBook(all);
+const filterable = hasKinds(all);
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
 <BaseLayout title="Books" description="Books and mini-books from Kingdom Capstone Outreach Ministries." current="/books">
   <div class="books">
-    <header>
-      <h1>Books</h1>
-      {books.length > 0 && <span class="count">{books.length} {books.length === 1 ? "title" : "titles"}</span>}
-    </header>
-    {books.length === 0 && <p class="empty">No books yet. Please check back soon.</p>}
-    <ul class="grid">
-      {books.map((b) => (
-        <li>
-          {b.purchaseUrl ? <a class="cover" href={b.purchaseUrl} rel="noopener" aria-label={`Get ${b.title}`}>{b.coverUrl ? <img src={b.coverUrl} alt="" loading="lazy" /> : <span>{b.title}</span>}</a>
-            : <span class="cover">{b.coverUrl ? <img src={b.coverUrl} alt="" loading="lazy" /> : <span>{b.title}</span>}</span>}
-          <h2>{b.title}</h2>
-          {b.publishedYear && <span class="meta">{b.publishedYear}</span>}
-          {b.description && <p>{b.description}</p>}
-          {b.purchaseUrl && <a class="get" href={b.purchaseUrl} rel="noopener">Get a copy →</a>}
-        </li>
-      ))}
-    </ul>
+    {featured && (
+      <section class="hero" aria-labelledby="featured">
+        <div class="hero-cover"><BookCover title={featured.title} coverUrl={featured.coverUrl} /></div>
+        <div class="hero-text">
+          <span class="kicker">Featured book</span>
+          <h1 id="featured">{featured.title}</h1>
+          {featured.author && <span class="meta">{featured.author}</span>}
+          {featured.description && <p>{featured.description}</p>}
+          {(featured.purchaseUrl || featured.sampleUrl) && (
+            <div class="actions">
+              {featured.purchaseUrl && <a class="kc-btn kc-btn--primary kc-btn--sm" href={featured.purchaseUrl} rel="noopener">How to get a copy</a>}
+              {featured.sampleUrl && <a class="link" href={featured.sampleUrl} rel="noopener">Read a sample →</a>}
+            </div>
+          )}
+        </div>
+      </section>
+    )}
+    <section aria-labelledby="all">
+      <header>
+        <h2 id="all">All books</h2>
+        {books.length > 0 && <span class="meta">{books.length} {books.length === 1 ? "title" : "titles"}</span>}
+        {filterable && (
+          <nav class="kc-segmented filter" aria-label="Filter by kind">
+            {kindFilters.map((f) => (
+              <a class="kc-segmented__option" href={f.value ? `/books?kind=${encodeURIComponent(f.value)}` : "/books"} aria-current={(kind ?? "") === f.value ? "true" : undefined}>{f.label}</a>
+            ))}
+          </nav>
+        )}
+      </header>
+      {books.length === 0 && <p class="empty">No books yet. Please check back soon.</p>}
+      <ul class="grid">
+        {books.map((b) => (
+          <li>
+            {b.purchaseUrl ? <a href={b.purchaseUrl} rel="noopener" aria-label={`Get ${b.title}`}><BookCover title={b.title} coverUrl={b.coverUrl} /></a> : <BookCover title={b.title} coverUrl={b.coverUrl} />}
+            <h3>{b.title}</h3>
+            {(b.kind || b.publishedYear) && <span class="meta">{[b.kind, b.publishedYear].filter(Boolean).join(" · ")}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
   </div>
 </BaseLayout>
 <style>
-  .books { display: flex; flex-direction: column; gap: var(--space-5); padding-block: var(--space-5) var(--space-7); }
-  header { display: flex; align-items: baseline; gap: var(--space-4); flex-wrap: wrap; }
-  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; }
-  .count, .meta { color: var(--color-muted); font-size: 0.875rem; }
+  .books { display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-5) var(--space-7); }
+  .hero { display: flex; flex-direction: column; gap: var(--space-5); background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); margin-block-start: calc(var(--space-6) * -1); padding-block: var(--space-5); }
+  .hero-cover { inline-size: 9rem; box-shadow: 0 18px 40px rgba(20, 50, 62, 0.25); border-radius: 8px; }
+  .hero-text { display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; max-inline-size: 36rem; }
+  .kicker { font-size: 0.8125rem; letter-spacing: 0.08em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; line-height: 1.05; }
+  h2 { margin: 0; font: 600 1.75rem / 1.15 var(--font-title); }
+  h3 { margin: 0; font: 600 1.3125rem / 1.15 var(--font-title); }
+  p { margin: 0; }
+  .meta { color: var(--color-muted); font-size: 0.875rem; }
+  .actions { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+  .link { font-weight: 700; color: var(--color-primary); }
+  header { display: flex; align-items: center; gap: var(--space-3) var(--space-4); flex-wrap: wrap; margin-block-end: var(--space-4); }
+  .filter { margin-inline-start: auto; max-inline-size: 100%; overflow-x: auto; }
+  .filter a { display: inline-flex; align-items: center; white-space: nowrap; text-decoration: none; }
+  .filter a[aria-current] { background: var(--color-primary); color: var(--color-on-primary); }
   .empty { color: var(--color-muted); }
-  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: var(--space-5) var(--space-4); }
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--space-5) var(--space-4); }
   li { display: flex; flex-direction: column; gap: var(--space-2); }
-  .cover { aspect-ratio: 2 / 3; border-radius: 8px; background: var(--color-wash); border: 1px solid var(--color-line); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: var(--space-3); text-align: center; font: 600 1.125rem / 1.2 var(--font-title); color: var(--color-text); text-decoration: none; }
-  .cover img { inline-size: 100%; block-size: 100%; object-fit: cover; margin: calc(var(--space-3) * -1); inline-size: calc(100% + var(--space-3) * 2); block-size: calc(100% + var(--space-3) * 2); max-inline-size: none; }
-  h2 { margin: 0; font: 600 1.3125rem / 1.15 var(--font-title); }
-  p { margin: 0; font-size: 0.9375rem; color: var(--color-muted); }
-  .get { font-weight: 700; font-size: 0.9375rem; color: var(--color-primary); }
+  li > a { display: block; color: inherit; text-decoration: none; }
+  @media (min-width: 48rem) {
+    .hero { flex-direction: row; align-items: center; gap: var(--space-7); padding-block: var(--space-6); }
+    .hero-cover { flex: none; inline-size: 14rem; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
+  }
 </style>

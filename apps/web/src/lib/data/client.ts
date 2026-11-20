@@ -172,6 +172,9 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
         coverUrl: b.coverUrl,
         purchaseUrl: b.purchaseUrl,
         publishedYear: b.publishedYear,
+        kind: null,
+        author: null,
+        sampleUrl: null,
       }));
     },
   };

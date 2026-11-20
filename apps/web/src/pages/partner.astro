@@ -1,9 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { bankRows, contactRows, sampleSettings, ways } from "../lib/partnership";
+import "@kcom/ui/tooltip.css";
+import { bankRows, partnerTypes, sampleSettings, ways } from "../lib/partnership";
 
 const bank = bankRows(sampleSettings);
-const contact = contactRows(sampleSettings);
 ---
 <BaseLayout title="Partner With Us" description="Stand with Kingdom Capstone Outreach Ministries as a prayer, prosperity or project partner." current="/partner">
   <div class="page">
@@ -20,6 +20,7 @@ const contact = contactRows(sampleSettings);
             <span class="kicker">{w.n}</span>
             <h3>{w.title}</h3>
             <p>{w.text}</p>
+            <a class="cta" href="#join">{w.cta} →</a>
           </article>
         ))}
       </div>
@@ -28,18 +29,38 @@ const contact = contactRows(sampleSettings);
       <section class="panel" aria-labelledby="bank">
         <span class="kicker">Give by bank transfer</span>
         <h2 id="bank">Bank details</h2>
-        <dl>{bank.map((r) => <><dt>{r.label}</dt><dd>{r.value}</dd></>)}</dl>
+        <dl>{bank.map((r) => <><dt>{r.label}</dt><dd><span>{r.value}</span>
+          <span class="kc-tooltip"><button type="button" class="kc-btn kc-btn--tertiary kc-btn--sm copy" data-copy={r.value} aria-label={`Copy ${r.label}`}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg></button><span class="kc-tooltip__bubble" role="status" hidden>Copied</span></span></dd></>)}</dl>
         <p class="note">Please use your name and “Partner” as the transfer reference so we can thank you.</p>
       </section>
     )}
-    {contact.length > 0 && (
-      <section class="panel plain" aria-labelledby="contact">
-        <h2 id="contact">Talk to us</h2>
-        <dl>{contact.map((r) => <><dt>{r.label}</dt><dd>{r.label === "Email" ? <a href={`mailto:${r.value}`}>{r.value}</a> : r.label === "Phone" ? <a href={`tel:${r.value.replace(/[^+\d]/g, "")}`}>{r.value}</a> : r.value}</dd></>)}</dl>
-      </section>
-    )}
+    <section id="join" class="join" aria-labelledby="join-h">
+      <form method="post" action="/partner">
+        <h2 id="join-h">Become a partner</h2>
+        <p>Tell us how you’d like to stand with us and we’ll be in touch.</p>
+        <div class="two">
+          <label class="kc-label">Full name<input class="kc-input" type="text" name="name" autocomplete="name" required /></label>
+          <label class="kc-label">Email address<input class="kc-input" type="email" name="email" autocomplete="email" required /></label>
+        </div>
+        <fieldset>
+          <legend>I’d like to be a</legend>
+          {partnerTypes.map((t, i) => <label class="check"><input type="checkbox" name="type" value={t} checked={i === 0} />{t.replace(/s$/, "")}</label>)}
+        </fieldset>
+        <button class="kc-btn kc-btn--sm send" type="submit">Send</button>
+      </form>
+    </section>
   </div>
 </BaseLayout>
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((btn) => {
+    const bubble = btn.nextElementSibling as HTMLElement;
+    btn.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(btn.dataset.copy ?? ""); } catch { return; }
+      bubble.hidden = false;
+      setTimeout(() => (bubble.hidden = true), 1500);
+    });
+  });
+</script>
 <style>
   .page { max-inline-size: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-5) var(--space-7); }
   header { display: flex; flex-direction: column; gap: var(--space-3); max-inline-size: 44rem; }
@@ -56,9 +77,22 @@ const contact = contactRows(sampleSettings);
   dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
   dt { padding-block-start: var(--space-3); border-block-start: 1px solid var(--color-line); font-size: 0.875rem; font-weight: 700; opacity: 0.75; }
   dd { margin: 0; padding-block: var(--space-1) var(--space-3); font-size: 1.125rem; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  dd { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+  .cta { font-weight: 700; color: var(--color-primary); margin-block-start: var(--space-2); }
+  .join { background: var(--color-footer); color: var(--color-on-footer); box-shadow: 0 0 0 100vmax var(--color-footer); clip-path: inset(0 -100vmax); padding-block: var(--space-6); }
+  .join form { max-inline-size: 47rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-4); }
+  .join h2, .join p { text-align: center; margin: 0; }
+  .join .two { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
+  .join label.kc-label { color: var(--color-on-footer); }
+  fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
+  legend { font-size: 0.875rem; font-weight: 700; margin-block-end: var(--space-2); }
+  .check { display: flex; align-items: center; gap: var(--space-2); }
+  .check input { inline-size: 1.25rem; block-size: 1.25rem; accent-color: var(--color-footer-gold); }
+  .send { align-self: center; --kc-btn-bg: var(--color-footer-button); --kc-btn-fg: var(--color-on-footer-button); }
   .note { margin-block-start: var(--space-3); font-size: 0.9375rem; opacity: 0.8; }
   @media (min-width: 48rem) {
     .ways { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .join .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     dl { grid-template-columns: 12rem minmax(0, 1fr); }
     dt, dd { padding-block: var(--space-3); border-block-start: 1px solid var(--color-line); }
   }
