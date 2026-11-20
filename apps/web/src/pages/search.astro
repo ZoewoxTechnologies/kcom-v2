@@ -1,4 +1,5 @@
 ---
+import "@kcom/ui/pagination.css";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
@@ -10,7 +11,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
         <label for="sq" class="kc-label">Search the site</label>
         <div class="row">
           <input id="sq" name="q" type="search" class="kc-input kc-input--lg" autocomplete="off" autofocus />
-          <button type="submit" class="kc-btn kc-btn--primary">Search</button>
         </div>
         <p class="status" role="status" aria-live="polite" data-status>
           <noscript>Search needs JavaScript. Please enable it to search the site.</noscript>
@@ -36,7 +36,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 
       <section aria-label="Results" class="results">
         <div data-results></div>
-        <button type="button" class="kc-btn kc-btn--sm kc-btn--secondary more" data-more hidden>Show more results</button>
+        <nav class="kc-pagination kc-pagination--center pager" aria-label="Search result pages" data-pager hidden></nav>
         <div class="empty" data-empty hidden>
           <span class="empty-title" data-empty-title></span>
           <span class="empty-help">Try fewer or different words, a Bible reference such as “Romans 12”, or <a href="/series">browse by series</a>.</span>
@@ -46,10 +46,12 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   </div>
 </BaseLayout>
 <script>
+  import { pageWindow } from "@kcom/ui/pagination";
+
   type Filters = Record<string, { [value: string]: number }>;
   interface Hit { url: string; excerpt: string; meta: { title?: string; type?: string; date?: string } }
   interface Found { results: { data(): Promise<Hit> }[]; filters: Filters; totalFilters: Filters }
-  interface Pagefind { options(o: object): Promise<void>; filters(): Promise<Filters>; debouncedSearch(q: string | null, o?: object, ms?: number): Promise<Found | null> }
+  interface Pagefind { options(o: object): Promise<void>; filters(): Promise<Filters>; search(q: string | null, o?: object): Promise<Found | null> }
 
   const root = document.querySelector<HTMLElement>("[data-search]")!;
   const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -61,11 +63,12 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   const series = $<HTMLSelectElement>("[data-series]");
   const clear = $("[data-clear]");
   const results = $("[data-results]");
-  const more = $<HTMLButtonElement>("[data-more]");
+  const pager = $("[data-pager]");
   const empty = $("[data-empty]");
   const emptyTitle = $("[data-empty-title]");
 
   const PAGE = 10;
+  const TYPING_MS = 400;
   const TYPE_LABELS: Record<string, string> = { Capsule: "Capsules", Blog: "Blog", Series: "Series", Event: "Events", Book: "Books", Page: "Pages" };
   const TYPE_ORDER = Object.keys(TYPE_LABELS);
   const params = new URL(location.href).searchParams;
@@ -77,7 +80,8 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   let pf: Pagefind | null = null;
   let totals: Filters = {};
   let found: Found | null = null;
-  let shown = 0;
+  let page = Math.max(1, Number.parseInt(params.get("page") ?? "1", 10) || 1);
+  let timer: ReturnType<typeof setTimeout> | undefined;
   let token = 0;
 
   const el = (tag: string, cls?: string, text?: string) => {
@@ -95,6 +99,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     for (const t of selected) u.searchParams.append("type", t);
     if (year.value) u.searchParams.set("year", year.value);
     if (series.value) u.searchParams.set("series", series.value);
+    if (page > 1) u.searchParams.set("page", String(page));
     history.replaceState(null, "", u);
   }
 
@@ -128,10 +133,58 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     }
   }
 
-  async function renderMore() {
+  const CHEVRON = { prev: "M10 3 5 8l5 5", next: "M6 3l5 5-5 5" };
+  function pagerLink(n: number, label: string, content: string | SVGElement, current = false) {
+    const a = el("a", "kc-pagination__item") as HTMLAnchorElement;
+    a.href = "#";
+    a.setAttribute("aria-label", label);
+    if (current) a.setAttribute("aria-current", "page");
+    typeof content === "string" ? (a.textContent = content) : a.append(content);
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (!current) void go(n);
+    });
+    return a;
+  }
+  function chevron(kind: "prev" | "next") {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 16 16");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", CHEVRON[kind]);
+    svg.append(path);
+    return svg;
+  }
+  function renderPager(pages: number) {
+    pager.replaceChildren();
+    pager.hidden = pages <= 1;
+    if (pages <= 1) return;
+    const edge = (kind: "prev" | "next", n: number, on: boolean) => {
+      if (on) return pagerLink(n, kind === "prev" ? "Previous page" : "Next page", chevron(kind));
+      const off = el("span", "kc-pagination__item kc-pagination__item--disabled");
+      off.setAttribute("aria-hidden", "true");
+      off.append(chevron(kind));
+      return off;
+    };
+    pager.append(edge("prev", page - 1, page > 1));
+    for (const n of pageWindow(page, pages)) {
+      if (n === null) {
+        const gap = el("span", "kc-pagination__gap", "…");
+        gap.setAttribute("aria-hidden", "true");
+        pager.append(gap);
+      } else pager.append(pagerLink(n, `Page ${n}`, String(n), n === page));
+    }
+    pager.append(edge("next", page + 1, page < pages));
+  }
+
+  async function renderPage() {
     if (!found) return;
-    const next = found.results.slice(shown, shown + PAGE);
-    const hits = await Promise.all(next.map((r) => r.data()));
+    const mine = token;
+    const pages = Math.max(1, Math.ceil(found.results.length / PAGE));
+    page = Math.min(Math.max(page, 1), pages);
+    const hits = await Promise.all(found.results.slice((page - 1) * PAGE, page * PAGE).map((r) => r.data()));
+    if (mine !== token) return;
+    results.replaceChildren();
     for (const h of hits) {
       const a = el("a", "hit") as HTMLAnchorElement;
       a.href = h.url;
@@ -143,11 +196,19 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       a.append(meta, title, ex);
       results.append(a);
     }
-    shown += next.length;
-    more.hidden = shown >= found.results.length;
+    renderPager(pages);
+    syncUrl();
   }
 
-  async function run(refill: boolean) {
+  async function go(n: number) {
+    page = n;
+    await renderPage();
+    results.scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+
+  async function run(refill: boolean, keepPage = false) {
+    clearTimeout(timer);
+    if (!keepPage) page = 1;
     const q = input.value.trim();
     const mine = ++token;
     syncUrl();
@@ -162,11 +223,9 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     if (selected.size) filters.type = { any: [...selected] };
     if (year.value) filters.year = year.value;
     if (series.value) filters.series = series.value;
-    const res = await pf.debouncedSearch(q, { filters }, 250);
+    const res = await pf.search(q, { filters });
     if (!res || mine !== token) return;
     found = res;
-    shown = 0;
-    results.replaceChildren();
     body.hidden = false;
     if (refill) {
       fillTypes(res.filters.type ?? {}, totals.type ?? {});
@@ -179,15 +238,21 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     }
     const n = res.results.length;
     empty.hidden = n > 0;
+    if (n === 0) {
+      results.replaceChildren();
+      pager.hidden = true;
+    }
     emptyTitle.textContent = `No results for “${q}”`;
     status.textContent = n ? `${n} ${n === 1 ? "result" : "results"} for “${q}”` : "";
-    await renderMore();
+    await renderPage();
   }
 
-  more.addEventListener("click", () => void renderMore());
   year.addEventListener("change", () => void run(false));
   series.addEventListener("change", () => void run(false));
-  input.addEventListener("input", () => void run(true));
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => void run(true), TYPING_MS);
+  });
   input.form!.addEventListener("submit", (e) => {
     e.preventDefault();
     void run(true);
@@ -209,7 +274,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       status.textContent = "Search is not available right now.";
       return;
     }
-    void run(true);
+    void run(true, true);
   })();
 </script>
 <style is:global>
@@ -220,7 +285,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .search .form { display: flex; flex-direction: column; gap: 10px; }
   .search .row { display: flex; gap: 10px; max-inline-size: 760px; }
   .search .row .kc-input { flex: 1; min-inline-size: 0; block-size: 57px; padding: 14px 18px; border-radius: 12px; font-size: 1.25rem; }
-  .search .row .kc-btn { align-self: stretch; block-size: auto; flex: none; }
   .search .status { margin: 0; min-block-size: 1.5em; font-size: 0.9375rem; color: var(--color-muted); }
   .search .body { display: flex; flex-wrap: wrap; gap: 48px; padding-block: 32px 72px; }
   .search .body[hidden] { display: none; }
@@ -239,9 +303,9 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .search .hit-title { font: 600 1.625rem / 1.2 var(--font-title); overflow-wrap: anywhere; }
   .search .excerpt { font-size: 1rem; color: color-mix(in srgb, var(--color-text) 53%, var(--color-muted)); }
   .search .excerpt mark { background: var(--color-sandstone); color: var(--color-text); border-bottom: 2px solid var(--color-gold); padding: 0 2px; }
-  .search .more { align-self: center; margin-block-start: var(--space-5); }
+  .search .pager { margin-block-start: var(--space-5); }
   .search .empty { margin-block-start: var(--space-7); border: 1px dashed var(--color-field); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: var(--space-2); background: var(--color-surface); }
-  .search .empty[hidden], .search .more[hidden] { display: none; }
+  .search .empty[hidden], .search .pager[hidden] { display: none; }
   .search .empty-title { font: 600 1.625rem / 1.2 var(--font-title); }
   .search .empty-help { color: var(--color-muted); }
   @media (max-width: 47.99rem) {
