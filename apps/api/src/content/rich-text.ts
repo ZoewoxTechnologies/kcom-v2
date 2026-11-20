@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isCloudinaryImageUrl } from "@kcom/media";
 import { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref, richTextHeadingLevel } from "@kcom/content";
 import type { RichText } from "@kcom/db";
 
@@ -29,7 +30,12 @@ function cleanMarks(marks: unknown): Raw[] | undefined {
 }
 
 function cleanNode(node: unknown, depth: number): Raw | null {
-  if (!isObj(node) || typeof node.type !== "string" || !RICH_TEXT_NODES.has(node.type) || depth > MAX_DEPTH) {
+  if (
+    !isObj(node) ||
+    typeof node.type !== "string" ||
+    !RICH_TEXT_NODES.has(node.type) ||
+    depth > MAX_DEPTH
+  ) {
     return null;
   }
   const out: Raw = { type: node.type };
@@ -43,6 +49,16 @@ function cleanNode(node: unknown, depth: number): Raw | null {
   if (node.type === "heading") {
     const level = isObj(node.attrs) ? node.attrs.level : undefined;
     out.attrs = { level: richTextHeadingLevel(level) };
+  }
+  if (node.type === "image") {
+    // Only Cloudinary-hosted images are kept; an image with any other source is dropped.
+    const attrs = isObj(node.attrs) ? node.attrs : {};
+    if (typeof attrs.src !== "string" || !isCloudinaryImageUrl(attrs.src)) return null;
+    out.attrs = {
+      src: attrs.src,
+      ...(typeof attrs.alt === "string" ? { alt: attrs.alt.slice(0, 300) } : {}),
+    };
+    return out;
   }
   if (Array.isArray(node.content)) {
     out.content = node.content
