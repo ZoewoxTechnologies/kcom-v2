@@ -51,6 +51,8 @@ jobs:
           file: apps/${{ matrix.app }}/Dockerfile
           push: true
           tags: ${{ env.REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ matrix.app }}:${{ github.event.workflow_run.head_sha || github.sha }}
+          build-args: |
+            PUBLIC_API_URL=${{ vars.PUBLIC_API_URL }}
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
 
