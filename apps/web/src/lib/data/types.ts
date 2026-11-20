@@ -106,6 +106,20 @@ export interface EventDetail {
   relatedPost: { slug: string; title: string } | null;
 }
 
+/** An event as listed on the Events page. */
+export interface EventSummary {
+  slug: string;
+  title: string;
+  startsAt: string;
+  endsAt: string | null;
+  allDay: boolean;
+  place: string | null;
+  /** Plain-text description. */
+  summary: string | null;
+  /** Also streamed online. */
+  online: boolean;
+}
+
 export interface BlogListQuery {
   limit?: number;
   offset?: number;
@@ -147,13 +161,15 @@ export interface DataSource {
   /** Published books, A to Z. */
   listBooks(): Promise<Book[]>;
   eventBySlug(slug: string): Promise<EventDetail | null>;
+  /** Published events: upcoming soonest first, past newest first. */
+  listEvents(when: "upcoming" | "past"): Promise<EventSummary[]>;
 }
 
 /**
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug", "listEvents"] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */

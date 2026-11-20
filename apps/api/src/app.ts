@@ -11,6 +11,7 @@ import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
 import { homepageRoutes } from "./routes/homepage.js";
 import { pageRoutes } from "./routes/pages.js";
+import { contactRoutes } from "./routes/contact.js";
 import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
 import type { CloudinaryConfig } from "./uploads/cloudinary.js";
@@ -53,6 +54,12 @@ export function createApp(
     allowHeaders: ["Content-Type"],
     credentials: true,
   });
+  // The public contact form posts cross-origin from the web site.
+  const contactCors = cors({
+    origin: corsOrigins,
+    allowMethods: ["POST", "OPTIONS"],
+    allowHeaders: ["Content-Type"],
+  });
   const authInstance = createAuth(db, { trustedOrigins: corsOrigins, ...auth });
   return new Hono()
     .use((c, next) =>
@@ -60,7 +67,9 @@ export function createApp(
         ? authCors(c, next)
         : c.req.path.startsWith("/admin/")
           ? adminCors(c, next)
-          : publicCors(c, next),
+          : c.req.path === "/contact"
+            ? contactCors(c, next)
+            : publicCors(c, next),
     )
     .onError(errorHandler)
     .notFound(notFoundHandler)
@@ -68,6 +77,7 @@ export function createApp(
     .route("/blog", blogRoutes(db))
     .route("/books", bookRoutes(db))
     .route("/capsules", capsuleRoutes(db))
+    .route("/contact", contactRoutes(db))
     .route("/events", eventRoutes(db))
     .route("/series", seriesRoutes(db))
     .route("/pages", pageRoutes(db))

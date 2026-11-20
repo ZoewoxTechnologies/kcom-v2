@@ -12,11 +12,12 @@ describe("BaseLayout", () => {
     });
     expect(html).toContain('class="skip-link"');
     expect(html).toContain("<header");
-    for (const l of navItems.flatMap((i) => [i, ...(i.children ?? [])])) expect(html).toContain(`href="${l.href}"`);
+    for (const l of navItems.flatMap((i) => [i, ...(i.children ?? [])]))
+      expect(html).toContain(`href="${l.href}"`);
     expect(html).toContain("popovertarget");
     expect(html).not.toMatch(/ClientRouter|view-transition|astro-route-announcer/i);
     expect(html).not.toContain("Gallery");
-    expect(html).toMatch(/class="[^"]*kc-btn kc-btn--primary kc-btn--sm[^"]*"/);
+    expect(html).toMatch(/class="[^"]*kc-btn kc-btn--primary[^"]*"/);
     expect(html).toContain("page body");
     expect(html).toContain("<footer");
     expect(html).toContain(`© ${new Date().getFullYear()}`);

@@ -1,7 +1,7 @@
 import { lagosDate } from "@kcom/content";
 import { sampleBlogPosts } from "./sample-blog";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import type { Book, EventDetail, Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
+import type { Book, EventDetail, EventSummary, Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
 
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -156,6 +156,12 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
     async blogPostBySlug(slug) {
       return sampleBlogPosts.find((b) => b.slug === slug) ?? null;
     },
+    async listEvents(when) {
+      const t = now().getTime();
+      const over = (e: EventSummary) => new Date(e.endsAt ?? e.startsAt).getTime() < t;
+      const rows = [...sampleEventList].filter((e) => over(e) === (when === "past"));
+      return rows.sort((a, b) => (when === "past" ? -1 : 1) * a.startsAt.localeCompare(b.startsAt));
+    },
     async eventBySlug(slug) {
       return sampleEvents.find((e) => e.slug === slug) ?? null;
     },
@@ -188,5 +194,17 @@ const bareEvent: EventDetail = {
   programme: null,
 };
 const sampleEvents = [sampleEvent, bareEvent];
+
+const listed = (slug: string, title: string, startsAt: string, endsAt: string | null, place: string | null, summary: string | null, online = false): EventSummary =>
+  ({ slug, title, startsAt, endsAt, allDay: false, place, summary, online });
+const sampleEventList: EventSummary[] = [
+  listed("end-of-year-thanksgiving-service", "End-of-Year Thanksgiving Service", "2026-12-06T09:00:00Z", null, "Venue to be announced", "A morning of thanksgiving for all the Lord has done in 2026."),
+  listed("new-year-prophetic-message-2027", "New Year Prophetic Message 2027", "2027-01-01T08:00:00Z", null, null, "The word for the year, published on the blog the same day.", true),
+  listed("kingdom-capstone-conference-2027", "Kingdom Capstone Conference 2027", "2027-03-12T17:00:00Z", "2027-03-14T13:00:00Z", "Venue to be announced", "Three days of teaching, prophecy and intercession. Registration opens in January.", true),
+  listed("kingdom-capstone-conference-2025", "Kingdom Capstone Conference 2025", "2025-11-14T17:00:00Z", "2025-11-16T13:00:00Z", null, null),
+  listed("fire-force-convention", "FIRE Force Convention", "2025-08-15T17:00:00Z", null, null, null),
+  listed("salti-graduation", "SALTI Graduation", "2025-06-14T10:00:00Z", null, null, null),
+  listed("new-year-prophetic-message-2025", "New Year Prophetic Message 2025", "2025-01-01T08:00:00Z", null, null, null),
+];
 
 export const sampleSource: DataSource = createSampleSource();

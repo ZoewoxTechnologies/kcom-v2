@@ -14,7 +14,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 /** Brand button. Import "@kcom/ui/tokens.css" and "@kcom/ui/button.css" once per app. */
 export function Button({
   variant = "primary",
-  size = "md",
+  size = "sm",
   loading = false,
   className,
   children,
@@ -22,7 +22,7 @@ export function Button({
   type = "button",
   ...rest
 }: ButtonProps) {
-  const classes = ["kc-btn", `kc-btn--${variant}`, size !== "md" && `kc-btn--${size}`, className]
+  const classes = ["kc-btn", `kc-btn--${variant}`, size !== "sm" && `kc-btn--${size}`, className]
     .filter(Boolean)
     .join(" ");
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
