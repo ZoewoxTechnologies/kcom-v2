@@ -16,5 +16,13 @@ describe("richTextToHtml", () => {
     ] };
     expect(richTextToHtml(doc)).toBe("<p>hi</p>");
   });
+  it("renders Cloudinary images lazily with srcset, and drops other sources", () => {
+    const src = "https://res.cloudinary.com/demo/image/upload/v1/a.jpg";
+    const html = richTextToHtml({ type: "doc", content: [{ type: "image", attrs: { src, alt: "A \"pic\"", width: 800, height: 600 } }] });
+    expect(html).toContain('loading="lazy"');
+    expect(html).toContain('alt="A &quot;pic&quot;" width="800" height="600"');
+    expect(html).toContain("/image/upload/c_limit,w_480,f_auto,q_auto/v1/a.jpg 480w");
+    expect(richTextToHtml({ type: "doc", content: [{ type: "image", attrs: { src: "https://evil.test/a.jpg", alt: "x" } }] })).toBe("");
+  });
   it("is empty for null", () => expect(richTextToHtml(null)).toBe(""));
 });
