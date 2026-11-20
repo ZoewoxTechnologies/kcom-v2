@@ -7,6 +7,9 @@ import { Shell } from "./shell/Shell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { CalendarPage } from "./capsules/CalendarPage";
+import { CapsuleEditorStubPage } from "./capsules/CapsuleEditorStubPage";
+import { CapsulesPage } from "./capsules/CapsulesPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { SignInPage } from "./pages/SignInPage";
 
@@ -24,6 +27,11 @@ export function App() {
             <Route element={<Shell />}>
               <Route index element={<DashboardPage />} />
               <Route path="profile" element={<PlaceholderPage title="Profile" />} />
+              <Route element={<RequirePermission permission="content:read" />}>
+                <Route path="capsules" element={<CapsulesPage />} />
+                <Route path="capsules/:id" element={<CapsuleEditorStubPage />} />
+                <Route path="calendar" element={<CalendarPage />} />
+              </Route>
               {sections.map((item) => (
                 <Route key={item.path} element={<RequirePermission permission={item.permission} />}>
                   <Route path={`${item.path}/*`} element={<PlaceholderPage title={item.label} />} />

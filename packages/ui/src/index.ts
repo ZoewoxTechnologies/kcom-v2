@@ -57,6 +57,7 @@ export type { DateTimePickerProps } from "./react/DateTimePicker";
 export {
   DEFAULT_TIME_ZONE,
   formatInZone,
+  fromZoneParts,
   nextZoneMidnight,
   zoneDateKey,
   zoneLabel,

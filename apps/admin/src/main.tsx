@@ -11,6 +11,7 @@ import "@kcom/ui/menu.css";
 import "@kcom/ui/forms.css";
 import "@kcom/ui/datetime-picker.css";
 import "./shell/shell.css";
+import "./capsules/capsules.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { App } from "./App";
 import { initSentry } from "./sentry";
