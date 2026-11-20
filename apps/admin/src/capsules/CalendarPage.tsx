@@ -104,26 +104,24 @@ export function CalendarPage() {
         <div className="kc-cal__nav">
           <Button
             variant="tertiary"
-            size="sm"
             className="kc-cal__step"
             aria-label="Previous month"
             onClick={() => setMonth(shiftMonth(month, -1))}
           >
             <Chevron direction="left" />
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => setMonth(monthOf(today))}>
+          <Button variant="secondary" onClick={() => setMonth(monthOf(today))}>
             Today
           </Button>
           <Button
             variant="tertiary"
-            size="sm"
             className="kc-cal__step"
             aria-label="Next month"
             onClick={() => setMonth(shiftMonth(month, 1))}
           >
             <Chevron direction="right" />
           </Button>
-          <Link className="kc-btn kc-btn--primary kc-btn--sm kc-cal__new" to={newCapsulePath()}>
+          <Link className="kc-btn kc-btn--primary kc-cal__new" to={newCapsulePath()}>
             New capsule
           </Link>
         </div>
@@ -141,7 +139,7 @@ export function CalendarPage() {
       {state === "error" && (
         <p role="alert">
           Could not load capsules.{" "}
-          <Button variant="secondary" size="sm" onClick={reload}>
+          <Button variant="secondary" onClick={reload}>
             Try again
           </Button>
         </p>
@@ -245,11 +243,10 @@ export function CalendarPage() {
             }}
           />
           <DialogActions>
-            <Button variant="secondary" size="sm" onClick={() => setMoving(null)}>
+            <Button variant="secondary" onClick={() => setMoving(null)}>
               Cancel
             </Button>
             <Button
-              size="sm"
               disabled={!moveDay || moveDay < minDay}
               onClick={() => {
                 void moveTo(moving, moveDay).then((error) => {

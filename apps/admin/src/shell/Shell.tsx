@@ -91,7 +91,6 @@ export function Shell() {
           <Button
             ref={burgerRef}
             variant="secondary"
-            size="md"
             className="kc-admin__burger"
             aria-label="Menu"
             aria-controls="admin-nav"
