@@ -24,7 +24,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
         <h1>{event.title}</h1>
         <p class="when">{when}{event.place && <> · {event.place}</>}{event.onlineUrl && <> · also streamed online</>}</p>
         <div class="actions">
-          <a class="kc-btn kc-btn--primary kc-btn--sm" href={calendarHref(event)} download={`${event.slug}.ics`}>Add to calendar</a>
+          <a class="kc-btn kc-btn--secondary kc-btn--sm" href={calendarHref(event)} download={`${event.slug}.ics`}>Add to calendar</a>
           {event.place && <a class="kc-btn kc-btn--secondary kc-btn--sm" href={directionsHref(event.place)} rel="noopener">Get directions</a>}
         </div>
       </div>
@@ -48,7 +48,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
         <h2>At a glance</h2>
         <span><strong>When</strong><br />{when}</span>
         {event.place && <span><strong>Where</strong><br />{event.place}</span>}
-        {event.onlineUrl && <span><strong>Online</strong><br /><a class="kc-btn kc-btn--secondary kc-btn--sm" href={event.onlineUrl} rel="noopener">Join online</a></span>}
+        {event.onlineUrl && <span><strong>Online</strong><br /><a class="kc-btn kc-btn--tertiary kc-btn--sm" href={event.onlineUrl} rel="noopener">Join online</a></span>}
       </div>
       {event.relatedPost && (
         <div class="after">
