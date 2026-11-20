@@ -47,6 +47,10 @@ export type {
   SortableThProps,
   TablePaginationProps,
 } from "./react/DataTable";
+export { Tooltip } from "./react/Tooltip";
+export type { TooltipProps } from "./react/Tooltip";
+export { SegmentedControl } from "./react/SegmentedControl";
+export type { SegmentedControlProps, SegmentedOption } from "./react/SegmentedControl";
 export { ConfirmDialog } from "./react/ConfirmDialog";
 export type { ConfirmAction, ConfirmDialogProps } from "./react/ConfirmDialog";
 export { Menu, MenuItem, MenuLabel, MenuSeparator } from "./react/Menu";

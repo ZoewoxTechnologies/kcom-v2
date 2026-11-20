@@ -3,6 +3,8 @@ import {
   Badge,
   Button,
   ConfirmDialog,
+  SegmentedControl,
+  Tooltip,
   UnsavedChangesPrompt,
   DataTable,
   DateTimePicker,
@@ -70,6 +72,11 @@ const statusLabel: Record<EventStatus, string> = { draft: "Draft", published: "P
 
 type When = "upcoming" | "past";
 
+const WHEN_OPTIONS = [
+  { value: "upcoming", label: "Upcoming" },
+  { value: "past", label: "Past" },
+] as const;
+
 /** Admin Events: a list beside a side-panel editor. */
 export function EventsPage() {
   const { toast } = useToast();
@@ -81,7 +88,6 @@ export function EventsPage() {
   /** The open editor reports its unsaved state here, so switching events can ask first. */
   const guard = useRef<EditorGuard | null>(null);
   const [switchTo, setSwitchTo] = useState<{ target: string | "new" } | null>(null);
-  const [switching, setSwitching] = useState(false);
   const select = (target: string | "new") => {
     if (target === selected) return;
     if (guard.current?.dirty) setSwitchTo({ target });
@@ -151,18 +157,13 @@ export function EventsPage() {
       </header>
       <div className="kc-events__body">
         <div className="kc-events__list">
-          <div className="kc-events__tabs" role="group" aria-label="Show">
-            {(["upcoming", "past"] as const).map((w) => (
-              <Button
-                key={w}
-                variant={when === w ? "primary" : "secondary"}
-                aria-pressed={when === w}
-                onClick={() => setWhen(w)}
-              >
-                {w === "upcoming" ? "Upcoming" : "Past"}
-              </Button>
-            ))}
-          </div>
+          <SegmentedControl
+            label="Show"
+            className="kc-events__tabs"
+            options={WHEN_OPTIONS}
+            value={when}
+            onChange={setWhen}
+          />
           {loadFailed ? (
             <div className="kc-events__error" role="alert">
               <strong>Couldn&rsquo;t load events</strong>
@@ -208,25 +209,9 @@ export function EventsPage() {
       </div>
       <UnsavedChangesPrompt
         open={switchTo !== null}
-        onOpenChange={(open) => !open && !switching && setSwitchTo(null)}
+        onOpenChange={(open) => !open && setSwitchTo(null)}
         subject={guard.current?.title}
-        saveLabel={guard.current?.published ? "Save changes" : "Save draft"}
-        saving={switching}
         onKeepEditing={() => setSwitchTo(null)}
-        onSaveDraft={async () => {
-          if (!switchTo) return;
-          setSwitching(true);
-          try {
-            await guard.current?.save();
-            setSelected(switchTo.target);
-            setSwitchTo(null);
-          } catch {
-            // The editor already explained the failure; stay on this event.
-            setSwitchTo(null);
-          } finally {
-            setSwitching(false);
-          }
-        }}
         onDiscard={() => {
           if (switchTo) setSelected(switchTo.target);
           setSwitchTo(null);
@@ -252,9 +237,6 @@ export function EventsPage() {
 interface EditorGuard {
   dirty: boolean;
   title: string;
-  published: boolean;
-  /** Saves in place (keeping the event's status); throws when it fails. */
-  save: () => Promise<void>;
 }
 
 interface EditorProps {
@@ -333,9 +315,8 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
   };
 
   const published = saved?.status === "published";
-  const saveInPlace = () => save(published ? "published" : "draft");
   useEffect(() => {
-    guard.current = { dirty: form.dirty, title: v.title, published, save: saveInPlace };
+    guard.current = { dirty: form.dirty, title: v.title };
   });
   useEffect(() => () => void (guard.current = null), [guard]);
   const canDelete = canWrite && (!published || canPublish);
@@ -344,10 +325,35 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
       variant="inline"
       title={saved ? "Editing" : "New event"}
       subject={v.title || undefined}
-      saveLabel={published ? "Save changes" : "Save draft"}
       dirty={form.dirty}
       onClose={onClose}
-      onSaveDraft={saveInPlace}
+      headerActions={
+        onDelete && canDelete ? (
+          <Tooltip label="Delete event">
+            <Button
+              variant="tertiary"
+              className="kc-events__delete"
+              aria-label="Delete event"
+              disabled={saving}
+              onClick={onDelete}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5" />
+              </svg>
+            </Button>
+          </Tooltip>
+        ) : undefined
+      }
       actions={
         <>
           {published && canPublish && (
@@ -356,7 +362,7 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
                 Save changes
               </Button>
               <Button
-                variant="secondary"
+                variant="tertiary"
                 disabled={saving}
                 onClick={saveAndClose("draft", "Event unpublished")}
               >
@@ -373,7 +379,7 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
               )}
               {canWrite && (
                 <Button
-                  variant={canPublish ? "secondary" : "primary"}
+                  variant={canPublish ? "tertiary" : "primary"}
                   disabled={saving}
                   onClick={saveAndClose("draft", "Draft saved")}
                 >
@@ -381,16 +387,6 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
                 </Button>
               )}
             </>
-          )}
-          {onDelete && canDelete && (
-            <Button
-              variant="tertiary"
-              className="kc-dialog__actions-end"
-              disabled={saving}
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
           )}
         </>
       }

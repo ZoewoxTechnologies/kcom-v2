@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Button } from "./Button";
 import { Dialog, DialogActions, DialogClose } from "./Dialog";
@@ -87,7 +87,7 @@ describe("Dialog", () => {
 });
 
 describe("UnsavedChangesPrompt", () => {
-  function Host(props: { save: () => void; keep: () => void; discard: () => void }) {
+  function Host(props: { keep: () => void; discard: () => void }) {
     const [open, setOpen] = useState(false);
     return (
       <>
@@ -96,7 +96,6 @@ describe("UnsavedChangesPrompt", () => {
           open={open}
           onOpenChange={setOpen}
           subject="Conference 2027"
-          onSaveDraft={props.save}
           onKeepEditing={props.keep}
           onDiscard={props.discard}
         />
@@ -105,7 +104,7 @@ describe("UnsavedChangesPrompt", () => {
   }
 
   const setup = async () => {
-    const fns = { save: vi.fn(), keep: vi.fn(), discard: vi.fn() };
+    const fns = { keep: vi.fn(), discard: vi.fn() };
     const user = userEvent.setup();
     render(<Host {...fns} />);
     const opener = screen.getByRole("button", { name: "Close editor" });
@@ -122,12 +121,14 @@ describe("UnsavedChangesPrompt", () => {
     expect(screen.getByRole("button", { name: "Keep editing" })).toHaveFocus();
   });
 
-  it("Save draft calls onSaveDraft and closes", async () => {
-    const { fns, user } = await setup();
-    await user.click(screen.getByRole("button", { name: "Save draft" }));
-    expect(fns.save).toHaveBeenCalledTimes(1);
-    expect(fns.discard).not.toHaveBeenCalled();
-    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  it("offers only Keep editing and Discard", async () => {
+    await setup();
+    const dialog = screen.getByRole("alertdialog");
+    expect(
+      within(dialog)
+        .getAllByRole("button")
+        .map((b) => b.textContent),
+    ).toEqual(["Keep editing", "Discard"]);
   });
 
   it("Keep editing calls onKeepEditing, closes and returns focus", async () => {
@@ -142,7 +143,6 @@ describe("UnsavedChangesPrompt", () => {
     const { fns, user } = await setup();
     await user.click(screen.getByRole("button", { name: "Discard" }));
     expect(fns.discard).toHaveBeenCalledTimes(1);
-    expect(fns.save).not.toHaveBeenCalled();
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   });
 });

@@ -104,7 +104,7 @@ describe("EventsPage", () => {
     await screen.findByText("Conference");
     expect(rows()).toHaveLength(2);
     expect(rows()[0]).toHaveTextContent("Thanksgiving");
-    await userEvent.click(screen.getByRole("button", { name: "Past" }));
+    await userEvent.click(screen.getByRole("radio", { name: "Past" }));
     expect(rows()).toHaveLength(1);
     expect(rows()[0]).toHaveTextContent("Old Retreat");
   });
@@ -147,10 +147,9 @@ describe("EventsPage", () => {
     setup();
     await userEvent.click(await screen.findByText("Conference"));
     const dialog = await screen.findByRole("region", { name: "Editing" });
-    await userEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
-    await userEvent.click(
-      await screen.findByRole("button", { name: "Delete", description: undefined }),
-    );
+    await userEvent.click(within(dialog).getByRole("button", { name: "Delete event" }));
+    const confirm = await screen.findByRole("alertdialog");
+    await userEvent.click(within(confirm).getByRole("button", { name: "Delete" }));
     await waitFor(() =>
       expect(calls.some((c) => c.method === "DELETE" && c.path === "/1")).toBe(true),
     );
@@ -174,7 +173,8 @@ describe("EventsPage", () => {
     setup();
     await userEvent.click(await screen.findByText("Conference"));
     const dialog = await screen.findByRole("region", { name: "Editing" });
-    await userEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    expect(within(dialog).queryByRole("button", { name: "Cancel" })).toBeNull();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Close panel" }));
     expect(screen.queryByText("Discard your changes?")).toBeNull();
     await waitFor(() => expect(screen.queryByRole("region", { name: "Editing" })).toBeNull());
   });
@@ -240,16 +240,6 @@ describe("EventsPage editing", () => {
     expect(calls.find((c) => c.method === "PATCH")!.body).not.toHaveProperty("description");
   });
 
-  it('labels the prompt\'s save action "Save changes" for a published event', async () => {
-    setup();
-    await userEvent.click(await screen.findByText("Thanksgiving"));
-    const editor = await screen.findByRole("region", { name: "Editing" });
-    await userEvent.type(within(editor).getByLabelText(/Title/), " 2");
-    await userEvent.click(within(editor).getByRole("button", { name: "Close panel" }));
-    const prompt = await screen.findByRole("alertdialog");
-    expect(within(prompt).getByRole("button", { name: "Save changes" })).toBeInTheDocument();
-  });
-
   it("offers Retry when loading fails, instead of the empty state", async () => {
     const real = globalThis.fetch;
     vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(new Error("offline")));
@@ -265,7 +255,7 @@ describe("EventsPage editing", () => {
     await userEvent.click(await screen.findByText("Conference"));
     const editor = await screen.findByRole("region", { name: "Editing" });
     expect(within(editor).queryByRole("button", { name: "Publish" })).toBeNull();
-    expect(within(editor).queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(within(editor).queryByRole("button", { name: "Delete event" })).toBeNull();
   });
 });
 
@@ -293,15 +283,6 @@ describe("switching events with unsaved edits", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Discard" }));
     expect(await screen.findByRole("region", { name: "New event" })).toBeInTheDocument();
     expect(calls.some((c) => c.method === "PATCH")).toBe(false);
-  });
-
-  it("Save draft saves the edits, then switches", async () => {
-    setup();
-    await edit();
-    await userEvent.click(screen.getByText("Thanksgiving"));
-    await userEvent.click(await screen.findByRole("button", { name: "Save draft" }));
-    await waitFor(() => expect(calls.find((c) => c.method === "PATCH")?.path).toBe("/1"));
-    await waitFor(() => expect(screen.getByLabelText(/Title/)).toHaveValue("Thanksgiving"));
   });
 
   it("switches straight away when nothing was edited", async () => {

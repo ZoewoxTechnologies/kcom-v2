@@ -8,6 +8,8 @@ import "@kcom/ui/toast.css";
 import "@kcom/ui/data-table.css";
 import "@kcom/ui/dialog.css";
 import "@kcom/ui/menu.css";
+import "@kcom/ui/tooltip.css";
+import "@kcom/ui/segmented-control.css";
 import "@kcom/ui/forms.css";
 import "@kcom/ui/datetime-picker.css";
 import "./shell/shell.css";

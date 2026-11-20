@@ -22,7 +22,6 @@ export function EditorKitDemo() {
             form.reset();
             setOpen(false);
           }}
-          onSaveDraft={() => form.markSaved()}
           actions={<Button onClick={() => form.markSaved()}>Save</Button>}
         >
           <label>
