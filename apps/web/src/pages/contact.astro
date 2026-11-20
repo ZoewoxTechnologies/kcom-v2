@@ -52,7 +52,6 @@ const defaultTopic = "question";
           {social.length > 0 && <span class="social">{social.map((s) => <a href={s.href}>{s.label}</a>)}</span>}
         </div>
         <div class="success" role="status" id="contact-success" hidden>
-          <span class="tag">SUCCESS STATE</span>
           <span class="thanks">Thank you, <span id="success-name"></span>.</span>
           <span class="msg">Your message is with our team. We will reply within a few days.</span>
         </div>
@@ -122,7 +121,7 @@ const defaultTopic = "question";
   #topic-error { margin-block-start: -10px; }
   .kc-input, .kc-textarea { color: var(--d-input-text); border-color: var(--d-field-line); }
   .kc-input:focus-visible, .kc-textarea:focus-visible { border-color: var(--color-primary); }
-  .kc-input[aria-invalid="true"] { border-color: var(--color-error); }
+  .kc-input[aria-invalid="true"] { border-color: var(--color-error); transition: none; }
   .kc-input { block-size: auto; padding: 12px 14px; line-height: 1.4; font-size: 16px; }
   .kc-input[aria-invalid="true"] { padding: 11.5px 13.5px; }
   .kc-textarea { min-block-size: 0; font-size: 16px; }
@@ -136,7 +135,6 @@ const defaultTopic = "question";
   .social { display: flex; gap: 16px; }
   .card a { text-decoration-color: currentColor; }
   .success { background: var(--d-cover-3); border: 1px solid #9dbfa5; border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 6px; }
-  .tag { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #3f6e4c; }
   .thanks { font-family: var(--font-title); font-weight: 600; font-size: 24px; }
   .msg { font-size: 15px; }
   @media (max-width: 47.99rem) { .hero h1 { font-size: 40px; } .hero p { font-size: 18px; } form { padding: 24px; } }
