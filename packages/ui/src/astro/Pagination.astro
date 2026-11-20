@@ -26,13 +26,13 @@ const item = "kc-pagination__item";
   <nav class:list={["kc-pagination", { "kc-pagination--center": centered }]} aria-label={label}>
     {page > 1
       ? <a class={item} rel="prev" href={href(page - 1)} aria-label="Previous page"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" /></svg></a>
-      : <span class={item} aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" /></svg></span>}
+      : <span class={`${item} kc-pagination__item--disabled`} aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" /></svg></span>}
     {pageWindow(page, pages).map((n) =>
       n === null ? <span class="kc-pagination__gap" aria-hidden="true">…</span>
       : <a class={item} href={href(n)} aria-label={`Page ${n}`} aria-current={n === page ? "page" : undefined}>{n}</a>,
     )}
     {page < pages
       ? <a class={item} rel="next" href={href(page + 1)} aria-label="Next page"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6 3l5 5-5 5" /></svg></a>
-      : <span class={item} aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6 3l5 5-5 5" /></svg></span>}
+      : <span class={`${item} kc-pagination__item--disabled`} aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6 3l5 5-5 5" /></svg></span>}
   </nav>
 )}

@@ -16,7 +16,8 @@ describe("Pagination", () => {
     expect(html).toContain('rel="next"');
     expect(html).not.toContain('rel="prev"');
     expect(html).not.toContain("aria-disabled");
-    expect(html).toContain('aria-hidden="true"');
+    expect(html).toMatch(/class="[^"]*kc-pagination__item--disabled[^"]*"[^>]*aria-hidden="true"/);
+    expect(html.match(/kc-pagination__item--disabled/g)).toHaveLength(1);
   });
 
   it("centers only when asked", async () => {

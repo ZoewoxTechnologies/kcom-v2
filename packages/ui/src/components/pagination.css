@@ -56,6 +56,7 @@
       cursor: default;
     }
 
+    &.kc-pagination__item--disabled,
     &[aria-disabled="true"],
     &:disabled {
       color: var(--color-muted);
