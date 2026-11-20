@@ -2,21 +2,24 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { aboutLinks } from "../lib/about";
 
-interface Props { title: string; description: string; intro?: string; wide?: boolean }
-const { title, description, intro, wide = false } = Astro.props;
+interface Props { title: string; description: string; intro?: string }
+const { title, description, intro } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 ---
 <BaseLayout title={title} description={description} current="/about">
   <section class="band">
-    <div class="inner">
-      <span class="eyebrow">About Kingdom Capstone Outreach Ministries</span>
-      <h1>{title}</h1>
-      {intro && <p class="intro">{intro}</p>}
+    <div class:list={["inner", { quoted: Astro.slots.has("band") }]}>
+      <div class="head">
+        <span class="eyebrow">About Kingdom Capstone Outreach Ministries</span>
+        <h1>{title}</h1>
+        {intro && <p class="intro">{intro}</p>}
+      </div>
       <slot name="band" />
     </div>
   </section>
-  <div class:list={["body", { wide }]}>
+  <div class="body">
     <nav class="side" aria-label="About">
+      <span class="side-label">About</span>
       {aboutLinks.map((l) => <a href={l.href} aria-current={l.href === path ? "page" : undefined}>{l.label}</a>)}
     </nav>
     <div class="content"><slot /></div>
@@ -24,21 +27,27 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 </BaseLayout>
 <style>
   .band { background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); margin-block-start: calc(var(--space-6) * -1); padding: var(--space-6) 0; }
-  .inner { max-inline-size: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-2); }
-  .eyebrow { font-size: var(--text-sm); letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
-  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: clamp(2.25rem, 8vw, var(--text-3xl)); line-height: var(--leading-tight); }
-  .inner :global(blockquote) { margin: var(--space-3) 0 0; max-inline-size: 28rem; border-block-start: 2px solid var(--color-gold); padding-block-start: var(--space-3); font-family: var(--font-scripture); font-style: italic; font-size: var(--text-lg); line-height: 1.55; }
-  .inner :global(blockquote cite) { display: block; margin-block-start: var(--space-2); font: 700 var(--text-sm) var(--font-body); font-variant: small-caps; letter-spacing: 0.1em; color: var(--color-muted); }
-  @media (min-width: 64rem) { .inner:has(blockquote) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); column-gap: var(--space-7); align-items: center; } .inner :global(blockquote) { grid-column: 2; grid-row: 1 / span 3; margin: 0; } }
-  .intro { margin: 0; max-inline-size: 40rem; font-size: var(--text-lg); }
-  .body { max-inline-size: 70rem; margin-inline: auto; padding-block: var(--space-6) var(--space-7); display: flex; flex-direction: column; gap: var(--space-5); }
-  .side { display: flex; gap: var(--space-2); flex-wrap: wrap; font-weight: 600; }
-  .side a { color: var(--color-primary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: 10px; }
-  .side a[aria-current] { color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-line); box-shadow: inset 3px 0 0 var(--color-gold); }
-  .content { min-inline-size: 0; display: flex; flex-direction: column; gap: var(--space-5); }
+  .inner { display: flex; flex-direction: column; gap: var(--space-5); }
+  .head { display: flex; flex-direction: column; gap: var(--space-4); }
+  .eyebrow { font-size: 0.875rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: clamp(2.25rem, 8vw, 3.75rem); line-height: 1.05; }
+  .intro { margin: 0; font-size: 1.25rem; line-height: 1.6; }
+  .inner :global(blockquote) { margin: 0; border-block-start: 2px solid var(--color-gold); padding-block-start: 18px; font-family: var(--font-scripture); font-style: italic; font-size: 1.375rem; line-height: 1.55; }
+  .inner :global(blockquote cite) { display: block; margin-block-start: 10px; font: 700 0.8125rem var(--font-body); font-style: normal; font-variant: small-caps; letter-spacing: 0.1em; color: var(--color-muted); }
+  .body { padding-block: var(--space-6) var(--space-7); display: flex; flex-direction: column; gap: var(--space-5); font-size: 1.125rem; line-height: 1.7; }
+  .side { display: flex; gap: 2px; flex-wrap: wrap; font-size: 1rem; font-weight: 600; line-height: 1.4; }
+  .side-label { display: none; font-size: 0.75rem; letter-spacing: 0.12em; font-weight: 700; color: var(--color-muted); text-transform: uppercase; margin-block-end: var(--space-2); }
+  .side a { color: var(--color-primary); text-decoration: none; padding: 12px 14px; border-radius: 10px; }
+  .side a[aria-current] { color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-line); border-inline-start: 0; box-shadow: inset 3px 0 0 var(--color-gold); }
+  .content { min-inline-size: 0; display: flex; flex-direction: column; gap: 22px; }
+  @media (min-width: 48rem) { .band { padding-block: 64px; } }
   @media (min-width: 64rem) {
-    .body { flex-direction: row; gap: var(--space-7); padding-block-start: var(--space-7); }
-    .side { flex-direction: column; flex: 0 0 14rem; gap: 2px; }
+    .inner.quoted { flex-direction: row; align-items: center; gap: 48px; }
+    .inner.quoted .head { flex: 1 1 480px; min-inline-size: 0; }
+    .inner.quoted :global(blockquote) { flex: 1 1 360px; }
+    .body { flex-direction: row; align-items: flex-start; gap: 56px; padding-block-start: 56px; }
+    .side { flex-direction: column; flex: 0 0 220px; flex-wrap: nowrap; }
+    .side-label { display: block; }
     .content { flex: 1; }
   }
 </style>
