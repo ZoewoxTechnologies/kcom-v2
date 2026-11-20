@@ -32,12 +32,13 @@ const bank = bankRows(sampleSettings);
           <span class="kicker">Give by bank transfer</span>
           <h2 id="bank">Bank details</h2>
           <dl>{bank.map((r) => <><dt>{r.label}</dt><dd><span>{r.value}</span>
-            <span class="kc-tooltip"><button type="button" class="kc-btn kc-btn--tertiary kc-btn--sm copy" data-copy={r.value} aria-label={`Copy ${r.label}`}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg></button><span class="kc-tooltip__bubble" role="status" hidden>Copied</span></span></dd></>)}</dl>
+            <span class="kc-tooltip"><button type="button" class="kc-btn kc-btn--tertiary kc-btn--sm copy" data-copy={r.value} aria-label={`Copy ${r.label}`}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg></button><span class="kc-tooltip__bubble" aria-hidden="true" hidden>Copied</span></span></dd></>)}</dl>
+          <span id="copy-status" class="sr-only" role="status" aria-live="polite"></span>
           <p class="note">Please use your name and “Partner” as the transfer reference so we can thank you.</p>
         </section>
       )}
       <section class="panel soon" aria-labelledby="online">
-        <span class="kicker">Coming in a later release</span>
+        <span class="kicker">Coming soon</span>
         <h2 id="online">Give online</h2>
         <p>Card and recurring giving will appear here, using the gold Give button.</p>
         <button type="button" class="kc-btn kc-btn--give kc-btn--sm" disabled>Give</button>
@@ -61,12 +62,29 @@ const bank = bankRows(sampleSettings);
   </div>
 </BaseLayout>
 <script>
+  const status = document.getElementById("copy-status");
+  async function copyText(text: string): Promise<boolean> {
+    try { await navigator.clipboard.writeText(text); return true; } catch { /* fall back below */ }
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.cssText = "position:fixed;opacity:0";
+    document.body.append(area);
+    area.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch { /* unsupported */ }
+    area.remove();
+    return ok;
+  }
   document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((btn) => {
     const bubble = btn.nextElementSibling as HTMLElement;
+    let timer: number | undefined;
     btn.addEventListener("click", async () => {
-      try { await navigator.clipboard.writeText(btn.dataset.copy ?? ""); } catch { return; }
+      if (!(await copyText(btn.dataset.copy ?? ""))) return;
       bubble.hidden = false;
-      setTimeout(() => (bubble.hidden = true), 1500);
+      if (status) { status.textContent = ""; requestAnimationFrame(() => (status.textContent = "Copied")); }
+      clearTimeout(timer);
+      timer = window.setTimeout(() => { bubble.hidden = true; if (status) status.textContent = ""; }, 1500);
     });
   });
 </script>
