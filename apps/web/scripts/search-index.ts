@@ -1,7 +1,9 @@
 /**
  * Builds the Pagefind index into dist/client/pagefind after `astro build`.
- * Reads the public API at PUBLIC_API_URL; without it (CI, Docker builds) only the About pages
- * are indexed. Published content is only searchable after the next build and deploy.
+ * Reads the public API at PUBLIC_API_URL and fails if it is unset or unreachable, so a partial
+ * index never ships. SEARCH_INDEX_PARTIAL_OK=true (CI verification builds) allows an index of the
+ * About pages alone when PUBLIC_API_URL is unset. Published content is only searchable after the
+ * next build and deploy.
  */
 import { createIndex } from "pagefind";
 import { aboutRecords, blogRecord, bookRecord, capsuleRecord, eventRecord, seriesRecord, type SearchRecord } from "../src/lib/search-index.ts";
@@ -28,6 +30,9 @@ async function all(path: string): Promise<Record<string, unknown>[]> {
 async function records(): Promise<SearchRecord[]> {
   const out = [...aboutRecords];
   if (!base) {
+    if (process.env.SEARCH_INDEX_PARTIAL_OK !== "true") {
+      throw new Error("PUBLIC_API_URL is not set, so the search index would hold only the About pages. Set it, or SEARCH_INDEX_PARTIAL_OK=true for a throwaway build.");
+    }
     console.warn("[search] PUBLIC_API_URL not set: indexing About pages only");
     return out;
   }
