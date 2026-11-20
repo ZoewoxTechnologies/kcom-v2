@@ -39,22 +39,25 @@ export const capsuleStatus = z.enum(["draft", "scheduled", "published"]);
 /** Rich text is a JSON document (editor-agnostic). */
 const richText = z.record(z.string(), z.unknown());
 
+/** Maximum lengths of the capsule text fields; the API and the migration both use these. */
+export const CAPSULE_LIMITS = { title: 200, scriptureRef: 200, authorSource: 200, bibleMeditation: 500 } as const;
+
 export const capsuleSchema = z.object({
   ...base,
   slug,
-  title: z.string().trim().min(1),
+  title: z.string().trim().min(1).max(CAPSULE_LIMITS.title),
   status: capsuleStatus,
   /** Go-live instant. Defaults to the next midnight Africa/Lagos (see nextLagosMidnight). */
   publishAt: z.coerce.date(),
-  scriptureRef: z.string().nullable().default(null),
+  scriptureRef: z.string().max(CAPSULE_LIMITS.scriptureRef).nullable().default(null),
   scriptureText: richText.nullable().default(null),
   body: richText,
   decrees: z.array(z.string()).default([]),
   prayer: richText.nullable().default(null),
   /** Passages to read and meditate on today. */
-  bibleMeditation: z.string().nullable().default(null),
+  bibleMeditation: z.string().max(CAPSULE_LIMITS.bibleMeditation).nullable().default(null),
   /** Display credit, e.g. "Adetokunbo O. Ilesanmi (Meditations)". */
-  authorSource: z.string().nullable().default(null),
+  authorSource: z.string().max(CAPSULE_LIMITS.authorSource).nullable().default(null),
   seriesId: id.nullable().default(null),
   partNumber: z.number().int().positive().nullable().default(null),
   legacyNid: z.number().int().nullable().default(null),

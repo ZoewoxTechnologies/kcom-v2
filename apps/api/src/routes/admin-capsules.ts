@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { and, count, desc, eq, ne } from "drizzle-orm";
 import { z } from "zod";
-import { nextLagosMidnight, slug } from "@kcom/content";
+import { CAPSULE_LIMITS, nextLagosMidnight, slug } from "@kcom/content";
 import { capsules, type CapsuleDb } from "@kcom/db";
 import {
   assertCanChange,
@@ -23,15 +23,15 @@ const text = (max: number) => z.string().trim().max(max);
 const optionalText = (max: number) => text(max).min(1).nullable();
 
 const fields = {
-  title: text(200).min(1),
+  title: text(CAPSULE_LIMITS.title).min(1),
   slug,
-  scriptureRef: optionalText(200),
+  scriptureRef: optionalText(CAPSULE_LIMITS.scriptureRef),
   scriptureText: richTextSchema.nullable(),
   body: richTextSchema,
   decrees: z.array(text(1000).min(1)).max(20),
   prayer: richTextSchema.nullable(),
-  bibleMeditation: optionalText(500),
-  authorSource: optionalText(200),
+  bibleMeditation: optionalText(CAPSULE_LIMITS.bibleMeditation),
+  authorSource: optionalText(CAPSULE_LIMITS.authorSource),
   seriesId: z.uuid().nullable(),
   partNumber: z.number().int().positive().nullable(),
   status: publishStatus,

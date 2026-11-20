@@ -252,6 +252,10 @@ importers:
         version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
 
   packages/migrate:
+    dependencies:
+      '@kcom/content':
+        specifier: workspace:*
+        version: link:../content
     devDependencies:
       '@kcom/config':
         specifier: workspace:*
@@ -262,6 +266,9 @@ importers:
       eslint:
         specifier: ^10.14.0
         version: 10.14.0
+      tsx:
+        specifier: ^4.19.2
+        version: 4.23.15
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
