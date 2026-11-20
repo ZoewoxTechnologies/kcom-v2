@@ -184,6 +184,16 @@ describe("EventsPage", () => {
     });
   });
 
+  it("keeps a linked post that is missing from the post list", async () => {
+    store[0] = make({ id: "1", title: "Conference", relatedPostId: "old" });
+    setup();
+    await userEvent.click(await screen.findByText("Conference"));
+    const dialog = await screen.findByRole("region", { name: "Editing" });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save draft" }));
+    await waitFor(() => expect(calls.find((c) => c.method === "PATCH")).toBeTruthy());
+    expect(calls.find((c) => c.method === "PATCH")!.body).toMatchObject({ relatedPostId: "old" });
+  });
+
   it("deletes after confirming", async () => {
     setup();
     await userEvent.click(await screen.findByText("Conference"));

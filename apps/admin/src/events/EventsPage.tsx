@@ -286,6 +286,13 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
   useEffect(() => {
     listPostOptions().then(setPosts, () => setPosts([]));
   }, []);
+  // The list is capped, so an older linked post may be missing from it. Keep it selectable
+  // so saving never clears the link.
+  const linked = event?.relatedPostId;
+  const options =
+    linked && !posts.some((p) => p.id === linked)
+      ? [...posts, { id: linked, title: "Linked post" }]
+      : posts;
   const v = form.value;
   const set = (patch: Partial<Form>) => form.setValue({ ...form.value, ...patch });
 
@@ -504,7 +511,7 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
           onChange={(e) => set({ relatedPostId: e.target.value })}
         >
           <option value="">None</option>
-          {posts.map((p) => (
+          {options.map((p) => (
             <option key={p.id} value={p.id}>
               {p.title}
             </option>

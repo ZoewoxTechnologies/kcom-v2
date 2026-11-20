@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { eventWhen, programmeRows } from "./event-page";
+import { calendarHref, directionsHref, eventBadge, eventWhen, programmeRows } from "./event-page";
 
 describe("eventWhen", () => {
   it("spans days, hides times for all day, shows times otherwise", () => {
@@ -26,5 +26,28 @@ describe("programmeRows", () => {
       { time: "", item: "Closing" },
     ]);
     expect(programmeRows(null)).toEqual([]);
+  });
+});
+
+describe("badge, calendar and directions", () => {
+  it("builds the badge in Lagos time", () => {
+    expect(eventBadge("2027-03-12T17:00:00Z")).toEqual({ month: "MAR", day: "12", year: "2027" });
+  });
+  it("builds an ics link and a maps link", () => {
+    const e = {
+      slug: "c",
+      title: "A, B",
+      startsAt: "2027-03-12T17:00:00.000Z",
+      endsAt: null,
+      allDay: false,
+      place: "Hall",
+    };
+    const ics = decodeURIComponent(calendarHref(e).split(",").slice(1).join(","));
+    expect(ics).toContain("DTSTART:20270312T170000Z");
+    expect(ics).toContain("SUMMARY:A\\, B");
+    expect(decodeURIComponent(calendarHref({ ...e, allDay: true }))).toContain(
+      "DTSTART;VALUE=DATE:20270312",
+    );
+    expect(directionsHref("A B")).toContain("query=A%20B");
   });
 });
