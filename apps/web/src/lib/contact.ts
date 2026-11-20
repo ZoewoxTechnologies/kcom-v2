@@ -1,3 +1,5 @@
+import { contactTopics, type ContactTopic } from "@kcom/db/contact-topics";
+
 /** Shaped like the future settings API; replace `contactSettings` with that fetch when it lands. */
 export interface ContactSettings {
   email: string | null;
@@ -23,15 +25,18 @@ export const contactRows = (s: ContactSettings): Row[] =>
   ([["Email", s.email], ["Phone / WhatsApp", s.phone], ["Address", s.address]] as [string, string | null][])
     .flatMap(([label, v]) => (v?.trim() ? [{ label, value: v.trim() }] : []));
 
-export const topics = [
-  { value: "question", label: "A question", message: "Your question" },
-  { value: "prayer", label: "A prayer request", message: "Your prayer request" },
-  { value: "testimony", label: "A testimony", message: "Your testimony" },
-  { value: "invitation", label: "Invitation to minister", message: "Your invitation" },
-  { value: "other", label: "Other", message: "Your message" },
-] as const;
+const topicCopy: Record<ContactTopic, { label: string; message: string }> = {
+  question: { label: "A question", message: "Your question" },
+  prayer: { label: "A prayer request", message: "Your prayer request" },
+  testimony: { label: "A testimony", message: "Your testimony" },
+  invitation: { label: "Invitation to minister", message: "Your invitation" },
+  other: { label: "Other", message: "Your message" },
+};
 
-export type Topic = (typeof topics)[number]["value"];
+/** Topics in display order; the values come from the shared DB list. */
+export const topics = contactTopics.map((value) => ({ value, ...topicCopy[value] }));
+
+export type Topic = ContactTopic;
 
 export interface ContactInput { topic: string; name: string; email: string; message: string }
 export type ContactErrors = Partial<Record<"topic" | "name" | "email" | "message", string>>;

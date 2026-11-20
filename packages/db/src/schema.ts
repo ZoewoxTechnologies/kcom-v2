@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { contactTopics } from "./contact-topics.js";
 import { userRoles, type UserRole } from "@kcom/permissions";
 import {
   bigint,
@@ -371,13 +372,7 @@ export const events = pgTable(
   ],
 );
 
-export const contactTopic = pgEnum("contact_topic", [
-  "question",
-  "prayer",
-  "testimony",
-  "invitation",
-  "other",
-]);
+export const contactTopic = pgEnum("contact_topic", contactTopics);
 export const contactMessageStatus = pgEnum("contact_message_status", ["new", "read"]);
 
 export const contactMessages = pgTable(
