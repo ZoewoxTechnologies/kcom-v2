@@ -88,7 +88,7 @@ export function createApp(
     .route("/admin", adminRoutes(db, authInstance, capsuleEvents, cloudinary))
     .route("/internal", internalRoutes(db, capsuleEvents, internalToken))
     .route("/users", userRoutes(db, authInstance))
-    .route("/api/auth", authRoutes(authInstance));
+    .route("/api/auth", authRoutes(authInstance, trustedProxyHops));
 }
 
 export type App = ReturnType<typeof createApp>;
