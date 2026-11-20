@@ -41,8 +41,7 @@ const defaultTopic = "question";
         </div>
         <label class="kc-choice" id="private-row" hidden><input type="checkbox" name="private" checked />Keep my request private to the prayer team</label>
         <div class="actions">
-          <button class="kc-btn kc-btn--primary kc-btn--sm" type="submit" disabled>Send message</button>
-          <span class="note">Sending opens soon. For now, please use the contact details alongside.</span>
+          <button class="kc-btn kc-btn--primary kc-btn--sm" type="submit">Send message</button>
         </div>
       </form>
       <aside>
@@ -99,7 +98,7 @@ const defaultTopic = "question";
     keys.forEach((k) => show(k, errors[k]));
     const first = keys.find((k) => errors[k]);
     if (first) { (first === "topic" ? form.querySelector<HTMLInputElement>('input[name="topic"]') : field(first))?.focus(); return; }
-    // The send request is wired up with the email provider; until then the button stays disabled.
+    // TODO: POST the validated values to the contact API endpoint once it exists, and show the error state on failure.
     document.getElementById("success-name")!.textContent = values().name.trim().split(/\s+/)[0];
     document.getElementById("contact-success")!.hidden = false;
   });
@@ -128,7 +127,6 @@ const defaultTopic = "question";
   #private-row { min-block-size: 0; gap: 10px; font-size: 15px; line-height: 1.65; }
   #private-row[hidden], [hidden] { display: none; }
   .actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .note { font-size: 13px; color: var(--color-muted); line-height: 1.65; }
   aside { flex: 2 1 300px; min-inline-size: 0; display: flex; flex-direction: column; gap: 20px; }
   .card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 14px; padding: 28px; display: flex; flex-direction: column; gap: 10px; font-size: 16px; }
   .card h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 28px; line-height: 1.65; }
