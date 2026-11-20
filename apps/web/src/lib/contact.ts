@@ -55,6 +55,10 @@ export type ContactResult =
   | { ok: true }
   | { ok: false; fieldErrors: ContactErrors; message: string };
 
+export const RATE_LIMITED = "You have sent several messages recently. Please try again later.";
+/** Spam-protection field sent with the message: the hidden honeypot. */
+export interface SpamFields { hp_url?: string }
+
 export const SEND_FAILED = "Sorry, your message could not be sent. Please try again in a moment.";
 
 /** POST the message to the API. Only a 2xx response is `ok`; everything else, including network errors, is a failure. */
@@ -62,9 +66,10 @@ export async function submitContact(
   apiUrl: string | undefined,
   input: ContactInput,
   keepPrivate: boolean,
+  spam: SpamFields = {},
   fetcher: typeof fetch = fetch,
 ): Promise<ContactResult> {
-  const fail = (fieldErrors: ContactErrors = {}): ContactResult => ({ ok: false, fieldErrors, message: SEND_FAILED });
+  const fail = (fieldErrors: ContactErrors = {}, message = SEND_FAILED): ContactResult => ({ ok: false, fieldErrors, message });
   if (!apiUrl) return fail();
   try {
     const res = await fetcher(`${apiUrl.replace(/\/+$/, "")}/contact`, {
@@ -76,6 +81,7 @@ export async function submitContact(
         email: input.email.trim(),
         message: input.message.trim(),
         keepPrivate,
+        ...(spam.hp_url ? { hp_url: spam.hp_url } : {}),
       }),
     });
     if (res.ok) return { ok: true };
@@ -87,6 +93,7 @@ export async function submitContact(
       }
       return fail(fieldErrors);
     }
+    if (res.status === 429) return fail({}, RATE_LIMITED);
     return fail();
   } catch {
     return fail();

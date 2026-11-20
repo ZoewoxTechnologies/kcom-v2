@@ -27,6 +27,8 @@ export type AppOptions = {
   /** Bearer token for /internal (Cloud Scheduler). Unset disables /internal. */
   internalToken?: string;
   cloudinary?: CloudinaryConfig;
+  /** Trusted reverse-proxy hops in front of the API, for client-IP lookup in x-forwarded-for. Default 1. */
+  trustedProxyHops?: number;
 };
 
 export function createApp(
@@ -37,6 +39,7 @@ export function createApp(
     capsuleEvents = createCapsuleEvents(),
     internalToken,
     cloudinary,
+    trustedProxyHops,
   }: AppOptions = {},
 ) {
   const publicCors = cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] });
@@ -77,7 +80,7 @@ export function createApp(
     .route("/blog", blogRoutes(db))
     .route("/books", bookRoutes(db))
     .route("/capsules", capsuleRoutes(db))
-    .route("/contact", contactRoutes(db))
+    .route("/contact", contactRoutes(db, trustedProxyHops))
     .route("/events", eventRoutes(db))
     .route("/series", seriesRoutes(db))
     .route("/pages", pageRoutes(db))
