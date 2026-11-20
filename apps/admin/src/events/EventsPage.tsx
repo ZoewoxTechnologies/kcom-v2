@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Badge,
   Button,
   ConfirmDialog,
+  UnsavedChangesPrompt,
   DataTable,
   DateTimePicker,
   TextareaField,
@@ -77,6 +78,15 @@ export function EventsPage() {
   const [when, setWhen] = useState<When>("upcoming");
   /** "new", an event id, or null when nothing is selected. */
   const [selected, setSelected] = useState<string | "new" | null>(null);
+  /** The open editor reports its unsaved state here, so switching events can ask first. */
+  const guard = useRef<EditorGuard | null>(null);
+  const [switchTo, setSwitchTo] = useState<{ target: string | "new" } | null>(null);
+  const [switching, setSwitching] = useState(false);
+  const select = (target: string | "new") => {
+    if (target === selected) return;
+    if (guard.current?.dirty) setSwitchTo({ target });
+    else setSelected(target);
+  };
   const [deleting, setDeleting] = useState<EventRecord | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -137,7 +147,7 @@ export function EventsPage() {
     <section className="kc-events">
       <header className="kc-events__head">
         <h1>Events</h1>
-        <Button onClick={() => setSelected("new")}>New event</Button>
+        <Button onClick={() => select("new")}>New event</Button>
       </header>
       <div className="kc-events__body">
         <div className="kc-events__list">
@@ -169,7 +179,7 @@ export function EventsPage() {
               rows={shown}
               getRowId={(e) => e.id}
               selectedRowId={editing?.id ?? null}
-              onRowClick={(e) => setSelected(e.id)}
+              onRowClick={(e) => select(e.id)}
               emptyTitle={when === "upcoming" ? "No upcoming events" : "No past events"}
               emptyMessage="Create an event to see it here."
             />
@@ -180,6 +190,7 @@ export function EventsPage() {
             <EventEditor
               key={selected}
               event={editing ?? null}
+              guard={guard}
               onClose={() => setSelected(null)}
               onSaved={async () => {
                 await load();
@@ -190,11 +201,37 @@ export function EventsPage() {
             <aside className="kc-events__empty">
               <h2>No event selected</h2>
               <p>Pick an event on the left to edit it, or start a new one.</p>
-              <Button onClick={() => setSelected("new")}>New event</Button>
+              <Button onClick={() => select("new")}>New event</Button>
             </aside>
           )}
         </div>
       </div>
+      <UnsavedChangesPrompt
+        open={switchTo !== null}
+        onOpenChange={(open) => !open && !switching && setSwitchTo(null)}
+        subject={guard.current?.title}
+        saveLabel={guard.current?.published ? "Save changes" : "Save draft"}
+        saving={switching}
+        onKeepEditing={() => setSwitchTo(null)}
+        onSaveDraft={async () => {
+          if (!switchTo) return;
+          setSwitching(true);
+          try {
+            await guard.current?.save();
+            setSelected(switchTo.target);
+            setSwitchTo(null);
+          } catch {
+            // The editor already explained the failure; stay on this event.
+            setSwitchTo(null);
+          } finally {
+            setSwitching(false);
+          }
+        }}
+        onDiscard={() => {
+          if (switchTo) setSelected(switchTo.target);
+          setSwitchTo(null);
+        }}
+      />
       <ConfirmDialog
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
@@ -211,14 +248,24 @@ export function EventsPage() {
   );
 }
 
+/** What the page needs from the open editor to guard switching events. */
+interface EditorGuard {
+  dirty: boolean;
+  title: string;
+  published: boolean;
+  /** Saves in place (keeping the event's status); throws when it fails. */
+  save: () => Promise<void>;
+}
+
 interface EditorProps {
+  guard: { current: EditorGuard | null };
   event: EventRecord | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
   onDelete?: () => void;
 }
 
-function EventEditor({ event, onClose, onSaved, onDelete }: EditorProps) {
+function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const canWrite = !!user && can(user.role, "content:write");
@@ -286,6 +333,11 @@ function EventEditor({ event, onClose, onSaved, onDelete }: EditorProps) {
   };
 
   const published = saved?.status === "published";
+  const saveInPlace = () => save(published ? "published" : "draft");
+  useEffect(() => {
+    guard.current = { dirty: form.dirty, title: v.title, published, save: saveInPlace };
+  });
+  useEffect(() => () => void (guard.current = null), [guard]);
   const canDelete = canWrite && (!published || canPublish);
   return (
     <EditorContainer
@@ -295,7 +347,7 @@ function EventEditor({ event, onClose, onSaved, onDelete }: EditorProps) {
       saveLabel={published ? "Save changes" : "Save draft"}
       dirty={form.dirty}
       onClose={onClose}
-      onSaveDraft={() => save(published ? "published" : "draft")}
+      onSaveDraft={saveInPlace}
       actions={
         <>
           {published && canPublish && (

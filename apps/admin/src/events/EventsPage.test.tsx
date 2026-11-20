@@ -269,6 +269,50 @@ describe("EventsPage editing", () => {
   });
 });
 
+describe("switching events with unsaved edits", () => {
+  const edit = async () => {
+    await userEvent.click(await screen.findByText("Conference"));
+    const editor = await screen.findByRole("region", { name: "Editing" });
+    await userEvent.type(within(editor).getByLabelText(/Title/), " 2");
+    return editor;
+  };
+
+  it("asks before another row replaces the editor, and Keep editing stays put", async () => {
+    setup();
+    await edit();
+    await userEvent.click(screen.getByText("Thanksgiving"));
+    expect(await screen.findByText("Discard your changes?")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Keep editing" }));
+    expect(screen.getByLabelText(/Title/)).toHaveValue("Conference 2");
+  });
+
+  it("Discard switches to the chosen event without saving", async () => {
+    setup();
+    await edit();
+    await userEvent.click(screen.getAllByRole("button", { name: "New event" })[0]!);
+    await userEvent.click(await screen.findByRole("button", { name: "Discard" }));
+    expect(await screen.findByRole("region", { name: "New event" })).toBeInTheDocument();
+    expect(calls.some((c) => c.method === "PATCH")).toBe(false);
+  });
+
+  it("Save draft saves the edits, then switches", async () => {
+    setup();
+    await edit();
+    await userEvent.click(screen.getByText("Thanksgiving"));
+    await userEvent.click(await screen.findByRole("button", { name: "Save draft" }));
+    await waitFor(() => expect(calls.find((c) => c.method === "PATCH")?.path).toBe("/1"));
+    await waitFor(() => expect(screen.getByLabelText(/Title/)).toHaveValue("Thanksgiving"));
+  });
+
+  it("switches straight away when nothing was edited", async () => {
+    setup();
+    await userEvent.click(await screen.findByText("Conference"));
+    await userEvent.click(screen.getByText("Thanksgiving"));
+    expect(screen.queryByText("Discard your changes?")).toBeNull();
+    await waitFor(() => expect(screen.getByLabelText(/Title/)).toHaveValue("Thanksgiving"));
+  });
+});
+
 describe("formatEventDates", () => {
   it("formats single days and ranges", () => {
     expect(formatEventDates("2026-12-06T10:00:00Z", null)).toBe("6 Dec 2026");
