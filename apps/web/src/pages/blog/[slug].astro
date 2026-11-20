@@ -16,7 +16,7 @@ const html = richTextToHtml(post.body);
 const description = post.excerpt ?? (richTextToPlain(post.body).slice(0, 160) || undefined);
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title={post.title} description={description} current="/blog">
+<BaseLayout title={post.title} description={description} current="/blog" hideSignup>
   <article class="post">
     <nav class="crumbs" aria-label="Breadcrumb">
       <a href="/blog">Blog</a>{post.tags[0] && <> / {post.tags[0]}</>}
