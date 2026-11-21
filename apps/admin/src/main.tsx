@@ -20,6 +20,7 @@ import "./shell/shell.css";
 import "./editor/editor.css";
 import "./events/events.css";
 import "./capsules/capsules.css";
+import "./blog/blog.css";
 import "./dashboard/dashboard.css";
 import "./inbox/inbox.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
