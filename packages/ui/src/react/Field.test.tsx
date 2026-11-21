@@ -24,6 +24,16 @@ describe("TextField", () => {
     expect(html).toContain(`id="${id}"`);
   });
 
+  it("renders an intro above the input and links it first in aria-describedby", () => {
+    const html = renderToStaticMarkup(
+      <TextField label="Verse" intro="Read this first" help="After" />,
+    );
+    const introId = /<p id="([^"]+)"[^>]*>Read this first/.exec(html)?.[1];
+    expect(introId).toBeTruthy();
+    expect(html.indexOf("Read this first")).toBeLessThan(html.indexOf("<input"));
+    expect(html).toMatch(new RegExp(`aria-describedby="${introId} [^"]+"`));
+  });
+
   it("links help and error through aria-describedby and flags invalid", () => {
     const html = renderToStaticMarkup(
       <TextField label="Email" help="We never share it" error="Enter a full email" />,

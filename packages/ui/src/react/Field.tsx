@@ -18,6 +18,8 @@ export interface ControlProps {
 export interface FieldProps {
   label: ReactNode;
   help?: ReactNode;
+  /** Text between the label and the control, for instructions that must be read before typing. */
+  intro?: ReactNode;
   error?: ReactNode;
   required?: boolean;
   /** Show an "(optional)" marker. Ignored when required. */
@@ -28,11 +30,21 @@ export interface FieldProps {
 }
 
 /** Label, control, help and error text, wired with label/for, aria-describedby and aria-invalid. */
-export function Field({ label, help, error, required, optional, className, children }: FieldProps) {
+export function Field({
+  label,
+  help,
+  intro,
+  error,
+  required,
+  optional,
+  className,
+  children,
+}: FieldProps) {
   const id = useId();
+  const introId = intro ? `${id}-intro` : undefined;
   const helpId = help ? `${id}-help` : undefined;
   const errorId = error ? `${id}-error` : undefined;
-  const describedBy = [helpId, errorId].filter(Boolean).join(" ") || undefined;
+  const describedBy = [introId, helpId, errorId].filter(Boolean).join(" ") || undefined;
   return (
     <div className={cx("kc-field", className)}>
       <label className="kc-label" htmlFor={id}>
@@ -40,6 +52,11 @@ export function Field({ label, help, error, required, optional, className, child
         {required && <span aria-hidden="true"> *</span>}
         {!required && optional && <span className="kc-field__marker"> (optional)</span>}
       </label>
+      {intro && (
+        <p id={introId} className="kc-field__help">
+          {intro}
+        </p>
+      )}
       {children({
         id,
         "aria-describedby": describedBy,
@@ -60,7 +77,7 @@ export function Field({ label, help, error, required, optional, className, child
   );
 }
 
-type FieldChrome = Pick<FieldProps, "label" | "help" | "error" | "optional">;
+type FieldChrome = Pick<FieldProps, "label" | "help" | "intro" | "error" | "optional">;
 
 export type ControlSize = "sm" | "md" | "lg";
 
@@ -70,6 +87,7 @@ export type TextFieldProps = FieldChrome &
 export function TextField({
   label,
   help,
+  intro,
   error,
   optional,
   className,
@@ -81,6 +99,7 @@ export function TextField({
     <Field
       label={label}
       help={help}
+      intro={intro}
       error={error}
       optional={optional}
       required={required}
@@ -104,6 +123,7 @@ export type TextareaFieldProps = FieldChrome & TextareaHTMLAttributes<HTMLTextAr
 export function TextareaField({
   label,
   help,
+  intro,
   error,
   optional,
   className,
@@ -114,6 +134,7 @@ export function TextareaField({
     <Field
       label={label}
       help={help}
+      intro={intro}
       error={error}
       optional={optional}
       required={required}
@@ -130,6 +151,7 @@ export type SelectFieldProps = FieldChrome &
 export function SelectField({
   label,
   help,
+  intro,
   error,
   optional,
   className,
@@ -142,6 +164,7 @@ export function SelectField({
     <Field
       label={label}
       help={help}
+      intro={intro}
       error={error}
       optional={optional}
       required={required}

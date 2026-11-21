@@ -14,7 +14,7 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { BlogEditorPage } from "./blog/BlogEditorPage";
 import { BlogPage } from "./blog/BlogPage";
 import { CalendarPage } from "./capsules/CalendarPage";
-import { CapsuleEditorStubPage } from "./capsules/CapsuleEditorStubPage";
+import { CapsuleEditorPage } from "./capsules/CapsuleEditorPage";
 import { CapsulesPage } from "./capsules/CapsulesPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { SignInPage } from "./pages/SignInPage";
@@ -44,8 +44,8 @@ export function App() {
               <Route path="profile" element={<PlaceholderPage title="Profile" />} />
               <Route element={<RequirePermission permission="content:read" />}>
                 <Route path="capsules" element={<CapsulesPage />} />
-                <Route path="capsules/new" element={<CapsuleEditorStubPage isNew />} />
-                <Route path="capsules/:id" element={<CapsuleEditorStubPage />} />
+                <Route path="capsules/new" element={<CapsuleEditorPage isNew />} />
+                <Route path="capsules/:id" element={<CapsuleEditorPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="blog" element={<BlogPage />} />
                 <Route path="blog/new" element={<BlogEditorPage isNew />} />
