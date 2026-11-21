@@ -15,6 +15,10 @@ describe("permissions", () => {
     expect(can("editor", "prayer:read")).toBe(true);
     expect(can("admin", "prayer:read")).toBe(true);
   });
+  it("keeps the subscriber export to admins", () => {
+    expect(can("admin", "subscribers:export")).toBe(true);
+    expect(can("editor", "subscribers:export")).toBe(false);
+  });
   it("fails closed for anything that is not a known role", () => {
     for (const bad of ["owner", "", undefined, null, "toString", "__proto__", "constructor"]) {
       for (const p of permissions) expect(can(bad as unknown as UserRole, p)).toBe(false);
