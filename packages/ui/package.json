@@ -14,6 +14,7 @@
     "./toast.css": "./src/components/toast.css",
     "./pagination.css": "./src/components/pagination.css",
     "./data-table.css": "./src/components/data-table.css",
+    "./compact-list.css": "./src/components/compact-list.css",
     "./dialog.css": "./src/components/dialog.css",
     "./menu.css": "./src/components/menu.css",
     "./tooltip.css": "./src/components/tooltip.css",

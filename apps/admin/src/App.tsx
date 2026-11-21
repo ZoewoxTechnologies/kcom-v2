@@ -7,6 +7,7 @@ import { navItems } from "./shell/nav";
 import { Shell } from "./shell/Shell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { EventsPage } from "./events/EventsPage";
+import { InboxPage } from "./inbox/InboxPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { CalendarPage } from "./capsules/CalendarPage";
@@ -20,7 +21,10 @@ const BUILT = new Set(["/", "/capsules", "/calendar"]);
 const sections = navItems.filter((item) => !BUILT.has(item.path));
 
 /** Pages built so far, by nav path. Sections not listed show the placeholder. */
-const pages: Partial<Record<string, ReactElement>> = { "/events": <EventsPage /> };
+const pages: Partial<Record<string, ReactElement>> = {
+  "/events": <EventsPage />,
+  "/inbox": <InboxPage />,
+};
 
 export function App() {
   return (

@@ -16,6 +16,7 @@ export const navItems: readonly NavItem[] = [
   { label: "Blog", path: "/blog", permission: "content:read" },
   { label: "Events", path: "/events", permission: "content:read" },
   { label: "Books", path: "/books", permission: "content:read" },
+  { label: "Inbox", path: "/inbox", permission: "inbox:read" },
   { label: "Subscribers", path: "/subscribers", permission: "content:read" },
   { label: "Users", path: "/users", permission: "users:manage" },
   { label: "Settings", path: "/settings", permission: "users:manage" },

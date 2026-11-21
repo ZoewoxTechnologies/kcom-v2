@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { contactTopics } from "./contact-topics.js";
 import { userRoles, type UserRole } from "@kcom/permissions";
 import {
   bigint,
@@ -216,6 +217,7 @@ export const siteSettings = pgTable(
     siteName: text("site_name").notNull(),
     tagline: text("tagline"),
     contactEmail: text("contact_email"),
+    contactPhone: text("contact_phone"),
     copyrightText: text("copyright_text"),
     footerTagline: text("footer_tagline"),
     postalAddress: text("postal_address"),
@@ -228,6 +230,7 @@ export const siteSettings = pgTable(
     bankName: text("bank_name"),
     bankAccountName: text("bank_account_name"),
     bankAccountNumber: text("bank_account_number"),
+    bankSortOrSwift: text("bank_sort_or_swift"),
     givingNote: text("giving_note"),
     updatedAt: updatedAt(),
   },
@@ -355,6 +358,12 @@ export const events = pgTable(
     place: text("place"),
     description: jsonb("description").$type<RichText>(),
     imageUrl: text("image_url"),
+    allDay: boolean("all_day").notNull().default(false),
+    /** Where to join online; set means the event is also online. */
+    onlineUrl: text("online_url"),
+    /** One "time · item" line per entry. */
+    programme: text("programme"),
+    relatedPostId: uuid("related_post_id").references(() => blogPosts.id, { onDelete: "set null" }),
     status: publishStatus("status").notNull().default("draft"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -364,3 +373,45 @@ export const events = pgTable(
     check("events_ends_after_start", sql`${t.endsAt} IS NULL OR ${t.endsAt} >= ${t.startsAt}`),
   ],
 );
+
+export const contactTopic = pgEnum("contact_topic", contactTopics);
+export const contactMessageStatus = pgEnum("contact_message_status", ["new", "read"]);
+
+export const contactMessages = pgTable(
+  "contact_messages",
+  {
+    id: id(),
+    topic: contactTopic("topic").notNull(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    message: text("message").notNull(),
+    /** Prayer requests the sender wants kept to the prayer team. */
+    keepPrivate: boolean("keep_private").notNull().default(false),
+    status: contactMessageStatus("status").notNull().default("new"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("contact_messages_status_created_at_idx").on(t.status, t.createdAt)],
+);
+
+export const teamMembers = pgTable("team_members", {
+  id: id(),
+  name: text("name").notNull(),
+  role: text("role").notNull(),
+  bio: text("bio"),
+  /** Cloudinary image URL. */
+  portraitUrl: text("portrait_url"),
+  position: integer("position").notNull(),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+export const ministryArms = pgTable("ministry_arms", {
+  id: id(),
+  name: text("name").notNull(),
+  description: text("description"),
+  /** Cloudinary image URL. */
+  imageUrl: text("image_url"),
+  position: integer("position").notNull(),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
