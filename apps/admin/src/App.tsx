@@ -10,6 +10,8 @@ import { EventsPage } from "./events/EventsPage";
 import { InboxPage } from "./inbox/InboxPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { BlogEditorPage } from "./blog/BlogEditorPage";
+import { BlogPage } from "./blog/BlogPage";
 import { CalendarPage } from "./capsules/CalendarPage";
 import { CapsuleEditorPage } from "./capsules/CapsuleEditorPage";
 import { CapsulesPage } from "./capsules/CapsulesPage";
@@ -17,7 +19,7 @@ import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { SignInPage } from "./pages/SignInPage";
 
 // Capsules and Calendar have their own pages below.
-const BUILT = new Set(["/", "/capsules", "/calendar"]);
+const BUILT = new Set(["/", "/capsules", "/calendar", "/blog"]);
 const sections = navItems.filter((item) => !BUILT.has(item.path));
 
 /** Pages built so far, by nav path. Sections not listed show the placeholder. */
@@ -43,6 +45,9 @@ export function App() {
                 <Route path="capsules/new" element={<CapsuleEditorPage isNew />} />
                 <Route path="capsules/:id" element={<CapsuleEditorPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
+                <Route path="blog" element={<BlogPage />} />
+                <Route path="blog/new" element={<BlogEditorPage isNew />} />
+                <Route path="blog/:id" element={<BlogEditorPage />} />
               </Route>
               {sections.map((item) => (
                 <Route key={item.path} element={<RequirePermission permission={item.permission} />}>
