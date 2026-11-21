@@ -23,7 +23,7 @@ The Capsules list shows each capsule's status and its Lagos date. The Calendar s
 
 ## 3. Blog posts
 
-1. Choose **Blog**, then new post.
+1. Choose **Blog**, then **New post**.
 2. Enter a **Title**. The **Slug** is the web address (`/blog/your-slug`); use lowercase words joined by hyphens.
 3. Add an optional excerpt (the short summary shown in lists), tags and a cover image (PNG, JPEG or WebP).
 4. Write the body with the toolbar: bold, italic, underline, headings, quote, lists, links and images.
@@ -42,15 +42,20 @@ The Capsules list shows each capsule's status and its Lagos date. The Calendar s
 3. Switch a section off to hide it from the site. Today's Capsule always stays at the top.
 4. Choose **Publish** to put the new layout live.
 
-## 6. Unsaved changes
+## 6. Pages and subscribers
+
+- **Pages:** choose **Pages** to edit the text of fixed pages such as About and Partner. Save, then publish.
+- **Subscribers:** choose **Subscribers** to see who has signed up for email and whether each address is confirmed or unsubscribed.
+
+## 7. Unsaved changes
 
 If you leave a page with edits you have not saved, a **Discard your changes?** box appears. Choose **Keep editing** to go back and save, or **Discard** to throw the edits away.
 
-## 7. Staff training
+## 8. Staff training
 
 Run a short session with each new editor:
 
-1. Walk through sections 1 to 6 on the staging site.
+1. Walk through sections 1 to 7 on the staging site.
 2. Each editor creates, schedules and publishes a capsule unaided.
 3. Note anything unclear and update this guide.
 
