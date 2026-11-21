@@ -31,9 +31,19 @@ export interface PostInput {
 
 const call = <T>(path: string, init?: RequestInit) => apiJson<T>(`/admin/blog${path}`, init);
 
-/** The API pages lists (100 at most per request); the admin loads one page. */
-export const listPosts = () =>
-  call<{ items: PostRecord[]; total: number }>("?limit=100").then((r) => r.items);
+const PAGE = 100;
+
+/** Every post. The API pages lists (100 at most per request), so this reads page after page. */
+export async function listPosts(): Promise<PostRecord[]> {
+  const all: PostRecord[] = [];
+  for (;;) {
+    const { items, total } = await call<{ items: PostRecord[]; total: number }>(
+      `?limit=${PAGE}&offset=${all.length}`,
+    );
+    all.push(...items);
+    if (items.length < PAGE || all.length >= total) return all;
+  }
+}
 
 export const getPost = (id: string) => call<PostRecord>(`/${id}`);
 

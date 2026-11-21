@@ -152,3 +152,38 @@ describe("BlogEditorPage", () => {
     await waitFor(() => expect(router.state.location.pathname).toBe("/blog"));
   });
 });
+
+describe("scheduled posts", () => {
+  it("keeps the schedule when saving and offers Unschedule", async () => {
+    store = [
+      make({ id: "5", title: "Later", status: "scheduled", publishAt: "2026-12-25T11:00:00.000Z" }),
+    ];
+    setup("/blog/5");
+    expect(await screen.findByText(/Scheduled to publish on/)).toBeInTheDocument();
+    expect(screen.getByText("Scheduled")).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText(/Title/), "!");
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => {
+      const patch = calls.find((c) => c.method === "PATCH")!;
+      expect(patch.body).toMatchObject({ status: "scheduled" });
+      expect(patch.body).not.toHaveProperty("publishAt");
+    });
+    expect(screen.getByRole("button", { name: "Unschedule" })).toBeInTheDocument();
+  });
+});
+
+describe("listPosts", () => {
+  it("reads every page", async () => {
+    const many = Array.from({ length: 150 }, (_, i) => make({ id: String(i), title: `P${i}` }));
+    (fetch as ReturnType<typeof vi.fn>).mockImplementation(async (url: string) => {
+      const u = new URL(url);
+      const off = Number(u.searchParams.get("offset"));
+      const lim = Number(u.searchParams.get("limit"));
+      return new Response(JSON.stringify({ items: many.slice(off, off + lim), total: 150 }), {
+        headers: { "content-type": "application/json" },
+      });
+    });
+    const { listPosts } = await import("./api");
+    expect(await listPosts()).toHaveLength(150);
+  });
+});

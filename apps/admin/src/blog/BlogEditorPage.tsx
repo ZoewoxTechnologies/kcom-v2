@@ -5,9 +5,10 @@ import {
   Banner,
   Button,
   ConfirmDialog,
+  IconButton,
   TextareaField,
   TextField,
-  Tooltip,
+  DEFAULT_TIME_ZONE,
   useToast,
 } from "@kcom/ui";
 import { can } from "@kcom/permissions";
@@ -35,6 +36,8 @@ interface Form {
   heroImageUrl: string | null;
   body: RichTextDoc;
 }
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -115,8 +118,10 @@ function PostEditor({ initial }: { initial: PostRecord | null }) {
   }, [moveTo, form.dirty, navigate]);
   const v = form.value;
   const set = (patch: Partial<Form>) => form.setValue({ ...form.value, ...patch });
-  const published = saved?.status === "published";
-  const locked = !canWrite || (published && !canPublish);
+  // Published and scheduled posts are live content: both keep their status when saved.
+  const live = saved !== null && saved.status !== "draft";
+  const liveStatus: PostStatus = saved?.status ?? "published";
+  const locked = !canWrite || (live && !canPublish);
 
   const validate = () => {
     const next: typeof errors = {};
@@ -197,15 +202,13 @@ function PostEditor({ initial }: { initial: PostRecord | null }) {
         onClose={() => navigate("/blog")}
         headerActions={
           <>
-            {saved && <Badge variant={saved.status}>{saved.status}</Badge>}
+            {saved && <Badge variant={saved.status}>{cap(saved.status)}</Badge>}
             {saved && !locked && (
-              <Tooltip label="Delete post">
-                <Button
-                  variant="tertiary"
-                  aria-label="Delete post"
-                  disabled={saving}
-                  onClick={() => setDeleting(true)}
-                >
+              <IconButton
+                label="Delete post"
+                disabled={saving}
+                onClick={() => setDeleting(true)}
+                icon={
                   <svg
                     viewBox="0 0 24 24"
                     width="20"
@@ -219,23 +222,26 @@ function PostEditor({ initial }: { initial: PostRecord | null }) {
                   >
                     <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5" />
                   </svg>
-                </Button>
-              </Tooltip>
+                }
+              />
             )}
           </>
         }
         actions={
-          locked ? undefined : published ? (
+          locked ? undefined : live ? (
             <>
-              <Button disabled={saving} onClick={saveAs("published", "Post saved")}>
+              <Button disabled={saving} onClick={saveAs(liveStatus, "Post saved")}>
                 Save changes
               </Button>
               <Button
                 variant="tertiary"
                 disabled={saving}
-                onClick={saveAs("draft", "Post unpublished")}
+                onClick={saveAs(
+                  "draft",
+                  liveStatus === "scheduled" ? "Post unscheduled" : "Post unpublished",
+                )}
               >
-                Unpublish
+                {liveStatus === "scheduled" ? "Unschedule" : "Unpublish"}
               </Button>
             </>
           ) : (
@@ -256,6 +262,17 @@ function PostEditor({ initial }: { initial: PostRecord | null }) {
           )
         }
       >
+        {saved?.status === "scheduled" && saved.publishAt && (
+          <Banner variant="info">
+            Scheduled to publish on{" "}
+            {new Intl.DateTimeFormat("en-GB", {
+              dateStyle: "full",
+              timeStyle: "short",
+              timeZone: DEFAULT_TIME_ZONE,
+            }).format(new Date(saved.publishAt))}{" "}
+            (Lagos time). Saving keeps the schedule.
+          </Banner>
+        )}
         <div className="kc-blog-editor__grid">
           <div className="kc-blog-editor__main">
             <TextField
