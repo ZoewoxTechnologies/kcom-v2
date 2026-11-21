@@ -19,6 +19,8 @@ import "@kcom/ui/datetime-picker.css";
 import "./shell/shell.css";
 import "./editor/editor.css";
 import "./events/events.css";
+import "./books/books.css";
+import "./media/image-upload-field.css";
 import "./capsules/capsules.css";
 import "./dashboard/dashboard.css";
 import "./inbox/inbox.css";

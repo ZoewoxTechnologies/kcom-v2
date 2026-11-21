@@ -1,0 +1,111 @@
+/* Admin Books: the same list-beside-editor layout as Events. */
+@layer components {
+  .kc-books {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    --kc-books-above-panel: 11rem;
+  }
+  .kc-books__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .kc-books__head h1 {
+    margin: 0;
+  }
+  .kc-books__body {
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+  .kc-books__list {
+    flex: 1;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .kc-books__list .kc-table {
+    min-inline-size: 0;
+  }
+  .kc-books__loading {
+    color: var(--color-muted);
+  }
+  .kc-books__cover {
+    inline-size: 2rem;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    display: block;
+    border-radius: 2px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+  .kc-books__move {
+    display: flex;
+    gap: var(--space-1);
+    justify-content: flex-end;
+  }
+  .kc-books__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    padding: 0;
+  }
+  .kc-books__side {
+    inline-size: 420px;
+    flex: none;
+    position: sticky;
+    inset-block-start: var(--space-4);
+    block-size: calc(100dvh - var(--kc-books-above-panel));
+    display: flex;
+    flex-direction: column;
+  }
+  .kc-books__side > * {
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
+  }
+  .kc-books__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--space-5);
+    text-align: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    color: var(--color-muted);
+  }
+  .kc-books__empty h2 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 1.25rem;
+  }
+  .kc-books__empty p {
+    margin: 0;
+  }
+  .kc-books__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  @media (max-width: 63.99rem) {
+    .kc-books__body {
+      flex-direction: column;
+    }
+    .kc-books__side {
+      inline-size: 100%;
+      position: static;
+      block-size: auto;
+    }
+    .kc-books__side > * {
+      overflow-y: visible;
+    }
+  }
+}

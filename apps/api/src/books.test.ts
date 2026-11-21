@@ -198,12 +198,22 @@ describe("PUT /admin/books/order", () => {
     const res = await admin("/order", { method: "PUT", json: { ids: [c!.id, a!.id, b!.id] } });
     expect(res.status).toBe(200);
     const slugs = (r: unknown) => (r as { slug: string }[]).map((x) => x.slug);
-    expect(slugs(((await res.json()) as { items: unknown[] }).items)).toEqual(["gamma", "alpha", "beta"]);
+    expect(slugs(((await res.json()) as { items: unknown[] }).items)).toEqual([
+      "gamma",
+      "alpha",
+      "beta",
+    ]);
     expect(slugs(await (await app.request("/books")).json())).toEqual(["gamma", "alpha", "beta"]);
   });
 
   it("rejects a list that misses, repeats or invents books", async () => {
-    const [a] = await db.insert(books).values([{ title: "A", slug: "a" }, { title: "B", slug: "b" }]).returning();
+    const [a] = await db
+      .insert(books)
+      .values([
+        { title: "A", slug: "a" },
+        { title: "B", slug: "b" },
+      ])
+      .returning();
     for (const ids of [[a!.id], [a!.id, a!.id], [a!.id, crypto.randomUUID()]]) {
       const res = await admin("/order", { method: "PUT", json: { ids } });
       expect(res.status).toBe(422);

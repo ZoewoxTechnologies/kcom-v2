@@ -73,7 +73,10 @@ export const adminBookRoutes = (db: CapsuleDb) => {
         await tx.update(books).set({ position }).where(eq(books.id, id));
       }
     });
-    const items = await db.select().from(books).orderBy(...order);
+    const items = await db
+      .select()
+      .from(books)
+      .orderBy(...order);
     return c.json({ items });
   });
 };
