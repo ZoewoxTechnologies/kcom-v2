@@ -9,11 +9,13 @@ interface Props {
   dir?: "prev" | "next";
   /** Larger type and padding, for page-level navigation. */
   large?: boolean;
+  /** Sizing for the capsule and today prev/next cards. */
+  capsule?: boolean;
 }
-const { label, title, href, end = false, dir, large = false } = Astro.props;
+const { label, title, href, end = false, dir, large = false, capsule = false } = Astro.props;
 const Tag = href ? "a" : "div";
 ---
-<Tag class:list={["link-card", { large, end, empty: !href }]} href={href}>
+<Tag class:list={["link-card", { large, capsule, end, empty: !href }]} href={href}>
   <span class="label">{label}</span>
   {(title || dir) && (
     <span class="title">
@@ -28,6 +30,9 @@ const Tag = href ? "a" : "div";
   .large { padding: 18px 22px; }
   .large .label { font-size: 0.8125rem; }
   .large .title { font-size: 1.5rem; }
+  .capsule { padding: 18px 20px; }
+  .capsule .label { font-size: 0.8125rem; }
+  .capsule .title { font-size: 1.375rem; }
   a.link-card { cursor: pointer; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
   a.link-card:hover { border-color: var(--color-primary); transform: translateY(-2px); box-shadow: 0 6px 16px var(--color-ring); }
   a.link-card:hover .title { color: var(--color-primary); }
