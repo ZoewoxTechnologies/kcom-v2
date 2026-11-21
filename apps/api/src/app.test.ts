@@ -84,6 +84,19 @@ describe("cross-cutting", () => {
     const bad = await cors.request("/health", { headers: { Origin: "https://evil.example" } });
     expect(bad.headers.get("access-control-allow-origin")).toBeNull();
   });
+
+  it("lets the admin UI preflight PUT writes (homepage layout, page sections, ordering)", async () => {
+    const cors = createApp(await createTestDb(), { corsOrigins: ["http://localhost:5173"] });
+    const res = await cors.request("/admin/homepage", {
+      method: "OPTIONS",
+      headers: {
+        Origin: "http://localhost:5173",
+        "Access-Control-Request-Method": "PUT",
+        "Access-Control-Request-Headers": "content-type",
+      },
+    });
+    expect(res.headers.get("access-control-allow-methods")).toContain("PUT");
+  });
 });
 
 describe("visibility and errors", () => {

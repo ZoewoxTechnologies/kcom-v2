@@ -1,0 +1,46 @@
+/* On/off switch: a 40x22 track inside a 44px hit area. Import after tokens.css. */
+@layer components {
+  .kc-switch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 44px;
+    min-block-size: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .kc-switch__track {
+    position: relative;
+    inline-size: 40px;
+    block-size: 22px;
+    border-radius: var(--radius-pill);
+    background: var(--color-field);
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+  .kc-switch__thumb {
+    position: absolute;
+    inset-block-start: 3px;
+    inset-inline-start: 3px;
+    inline-size: 16px;
+    block-size: 16px;
+    border-radius: var(--radius-pill);
+    background: var(--color-on-primary);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .kc-switch[aria-checked="true"] .kc-switch__track {
+    background: var(--color-primary);
+  }
+  .kc-switch[aria-checked="true"] .kc-switch__thumb {
+    transform: translateX(18px);
+  }
+  .kc-switch:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .kc-switch:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}

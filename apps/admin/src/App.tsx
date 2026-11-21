@@ -12,6 +12,8 @@ import { EventsPage } from "./events/EventsPage";
 import { SubscribersPage } from "./subscribers/SubscribersPage";
 import { InboxPage } from "./inbox/InboxPage";
 import { SettingsPage } from "./settings/SettingsPage";
+import { HomepagePage } from "./homepage/HomepagePage";
+import { SitePagesPage } from "./site-pages/SitePagesPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { BlogEditorPage } from "./blog/BlogEditorPage";
@@ -35,6 +37,8 @@ const pages: Partial<Record<string, ReactElement>> = {
   "/users": <UsersPage />,
   "/subscribers": <SubscribersPage />,
   "/settings": <SettingsPage />,
+  "/homepage": <HomepagePage />,
+  "/pages": <SitePagesPage />,
 };
 
 export function App() {
