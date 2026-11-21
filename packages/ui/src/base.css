@@ -15,7 +15,7 @@
     background: var(--color-page);
     color: var(--color-text);
     font-family: var(--font-body);
-    font-size: var(--text-body);
+    font-size: var(--text-base);
     line-height: var(--leading-body);
   }
 
