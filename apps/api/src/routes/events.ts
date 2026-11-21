@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { and, asc, desc, eq, gte, lt, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, lt, min, sql } from "drizzle-orm";
 import { z } from "zod";
 import { slug } from "@kcom/content";
 import { blogPosts, events, isLive, type CapsuleDb } from "@kcom/db";
@@ -13,6 +13,7 @@ import {
   richTextSchema,
   slugParam,
 } from "../content/index.js";
+import type { AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 
 /** Events have no publish time, so they are only draft or published. */
@@ -103,19 +104,35 @@ export function eventRoutes(db: CapsuleDb) {
     });
 }
 
-/** Editor/admin endpoints: full access to events including drafts. */
+/**
+ * Editor/admin endpoints: full access to events including drafts. `GET /upcoming`
+ * summarises published events that have not ended (count and next start) for the
+ * dashboard, so it never depends on a page of the list.
+ */
 export const adminEventRoutes = (db: CapsuleDb) =>
-  adminCrudRoutes({
-    db,
-    table: events,
-    label: "event",
-    errors: {
-      messages: {
-        reference: "related post does not exist",
-        check: "end time must not be before start time",
-      },
-    },
-    createBody,
-    updateBody,
-    orderBy: [desc(events.startsAt)],
-  });
+  new Hono<AuthEnv>()
+    .get("/upcoming", async (c) => {
+      const end = sql`coalesce(${events.endsAt}, ${events.startsAt})`;
+      const [row] = await db
+        .select({ total: count(), next: min(events.startsAt) })
+        .from(events)
+        .where(and(published, gte(end, sql`now()`)));
+      return c.json({ total: row!.total, next: row!.next });
+    })
+    .route(
+      "/",
+      adminCrudRoutes({
+        db,
+        table: events,
+        label: "event",
+        errors: {
+          messages: {
+            reference: "related post does not exist",
+            check: "end time must not be before start time",
+          },
+        },
+        createBody,
+        updateBody,
+        orderBy: [desc(events.startsAt)],
+      }),
+    );

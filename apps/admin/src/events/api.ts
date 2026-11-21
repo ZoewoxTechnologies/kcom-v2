@@ -52,6 +52,10 @@ const call = <T>(path: string, init?: RequestInit) => apiJson<T>(`/admin/events$
 export const listEvents = () =>
   call<{ items: EventRecord[]; total: number }>("?limit=100").then((r) => r.items);
 
+/** Published events that have not ended: how many, and when the next one starts. */
+export const upcomingEventsSummary = () =>
+  call<{ total: number; next: string | null }>("/upcoming");
+
 export const createEvent = (input: EventInput) =>
   call<EventRecord>("", { method: "POST", body: JSON.stringify(input) });
 
