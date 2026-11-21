@@ -8,6 +8,7 @@ import { Shell } from "./shell/Shell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { EventsPage } from "./events/EventsPage";
 import { InboxPage } from "./inbox/InboxPage";
+import { SettingsPage } from "./settings/SettingsPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { BlogEditorPage } from "./blog/BlogEditorPage";
@@ -26,6 +27,7 @@ const sections = navItems.filter((item) => !BUILT.has(item.path));
 const pages: Partial<Record<string, ReactElement>> = {
   "/events": <EventsPage />,
   "/inbox": <InboxPage />,
+  "/settings": <SettingsPage />,
 };
 
 export function App() {
