@@ -184,3 +184,52 @@ describe("/admin/books CRUD", () => {
     expect(patch.status).toBe(200);
   });
 });
+
+describe("PUT /admin/books/order", () => {
+  it("answers the admin UI's cross-origin preflight for PUT", async () => {
+    const res = await app.request("/admin/books/order", {
+      method: "OPTIONS",
+      headers: { origin: ORIGIN, "access-control-request-method": "PUT" },
+    });
+    expect(res.headers.get("access-control-allow-methods")).toContain("PUT");
+  });
+
+  it("saves the order, and public and admin lists follow it", async () => {
+    const [a, b, c] = await db
+      .insert(books)
+      .values([
+        { title: "Alpha", slug: "alpha", status: "published" },
+        { title: "Beta", slug: "beta", status: "published" },
+        { title: "Gamma", slug: "gamma", status: "published" },
+      ])
+      .returning();
+    const res = await admin("/order", { method: "PUT", json: { ids: [c!.id, a!.id, b!.id] } });
+    expect(res.status).toBe(200);
+    const slugs = (r: unknown) => (r as { slug: string }[]).map((x) => x.slug);
+    expect(slugs(((await res.json()) as { items: unknown[] }).items)).toEqual([
+      "gamma",
+      "alpha",
+      "beta",
+    ]);
+    expect(slugs(await (await app.request("/books")).json())).toEqual(["gamma", "alpha", "beta"]);
+  });
+
+  it("rejects a list that misses, repeats or invents books", async () => {
+    const [a] = await db
+      .insert(books)
+      .values([
+        { title: "A", slug: "a" },
+        { title: "B", slug: "b" },
+      ])
+      .returning();
+    for (const ids of [[a!.id], [a!.id, a!.id], [a!.id, crypto.randomUUID()]]) {
+      const res = await admin("/order", { method: "PUT", json: { ids } });
+      expect(res.status).toBe(422);
+    }
+  });
+
+  it("requires sign-in", async () => {
+    const res = await app.request("/admin/books/order", { method: "PUT" });
+    expect(res.status).toBe(401);
+  });
+});

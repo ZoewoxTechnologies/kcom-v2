@@ -1,4 +1,5 @@
 ---
+import { publicOrigin } from "../lib/site-origin";
 import "@kcom/ui/styles.css";
 import "@kcom/ui/button.css";
 import "@kcom/ui/forms.css";
@@ -9,7 +10,8 @@ import { fontsHref } from "@kcom/ui/fonts";
 import Analytics from "../components/Analytics.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
-import { pageTitle } from "../lib/site";
+import { pageTitle, siteName } from "../lib/site";
+import { absoluteUrl, siteDescription, truncate } from "../lib/seo";
 
 interface Props {
   title?: string;
@@ -19,15 +21,48 @@ interface Props {
   bleed?: boolean;
   /** The page already renders its own email signup, so the footer omits its one. */
   hideSignup?: boolean;
+  /** Open Graph type: "article" for capsules and posts. */
+  ogType?: "website" | "article";
+  /** Path (or absolute URL) of the sharing image; defaults to the site card. */
+  image?: string;
+  /** Block indexing, for pages that are not part of the public site. */
+  noindex?: boolean;
+  /** Canonical path when it differs from this page's own (e.g. today's capsule points at its dated page). */
+  canonicalPath?: string;
+  /** schema.org JSON-LD objects to embed. */
+  jsonLd?: object[];
 }
-const { title, description, current = Astro.url.pathname, bleed = false, hideSignup = false } = Astro.props;
+const { title, description, current = Astro.url.pathname, bleed = false, hideSignup = false, ogType = "website", image = "/og/default.png", noindex = false, canonicalPath, jsonLd = [] } = Astro.props;
+const origin = publicOrigin(Astro.url);
+const pageNo = Number(Astro.url.searchParams.get("page"));
+const canonical = absoluteUrl(origin, canonicalPath ?? Astro.url.pathname) + (!canonicalPath && pageNo > 1 ? `?page=${Math.floor(pageNo)}` : "");
+const imageUrl = /^https?:/.test(image) ? image : absoluteUrl(origin, image);
+const desc = truncate(description ?? siteDescription);
+const fullTitle = pageTitle(title);
 ---
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{pageTitle(title)}</title>
-    {description && <meta name="description" content={description} />}
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={imageUrl} />
+    <link rel="alternate" type="application/rss+xml" title={`${siteName}: capsules`} href="/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${siteName}: blog`} href="/blog/rss.xml" />
+    {jsonLd.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o).replace(/</g, "\\u003c")} />)}
     <link rel="icon" href="/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

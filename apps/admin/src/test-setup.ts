@@ -11,3 +11,15 @@ Range.prototype.getClientRects ??= emptyRects;
 Range.prototype.getBoundingClientRect ??= zeroRect;
 Element.prototype.getClientRects ??= emptyRects;
 document.elementFromPoint ??= () => null;
+
+// jsdom has no matchMedia; Motion reads it for prefers-reduced-motion.
+window.matchMedia ??= ((query: string) => ({
+  matches: false,
+  media: query,
+  onchange: null,
+  addEventListener: () => {},
+  removeEventListener: () => {},
+  addListener: () => {},
+  removeListener: () => {},
+  dispatchEvent: () => false,
+})) as typeof window.matchMedia;
