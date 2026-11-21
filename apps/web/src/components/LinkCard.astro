@@ -5,20 +5,42 @@ interface Props {
   href?: string;
   /** Right-aligned text, for "next" cards. */
   end?: boolean;
+  /** Adds a ← (prev) or → (next) arrow that nudges on hover. */
+  dir?: "prev" | "next";
+  /** Larger type and padding, for page-level navigation. */
+  large?: boolean;
 }
-const { label, title, href, end = false } = Astro.props;
+const { label, title, href, end = false, dir, large = false } = Astro.props;
 const Tag = href ? "a" : "div";
 ---
-<Tag class:list={["link-card", { end, empty: !href }]} href={href}>
+<Tag class:list={["link-card", { large, end, empty: !href }]} href={href}>
   <span class="label">{label}</span>
-  {title && <span class="title">{title}</span>}
+  {(title || dir) && (
+    <span class="title">
+      {dir === "prev" && href && <span class="arrow prev" aria-hidden="true">←</span>}
+      {title}
+      {dir === "next" && href && <span class="arrow next" aria-hidden="true">→</span>}
+    </span>
+  )}
 </Tag>
 <style>
   .link-card { display: flex; flex-direction: column; gap: var(--space-1); padding: 18px 20px; border: 1px solid var(--color-line); border-radius: var(--radius); background: var(--color-surface); color: var(--color-text); text-decoration: none; line-height: 1.4; }
-  a.link-card:hover { border-color: var(--color-primary); }
+  .large { padding: 18px 22px; }
+  .large .label { font-size: 0.8125rem; }
+  .large .title { font-size: 1.5rem; }
+  a.link-card { cursor: pointer; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
+  a.link-card:hover { border-color: var(--color-primary); transform: translateY(-2px); box-shadow: 0 6px 16px var(--color-ring); }
+  a.link-card:hover .title { color: var(--color-primary); }
+  a.link-card:focus-visible { outline: none; border-color: var(--color-primary); box-shadow: var(--focus-ring); }
   .link-card.empty { background: transparent; border-style: dashed; }
   .end { text-align: end; }
   .label { font-size: 0.8125rem; color: var(--color-muted); }
   .title { font-family: var(--font-title); font-weight: 600; font-size: 1.375rem; }
   .empty .title { color: var(--color-muted); }
+  .arrow { display: inline-block; color: var(--color-primary); transition: transform 0.15s; }
+  .arrow.next { margin-inline-start: 0.35em; }
+  .arrow.prev { margin-inline-end: 0.35em; }
+  a.link-card:hover .arrow.next { transform: translateX(4px); }
+  a.link-card:hover .arrow.prev { transform: translateX(-4px); }
+  @media (prefers-reduced-motion: reduce) { a.link-card, .arrow { transition: none; } a.link-card:hover, a.link-card:hover .arrow { transform: none; } }
 </style>

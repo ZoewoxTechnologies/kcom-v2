@@ -1,24 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { Avatar, Button, Menu, MenuItem, MenuLabel, MenuSeparator, Tag } from "@kcom/ui";
+import {
+  Avatar,
+  Button,
+  CountBadge,
+  Menu,
+  MenuItem,
+  MenuLabel,
+  MenuSeparator,
+  Tag,
+} from "@kcom/ui";
 import { useAuth } from "../auth/AuthProvider";
+import { can } from "@kcom/permissions";
+import { useIsPhone } from "./useIsPhone";
+import { useUnreadCount } from "../inbox/unread";
 import { navFor, navItemFor } from "./nav";
-
-const PHONE_QUERY = "(max-width: 47.99rem)";
-
-/** True at phone width, where the side menu is an off-screen drawer. */
-function useIsPhone() {
-  const [phone, setPhone] = useState(() => window.matchMedia?.(PHONE_QUERY).matches ?? false);
-  useEffect(() => {
-    const query = window.matchMedia?.(PHONE_QUERY);
-    if (!query) return;
-    const onChange = () => setPhone(query.matches);
-    onChange();
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
-  }, []);
-  return phone;
-}
 
 const capitalise = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
@@ -28,6 +24,7 @@ export function Shell() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const unread = useUnreadCount(!!user && can(user.role, "inbox:read"), pathname);
 
   const burgerRef = useRef<HTMLButtonElement>(null);
   const phone = useIsPhone();
@@ -81,6 +78,7 @@ export function Shell() {
               className="kc-admin__link"
             >
               {item.label}
+              {item.path === "/inbox" && <CountBadge count={unread} label="unread messages" />}
             </NavLink>
           ))}
         </nav>
@@ -91,7 +89,6 @@ export function Shell() {
           <Button
             ref={burgerRef}
             variant="secondary"
-            size="md"
             className="kc-admin__burger"
             aria-label="Menu"
             aria-controls="admin-nav"

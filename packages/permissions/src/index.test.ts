@@ -10,6 +10,11 @@ describe("permissions", () => {
     expect(can("editor", "users:manage")).toBe(false);
     expect(can("editor", "content:write")).toBe(true);
   });
+  it("lets editors and admins read the inbox, including private prayer requests", () => {
+    expect(can("editor", "inbox:read")).toBe(true);
+    expect(can("editor", "prayer:read")).toBe(true);
+    expect(can("admin", "prayer:read")).toBe(true);
+  });
   it("fails closed for anything that is not a known role", () => {
     for (const bad of ["owner", "", undefined, null, "toString", "__proto__", "constructor"]) {
       for (const p of permissions) expect(can(bad as unknown as UserRole, p)).toBe(false);

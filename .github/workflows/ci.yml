@@ -108,6 +108,8 @@ jobs:
           restore-keys: turbo-${{ runner.os }}-
       - name: Run affected tasks
         env:
+          # Verification build: the web search index may hold the About pages alone.
+          SEARCH_INDEX_PARTIAL_OK: "true"
           EVENT: ${{ github.event_name }}
           BASE: ${{ github.event.pull_request.base.sha }}
           CODE: ${{ needs.changes.outputs.code }}
@@ -143,6 +145,9 @@ jobs:
           context: .
           file: apps/${{ matrix.app }}/Dockerfile
           push: false
+          build-args: |
+            PUBLIC_API_URL=${{ vars.PUBLIC_API_URL }}
+            SEARCH_INDEX_PARTIAL_OK=${{ vars.PUBLIC_API_URL == '' }}
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
 

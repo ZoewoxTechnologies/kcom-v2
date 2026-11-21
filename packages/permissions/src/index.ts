@@ -2,12 +2,19 @@
 export const userRoles = ["admin", "editor"] as const;
 export type UserRole = (typeof userRoles)[number];
 
-/** Every guarded capability. Routes and menu items declare which of these they need. */
+/**
+ * Every guarded capability. `inbox:read` opens contact messages; `prayer:read`
+ * additionally shows the ones senders marked private. Editors and admins both have it for now; a narrower prayer-team role comes later.
+ * Routes and menu items declare which of these they need.
+ */
 export const permissions = [
   "content:read",
   "content:write",
   "content:publish",
   "users:manage",
+  "settings:manage",
+  "inbox:read",
+  "prayer:read",
 ] as const;
 export type Permission = (typeof permissions)[number];
 
@@ -17,7 +24,7 @@ export type Permission = (typeof permissions)[number];
  */
 export const rolePermissions: Record<UserRole, readonly Permission[]> = {
   admin: permissions,
-  editor: ["content:read", "content:write", "content:publish"],
+  editor: ["content:read", "content:write", "content:publish", "inbox:read", "prayer:read"],
 };
 
 /** Fails closed: an unknown, empty or missing role is granted nothing. */

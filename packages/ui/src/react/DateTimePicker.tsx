@@ -250,7 +250,6 @@ export function DateTimePicker({
               {defaultNextMidnight && (
                 <Button
                   variant="tertiary"
-                  size="sm"
                   onClick={() => onChange(nextZoneMidnight(current, timeZone))}
                 >
                   Next midnight

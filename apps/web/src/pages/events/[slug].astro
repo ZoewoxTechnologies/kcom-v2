@@ -1,0 +1,97 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { data } from "../../lib/data";
+import { richTextToPlain } from "../../lib/data/client";
+import { richTextToHtml } from "../../lib/rich-text";
+import { calendarHref, directionsHref, eventBadge, eventWhen, programmeRows } from "../../lib/event-page";
+
+const { slug } = Astro.params;
+const event = slug ? await data.eventBySlug(slug) : null;
+if (!event) return Astro.rewrite("/404");
+const when = eventWhen(event);
+const html = event.description ? richTextToHtml(event.description) : "";
+const badge = eventBadge(event.startsAt);
+const rows = programmeRows(event.programme);
+const description = event.description ? richTextToPlain(event.description).slice(0, 160) || undefined : undefined;
+Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+---
+<BaseLayout title={event.title} description={description} current="/events">
+  <section class="hero">
+    <div class="hero-in">
+      <div class="badge" aria-hidden="true"><span>{badge.month}</span><strong>{badge.day}</strong><span>{badge.year}</span></div>
+      <div class="head">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/events">Events</a></nav>
+        <h1>{event.title}</h1>
+        <p class="when">{when}{event.place && <> · {event.place}</>}{event.onlineUrl && <> · also streamed online</>}</p>
+        <div class="actions">
+          <a class="kc-btn kc-btn--secondary kc-btn--sm" href={calendarHref(event)} download={`${event.slug}.ics`}>Add to calendar</a>
+          {event.place && <a class="kc-btn kc-btn--secondary kc-btn--sm" href={directionsHref(event.place)} rel="noopener">Get directions</a>}
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="cols">
+    <article class="main">
+      {event.imageUrl ? <img class="img" src={event.imageUrl} alt="" /> : <div class="img placeholder" aria-hidden="true"></div>}
+      {html && <div class="prose" set:html={html} />}
+      {rows.length > 0 && (
+        <section aria-labelledby="programme">
+          <h2 id="programme">Programme</h2>
+          <dl class="programme">
+            {rows.map((r) => (<><dt>{r.time}</dt><dd>{r.item}</dd></>))}
+          </dl>
+        </section>
+      )}
+    </article>
+    <aside class="side">
+      <div class="card">
+        <h2>At a glance</h2>
+        <span><strong>When</strong><br />{when}</span>
+        {event.place && <span><strong>Where</strong><br />{event.place}</span>}
+        {event.onlineUrl && <span><strong>Online</strong><br /><a class="kc-btn kc-btn--tertiary kc-btn--sm" href={event.onlineUrl} rel="noopener">Join online</a></span>}
+      </div>
+      {event.relatedPost && (
+        <div class="after">
+          <span class="kicker">After the event</span>
+          <a href={`/blog/${event.relatedPost.slug}`}>{event.relatedPost.title}</a>
+        </div>
+      )}
+    </aside>
+  </div>
+</BaseLayout>
+<style>
+  .hero { background: var(--color-wash); padding-block: 56px; margin-block-start: calc(-1 * var(--space-6)); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); }
+  .main h2 { margin-block-start: 12px; line-height: 1.65; }
+  
+  .hero-in { padding-inline: 0; }
+  .hero-in { display: flex; gap: var(--space-5); align-items: center; flex-wrap: wrap; }
+  .badge { inline-size: 7.5rem; flex: none; border-radius: var(--radius); background: var(--color-primary); color: #fff; display: flex; flex-direction: column; align-items: center; padding-block: 1rem; line-height: 1.1; }
+  .badge span:first-child { font-size: 0.875rem; font-weight: 700; letter-spacing: 0.12em; color: #e3c88a; }
+  .badge strong { font-family: var(--font-title); font-weight: 600; font-size: 3.5rem; }
+  .badge span:last-child { font-size: 0.8125rem; opacity: 0.85; }
+  .head { flex: 1 1 22rem; display: flex; flex-direction: column; gap: 10px; line-height: 1.65; }
+  .crumbs, .crumbs a { font-size: 0.875rem; font-weight: 400; color: var(--color-muted); }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; line-height: 1.05; font-size: clamp(2.25rem, 6vw, 3.5rem); }
+  .when { margin: 0; font-size: 1.0625rem; color: var(--when-color); }
+  .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; min-block-size: 48px; margin-block-start: 6px; }
+  .cols { display: flex; gap: var(--space-5); flex-wrap: wrap; align-items: flex-start; padding-block: 48px 72px; font-size: 1.0625rem; line-height: 1.65; }
+  .main { flex: 3 1 32rem; min-inline-size: 0; display: flex; flex-direction: column; gap: 1.25rem; }
+  .side { flex: 2 1 18rem; min-inline-size: 0; display: flex; flex-direction: column; gap: 20px; }
+  h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 2rem; line-height: 1.15; }
+  .img { inline-size: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius); display: block; background: var(--color-wash); }
+  .placeholder { background: linear-gradient(160deg, #9fbcc6, #7d9f86); }
+  .prose :global(p) { margin: 0 0 1rem; font-size: 1.1875rem; }
+  .programme { margin: 0.75rem 0 0; display: grid; grid-template-columns: minmax(6rem, 10rem) 1fr; }
+  .programme dt, .programme dd { margin: 0; padding-block: 0.75rem; border-block-start: 1px solid var(--color-line); }
+  .programme dt { font-weight: 700; font-size: 0.9375rem; }
+  .card { background: var(--color-surface, #fff); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 26px; display: flex; flex-direction: column; gap: 10px; font-size: 1rem; line-height: 1.5; }
+  .card h2 { font-size: 1.625rem; line-height: 1.65; }
+  .kicker { font-size: 0.8125rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--after-kicker); }
+  .after { display: flex; flex-direction: column; gap: 6px; padding: 22px; border-radius: var(--radius); background: var(--after-bg); border: 1px solid var(--after-line); font-size: 0.9375rem; line-height: 1.5; }
+  .after a { color: var(--color-primary); }
+  .hero, .cols { --when-color: #3c4b4d; --after-bg: #f6eedd; --after-line: #e3cf9f; --after-kicker: #8a6a24; }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .hero, :global(:root:not([data-theme="light"])) .cols { --when-color: var(--color-ink); --after-bg: var(--color-wash); --after-line: var(--color-line); --after-kicker: var(--color-gold-text); }
+  }
+  :global(:root[data-theme="dark"]) .hero, :global(:root[data-theme="dark"]) .cols { --when-color: var(--color-ink); --after-bg: var(--color-wash); --after-line: var(--color-line); --after-kicker: var(--color-gold-text); }
+</style>

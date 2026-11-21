@@ -25,6 +25,19 @@
     }
   }
 
+  /* Count: small pill with a number, for nav items. Needs a11y.css for the hidden text. */
+  .kc-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 1.4rem;
+    padding: 2px 7px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bar-gold);
+    color: var(--color-side);
+    font: 700 var(--text-xs) / 1.2 var(--font-body);
+  }
+
   /* Draft: hollow dot. */
   .kc-badge--draft {
     --kc-badge-bg: var(--color-sandstone);

@@ -38,7 +38,7 @@ const events = sampleEvents;
 const books = sampleBooks;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title="Home" current="/" bleed>
+<BaseLayout title="Home" current="/" bleed hideSignup={order.includes("signup")}>
   {order.map((key) => {
     if (key === "today") return (
       <section class="band wash" aria-label="Today’s Capsule">

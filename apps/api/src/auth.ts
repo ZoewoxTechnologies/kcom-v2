@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { CLIENT_IP_HEADER } from "./client-ip.js";
 import { accounts, rateLimits, sessions, users, verifications, type CapsuleDb } from "@kcom/db";
 
 /** Delivers auth emails. The provider is undecided, so production wiring is a later swap. */
@@ -80,7 +81,7 @@ export function createAuth(db: CapsuleDb, opts: AuthOptions = {}) {
     },
     advanced: {
       useSecureCookies: secure,
-      ipAddress: { ipAddressHeaders: ["x-forwarded-for"] },
+      ipAddress: { ipAddressHeaders: [CLIENT_IP_HEADER] },
       defaultCookieAttributes: {
         httpOnly: true,
         secure,

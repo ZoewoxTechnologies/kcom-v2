@@ -123,7 +123,7 @@ export function CapsulesPage() {
       {state === "error" ? (
         <p role="alert">
           Could not load capsules.{" "}
-          <Button variant="secondary" size="sm" onClick={reload}>
+          <Button variant="secondary" onClick={reload}>
             Try again
           </Button>
         </p>
