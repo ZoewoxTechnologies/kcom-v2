@@ -32,7 +32,8 @@ export function validateEmail(raw: string): string | null {
   return null;
 }
 
-export type SignupResult = { ok: true } | { ok: false; message: string };
+/** On failure, `status` is the HTTP status the form page should answer with. */
+export type SignupResult = { ok: true } | { ok: false; message: string; status: 400 | 429 | 502 };
 
 export interface SignupInput {
   email: string;
@@ -40,6 +41,14 @@ export interface SignupInput {
   turnstileToken?: string;
   /** Honeypot: hidden on the form, so only bots fill it. */
   hp_url?: string;
+  /** The visitor's address, sent as x-forwarded-for so the API rate-limits per visitor, not per web server. */
+  clientIp?: string;
+}
+
+/** The visitor's address: the last x-forwarded-for entry (added by our own proxy), else the socket address. */
+export function visitorIp(forwardedFor: string | null | undefined, socketAddress?: string): string | undefined {
+  const last = (forwardedFor ?? "").split(",").at(-1)?.trim();
+  return last || socketAddress || undefined;
 }
 
 /** POST the signup to the API. Only a 2xx response is `ok`; everything else, including network errors, is a failure. */
@@ -48,14 +57,14 @@ export async function submitSignup(
   input: SignupInput,
   fetcher: typeof fetch = fetch,
 ): Promise<SignupResult> {
-  const fail = (message = SIGNUP_FAILED): SignupResult => ({ ok: false, message });
+  const fail = (message = SIGNUP_FAILED, status: 400 | 429 | 502 = 502): SignupResult => ({ ok: false, message, status });
   const invalid = validateEmail(input.email);
-  if (invalid) return fail(invalid);
+  if (invalid) return fail(invalid, 400);
   if (!apiUrl) return fail();
   try {
     const res = await fetcher(`${apiUrl.replace(/\/+$/, "")}/subscribers`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...(input.clientIp ? { "x-forwarded-for": input.clientIp } : {}) },
       body: JSON.stringify({
         email: input.email.trim(),
         ...(input.turnstileToken ? { turnstileToken: input.turnstileToken } : {}),
@@ -63,8 +72,8 @@ export async function submitSignup(
       }),
     });
     if (res.ok) return { ok: true };
-    if (res.status === 400) return fail(EMAIL_INVALID);
-    if (res.status === 429) return fail(SIGNUP_RATE_LIMITED);
+    if (res.status === 400) return fail(EMAIL_INVALID, 400);
+    if (res.status === 429) return fail(SIGNUP_RATE_LIMITED, 429);
     return fail();
   } catch {
     return fail();

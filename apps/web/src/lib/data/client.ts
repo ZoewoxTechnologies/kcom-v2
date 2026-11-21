@@ -153,6 +153,11 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       const titleOf = new Map(series.map((s) => [s.id, s.title]));
       return rows.map((c) => toItem(c, titleOf));
     },
+    async listAllCapsules() {
+      const [rows, series] = await Promise.all([allCapsules({}), allSeries()]);
+      const titleOf = new Map(series.map((s) => [s.id, s.title]));
+      return rows.map((c) => toItem(c, titleOf)).sort((a, b) => b.displayDate.localeCompare(a.displayDate));
+    },
     async listSeries() {
       return (await allSeries()).map((s) => toSeriesSummary(s, now()));
     },

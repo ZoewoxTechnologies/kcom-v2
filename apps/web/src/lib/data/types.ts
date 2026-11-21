@@ -159,6 +159,8 @@ export interface DataSource {
   capsuleNeighbours(slug: string): Promise<CapsuleNeighbours | null>;
   /** Live capsules published in a Lagos month (YYYY-MM), newest first. */
   listCapsulesInMonth(month: string): Promise<CapsuleListItem[]>;
+  /** Every live capsule, newest first (for the sitemap and feeds). */
+  listAllCapsules(): Promise<CapsuleListItem[]>;
   /** Every series with live capsules. */
   listSeries(): Promise<SeriesSummary[]>;
   seriesBySlug(slug: string): Promise<SeriesDetail | null>;
@@ -178,7 +180,7 @@ export interface DataSource {
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug", "listEvents", "pageBySlug"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listAllCapsules", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug", "listEvents", "pageBySlug"] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */
