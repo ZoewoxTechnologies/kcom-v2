@@ -29,6 +29,3 @@ export const socialLinks = [
   { label: "Facebook", href: "#facebook-placeholder" },
   { label: "YouTube", href: "#youtube-placeholder" },
 ] as const;
-
-/** Placeholder until the real contact details are supplied. */
-export const contactPlaceholder = "Contact details coming soon";

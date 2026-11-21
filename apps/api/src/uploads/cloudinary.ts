@@ -4,8 +4,8 @@ export type CloudinaryConfig = {
   cloudName: string;
   apiKey: string;
   apiSecret: string;
-  /** Name of a signed upload preset (folder, allowed formats, max size) set up in Cloudinary. */
-  uploadPreset: string;
+  /** Optional name of a signed upload preset (folder, allowed formats, max size) set up in Cloudinary. */
+  uploadPreset?: string;
 };
 
 /** Reads Cloudinary settings from env; undefined when not fully configured. */
@@ -16,8 +16,8 @@ export function cloudinaryFromEnv(
   const apiKey = env.CLOUDINARY_API_KEY;
   const apiSecret = env.CLOUDINARY_API_SECRET;
   const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET;
-  return cloudName && apiKey && apiSecret && uploadPreset
-    ? { cloudName, apiKey, apiSecret, uploadPreset }
+  return cloudName && apiKey && apiSecret
+    ? { cloudName, apiKey, apiSecret, ...(uploadPreset ? { uploadPreset } : {}) }
     : undefined;
 }
 

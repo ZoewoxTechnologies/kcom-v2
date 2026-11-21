@@ -1,5 +1,5 @@
 /* Buttons: .kc-btn plus a variant (primary, secondary, tertiary, give).
-   Works on <button> and <a>. Loading is aria-busy="true"; disabled is :disabled
+   Works on <button> and <a>. Default size is small; add .kc-btn--md or .kc-btn--lg. Loading is aria-busy="true"; disabled is :disabled
    or aria-disabled="true". Import after tokens.css. */
 @layer components {
   .kc-btn {
@@ -7,9 +7,9 @@
     --kc-btn-fg: var(--color-primary);
     --kc-btn-border: transparent;
     --kc-btn-ring: var(--focus-ring);
-    --kc-btn-height: var(--control-height-md);
-    --kc-btn-pad: var(--btn-pad-md);
-    --kc-btn-text: var(--text-base);
+    --kc-btn-height: var(--control-height-sm);
+    --kc-btn-pad: var(--btn-pad-sm);
+    --kc-btn-text: var(--text-sm);
 
     position: relative;
     display: inline-flex;
@@ -60,10 +60,10 @@
     }
   }
 
-  .kc-btn--sm {
-    --kc-btn-height: var(--control-height-sm);
-    --kc-btn-pad: var(--btn-pad-sm);
-    --kc-btn-text: var(--text-sm);
+  .kc-btn--md {
+    --kc-btn-height: var(--control-height-md);
+    --kc-btn-pad: var(--btn-pad-md);
+    --kc-btn-text: var(--text-base);
   }
 
   .kc-btn--lg {
