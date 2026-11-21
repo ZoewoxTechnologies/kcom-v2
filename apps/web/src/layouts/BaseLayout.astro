@@ -3,6 +3,7 @@ import "@kcom/ui/styles.css";
 import "@kcom/ui/button.css";
 import "@kcom/ui/forms.css";
 import "@kcom/ui/menu.css";
+import "@kcom/ui/motion.css";
 import "@kcom/ui/pagination.css";
 import { fontsHref } from "@kcom/ui/fonts";
 import Analytics from "../components/Analytics.astro";
@@ -50,6 +51,10 @@ const { title, description, current = Astro.url.pathname, bleed = false, hideSig
   main h1 { font-size: clamp(2.25rem, 8vw, var(--text-3xl)); overflow-wrap: anywhere; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   main.bleed { max-width: none; padding: 0; }
+  /* Slide-in panels never create a sideways scroll. */
+  html { overflow-x: clip; }
+  /* Stand-alone text links get a 44px hit area; the text stays where it is. */
+  .site-footer a, footer a, main a.more, main a.cta, main a.link, main a.pill { display: inline-flex; align-items: center; min-block-size: var(--touch-target); }
   body { min-height: 100dvh; display: flex; flex-direction: column; }
   main { flex: 1; width: 100%; box-sizing: border-box; max-width: var(--page-max); margin-inline: auto; padding: var(--space-6) var(--gutter) 0; }
 </style>
