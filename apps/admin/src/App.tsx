@@ -8,6 +8,7 @@ import { Shell } from "./shell/Shell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { EventsPage } from "./events/EventsPage";
 import { InboxPage } from "./inbox/InboxPage";
+import { SettingsPage } from "./settings/SettingsPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { BlogEditorPage } from "./blog/BlogEditorPage";
@@ -28,6 +29,7 @@ const pages: Partial<Record<string, ReactElement>> = {
   "/events": <EventsPage />,
   "/inbox": <InboxPage />,
   "/users": <UsersPage />,
+  "/settings": <SettingsPage />,
 };
 
 export function App() {
