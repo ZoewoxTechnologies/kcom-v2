@@ -1,10 +1,12 @@
 ---
+import { publicOrigin } from "../../lib/site-origin";
 import { lagosDate } from "@kcom/content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import CapsuleView from "../../components/CapsuleView.astro";
 import { data } from "../../lib/data";
 import { loadCapsulePage } from "../../lib/capsule-page";
 import { richTextToPlain } from "../../lib/data/client";
+import { capsuleJsonLd } from "../../lib/seo";
 
 const today = lagosDate(new Date());
 // Today's capsule; before it goes live (or on a gap day) the latest published one stands in.
@@ -17,6 +19,6 @@ if (!capsule) return Astro.rewrite("/404");
 const page = await loadCapsulePage(data, capsule);
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title={capsule.title} description={richTextToPlain(capsule.scriptureText) || capsule.scriptureRef || undefined} current="/capsules/today" bleed hideSignup>
+<BaseLayout title={capsule.title} description={richTextToPlain(capsule.scriptureText) || capsule.scriptureRef || undefined} current="/capsules/today" bleed hideSignup ogType="article" canonicalPath={`/capsules/${capsule.slug}`} image={`/og/capsules/${capsule.slug}.png`} jsonLd={[capsuleJsonLd(capsule, publicOrigin(Astro.url))]}>
   <CapsuleView page={page} mode="today" today={today} shareUrl={new URL(`/capsules/${capsule.slug}`, Astro.url).href} />
 </BaseLayout>
