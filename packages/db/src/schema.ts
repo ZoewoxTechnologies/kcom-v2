@@ -202,6 +202,8 @@ export const books = pgTable("books", {
   coverUrl: text("cover_url"),
   purchaseUrl: text("purchase_url"),
   publishedYear: integer("published_year"),
+  /** Display order, lowest first; titles break ties. */
+  position: integer("position").notNull().default(0),
   authorId: uuid("author_id").references(() => people.id, { onDelete: "set null" }),
   status: publishStatus("status").notNull().default("draft"),
   publishAt: timestamp("publish_at", { withTimezone: true }),

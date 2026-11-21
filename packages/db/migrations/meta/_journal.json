@@ -71,6 +71,13 @@
       "when": 1795218697556,
       "tag": "0009_settings_team_arms",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795227826298,
+      "tag": "0010_books_position",
+      "breakpoints": true
     }
   ]
 }
