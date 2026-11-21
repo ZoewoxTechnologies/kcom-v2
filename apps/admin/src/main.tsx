@@ -22,6 +22,7 @@ import "./events/events.css";
 import "./capsules/capsules.css";
 import "./dashboard/dashboard.css";
 import "./inbox/inbox.css";
+import "./settings/settings.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { App } from "./App";
 import { initSentry } from "./sentry";
