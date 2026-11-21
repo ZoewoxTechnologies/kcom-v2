@@ -139,6 +139,9 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
         .items.filter((c) => c.displayDate.startsWith(month))
         .sort((a, b) => b.displayDate.localeCompare(a.displayDate));
     },
+    async listAllCapsules() {
+      return build(now()).items.sort((a, b) => b.displayDate.localeCompare(a.displayDate));
+    },
     async listSeries() {
       return build(now()).series;
     },

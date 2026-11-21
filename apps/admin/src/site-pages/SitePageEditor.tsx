@@ -63,6 +63,7 @@ export function SitePageEditor() {
     if (!config) return;
     let live = true;
     setLoaded(null);
+    setFailed(false);
     (async () => {
       const page = await findPage(config.slug);
       const sections = page ? await fetchSections(page.id) : [];
