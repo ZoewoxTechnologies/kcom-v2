@@ -20,6 +20,7 @@
     "./menu.css": "./src/components/menu.css",
     "./tooltip.css": "./src/components/tooltip.css",
     "./segmented-control.css": "./src/components/segmented-control.css",
+    "./switch.css": "./src/components/switch.css",
     "./menu": "./src/menu/menu.ts",
     "./fonts": "./src/fonts.ts",
     "./astro/Menu.astro": "./src/astro/Menu.astro",

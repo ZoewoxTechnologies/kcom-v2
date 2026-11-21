@@ -150,6 +150,9 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
       const found = series.find((s) => s.slug === slug);
       return found ? { series: found, capsules: inSeriesOrder(items.filter((c) => c.seriesTitle === found.title)) } : null;
     },
+    async listHomepageSections() {
+      return [];
+    },
     async listBooks() {
       return sampleBooks;
     },

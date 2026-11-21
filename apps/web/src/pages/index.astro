@@ -8,7 +8,7 @@ import { data } from "../lib/data";
 import { richTextToPlain } from "../lib/data/client";
 import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
 import { postKicker } from "../lib/blog";
-import { defaultSections, featuredQuote, sampleBooks, sampleEvents, sectionsFromQuery, visibleSections } from "../lib/homepage";
+import { defaultSections, featuredQuote, sampleBooks, sampleEvents, sectionsFromApi, sectionsFromQuery, visibleSections } from "../lib/homepage";
 
 const today = lagosDate(new Date());
 let capsule = await data.capsuleByDate(today);
@@ -18,9 +18,10 @@ if (!capsule) {
 }
 const neighbours = capsule ? await data.capsuleNeighbours(capsule.slug) : null;
 
-// The section list comes from the pages API once it exists; `?sections=` previews an arrangement outside production.
+// The section list comes from the homepage API; `?sections=` previews an arrangement outside production.
 const preview = import.meta.env.PROD ? null : sectionsFromQuery(Astro.url.searchParams.get("sections"));
-const order = visibleSections(preview ?? defaultSections);
+const apiSections = preview ? null : sectionsFromApi(await data.listHomepageSections());
+const order = visibleSections(preview ?? apiSections ?? defaultSections);
 
 const allSeries = sortSeries(await data.listSeries(), "newest");
 const current = allSeries.find((s) => s.inProgress) ?? allSeries[0] ?? null;

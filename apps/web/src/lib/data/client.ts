@@ -169,6 +169,11 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       const p = await res.json();
       return { ...toBlogSummary(p), body: p.body };
     },
+    async listHomepageSections() {
+      const res = await client.homepage.$get(undefined, signal());
+      if (!res.ok) throw new Error(`API /homepage responded ${res.status}`);
+      return (await res.json()).sections.map((s) => s.key);
+    },
     async listBooks() {
       const res = await client.books.$get({ query: { limit: "100", offset: "0" } }, signal());
       if (!res.ok) throw new Error(`API /books responded ${res.status}`);
