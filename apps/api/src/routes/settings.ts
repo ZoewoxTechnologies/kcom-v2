@@ -109,7 +109,9 @@ function shape(row: Row | undefined, includeAdminOnly: boolean) {
 /** Fields of an ordered list (team, arms): zod rules and the response projection. */
 type ListSpec = {
   table: typeof teamMembers | typeof ministryArms;
-  create: z.ZodObject;
+  /** Required fields, then optional ones (nullable, no default: a PATCH must not reset them). */
+  required: z.ZodRawShape;
+  optional: Record<string, z.ZodType>;
   columns: readonly string[];
   label: string;
 };
@@ -118,22 +120,15 @@ const teamSpec: ListSpec = {
   table: teamMembers,
   label: "team member",
   columns: ["id", "name", "role", "bio", "portraitUrl"],
-  create: z.strictObject({
-    name: z.string().trim().min(1).max(200),
-    role: z.string().trim().min(1).max(200),
-    bio: text(4000).default(null),
-    portraitUrl: image.default(null),
-  }),
+  required: { name: z.string().trim().min(1).max(200), role: z.string().trim().min(1).max(200) },
+  optional: { bio: text(4000), portraitUrl: image },
 };
 const armsSpec: ListSpec = {
   table: ministryArms,
   label: "arm",
   columns: ["id", "name", "description", "imageUrl"],
-  create: z.strictObject({
-    name: z.string().trim().min(1).max(200),
-    description: text(4000).default(null),
-    imageUrl: image.default(null),
-  }),
+  required: { name: z.string().trim().min(1).max(200) },
+  optional: { description: text(4000), imageUrl: image },
 };
 
 const project = (spec: ListSpec, row: Record<string, unknown>) =>
@@ -150,19 +145,32 @@ const orderBody = z.strictObject({ ids: z.array(z.uuid()).max(200) });
 /** Admin routes for one ordered list: create, update, delete and persist a new order. */
 function orderedListRoutes(db: CapsuleDb, spec: ListSpec) {
   const t = spec.table;
-  const update = spec.create.partial().refine((b) => Object.keys(b).length > 0, "no fields to update");
+  // Defaults apply on create only: zod still applies `.default()` inside `.partial()`.
+  const create = z.strictObject({
+    ...spec.required,
+    ...Object.fromEntries(Object.entries(spec.optional).map(([k, f]) => [k, (f as z.ZodNullable).default(null)])),
+  });
+  const update = z
+    .strictObject({ ...spec.required, ...spec.optional })
+    .partial()
+    .refine((b) => Object.keys(b).length > 0, "no fields to update");
   const byId = (id: string) => eq(t.id, id);
   return new Hono<AuthEnv>()
     .get("/", async (c) => c.json({ items: await list(db, spec) }))
-    .post("/", requireCan("settings:manage"), validate("json", spec.create), async (c) => {
+    .post("/", requireCan("settings:manage"), validate("json", create), async (c) => {
       const values = c.req.valid("json") as Record<string, unknown>;
-      const [row] = await db
-        .insert(t as PgTable)
-        .values({
-          ...values,
-          position: sql`(select coalesce(max(position) + 1, 0) from ${t})`,
-        } as never)
-        .returning();
+      // The advisory lock serialises creates so two cannot take the same position.
+      const row = await db.transaction(async (tx) => {
+        await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${spec.label}))`);
+        const [{ next }] = (await tx
+          .select({ next: sql<number>`coalesce(max(${t.position}) + 1, 0)` })
+          .from(t)) as [{ next: number }];
+        const [created] = await tx
+          .insert(t as PgTable)
+          .values({ ...values, position: next } as never)
+          .returning();
+        return created;
+      });
       return c.json(project(spec, row as Record<string, unknown>), 201);
     })
     // Declared before "/:id" so "order" is not read as an id.

@@ -127,6 +127,31 @@ describe("settings", () => {
     expect(patched.role).toBe("Deacon");
   });
 
+  it("PATCH leaves unspecified optional fields alone", async () => {
+    const m = await json<Item>(
+      await call("/admin/settings/team", admin, "POST", { name: "A", role: "R", bio: "Hi", portraitUrl: PORTRAIT }),
+    );
+    const patched = await json<Item>(await call(`/admin/settings/team/${m.id}`, admin, "PATCH", { role: "Elder" }));
+    expect(patched).toMatchObject({ role: "Elder", bio: "Hi", portraitUrl: PORTRAIT });
+    const arm = await json<Item>(
+      await call("/admin/settings/arms", admin, "POST", { name: "X", description: "D", imageUrl: PORTRAIT }),
+    );
+    const armPatched = await json<Item>(await call(`/admin/settings/arms/${arm.id}`, admin, "PATCH", { name: "Y" }));
+    expect(armPatched).toMatchObject({ name: "Y", description: "D", imageUrl: PORTRAIT });
+    const cleared = await json<Item>(await call(`/admin/settings/arms/${arm.id}`, admin, "PATCH", { description: null }));
+    expect(cleared).toMatchObject({ description: null, imageUrl: PORTRAIT });
+  });
+
+  it("concurrent creates get distinct positions", async () => {
+    await Promise.all(
+      ["A", "B", "C", "D"].map((name) => call("/admin/settings/arms", admin, "POST", { name })),
+    );
+    const items = (await json(await call("/settings", null))).arms;
+    expect(items).toHaveLength(4);
+    const order = await call("/admin/settings/arms/order", admin, "PUT", { ids: items.map((i) => i.id).reverse() });
+    expect(order.status).toBe(200);
+  });
+
   it("rejects an order that is not every id exactly once, and unknown ids 404", async () => {
     const a = await json<Item>(await call("/admin/settings/arms", admin, "POST", { name: "One" }));
     await call("/admin/settings/arms", admin, "POST", { name: "Two" });
