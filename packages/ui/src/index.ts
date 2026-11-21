@@ -29,6 +29,8 @@ export { Avatar, initialsOf } from "./react/Avatar";
 export type { AvatarProps, AvatarSize } from "./react/Avatar";
 export { Badge } from "./react/Badge";
 export type { BadgeProps, BadgeVariant } from "./react/Badge";
+export { Banner } from "./react/Banner";
+export type { BannerProps, BannerVariant } from "./react/Banner";
 export { CountBadge } from "./react/CountBadge";
 export type { CountBadgeProps } from "./react/CountBadge";
 export { ButtonLink } from "./react/ButtonLink";

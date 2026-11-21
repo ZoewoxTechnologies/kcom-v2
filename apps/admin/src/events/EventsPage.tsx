@@ -14,6 +14,7 @@ import {
   TextField,
   DEFAULT_TIME_ZONE,
   useToast,
+  Banner,
 } from "@kcom/ui";
 import type { DataTableColumn } from "@kcom/ui";
 import { EditorContainer, useDirtyState } from "../editor";
@@ -187,12 +188,16 @@ export function EventsPage() {
             onChange={setWhen}
           />
           {loadFailed ? (
-            <div className="kc-events__error" role="alert">
-              <strong>Couldn&rsquo;t load events</strong>
-              <Button variant="secondary" onClick={() => void load()}>
-                Retry
-              </Button>
-            </div>
+            <Banner
+              variant="danger"
+              action={
+                <Button variant="tertiary" onClick={() => void load()}>
+                  Retry
+                </Button>
+              }
+            >
+              Couldn&rsquo;t load events
+            </Banner>
           ) : events === null ? (
             <p className="kc-events__loading">Loading events…</p>
           ) : (

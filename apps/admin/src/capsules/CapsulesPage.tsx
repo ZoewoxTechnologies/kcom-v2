@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Badge, Button, DataTable, TextField, SelectField } from "@kcom/ui";
+import { Badge, Banner, Button, DataTable, TextField, SelectField } from "@kcom/ui";
 import type { DataTableColumn, DataTableSort } from "@kcom/ui";
 import { capsuleEditPath, useCapsules } from "./api";
 import type { CapsuleStatus, CapsuleSummary } from "./api";
@@ -121,12 +121,16 @@ export function CapsulesPage() {
         />
       </form>
       {state === "error" ? (
-        <p role="alert">
-          Could not load capsules.{" "}
-          <Button variant="secondary" onClick={reload}>
-            Try again
-          </Button>
-        </p>
+        <Banner
+          variant="danger"
+          action={
+            <Button variant="tertiary" onClick={reload}>
+              Try again
+            </Button>
+          }
+        >
+          Could not load capsules.
+        </Banner>
       ) : state === "loading" ? (
         <p className="kc-admin-loading">Loading capsules…</p>
       ) : (

@@ -37,6 +37,15 @@
     --color-sandstone-hover: #efe2c6;
     --color-sandstone-active: #e8d7b2;
     --color-error: #a3402e;
+    --color-banner-info-bg: #eef2f2;
+    --color-banner-info-line: #aebcbc;
+    --color-banner-info-icon: #4d5f61;
+    --color-banner-success-bg: #e7f2ea;
+    --color-banner-success-line: #8db89a;
+    --color-banner-success-icon: #2b6b41;
+    --color-banner-danger-bg: #faebe7;
+    --color-banner-danger-line: #d8a094;
+    --color-banner-danger-icon: #a3402e;
     --color-ring: rgba(43, 97, 120, 0.18);
 
     /* Chrome */
@@ -156,6 +165,15 @@
       --color-sandstone-hover: #342d1e;
       --color-sandstone-active: #3d3523;
       --color-error: #e59a88;
+      --color-banner-info-bg: #1e2b30;
+      --color-banner-info-line: #3f565d;
+      --color-banner-info-icon: #a9bfc3;
+      --color-banner-success-bg: #172a1f;
+      --color-banner-success-line: #3d6a4c;
+      --color-banner-success-icon: #8fd0a4;
+      --color-banner-danger-bg: #31201c;
+      --color-banner-danger-line: #7a4439;
+      --color-banner-danger-icon: #e59a88;
       --color-ring: rgba(140, 192, 212, 0.25);
       --color-bar: #0b1316;
       --color-header: #17242a;
@@ -198,6 +216,15 @@
     --color-sandstone-hover: #342d1e;
     --color-sandstone-active: #3d3523;
     --color-error: #e59a88;
+    --color-banner-info-bg: #1e2b30;
+    --color-banner-info-line: #3f565d;
+    --color-banner-info-icon: #a9bfc3;
+    --color-banner-success-bg: #172a1f;
+    --color-banner-success-line: #3d6a4c;
+    --color-banner-success-icon: #8fd0a4;
+    --color-banner-danger-bg: #31201c;
+    --color-banner-danger-line: #7a4439;
+    --color-banner-danger-icon: #e59a88;
     --color-ring: rgba(140, 192, 212, 0.25);
     --color-bar: #0b1316;
     --color-header: #17242a;

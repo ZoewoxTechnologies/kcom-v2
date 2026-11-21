@@ -12,6 +12,7 @@ import {
   CompactList,
   Pagination,
   useToast,
+  Banner,
 } from "@kcom/ui";
 import type { DataTableColumn } from "@kcom/ui";
 import { contactTopicLabels, contactTopics, type ContactTopic } from "@kcom/db/contact-topics";
@@ -222,12 +223,16 @@ export function InboxPage() {
             </SelectField>
           </div>
           {loadFailed ? (
-            <div className="kc-inbox__error" role="alert">
-              <strong>Couldn&rsquo;t load messages</strong>
-              <Button variant="secondary" onClick={() => void load()}>
-                Retry
-              </Button>
-            </div>
+            <Banner
+              variant="danger"
+              action={
+                <Button variant="tertiary" onClick={() => void load()}>
+                  Retry
+                </Button>
+              }
+            >
+              Couldn&rsquo;t load messages
+            </Banner>
           ) : data === null ? (
             <p className="kc-inbox__loading">Loading messages…</p>
           ) : (

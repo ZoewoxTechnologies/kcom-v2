@@ -8,6 +8,7 @@ import { DateTimePickerDemo } from "../demo/DateTimePickerDemo";
 import { FormFieldsDemo } from "../demo/FormFieldsDemo";
 import { RichTextDemo } from "../demo/RichTextDemo";
 import { ToastDemo } from "../demo/ToastDemo";
+import { BannerDemo } from "../demo/BannerDemo";
 
 /** Component demos, public so review screenshots need no sign-in. */
 export function DemoPage() {
@@ -26,6 +27,7 @@ export function DemoPage() {
       <AvatarBadgeTagDemo />
       <DateTimePickerDemo />
       <ToastDemo />
+      <BannerDemo />
     </main>
   );
 }
