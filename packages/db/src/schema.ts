@@ -141,6 +141,25 @@ export const pages = pgTable(
   (t) => [uniqueIndex("pages_legacy_path_idx").on(t.legacyPath)],
 );
 
+/** Permanent redirects from legacy site paths to their new paths. Loaded by the migration import. */
+export const redirects = pgTable(
+  "redirects",
+  {
+    id: id(),
+    /** Old path including the leading slash, e.g. "/content/new-beginning-word". */
+    fromPath: text("from_path").notNull(),
+    toPath: text("to_path").notNull(),
+    status: integer("status").notNull().default(301),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex("redirects_from_path_idx").on(t.fromPath),
+    check("redirects_from_path_format", sql`${t.fromPath} LIKE '/%'`),
+    check("redirects_status", sql`${t.status} IN (301, 302, 307, 308)`),
+  ],
+);
+
 export const pageSections = pgTable(
   "page_sections",
   {
