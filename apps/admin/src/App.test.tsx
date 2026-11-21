@@ -132,15 +132,6 @@ describe("sign in", () => {
 });
 
 describe("account menu", () => {
-  it("hides View site when no site URL is configured", async () => {
-    vi.stubEnv("VITE_SITE_URL", "");
-    mockApi(user("editor"));
-    renderAt("/");
-    await screen.findByRole("button", { name: /account menu/i });
-    expect(screen.queryByRole("menuitem", { name: "View site", hidden: true })).toBeNull();
-    vi.unstubAllEnvs();
-  });
-
   it("shows the role as a capitalised tag", async () => {
     mockApi(user("editor"));
     renderAt("/");
@@ -148,7 +139,7 @@ describe("account menu", () => {
     expect(screen.getByRole("menu", { hidden: true })).toHaveTextContent("Editor");
   });
 
-  it("shows name, role, profile, view site (new tab) and sign out", async () => {
+  it("shows name, role, profile and sign out, with no View site entry", async () => {
     vi.stubEnv("VITE_SITE_URL", "https://site.example");
     mockApi(user("editor"));
     renderAt("/");
@@ -156,8 +147,7 @@ describe("account menu", () => {
     const menu = screen.getByRole("menu", { hidden: true });
     expect(menu).toHaveTextContent("Grace Adeyemi");
     expect(menu).toHaveTextContent("Editor");
-    const site = screen.getByRole("menuitem", { name: "View site", hidden: true });
-    expect(site).toHaveAttribute("target", "_blank");
+    expect(screen.queryByRole("menuitem", { name: "View site", hidden: true })).toBeNull();
     expect(screen.getByRole("menuitem", { name: "Profile", hidden: true })).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "Sign out", hidden: true })).toBeInTheDocument();
   });

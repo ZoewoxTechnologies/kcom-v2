@@ -123,11 +123,6 @@ export function Shell() {
               <Tag>{capitalise(user.role)}</Tag>
             </MenuLabel>
             <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
-            {siteUrl && (
-              <MenuItem href={siteUrl} target="_blank" rel="noopener noreferrer">
-                View site
-              </MenuItem>
-            )}
             <MenuSeparator />
             <MenuItem
               onClick={async () => {
