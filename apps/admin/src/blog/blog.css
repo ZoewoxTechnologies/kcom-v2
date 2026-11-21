@@ -1,0 +1,104 @@
+/* Admin Blog: list and full-page editor. The editor chrome is the shared .kc-editor-inline. */
+@layer components {
+  .kc-blog {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-inline-size: 0;
+  }
+  .kc-blog__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .kc-blog h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 5vw, 2.375rem);
+    line-height: 1.1;
+  }
+  .kc-blog__filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: var(--space-3);
+  }
+  .kc-blog-editor__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+  .kc-blog-editor__main {
+    flex: 1 1 28rem;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .kc-blog-editor__side {
+    flex: 0 0 20rem;
+    max-inline-size: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .kc-blog-editor__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+  .kc-blog-editor__card h2 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: 1.375rem;
+  }
+  .kc-blog-editor__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .kc-blog-editor__label {
+    font-weight: 700;
+    font-size: 0.875rem;
+  }
+  .kc-image-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .kc-image-field__label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .kc-image-field__preview {
+    inline-size: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-line);
+  }
+  .kc-image-field__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .kc-image-field__help {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+  .kc-image-field__error {
+    font-size: 0.875rem;
+    color: var(--color-banner-danger-icon);
+  }
+}
