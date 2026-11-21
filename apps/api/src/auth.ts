@@ -1,5 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError } from "better-auth/api";
+import { eq } from "drizzle-orm";
 import { CLIENT_IP_HEADER } from "./client-ip.js";
 import { accounts, rateLimits, sessions, users, verifications, type CapsuleDb } from "@kcom/db";
 
@@ -58,6 +60,21 @@ export function createAuth(db: CapsuleDb, opts: AuthOptions = {}) {
     user: {
       // Read-only to clients: only the seed script and admin tools assign roles.
       additionalFields: { role: { type: "string", required: false, input: false } },
+    },
+    databaseHooks: {
+      session: {
+        create: {
+          // Deactivated users cannot start a session, whatever their password.
+          before: async (session) => {
+            const [user] = await db
+              .select({ deactivatedAt: users.deactivatedAt })
+              .from(users)
+              .where(eq(users.id, session.userId));
+            if (user?.deactivatedAt)
+              throw new APIError("FORBIDDEN", { message: "account deactivated" });
+          },
+        },
+      },
     },
     emailAndPassword: {
       enabled: true,
