@@ -67,15 +67,14 @@
     --font-scripture: "Lora", Georgia, serif;
     --text-xs: 0.75rem;
     --text-sm: 0.875rem;
-    --text-base: 1rem; /* controls and compact UI */
-    --text-body: 1.0625rem; /* page body copy, 17px */
+    --text-base: 1rem;
     --text-reading: 1.125rem; /* long-form capsule, today and blog copy, 18px */
     --text-lg: 1.125rem;
     --text-xl: 1.625rem;
     --text-2xl: 2rem;
     --text-3xl: 3.25rem;
     --leading-tight: 1.1;
-    --leading-body: 1.65;
+    --leading-body: 1.6;
     --leading-reading: 1.7;
 
     /* Spacing (4px scale) */
