@@ -1,0 +1,112 @@
+/* Capsule editor: a form column beside the Publishing and Series cards. The chrome is the shared .kc-editor-inline. */
+@layer components {
+  .kc-capsule-editor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .kc-capsule-editor__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .kc-capsule-editor__head {
+    flex-wrap: wrap;
+  }
+  .kc-capsule-editor__head h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 600;
+  }
+  .kc-capsule-editor__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  /* The title is the page's headline, so it is set in the display face. */
+  .kc-capsule-editor__title input {
+    font-family: var(--font-title);
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  /* The glyph stays small; the hit area grows to 44px. */
+  .kc-capsule-editor__more {
+    position: relative;
+  }
+  .kc-capsule-editor__more::after {
+    content: "";
+    position: absolute;
+    inset: -0.375rem;
+  }
+  .kc-capsule-editor__saved {
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+  .kc-capsule-editor__layout {
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+  .kc-capsule-editor__main {
+    flex: 1;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .kc-capsule-editor__scripture {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: var(--space-3);
+  }
+  .kc-capsule-editor__side {
+    inline-size: 320px;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .kc-capsule-editor__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+  }
+  .kc-capsule-editor__card h2 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  .kc-capsule-editor__hint {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+  .kc-capsule-editor__note {
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    background: var(--color-bg, var(--color-surface));
+    font-size: 0.875rem;
+  }
+  @media (max-width: 63.99rem) {
+    .kc-capsule-editor__layout {
+      flex-direction: column;
+    }
+    .kc-capsule-editor__side {
+      inline-size: 100%;
+    }
+  }
+  @media (max-width: 39.99rem) {
+    .kc-capsule-editor__scripture {
+      grid-template-columns: 1fr;
+    }
+  }
+}

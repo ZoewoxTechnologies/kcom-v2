@@ -24,6 +24,13 @@ const make = (over: Partial<EventRecord>): EventRecord => ({
   ...over,
 });
 
+/** Replace a field's text in one step instead of one key event per character. */
+async function fill(field: HTMLElement, text: string) {
+  await userEvent.clear(field);
+  await userEvent.click(field);
+  await userEvent.paste(text);
+}
+
 let role: UserRole = "admin";
 vi.mock("../auth/AuthProvider", () => ({
   useAuth: () => ({ user: { id: "u", name: "Grace", email: "g@x.org", role } }),
@@ -167,12 +174,12 @@ describe("EventsPage", () => {
     await userEvent.click(await screen.findByText("Conference"));
     const dialog = await screen.findByRole("region", { name: "Editing" });
     await userEvent.click(within(dialog).getByLabelText("All day"));
-    await userEvent.type(within(dialog).getByLabelText(/Also online/), "not a link");
+    // One paste per field: typing every character is slow enough on a loaded CI runner to hit the 5s timeout.
+    await fill(within(dialog).getByLabelText(/Also online/), "not a link");
     await userEvent.click(within(dialog).getByRole("button", { name: "Publish" }));
     expect(await within(dialog).findByText(/starting with https/)).toBeInTheDocument();
-    await userEvent.clear(within(dialog).getByLabelText(/Also online/));
-    await userEvent.type(within(dialog).getByLabelText(/Also online/), "https://example.org/live");
-    await userEvent.type(within(dialog).getByLabelText(/Programme/), "Fri · 6 p.m. · Opening");
+    await fill(within(dialog).getByLabelText(/Also online/), "https://example.org/live");
+    await fill(within(dialog).getByLabelText(/Programme/), "Fri · 6 p.m. · Opening");
     await userEvent.selectOptions(within(dialog).getByLabelText(/Related blog post/), "p1");
     await userEvent.click(within(dialog).getByRole("button", { name: "Publish" }));
     await waitFor(() => expect(calls.find((c) => c.method === "PATCH")).toBeTruthy());
