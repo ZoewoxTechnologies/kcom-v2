@@ -28,7 +28,7 @@ beforeEach(() => {
   refuseLastAdmin = false;
   store = [
     make({ id: "1" }),
-    make({ id: "2", name: "Ed", email: "ed@x.org", role: "editor" }),
+    make({ id: "2", name: "Ed", email: "ed@x.org", role: "editor", invitePending: true }),
     make({ id: "3", name: "Old", email: "old@x.org", role: "editor", deactivatedAt: "2026-02-01" }),
   ];
   vi.stubGlobal(
@@ -67,6 +67,17 @@ const setup = () =>
   );
 
 describe("UsersPage", () => {
+  it("offers resend only to users who have not signed in, and blocks self-demotion", async () => {
+    store.push(make({ id: "5", name: "Second", email: "s@x.org", role: "admin" }));
+    setup();
+    await screen.findByText("ed@x.org");
+    expect(screen.getByRole("button", { name: "Resend invite to ed@x.org" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Resend invite to s@x.org/ })).toBeNull();
+    expect(screen.getByLabelText("Role for Grace")).toBeDisabled();
+    expect(screen.getByLabelText("Role for Second")).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Deactivate Grace" })).toBeDisabled();
+  });
+
   it("explains and blocks demoting or deactivating the only admin", async () => {
     setup();
     await screen.findByText("ed@x.org");

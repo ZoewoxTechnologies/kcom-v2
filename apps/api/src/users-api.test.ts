@@ -7,7 +7,13 @@ import { seedUser } from "./seed-users.js";
 const PASSWORD = "correct horse battery";
 const ORIGIN = "http://admin.test";
 
-type User = { id: string; email: string; role: string; deactivatedAt: string | null };
+type User = {
+  id: string;
+  email: string;
+  role: string;
+  deactivatedAt: string | null;
+  invitePending?: boolean;
+};
 
 let app: ReturnType<typeof createApp>;
 let admin: string;
@@ -125,6 +131,15 @@ describe("invite failures", () => {
     expect((await call(`/users/${id}/resend-invite`, admin, "POST")).status).toBe(204);
     expect(resets).toHaveLength(1);
     expect((await call(`/users/${id}/resend-invite`, editor, "POST")).status).toBe(403);
+  });
+});
+
+describe("invite pending", () => {
+  it("is true only for users who have not set a password", async () => {
+    await call("/users", admin, "POST", { email: "new@example.test", role: "editor" });
+    const users = await listUsers();
+    expect(users.find((u) => u.email === "new@example.test")!.invitePending).toBe(true);
+    expect(users.find((u) => u.email === "editor@example.test")!.invitePending).toBe(false);
   });
 });
 

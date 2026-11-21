@@ -30,6 +30,7 @@ import {
 
 const PAGE_SIZE = 10;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const SELF_HINT = "You can’t change your own role.";
 const LAST_ADMIN_HINT = "The only active admin can’t be demoted or deactivated.";
 
 const icon = (path: string) => (
@@ -168,7 +169,7 @@ export function UsersPage() {
   }, [load]);
 
   const replace = (next: UserRecord) =>
-    setUsers((list) => (list ?? []).map((u) => (u.id === next.id ? next : u)));
+    setUsers((list) => (list ?? []).map((u) => (u.id === next.id ? { ...u, ...next } : u)));
   const activeAdmins = (users ?? []).filter((u) => u.role === "admin" && isActive(u)).length;
   const isLastAdmin = (u: UserRecord) => u.role === "admin" && isActive(u) && activeAdmins <= 1;
 
@@ -261,8 +262,8 @@ export function UsersPage() {
           label={`Role for ${u.name}`}
           className="kc-users__role"
           value={u.role}
-          disabled={!isActive(u) || isLastAdmin(u)}
-          title={isLastAdmin(u) ? LAST_ADMIN_HINT : undefined}
+          disabled={!isActive(u) || isLastAdmin(u) || u.id === me?.id}
+          title={isLastAdmin(u) ? LAST_ADMIN_HINT : u.id === me?.id ? SELF_HINT : undefined}
           onChange={(e) => void onRole(u, e.target.value as UserRole)}
         >
           {userRoles.map((r) => (
@@ -346,11 +347,13 @@ export function UsersPage() {
             <span className="kc-users__actions">
               {isActive(u) ? (
                 <>
-                  <IconButton
-                    label={`Resend invite to ${u.email}`}
-                    icon={icon(MAIL)}
-                    onClick={() => void onResend(u)}
-                  />
+                  {u.invitePending && (
+                    <IconButton
+                      label={`Resend invite to ${u.email}`}
+                      icon={icon(MAIL)}
+                      onClick={() => void onResend(u)}
+                    />
+                  )}
                   <IconButton
                     label={isLastAdmin(u) ? LAST_ADMIN_HINT : `Deactivate ${u.name}`}
                     icon={icon(BLOCK)}

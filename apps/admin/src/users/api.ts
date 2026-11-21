@@ -8,6 +8,8 @@ export interface UserRecord {
   role: UserRole;
   deactivatedAt: string | null;
   createdAt: string;
+  /** The user has not set a password yet, so has never signed in. */
+  invitePending?: boolean;
 }
 
 export interface InviteInput {
