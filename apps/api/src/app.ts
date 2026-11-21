@@ -11,7 +11,7 @@ import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
 import { homepageRoutes } from "./routes/homepage.js";
 import { pageRoutes } from "./routes/pages.js";
-import { contactRoutes } from "./routes/contact.js";
+import { contactRoutes, type BotCheck } from "./routes/contact.js";
 import { settingsRoutes } from "./routes/settings.js";
 import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
@@ -30,6 +30,8 @@ export type AppOptions = {
   cloudinary?: CloudinaryConfig;
   /** Trusted reverse-proxy hops in front of the API, for client-IP lookup in x-forwarded-for. Default 1. */
   trustedProxyHops?: number;
+  /** Bot check for the public contact form; unset accepts every submission. */
+  contactBotCheck?: BotCheck;
 };
 
 export function createApp(
@@ -41,6 +43,7 @@ export function createApp(
     internalToken,
     cloudinary,
     trustedProxyHops,
+    contactBotCheck,
   }: AppOptions = {},
 ) {
   const publicCors = cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] });
@@ -81,7 +84,7 @@ export function createApp(
     .route("/blog", blogRoutes(db))
     .route("/books", bookRoutes(db))
     .route("/capsules", capsuleRoutes(db))
-    .route("/contact", contactRoutes(db, trustedProxyHops))
+    .route("/contact", contactRoutes(db, trustedProxyHops, contactBotCheck))
     .route("/events", eventRoutes(db))
     .route("/settings", settingsRoutes(db))
     .route("/series", seriesRoutes(db))
