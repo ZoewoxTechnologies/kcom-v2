@@ -145,6 +145,11 @@
     --kc-control-height: var(--control-height-lg);
   }
 
+  .kc-input--pill {
+    border-radius: var(--radius-pill);
+    padding-inline: 1.125rem;
+  }
+
   /* Checkbox and radio stay native; the label supplies the hit area. */
   .kc-choice {
     display: flex;

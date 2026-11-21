@@ -2,7 +2,6 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 Astro.response.status = 404;
 const links = [
-  { href: "/search", label: "Search the site" },
   { href: "/capsules/today", label: "Today’s Capsule" },
   { href: "/series", label: "Browse by series" },
   { href: "/blog", label: "Blog" },
@@ -17,7 +16,11 @@ const links = [
       “He leadeth me beside the still waters. He restoreth my soul.”
       <cite>Psalm 23:2–3</cite>
     </blockquote>
-    <p class="note">The link may be old, or the page may have moved. Start from one of these.</p>
+    <p class="note">The link may be old, or the page may have moved. Try a search, or start from one of these.</p>
+    <form role="search" action="/search" method="get" class="find" data-find>
+      <label for="nf-q" class="sr-only">Search the site</label>
+      <input id="nf-q" name="q" type="search" class="kc-input kc-input--lg kc-input--pill" placeholder="Search the site" autocomplete="off" />
+    </form>
     <nav class="links" aria-label="Where to go next">
       {links.map((l) => <a href={l.href}>{l.label}</a>)}
     </nav>
@@ -29,6 +32,8 @@ const links = [
   h1 { margin: 0; font-weight: 500; font-size: 2.25rem; }
   blockquote { margin: 0; max-inline-size: 35rem; font-family: var(--font-scripture); font-style: italic; font-size: 1.3125rem; color: color-mix(in srgb, var(--color-text) 53%, var(--color-muted)); }
   cite { display: block; margin-block-start: 6px; font-family: var(--font-body); font-style: normal; font-size: 13px; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-muted); }
+  .find { inline-size: 100%; max-inline-size: 32.5rem; }
+  .find input { inline-size: 100%; }
   .note { margin: 0; color: var(--color-muted); }
   .links { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-4) 28px; margin-block-start: var(--space-2); }
   .links a { font-weight: 600; text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 5px; }
