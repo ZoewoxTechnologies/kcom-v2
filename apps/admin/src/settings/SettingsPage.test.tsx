@@ -40,6 +40,17 @@ beforeEach(() => {
         state.team = (body.ids as string[]).map((id) => state.team.find((t) => t.id === id)!);
         return json({ items: state.team });
       }
+      if (method === "PATCH" && path === "" && body.social?.facebook === "nope")
+        return new Response(
+          JSON.stringify({
+            error: {
+              code: "invalid_request",
+              message: "invalid json",
+              details: [{ path: "social.facebook", message: "must be a URL" }],
+            },
+          }),
+          { status: 400, headers: { "content-type": "application/json" } },
+        );
       if (method === "PATCH" && path === "") {
         for (const [g, v] of Object.entries(body)) Object.assign(state[g as "bank"], v);
       }
@@ -94,5 +105,15 @@ describe("SettingsPage", () => {
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
     expect(await screen.findByText("Enter a name.")).toBeInTheDocument();
     expect(calls.some((c) => c.method === "POST")).toBe(false);
+  });
+
+  it("marks the field the API rejected", async () => {
+    setup();
+    await screen.findByLabelText(/Bank name/);
+    await userEvent.click(screen.getByRole("radio", { name: "Social" }));
+    await userEvent.type(await screen.findByLabelText(/Facebook/), "nope");
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByText(/must be a URL/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Facebook/)).toHaveAttribute("aria-invalid", "true");
   });
 });

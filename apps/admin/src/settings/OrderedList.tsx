@@ -63,6 +63,8 @@ export function OrderedList({ config, items, onChange }: Props) {
   const [editing, setEditing] = useState<string | "new" | null>(null);
   const [deleting, setDeleting] = useState<ListItem | null>(null);
   const [busy, setBusy] = useState(false);
+  /** True while a reorder is saving, so a second click can't race its rollback. */
+  const [moving, setMoving] = useState(false);
   const current = editing && editing !== "new" ? items.find((i) => i.id === editing) : null;
 
   const move = async (index: number, by: -1 | 1) => {
@@ -70,6 +72,7 @@ export function OrderedList({ config, items, onChange }: Props) {
     const [item] = next.splice(index, 1);
     next.splice(index + by, 0, item!);
     onChange(next);
+    setMoving(true);
     try {
       onChange(
         await reorderItems(
@@ -80,6 +83,8 @@ export function OrderedList({ config, items, onChange }: Props) {
     } catch {
       onChange(items);
       toast({ variant: "error", title: "Couldn’t reorder", description: "Try again." });
+    } finally {
+      setMoving(false);
     }
   };
 
@@ -134,23 +139,27 @@ export function OrderedList({ config, items, onChange }: Props) {
               </div>
               <div className="kc-settings__itemtools">
                 <IconButton
+                  className="kc-settings__tool"
                   label={`Move ${item.name} up`}
                   icon={UP}
-                  disabled={index === 0}
+                  disabled={moving || index === 0}
                   onClick={() => void move(index, -1)}
                 />
                 <IconButton
+                  className="kc-settings__tool"
                   label={`Move ${item.name} down`}
                   icon={DOWN}
-                  disabled={index === items.length - 1}
+                  disabled={moving || index === items.length - 1}
                   onClick={() => void move(index, 1)}
                 />
                 <IconButton
+                  className="kc-settings__tool"
                   label={`Edit ${item.name}`}
                   icon={EDIT}
                   onClick={() => setEditing(item.id)}
                 />
                 <IconButton
+                  className="kc-settings__tool"
                   label={`Delete ${item.name}`}
                   icon={TRASH}
                   onClick={() => setDeleting(item)}

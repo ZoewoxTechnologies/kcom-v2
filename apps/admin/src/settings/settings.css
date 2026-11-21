@@ -80,6 +80,16 @@
   .kc-settings__itemtools {
     display: flex;
     align-items: center;
+    gap: var(--space-1);
+  }
+  /* 44px hit area around the 20px icon, so neighbouring tools are hard to mis-tap. */
+  .kc-settings__itemtools .kc-settings__tool {
+    min-inline-size: 44px;
+    min-block-size: 44px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   .kc-settings__image {
     display: flex;

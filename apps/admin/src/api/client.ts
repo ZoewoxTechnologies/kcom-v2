@@ -4,6 +4,7 @@ export class ApiError extends Error {
     message: string,
     readonly status: number,
     readonly code?: string,
+    readonly details?: unknown,
   ) {
     super(message);
   }
@@ -26,9 +27,14 @@ export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await apiFetch(path, init);
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as {
-      error?: { code?: string; message?: string };
+      error?: { code?: string; message?: string; details?: unknown };
     } | null;
-    throw new ApiError(body?.error?.message ?? "request failed", res.status, body?.error?.code);
+    throw new ApiError(
+      body?.error?.message ?? "request failed",
+      res.status,
+      body?.error?.code,
+      body?.error?.details,
+    );
   }
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
 }

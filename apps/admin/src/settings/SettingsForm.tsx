@@ -21,6 +21,17 @@ interface Props {
 const toForm = (fields: readonly FieldSpec[], values: Props["values"]) =>
   Object.fromEntries(fields.map((f) => [f.key, values[f.key] ?? ""]));
 
+/** Field name to message from the API's validation details (paths look like "social.facebook"). */
+function failingFields(details: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!Array.isArray(details)) return out;
+  for (const d of details as { path?: string; message?: string }[]) {
+    const key = d.path?.split(".").pop();
+    if (key) out[key] = d.message ? `Check this value: ${d.message}.` : "Check this value.";
+  }
+  return out;
+}
+
 /** One settings group: its fields and a single Save button. */
 export function SettingsForm({ title, fields, values, onSave }: Props) {
   const { toast } = useToast();
@@ -36,8 +47,8 @@ export function SettingsForm({ title, fields, values, onSave }: Props) {
       setErrors({});
       toast({ variant: "success", title: "Settings saved" });
     } catch (err) {
-      if (err instanceof ApiError && err.status === 422)
-        setErrors({ _: "Check the values and try again." });
+      const bad = err instanceof ApiError && err.status < 500 ? failingFields(err.details) : {};
+      if (Object.keys(bad).length) setErrors(bad);
       else toast({ variant: "error", title: "Couldn’t save settings", description: "Try again." });
     } finally {
       setSaving(false);
@@ -47,6 +58,7 @@ export function SettingsForm({ title, fields, values, onSave }: Props) {
   return (
     <form
       className="kc-settings__panel"
+      noValidate
       onSubmit={(e) => {
         e.preventDefault();
         void save();
@@ -58,6 +70,7 @@ export function SettingsForm({ title, fields, values, onSave }: Props) {
           label: f.label,
           optional: true,
           help: f.help,
+          error: errors[f.key],
           value: form.value[f.key] ?? "",
           onChange: (e: { target: { value: string } }) =>
             form.setValue({ ...form.value, [f.key]: e.target.value }),
@@ -68,11 +81,6 @@ export function SettingsForm({ title, fields, values, onSave }: Props) {
           <TextField key={f.key} type={f.type ?? "text"} {...common} />
         );
       })}
-      {errors._ && (
-        <p className="kc-field__error" role="alert">
-          {errors._}
-        </p>
-      )}
       <div className="kc-settings__actions">
         <Button type="submit" disabled={!form.dirty} loading={saving}>
           Save
