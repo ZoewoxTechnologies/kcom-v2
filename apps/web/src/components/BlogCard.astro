@@ -1,4 +1,5 @@
 ---
+import ResponsiveImage from "./ResponsiveImage.astro";
 import { postKicker } from "../lib/blog";
 import type { BlogPostSummary } from "../lib/data/types";
 
@@ -12,7 +13,7 @@ const Heading = `h${level}` as const;
 ---
 <article class="card">
   <a href={`/blog/${post.slug}`}>
-    <div class="cover">{post.heroImageUrl && <img src={post.heroImageUrl} alt="" loading="lazy" />}</div>
+    <div class="cover">{post.heroImageUrl && <ResponsiveImage src={post.heroImageUrl} widths={[320, 480, 640, 800]} sizes="(min-width: 64rem) 24rem, (min-width: 40rem) 50vw, 100vw" />}</div>
     <div class="text">
       <span class="kicker">{postKicker(post)}</span>
       <Heading class="title">{post.title}</Heading>

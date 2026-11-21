@@ -1,4 +1,5 @@
 ---
+import ResponsiveImage from "./ResponsiveImage.astro";
 import { richTextToPlain } from "../lib/data/client";
 import { richTextToHtml } from "../lib/rich-text";
 import { dayParts, formatLagosShortDate } from "@kcom/content";
@@ -31,7 +32,7 @@ const showRelated = mode === "past" && (Boolean(seriesInfo) || past.length > 0);
 const bodyHtml = richTextToHtml(capsule.body);
 const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
 ---
-{capsule.bannerUrl && <div class="banner"><img src={capsule.bannerUrl} alt="" /></div>}
+{capsule.bannerUrl && <div class="banner"><ResponsiveImage src={capsule.bannerUrl} widths={[480, 640, 800, 1200]} sizes="(min-width: 48rem) 48rem, 100vw" eager /></div>}
 <article class:list={["capsule", mode]}>
   {mode === "today" ? (
     <DateNav day={day} prevHref={prev ? href(prev) : undefined} nextHref={next ? href(next) : undefined} />

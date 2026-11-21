@@ -1,4 +1,5 @@
 ---
+import ResponsiveImage from "../components/ResponsiveImage.astro";
 import { dayParts, lagosDate } from "@kcom/content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HomeSection from "../components/HomeSection.astro";
@@ -45,7 +46,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
         <div class="inner hero">
           {capsule ? (
             <>
-              <div class="photo" aria-hidden="true">{capsule.bannerUrl && <img src={capsule.bannerUrl} alt="" />}</div>
+              <div class="photo" aria-hidden="true">{capsule.bannerUrl && <ResponsiveImage src={capsule.bannerUrl} widths={[480, 640, 800, 1200]} sizes="(min-width: 60rem) 36rem, 100vw" eager />}</div>
               <div class="copy">
                 <span class="eyebrow">Today’s Capsule · {heroDay!.rest}</span>
                 <h1>{capsule.title}</h1>

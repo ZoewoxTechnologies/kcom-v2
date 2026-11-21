@@ -1,8 +1,9 @@
 ---
+import ResponsiveImage from "./ResponsiveImage.astro";
 interface Props { title: string; coverUrl: string | null; tone?: number }
 const { title, coverUrl, tone = 0 } = Astro.props;
 ---
-<span class={`cover t${tone}`}>{coverUrl ? <img src={coverUrl} alt="" loading="lazy" /> : <span class="ph">{title}</span>}</span>
+<span class={`cover t${tone}`}>{coverUrl ? <ResponsiveImage src={coverUrl} widths={[160, 240, 320, 480]} sizes="(min-width: 40rem) 12rem, 40vw" /> : <span class="ph">{title}</span>}</span>
 <style>
   .cover { display: block; aspect-ratio: 2 / 3; border-radius: 8px; background: var(--d-cover-1); border: 1px solid var(--color-line); overflow: hidden; }
   .t1 { background: var(--d-cover-2); }

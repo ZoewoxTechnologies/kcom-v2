@@ -1,0 +1,26 @@
+---
+import { responsiveImage } from "../lib/responsive-image";
+
+interface Props {
+  src: string;
+  alt?: string;
+  widths: number[];
+  /** The `sizes` attribute: how wide the image renders at each breakpoint. */
+  sizes: string;
+  /** Above-the-fold images load eagerly; everything else is lazy. */
+  eager?: boolean;
+  class?: string;
+}
+const { src, alt = "", widths, sizes, eager = false, class: className } = Astro.props;
+const attrs = responsiveImage(src, { widths });
+---
+<img
+  class={className}
+  src={attrs.src}
+  srcset={attrs.srcset}
+  sizes={attrs.srcset ? sizes : undefined}
+  alt={alt}
+  loading={eager ? "eager" : "lazy"}
+  fetchpriority={eager ? "high" : undefined}
+  decoding="async"
+/>

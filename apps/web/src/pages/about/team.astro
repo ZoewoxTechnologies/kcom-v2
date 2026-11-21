@@ -1,4 +1,5 @@
 ---
+import ResponsiveImage from "../../components/ResponsiveImage.astro";
 import AboutLayout from "../../components/AboutLayout.astro";
 import LinkCard from "../../components/LinkCard.astro";
 import { getAbout } from "../../lib/about";
@@ -9,7 +10,7 @@ const initials = (n: string) => n.replace(/^(Dr|Brother|Sister|Pastor|Prophet)\.
   <ul class="team">
     {team.map((p) => (
       <li class="person">
-        <div class="photo">{p.photoUrl ? <img src={p.photoUrl} alt="" loading="lazy" /> : <span aria-hidden="true">{initials(p.name)}</span>}</div>
+        <div class="photo">{p.photoUrl ? <ResponsiveImage src={p.photoUrl} widths={[240, 360, 480, 720]} sizes="(min-width: 60rem) 18rem, 50vw" /> : <span aria-hidden="true">{initials(p.name)}</span>}</div>
         <div class="info"><h3>{p.name}</h3><span class="role">{p.role}</span><p>{p.bio}</p></div>
       </li>
     ))}
