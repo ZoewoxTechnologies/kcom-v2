@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
-import { Button, TextField } from "@kcom/ui";
+import { Banner, Button, TextField } from "@kcom/ui";
 import { useAuth } from "../auth/AuthProvider";
 
 const messages = {
@@ -48,11 +48,7 @@ export function SignInPage() {
           </span>
           <h1>Sign in to manage the site</h1>
         </div>
-        {error && (
-          <div role="alert" className="kc-admin-signin__error">
-            {error}
-          </div>
-        )}
+        {error && <Banner variant="danger">{error}</Banner>}
         <TextField
           label="Email address"
           name="email"

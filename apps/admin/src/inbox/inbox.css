@@ -51,16 +51,6 @@
   .kc-inbox__loading {
     color: var(--color-muted);
   }
-  .kc-inbox__error {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius);
-  }
   .kc-inbox__side {
     inline-size: 420px;
     flex: none;

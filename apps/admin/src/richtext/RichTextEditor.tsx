@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
-import { Tooltip } from "@kcom/ui";
+import { Banner, Button, Tooltip } from "@kcom/ui";
 import { EditorContent, useEditor } from "@tiptap/react";
 import type { Editor } from "@tiptap/react";
 import { isSafeHref } from "@kcom/content";
@@ -380,29 +380,29 @@ export function RichTextEditor({
           </button>
         </form>
       ))}
-      {Object.entries(uploads).map(([id, u]) => (
-        <div key={id} className="kc-rte__upload" role={u.error ? "alert" : "status"}>
-          {u.error ? (
-            <>
-              <span className="kc-rte__error">
-                {u.name}: {u.error}
-              </span>
-              <button
-                type="button"
-                className="kc-btn kc-btn--secondary"
+      {Object.entries(uploads).map(([id, u]) =>
+        u.error ? (
+          <Banner
+            key={id}
+            variant="danger"
+            action={
+              <Button
+                variant="tertiary"
                 onClick={() => setUploads((all) => withUpload(all, Number(id), null))}
               >
                 Dismiss
-              </button>
-            </>
-          ) : (
-            <>
-              <span>Uploading {u.name}…</span>
-              <progress value={u.progress} max={1} aria-label={`Uploading ${u.name}`} />
-            </>
-          )}
-        </div>
-      ))}
+              </Button>
+            }
+          >
+            {u.name}: {u.error}
+          </Banner>
+        ) : (
+          <div key={id} className="kc-rte__upload" role="status">
+            <span>Uploading {u.name}…</span>
+            <progress value={u.progress} max={1} aria-label={`Uploading ${u.name}`} />
+          </div>
+        ),
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@
     "./a11y.css": "./src/components/a11y.css",
     "./avatar.css": "./src/components/avatar.css",
     "./badge.css": "./src/components/badge.css",
+    "./banner.css": "./src/components/banner.css",
     "./datetime-picker.css": "./src/components/datetime-picker.css",
     "./toast.css": "./src/components/toast.css",
     "./pagination.css": "./src/components/pagination.css",

@@ -93,7 +93,7 @@ describe("dashboard", () => {
     mockApi({ capsules: [cap("m", "Tomorrow", "draft", "2026-11-19T23:00:00Z")] });
     renderPage();
     await screen.findAllByRole("link", { name: "Tomorrow" });
-    expect(screen.queryByText("Heads up")).toBeNull();
+    expect(screen.queryByText(/isn’t written yet/)).toBeNull();
   });
 
   it("says so when loading fails", async () => {

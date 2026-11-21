@@ -5,6 +5,7 @@ import "@kcom/ui/button.css";
 import "@kcom/ui/a11y.css";
 import "@kcom/ui/avatar.css";
 import "@kcom/ui/badge.css";
+import "@kcom/ui/banner.css";
 import "@kcom/ui/toast.css";
 import "@kcom/ui/data-table.css";
 import "@kcom/ui/pagination.css";

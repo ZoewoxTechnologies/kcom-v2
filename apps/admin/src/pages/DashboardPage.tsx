@@ -1,10 +1,10 @@
 import { Link } from "react-router";
-import { Badge, Button } from "@kcom/ui";
+import { Badge, Banner, Button } from "@kcom/ui";
 import { capsuleEditPath } from "../capsules/api";
 import { addDays, lagosDay, shortDayLabel } from "../capsules/days";
 import { useDashboard } from "../dashboard/api";
 import { comingUp, draftsOf, greeting } from "../dashboard/summary";
-import { Notice, Panel, PanelRow, StatTile } from "../dashboard/widgets";
+import { Panel, PanelRow, StatTile } from "../dashboard/widgets";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const newCapsulePath = (day: string) => `/capsules/new?day=${day}`;
@@ -28,9 +28,8 @@ export function DashboardPage() {
 
       {state === "loading" && <p className="kc-admin-loading">Loading…</p>}
       {state === "error" && (
-        <Notice
-          role="alert"
-          label="Problem"
+        <Banner
+          variant="danger"
           action={
             <Button variant="tertiary" onClick={reload}>
               Try again
@@ -38,7 +37,7 @@ export function DashboardPage() {
           }
         >
           The dashboard could not be loaded.
-        </Notice>
+        </Banner>
       )}
       {data && <Loaded data={data} now={now} today={today} tomorrow={tomorrow} />}
     </section>
@@ -87,8 +86,7 @@ function Loaded({
       </div>
 
       {!tomorrowCapsule && (
-        <Notice
-          label="Heads up"
+        <Banner
           action={
             <Link className="kc-btn kc-btn--tertiary" to={newCapsulePath(tomorrow)}>
               Write it now
@@ -97,7 +95,7 @@ function Loaded({
         >
           Tomorrow’s Capsule ({shortDayLabel(tomorrow)}) isn’t written yet. It goes live at midnight
           (WAT).
-        </Notice>
+        </Banner>
       )}
 
       <div className="kc-dash__panels">

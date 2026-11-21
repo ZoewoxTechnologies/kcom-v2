@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { DragEvent } from "react";
 import { Link } from "react-router";
 import { can } from "@kcom/permissions";
-import { Badge, Button, Dialog, DialogActions, TextField, useToast } from "@kcom/ui";
+import { Badge, Banner, Button, Dialog, DialogActions, TextField, useToast } from "@kcom/ui";
 import { ApiError } from "../api/client";
 import { useAuth } from "../auth/AuthProvider";
 import { capsuleEditPath, rescheduleCapsule, useCapsules } from "./api";
@@ -137,12 +137,16 @@ export function CalendarPage() {
         <span className="kc-cal__hint">Drag a capsule to another day to reschedule</span>
       </div>
       {state === "error" && (
-        <p role="alert">
-          Could not load capsules.{" "}
-          <Button variant="secondary" onClick={reload}>
-            Try again
-          </Button>
-        </p>
+        <Banner
+          variant="danger"
+          action={
+            <Button variant="tertiary" onClick={reload}>
+              Try again
+            </Button>
+          }
+        >
+          Could not load capsules.
+        </Banner>
       )}
       <div
         className="kc-cal__grid"

@@ -60,24 +60,3 @@ export function PanelRow({
     </div>
   );
 }
-
-/** Highlighted banner with a small label, a message and one action. */
-export function Notice({
-  label,
-  action,
-  role = "status",
-  children,
-}: {
-  label: string;
-  role?: "status" | "alert";
-  action?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <div className="kc-notice" role={role}>
-      <span className="kc-notice__label">{label}</span>
-      <span className="kc-notice__text">{children}</span>
-      {action}
-    </div>
-  );
-}

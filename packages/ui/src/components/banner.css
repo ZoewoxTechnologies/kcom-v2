@@ -1,0 +1,56 @@
+/* Banner: .kc-banner plus a variant (warning, info, success, danger). An icon, a message and
+   optional link-style actions. Needs a11y.css for the hidden variant name. Import after tokens.css. */
+@layer components {
+  .kc-banner {
+    --kc-banner-bg: var(--color-sandstone);
+    --kc-banner-line: var(--color-gold);
+    --kc-banner-icon: var(--color-gold-text-tint);
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3) 14px;
+    padding: var(--space-4) 20px;
+    background: var(--kc-banner-bg);
+    border: 1px solid var(--kc-banner-line);
+    border-radius: var(--radius);
+    color: var(--color-text);
+  }
+  .kc-banner--info {
+    --kc-banner-bg: var(--color-banner-info-bg);
+    --kc-banner-line: var(--color-banner-info-line);
+    --kc-banner-icon: var(--color-banner-info-icon);
+  }
+  .kc-banner--success {
+    --kc-banner-bg: var(--color-banner-success-bg);
+    --kc-banner-line: var(--color-banner-success-line);
+    --kc-banner-icon: var(--color-banner-success-icon);
+  }
+  .kc-banner--danger {
+    --kc-banner-bg: var(--color-banner-danger-bg);
+    --kc-banner-line: var(--color-banner-danger-line);
+    --kc-banner-icon: var(--color-banner-danger-icon);
+  }
+  .kc-banner__icon {
+    position: relative;
+    flex: none;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    color: var(--kc-banner-icon);
+  }
+  .kc-banner__icon svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+  .kc-banner__text {
+    flex: 1 1 14rem;
+    min-inline-size: 0;
+  }
+  .kc-banner__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+  }
+}
