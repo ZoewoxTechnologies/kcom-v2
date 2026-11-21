@@ -70,15 +70,15 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   });
 </script>
 <style>
-  .verse-bar { background: var(--color-bar); color: var(--color-on-bar); padding: var(--space-2) var(--gutter); padding-inline: max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter))); display: flex; gap: var(--space-4); align-items: center; font-size: var(--text-sm); }
+  .verse-bar { background: var(--color-bar); color: var(--color-on-bar); padding-block: var(--space-2); padding-inline: max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter))); display: flex; gap: var(--space-4); align-items: center; font-size: var(--text-sm); }
   .verse-bar .date { font-variant: small-caps; letter-spacing: 0.1em; font-weight: 700; color: var(--color-bar-gold); }
   .verse-bar .verse { color: inherit; text-decoration: none; font-family: var(--font-title); font-style: italic; font-size: var(--text-lg); }
   .verse-bar .email { margin-left: auto; color: inherit; text-decoration: underline; text-decoration-color: var(--color-gold); text-underline-offset: 4px; white-space: nowrap; }
-  .site-header { position: sticky; top: 0; z-index: 10; background: var(--color-header); border-bottom: 1px solid var(--color-line); padding: var(--space-3) var(--gutter); padding-inline: max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter))); display: flex; align-items: center; gap: var(--space-4); }
+  .site-header { position: sticky; top: 0; z-index: 10; background: var(--color-header); border-bottom: 1px solid var(--color-line); padding-block: var(--space-3); padding-inline: max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter))); display: flex; align-items: center; gap: var(--space-4); }
   .brand { display: flex; align-items: center; gap: var(--space-3); color: var(--color-text); text-decoration: none; font-family: var(--font-title); font-weight: 600; font-size: 1.125rem; line-height: 1.05; }
   .brand :global(img) { width: 38px; height: 38px; object-fit: contain; }
   .line2 { display: block; }
-  .main-nav { display: none; align-items: center; gap: var(--space-5); margin-left: auto; white-space: nowrap; font-weight: 600; font-size: 0.9375rem; }
+  .main-nav { display: none; align-items: center; gap: 1.25rem; margin-left: auto; white-space: nowrap; font-weight: 600; font-size: 0.9375rem; }
   .main-nav a, .menu nav a { color: var(--color-text); text-decoration: none; padding: var(--space-2) 0; border-bottom: 2px solid transparent; }
   .main-nav a[aria-current="page"] { border-bottom-color: var(--color-gold); }
   .search { inline-size: 44px; block-size: 44px; border-radius: var(--radius-pill); border: 1px solid var(--color-line); color: var(--color-text); align-items: center; justify-content: center; flex: none; }
@@ -109,14 +109,14 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   @media (min-width: 64rem) {
     .site-header { padding-block: var(--space-4); }
     .brand { font-size: 1.375rem; }
-    .brand :global(img) { width: 48px; height: 48px; }
+    .brand :global(img) { width: 50px; height: 50px; }
     .main-nav { display: flex; }
     .menu { display: none; }
     .cta { display: inline-flex; }
     .search { display: flex; }
     .verse-bar .date { display: inline; }
     .verse-bar .email { display: inline; }
-    .verse-bar .verse { font-size: var(--text-lg); }
+    .verse-bar .verse { font-size: 1.0625rem; }
     .verse .short { display: none; }
     .verse .long { display: inline; }
   }
