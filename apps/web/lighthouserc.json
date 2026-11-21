@@ -2,12 +2,12 @@
   "ci": {
     "collect": {
       "url": [
-        "http://127.0.0.1:4650/",
-        "http://127.0.0.1:4650/blog",
-        "http://127.0.0.1:4650/blog/2026-year-of-divine-acceleration",
-        "http://127.0.0.1:4650/capsules/today",
-        "http://127.0.0.1:4650/events",
-        "http://127.0.0.1:4650/books"
+        "http://127.0.0.1:4321/",
+        "http://127.0.0.1:4321/blog",
+        "http://127.0.0.1:4321/blog/2026-year-of-divine-acceleration",
+        "http://127.0.0.1:4321/capsules/today",
+        "http://127.0.0.1:4321/events",
+        "http://127.0.0.1:4321/books"
       ],
       "numberOfRuns": 3,
       "settings": { "onlyCategories": ["performance"] }

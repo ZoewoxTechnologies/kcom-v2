@@ -25,7 +25,7 @@ Lighthouse, default mobile emulation (slow 4G, 4x CPU throttle), median of 3 run
 | Largest Contentful Paint | at most 2.5 s |
 | Total Blocking Time | at most 300 ms |
 | Cumulative Layout Shift | at most 0.1 |
-| JavaScript transferred | at most 150 KB |
+| JavaScript | at most 150 KB transferred (compressed over the wire, Lighthouse `resource-summary:script:size`) |
 
 ## Manual pass (per release)
 

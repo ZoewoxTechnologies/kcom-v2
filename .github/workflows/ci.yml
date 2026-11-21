@@ -175,7 +175,7 @@ jobs:
       - name: Start site
         run: |
           nohup node apps/web/dist/server/entry.mjs > site.log 2>&1 &
-          npx --yes wait-on@8 -t 60000 http://127.0.0.1:4321/
+          pnpm --filter @kcom/web exec wait-on -t 60000 http://127.0.0.1:4321/
       - name: axe (WCAG AA)
         run: pnpm --filter @kcom/web audit:a11y
       - name: Lighthouse (throttled mobile)
