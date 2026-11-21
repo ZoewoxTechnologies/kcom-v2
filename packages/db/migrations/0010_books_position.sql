@@ -1,1 +1,0 @@
-ALTER TABLE "books" ADD COLUMN "position" integer DEFAULT 0 NOT NULL;
