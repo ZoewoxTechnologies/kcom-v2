@@ -1,4 +1,5 @@
 ---
+import { publicOrigin } from "../lib/site-origin";
 import "@kcom/ui/styles.css";
 import "@kcom/ui/button.css";
 import "@kcom/ui/forms.css";
@@ -9,7 +10,7 @@ import Analytics from "../components/Analytics.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import { pageTitle, siteName } from "../lib/site";
-import { absoluteUrl, siteDescription, siteOrigin, truncate } from "../lib/seo";
+import { absoluteUrl, siteDescription, truncate } from "../lib/seo";
 
 interface Props {
   title?: string;
@@ -31,7 +32,7 @@ interface Props {
   jsonLd?: object[];
 }
 const { title, description, current = Astro.url.pathname, bleed = false, hideSignup = false, ogType = "website", image = "/og/default.png", noindex = false, canonicalPath, jsonLd = [] } = Astro.props;
-const origin = siteOrigin(import.meta.env.PUBLIC_SITE_URL ?? process.env.PUBLIC_SITE_URL, Astro.url.origin);
+const origin = publicOrigin(Astro.url);
 const pageNo = Number(Astro.url.searchParams.get("page"));
 const canonical = absoluteUrl(origin, canonicalPath ?? Astro.url.pathname) + (!canonicalPath && pageNo > 1 ? `?page=${Math.floor(pageNo)}` : "");
 const imageUrl = /^https?:/.test(image) ? image : absoluteUrl(origin, image);

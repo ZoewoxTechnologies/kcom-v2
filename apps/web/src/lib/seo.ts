@@ -9,9 +9,14 @@ export const staticPaths = ["/", "/capsules", "/series", "/blog", "/events", "/b
 
 const trim = (s: string) => s.replace(/\/+$/, "");
 
-/** The public origin: PUBLIC_SITE_URL when set, else the origin the request arrived on. */
-export function siteOrigin(configured: string | undefined, requestOrigin: string): string {
-  return trim(configured || requestOrigin);
+/**
+ * The public origin: always PUBLIC_SITE_URL in production, and a missing value throws. The request's
+ * Host header is only trusted in development, since cached responses must never carry a spoofed origin.
+ */
+export function siteOrigin(configured: string | undefined, requestOrigin: string, prod = false): string {
+  if (configured) return trim(configured);
+  if (prod) throw new Error("PUBLIC_SITE_URL is not set. Production needs the site's public origin for canonical and Open Graph URLs.");
+  return trim(requestOrigin);
 }
 
 /** Absolute URL for a site path. Query strings and fragments are dropped so each page has one canonical. */

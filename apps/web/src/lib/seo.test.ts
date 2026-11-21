@@ -9,6 +9,8 @@ describe("urls", () => {
     expect(absoluteUrl(origin, "/blog/?page=2#x")).toBe("https://example.org/blog");
     expect(siteOrigin(undefined, "http://localhost:4321/")).toBe("http://localhost:4321");
     expect(siteOrigin("https://site.org/", "http://x")).toBe("https://site.org");
+    expect(() => siteOrigin(undefined, "https://evil.test", true)).toThrow(/PUBLIC_SITE_URL/);
+    expect(siteOrigin("https://site.org", "https://evil.test", true)).toBe("https://site.org");
   });
   it("escapes XML and truncates at words", () => {
     expect(escapeXml(`a&b <c> "d"`)).toBe("a&amp;b &lt;c&gt; &quot;d&quot;");

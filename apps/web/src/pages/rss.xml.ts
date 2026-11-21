@@ -1,7 +1,8 @@
+import { publicOrigin } from "../lib/site-origin";
 import type { APIRoute } from "astro";
 import { data } from "../lib/data";
 import { richTextToPlain } from "../lib/data/client";
-import { renderRss, siteOrigin, truncate, type FeedItem } from "../lib/seo";
+import { renderRss, truncate, type FeedItem } from "../lib/seo";
 import { siteName } from "../lib/site";
 
 const FEED_SIZE = 30;
@@ -15,7 +16,7 @@ export const GET: APIRoute = async ({ url }) => {
     date: c.displayDate,
     description: truncate([c.scriptureRef, richTextToPlain(full[i]?.scriptureText)].filter(Boolean).join(" — ") || c.title, 300),
   }));
-  const origin = siteOrigin(import.meta.env.PUBLIC_SITE_URL ?? process.env.PUBLIC_SITE_URL, url.origin);
+  const origin = publicOrigin(url);
   const xml = renderRss(origin, { title: `${siteName}: daily capsules`, description: "A new prophetic capsule every day.", selfPath: "/rss.xml", homePath: "/capsules" }, items);
   return new Response(xml, { headers: { "content-type": "application/rss+xml; charset=utf-8", "cache-control": "public, max-age=0, s-maxage=900" } });
 };
