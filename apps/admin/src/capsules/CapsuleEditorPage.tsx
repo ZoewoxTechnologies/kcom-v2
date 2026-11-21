@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import {
   Badge,
@@ -6,6 +7,8 @@ import {
   Button,
   DateTimePicker,
   Field,
+  Menu,
+  MenuItem,
   SelectField,
   TextareaField,
   TextField,
@@ -111,6 +114,16 @@ const statusLabel: Record<CapsuleStatus, string> = {
   published: "Published",
 };
 
+/** "just now", "2 min ago", "3 hours ago" or the date. */
+function savedAgo(at: Date): string {
+  const mins = Math.max(0, Math.round((Date.now() - at.getTime()) / 60_000));
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  return `on ${new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(at)}`;
+}
+
 const whenFormat = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Africa/Lagos",
   weekday: "short",
@@ -185,7 +198,7 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
   );
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
-  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [savedAt, setSavedAt] = useState<Date | null>(capsule ? new Date(capsule.updatedAt) : null);
   const [series, setSeries] = useState<SeriesSummary[]>([]);
   const [takenDays, setTakenDays] = useState<string[]>([]);
   const redirect = useRef(false);
@@ -241,9 +254,26 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
     try {
       let seriesId: string | null = v.seriesId || null;
       if (v.seriesId === NEW_SERIES) {
-        const created = await createSeries(v.newSeriesTitle.trim());
-        setSeries((all) => [...all, created]);
-        seriesId = created.id;
+        try {
+          const created = await createSeries(v.newSeriesTitle.trim());
+          setSeries((all) => [...all, created]);
+          seriesId = created.id;
+          // Pick it now, so a failed capsule save can be retried without creating the series again.
+          form.setValue({ ...form.value, seriesId: created.id, newSeriesTitle: "" });
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 409)
+            setErrors({
+              newSeriesTitle:
+                "A series with this name already exists. Choose it from the list or pick another name.",
+            });
+          else if (!(err instanceof ApiError && err.status === 409))
+            toast({
+              variant: "error",
+              title: "Couldn’t create the series",
+              description: "Try again.",
+            });
+          throw err;
+        }
       }
       const body: CapsuleInput = {
         title: v.title.trim(),
@@ -273,7 +303,8 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
       return result;
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        if (err.code === "day_taken" || /day/i.test(err.message))
+        if (/series/i.test(err.message)) setErrors({ newSeriesTitle: err.message });
+        else if (err.code === "day_taken" || /day/i.test(err.message))
           setErrors({ publishAt: err.message });
         else setErrors({ title: "Another capsule already uses this title. Make it different." });
       } else if (err instanceof ApiError && err.status === 422) {
@@ -323,26 +354,46 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
     </Button>
   );
 
-  const actions = !canWrite ? null : status === "published" ? (
-    <>
-      {primary("Save changes", "published", "Capsule saved", { stay: true })}
-      {canPublish && secondary("Unpublish", "draft", "Capsule unpublished", { stay: true })}
-    </>
-  ) : status === "scheduled" ? (
-    <>
-      {canPublish && primary("Save changes", "scheduled", "Capsule saved", { stay: true })}
-      {canPublish && secondary("Unschedule", "draft", "Capsule moved to drafts", { stay: true })}
-      {canPublish && secondary("Publish now", "published", "Capsule published", { now: true })}
-    </>
-  ) : (
-    <>
-      {canPublish && primary("Schedule", "scheduled", "Capsule scheduled")}
-      {canPublish
-        ? secondary("Save draft", "draft", "Draft saved", { stay: true })
-        : primary("Save draft", "draft", "Draft saved", { stay: true })}
-      {canPublish && secondary("Publish now", "published", "Capsule published", { now: true })}
-    </>
+  const more = (items: ReactNode) => (
+    <Menu
+      trigger="⋯"
+      triggerVariant="tertiary"
+      triggerLabel="More actions"
+      hideChevron
+      align="start"
+    >
+      {items}
+    </Menu>
   );
+  const item = (label: string, target: CapsuleStatus, message: string, opts = {}) => (
+    <MenuItem disabled={saving} onClick={() => void run(target, message, opts)()}>
+      {label}
+    </MenuItem>
+  );
+
+  // The API lets only people who can publish change scheduled or published capsules.
+  const locked = status !== "draft" && !canPublish;
+  const actions =
+    !canWrite || locked ? null : status === "published" ? (
+      <>
+        {primary("Save changes", "published", "Capsule saved", { stay: true })}
+        {secondary("Unpublish", "draft", "Capsule unpublished", { stay: true })}
+      </>
+    ) : status === "scheduled" ? (
+      <>
+        {primary("Save changes", "scheduled", "Capsule saved", { stay: true })}
+        {secondary("Unschedule", "draft", "Capsule moved to drafts", { stay: true })}
+        {more(item("Publish now", "published", "Capsule published", { now: true }))}
+      </>
+    ) : (
+      <>
+        {canPublish && primary("Schedule", "scheduled", "Capsule scheduled")}
+        {canPublish
+          ? secondary("Save draft", "draft", "Draft saved", { stay: true })
+          : primary("Save draft", "draft", "Draft saved", { stay: true })}
+        {canPublish && more(item("Publish now", "published", "Capsule published", { now: true }))}
+      </>
+    );
 
   const publishAt = v.publishAt ? new Date(v.publishAt) : null;
   const seriesTitle = series.find((s) => s.id === v.seriesId)?.title;
@@ -358,7 +409,7 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
         <>
           {savedAt && (
             <span className="kc-capsule-editor__saved" role="status">
-              Saved {new Intl.DateTimeFormat("en-GB", { timeStyle: "short" }).format(savedAt)}
+              Saved {savedAgo(savedAt)}
             </span>
           )}
           <Badge variant={status}>{statusLabel[status]}</Badge>
@@ -366,6 +417,11 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
       }
       actions={actions}
     >
+      {locked && (
+        <Banner variant="info">
+          This capsule is {status}. Only people who can publish can change it.
+        </Banner>
+      )}
       <div className="kc-capsule-editor__layout">
         <div className="kc-capsule-editor__main">
           <TextField
@@ -420,14 +476,24 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
             value={v.prayer}
             onChange={(e) => set({ prayer: e.target.value })}
           />
-          <TextField
-            label="Bible meditation"
-            optional
-            help="Passages to read and meditate on today."
-            value={v.bibleMeditation}
-            error={errors.bibleMeditation}
-            onChange={(e) => set({ bibleMeditation: e.target.value })}
-          />
+          <Field label="Bible meditation" optional error={errors.bibleMeditation}>
+            {(control) => (
+              <>
+                <p className="kc-capsule-editor__hint" id={`${control.id}-intro`}>
+                  Passages to read and meditate on today.
+                </p>
+                <input
+                  {...control}
+                  aria-describedby={[`${control.id}-intro`, control["aria-describedby"]]
+                    .filter(Boolean)
+                    .join(" ")}
+                  className="kc-input"
+                  value={v.bibleMeditation}
+                  onChange={(e) => set({ bibleMeditation: e.target.value })}
+                />
+              </>
+            )}
+          </Field>
           <TextField
             label="Author / source"
             optional

@@ -30,6 +30,7 @@ export interface CapsuleRecord extends CapsuleSummary {
   prayer: RichText | null;
   bibleMeditation: string | null;
   authorSource: string | null;
+  updatedAt: string;
 }
 
 /** Fields sent when saving. Rich-text fields are left out when unchanged. */

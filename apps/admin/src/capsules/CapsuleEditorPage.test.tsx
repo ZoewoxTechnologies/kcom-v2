@@ -34,6 +34,7 @@ const make = (over: Partial<CapsuleRecord> = {}): CapsuleRecord => ({
   prayer: doc("Father, I receive a sound mind."),
   bibleMeditation: "Romans 12:1–8",
   authorSource: "A. Ilesanmi",
+  updatedAt: new Date(Date.now() - 2 * 60_000).toISOString(),
   ...over,
 });
 
@@ -129,6 +130,7 @@ describe("CapsuleEditorPage", () => {
     );
     expect(screen.getByLabelText(/Part number/)).toHaveValue("5");
     expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Saved 2 min ago");
   });
 
   it("saves edited fields and leaves untouched rich text out of the request", async () => {
@@ -202,6 +204,51 @@ describe("CapsuleEditorPage", () => {
     await waitFor(() => expect(sent("PATCH")).toHaveLength(1));
     expect(sent("POST")[0]!.body).toMatchObject({ title: "Faith Works", slug: "faith-works" });
     expect(sent("PATCH")[0]!.body).toMatchObject({ seriesId: "s9" });
+  });
+
+  it("keeps the new series selected when the capsule save fails, so a retry doesn't create it twice", async () => {
+    setup("/capsules/c1");
+    await userEvent.selectOptions(
+      await screen.findByRole("combobox", { name: /^Series/ }),
+      "__new",
+    );
+    await userEvent.type(screen.getByLabelText(/New series name/), "Faith Works");
+    failNext = { method: "PATCH", status: 500, code: "boom", message: "boom" };
+    await userEvent.click(screen.getByRole("button", { name: "Save draft" }));
+    await waitFor(() => expect(sent("POST")).toHaveLength(1));
+    await userEvent.click(screen.getByRole("button", { name: "Save draft" }));
+    await waitFor(() => expect(sent("PATCH")).toHaveLength(2));
+    expect(sent("POST")).toHaveLength(1);
+    expect(sent("PATCH")[1]!.body).toMatchObject({ seriesId: "s9" });
+  });
+
+  it("gives a taken series name its own message", async () => {
+    setup("/capsules/c1");
+    await userEvent.selectOptions(
+      await screen.findByRole("combobox", { name: /^Series/ }),
+      "__new",
+    );
+    await userEvent.type(screen.getByLabelText(/New series name/), "The Renewed Mind");
+    failNext = {
+      method: "POST",
+      status: 409,
+      code: "conflict",
+      message: "series slug already exists",
+    };
+    await userEvent.click(screen.getByRole("button", { name: "Save draft" }));
+    expect(await screen.findByText("series slug already exists")).toBeInTheDocument();
+    expect(sent("PATCH")).toHaveLength(0);
+  });
+
+  it("publishes a draft from the overflow menu", async () => {
+    const router = setup("/capsules/c1");
+    await userEvent.click(await screen.findByRole("button", { name: "More actions" }));
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: "Publish now", hidden: true }),
+    );
+    await waitFor(() => expect(router.state.location.pathname).toBe("/capsules"));
+    expect(sent("PATCH")[0]!.body).toMatchObject({ status: "published" });
+    expect(sent("PATCH")[0]!.body).not.toHaveProperty("publishAt");
   });
 
   it("schedules a draft and returns to the list", async () => {
