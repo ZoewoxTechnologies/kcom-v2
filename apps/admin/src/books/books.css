@@ -109,3 +109,12 @@
     }
   }
 }
+
+/* The editor shares a narrow side panel, so the description box starts shorter than on a full page. */
+.kc-books__form .kc-rte__body {
+  min-height: 140px;
+  padding: var(--space-3) var(--space-4);
+}
+.kc-books__form .kc-rte__content {
+  min-height: 100px;
+}
