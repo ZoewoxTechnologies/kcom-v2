@@ -27,4 +27,14 @@ describe("responsiveImage", () => {
     const url = "https://res.cloudinary.com.evil.test/demo/image/upload/a.jpg";
     expect(responsiveImage(url, { widths: [320] })).toEqual({ src: url });
   });
+
+  it("crops every variant to the ratio with c_fill", () => {
+    const r = responsiveImage(base, { widths: [320, 640], ratio: 16 / 10 });
+    expect(r.srcset).toBe(
+      [[320, 200], [640, 400]]
+        .map(([w, h]) => `https://res.cloudinary.com/demo/image/upload/c_fill,w_${w},h_${h},f_auto,q_auto/v1/kcom/a.jpg ${w}w`)
+        .join(", "),
+    );
+    expect(r.src).toContain("c_fill,w_640,h_400,");
+  });
 });

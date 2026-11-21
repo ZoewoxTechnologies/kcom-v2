@@ -9,10 +9,12 @@ interface Props {
   sizes: string;
   /** Above-the-fold images load eagerly; everything else is lazy. */
   eager?: boolean;
+  /** Width / height of the box the image fills; variants are cropped to it. */
+  ratio?: number;
   class?: string;
 }
-const { src, alt = "", widths, sizes, eager = false, class: className } = Astro.props;
-const attrs = responsiveImage(src, { widths });
+const { src, alt = "", widths, sizes, eager = false, ratio, class: className } = Astro.props;
+const attrs = responsiveImage(src, { widths, ratio });
 ---
 <img
   class={className}

@@ -10,7 +10,7 @@ const initials = (n: string) => n.replace(/^(Dr|Brother|Sister|Pastor|Prophet)\.
   <ul class="team">
     {team.map((p) => (
       <li class="person">
-        <div class="photo">{p.photoUrl ? <ResponsiveImage src={p.photoUrl} widths={[240, 360, 480, 720]} sizes="(min-width: 60rem) 18rem, 50vw" /> : <span aria-hidden="true">{initials(p.name)}</span>}</div>
+        <div class="photo">{p.photoUrl ? <ResponsiveImage src={p.photoUrl} widths={[240, 360, 480, 720]} ratio={4 / 5} sizes="(min-width: 60rem) 18rem, 50vw" /> : <span aria-hidden="true">{initials(p.name)}</span>}</div>
         <div class="info"><h3>{p.name}</h3><span class="role">{p.role}</span><p>{p.bio}</p></div>
       </li>
     ))}
@@ -31,7 +31,7 @@ const initials = (n: string) => n.replace(/^(Dr|Brother|Sister|Pastor|Prophet)\.
   h3 { margin: 0; font-family: var(--font-title); font-weight: 600; }
   .lead { max-inline-size: 720px; }
   .person, .arm { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
-  .photo { aspect-ratio: 4 / 5; background: linear-gradient(170deg, var(--color-wash), #9fbcc6); display: flex; align-items: center; justify-content: center; font-family: var(--font-title); font-size: 3rem; color: var(--color-primary); }
+  .photo { aspect-ratio: 4 / 5; overflow: hidden; background: linear-gradient(170deg, var(--color-wash), #9fbcc6); display: flex; align-items: center; justify-content: center; font-family: var(--font-title); font-size: 3rem; color: var(--color-primary); }
   .photo img { inline-size: 100%; block-size: 100%; object-fit: cover; }
   .info { padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; line-height: 1.4; }
   .person h3 { font-size: 1.5rem; }

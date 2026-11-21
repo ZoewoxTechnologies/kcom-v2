@@ -33,7 +33,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   </section>
   <div class="cols">
     <article class="main">
-      {event.imageUrl ? <ResponsiveImage class="img" src={event.imageUrl} widths={[480, 640, 800, 1200]} sizes="(min-width: 60rem) 36rem, 100vw" eager /> : <div class="img placeholder" aria-hidden="true"></div>}
+      {event.imageUrl ? <ResponsiveImage class="img" src={event.imageUrl} widths={[480, 640, 800, 1200]} ratio={16 / 9} sizes="(min-width: 60rem) 36rem, 100vw" eager /> : <div class="img placeholder" aria-hidden="true"></div>}
       {html && <div class="prose" set:html={html} />}
       {rows.length > 0 && (
         <section aria-labelledby="programme">
