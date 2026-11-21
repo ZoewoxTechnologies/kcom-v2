@@ -45,4 +45,15 @@ describe("BaseLayout", () => {
     expect(html).toMatch(/<summary[^>]*aria-label="Open menu"[^>]*aria-expanded="false"/);
     expect(html).not.toContain(">Menu<");
   });
+
+  it("emits canonical, Open Graph and Twitter tags once each", async () => {
+    const container = await AstroContainer.create();
+    const html = await container.renderToString(BaseLayout, { props: { title: "Day", description: "Verse", image: "/og/capsules/day.png", ogType: "article", canonicalPath: "/capsules/day" }, request: new Request("http://localhost:4321/capsules/today") });
+    expect(html.match(/rel="canonical"/g)).toHaveLength(1);
+    expect(html).toContain('<link rel="canonical" href="http://localhost:4321/capsules/day"');
+    expect(html).toContain('property="og:type" content="article"');
+    expect(html).toContain('property="og:image" content="http://localhost:4321/og/capsules/day.png"');
+    expect(html).toContain('name="twitter:card" content="summary_large_image"');
+    expect(html).toContain('type="application/rss+xml"');
+  });
 });
