@@ -11,6 +11,7 @@ import type { CapsuleEvents } from "../capsule-publishing.js";
 import { adminEventRoutes } from "./events.js";
 import { adminSeriesRoutes } from "./series.js";
 import { adminSubscriberRoutes } from "./admin-subscribers.js";
+import { adminContactRoutes } from "./admin-contact.js";
 import { adminUploadRoutes } from "./admin-uploads.js";
 import type { CloudinaryConfig } from "../uploads/cloudinary.js";
 
@@ -35,5 +36,6 @@ export function adminRoutes(
     .route("/subscribers", adminSubscriberRoutes(db))
     .route("/pages", adminPageRoutes(db))
     .route("/homepage", adminHomepageRoutes(db))
+    .route("/contact-messages", adminContactRoutes(db))
     .route("/uploads", adminUploadRoutes(cloudinary));
 }
