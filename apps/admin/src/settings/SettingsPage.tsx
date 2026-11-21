@@ -52,6 +52,7 @@ const LISTS: Record<"team" | "arms", ListConfig> = {
     subtitleKey: "role",
     imageKey: "portraitUrl",
     imageLabel: "portrait",
+    imageAspectRatio: 1,
     fields: [
       { key: "name", label: "Name", required: true },
       { key: "role", label: "Role", required: true },
@@ -64,6 +65,7 @@ const LISTS: Record<"team" | "arms", ListConfig> = {
     subtitleKey: "description",
     imageKey: "imageUrl",
     imageLabel: "image",
+    imageAspectRatio: 16 / 9,
     fields: [
       { key: "name", label: "Name", required: true },
       { key: "description", label: "Description", textarea: true },

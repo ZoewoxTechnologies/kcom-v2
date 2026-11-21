@@ -27,6 +27,8 @@ export interface ListConfig {
   fields: readonly { key: string; label: string; required?: boolean; textarea?: boolean }[];
   imageKey: string;
   imageLabel: string;
+  /** Preview shape of the image, width over height. */
+  imageAspectRatio: number;
 }
 
 const icon = (d: string) => (
@@ -242,6 +244,7 @@ function ItemEditor({ config, item, onClose, onSaved }: EditorProps) {
       }
     >
       <ImageUploadField
+        aspectRatio={config.imageAspectRatio}
         label={config.imageLabel[0]!.toUpperCase() + config.imageLabel.slice(1)}
         value={v[config.imageKey] || null}
         onChange={(url) => set({ [config.imageKey]: url ?? "" })}
