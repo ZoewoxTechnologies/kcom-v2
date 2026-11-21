@@ -32,7 +32,7 @@ export function DashboardPage() {
           role="alert"
           label="Problem"
           action={
-            <Button size="sm" onClick={reload}>
+            <Button variant="tertiary" onClick={reload}>
               Try again
             </Button>
           }
@@ -90,7 +90,7 @@ function Loaded({
         <Notice
           label="Heads up"
           action={
-            <Link className="kc-btn kc-btn--primary" to={newCapsulePath(tomorrow)}>
+            <Link className="kc-btn kc-btn--tertiary" to={newCapsulePath(tomorrow)}>
               Write it now
             </Link>
           }
