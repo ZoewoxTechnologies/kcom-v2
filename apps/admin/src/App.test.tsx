@@ -125,20 +125,13 @@ describe("sign in", () => {
     await userEvent.type(await screen.findByLabelText(/email address/i), "grace@example.com");
     await userEvent.type(screen.getByLabelText(/password/i), "correct-horse-battery");
     await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
-    expect(await screen.findByRole("heading", { name: /welcome/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: /good (morning|afternoon|evening)/i }),
+    ).toBeInTheDocument();
   });
 });
 
 describe("account menu", () => {
-  it("hides View site when no site URL is configured", async () => {
-    vi.stubEnv("VITE_SITE_URL", "");
-    mockApi(user("editor"));
-    renderAt("/");
-    await screen.findByRole("button", { name: /account menu/i });
-    expect(screen.queryByRole("menuitem", { name: "View site", hidden: true })).toBeNull();
-    vi.unstubAllEnvs();
-  });
-
   it("shows the role as a capitalised tag", async () => {
     mockApi(user("editor"));
     renderAt("/");
@@ -146,7 +139,7 @@ describe("account menu", () => {
     expect(screen.getByRole("menu", { hidden: true })).toHaveTextContent("Editor");
   });
 
-  it("shows name, role, profile, view site (new tab) and sign out", async () => {
+  it("shows name, role, profile and sign out, with no View site entry", async () => {
     vi.stubEnv("VITE_SITE_URL", "https://site.example");
     mockApi(user("editor"));
     renderAt("/");
@@ -154,10 +147,38 @@ describe("account menu", () => {
     const menu = screen.getByRole("menu", { hidden: true });
     expect(menu).toHaveTextContent("Grace Adeyemi");
     expect(menu).toHaveTextContent("Editor");
-    const site = screen.getByRole("menuitem", { name: "View site", hidden: true });
-    expect(site).toHaveAttribute("target", "_blank");
+    expect(screen.queryByRole("menuitem", { name: "View site", hidden: true })).toBeNull();
     expect(screen.getByRole("menuitem", { name: "Profile", hidden: true })).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "Sign out", hidden: true })).toBeInTheDocument();
+  });
+});
+
+describe("logo link", () => {
+  it("links to the public site in the same tab, with an accessible name", async () => {
+    vi.stubEnv("VITE_SITE_URL", "https://site.example");
+    mockApi(user("editor"));
+    renderAt("/");
+    const link = await screen.findByRole("link", {
+      name: "Kingdom Capstone Outreach Ministries site",
+      hidden: true,
+    });
+    expect(link).toHaveAttribute("href", "https://site.example");
+    expect(link).not.toHaveAttribute("target");
+    vi.unstubAllEnvs();
+  });
+
+  it("is not a link when no site URL is configured", async () => {
+    vi.stubEnv("VITE_SITE_URL", "");
+    mockApi(user("editor"));
+    renderAt("/");
+    await screen.findByRole("button", { name: /account menu/i });
+    expect(
+      screen.queryByRole("link", {
+        name: "Kingdom Capstone Outreach Ministries site",
+        hidden: true,
+      }),
+    ).toBeNull();
+    vi.unstubAllEnvs();
   });
 });
 

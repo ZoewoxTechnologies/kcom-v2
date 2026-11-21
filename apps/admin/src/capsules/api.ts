@@ -43,6 +43,14 @@ export function listCapsules(month?: string) {
   const q = new URLSearchParams({ from: from.toISOString(), to: to.toISOString() });
   return listAll<CapsuleSummary>("/capsules", `${q}&`);
 }
+/** Capsules whose publish time is in [from, to). */
+export function listCapsulesBetween(from: Date, to: Date) {
+  const q = new URLSearchParams({ from: from.toISOString(), to: to.toISOString() });
+  return listAll<CapsuleSummary>("/capsules", `${q}&`);
+}
+
+/** Every draft, whatever its date. */
+export const listDrafts = () => listAll<CapsuleSummary>("/capsules", "status=draft&");
 export const listSeries = () => listAll<SeriesSummary>("/series");
 
 /** Moves a scheduled capsule to a new go-live instant. */

@@ -61,7 +61,7 @@ const months = Array.from({ length: 12 }, (_, i) => ({ n: i + 1, key: monthKey(m
   window.addEventListener("load", centre);
 </script>
 <style>
-  .layout { max-inline-size: 70rem; inline-size: 100%; margin-inline: auto; display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-7); padding-block: var(--space-4) var(--space-7); }
+  .layout { inline-size: 100%; margin-inline: auto; display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-7); padding-block: var(--space-4) var(--space-8); }
   .months { flex: 1 1 100%; display: flex; flex-direction: row; align-items: center; gap: var(--space-2); min-inline-size: 0; }
   .months :global(.select-form) { flex: none; }
   .months :global(select) { min-inline-size: 6.5rem; }
@@ -80,7 +80,7 @@ const months = Array.from({ length: 12 }, (_, i) => ({ n: i + 1, key: monthKey(m
   .steps a { font-weight: 600; text-decoration-thickness: 2px; text-underline-offset: 5px; }
   .next { margin-inline-start: auto; }
   @media (min-width: 48rem) {
-    .layout { padding-block-start: var(--space-6); gap: var(--space-7); }
+    .layout { padding-block-start: 2.5rem; gap: var(--space-7); }
     .months { flex: 1 1 220px; max-inline-size: 260px; align-self: flex-start; flex-direction: column; align-items: stretch; gap: var(--space-4); }
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; }
     .m { padding: 10px 0; border-radius: var(--radius-field); font-size: 0.9375rem; }
