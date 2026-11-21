@@ -12,6 +12,7 @@ export const permissions = [
   "content:write",
   "content:publish",
   "users:manage",
+  "settings:manage",
   "inbox:read",
   "prayer:read",
 ] as const;

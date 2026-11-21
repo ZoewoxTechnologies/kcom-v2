@@ -12,6 +12,7 @@ import { adminEventRoutes } from "./events.js";
 import { adminSeriesRoutes } from "./series.js";
 import { adminContactRoutes } from "./admin-contact.js";
 import { adminUploadRoutes } from "./admin-uploads.js";
+import { adminSettingsRoutes } from "./settings.js";
 import type { CloudinaryConfig } from "../uploads/cloudinary.js";
 
 /**
@@ -34,6 +35,7 @@ export function adminRoutes(
     .route("/series", adminSeriesRoutes(db))
     .route("/pages", adminPageRoutes(db))
     .route("/homepage", adminHomepageRoutes(db))
+    .route("/settings", adminSettingsRoutes(db))
     .route("/contact-messages", adminContactRoutes(db))
     .route("/uploads", adminUploadRoutes(cloudinary));
 }
