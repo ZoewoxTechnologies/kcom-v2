@@ -284,6 +284,8 @@ export const users = pgTable(
     emailVerified: boolean("email_verified").notNull().default(false),
     image: text("image"),
     role: text("role").$type<UserRole>().notNull().default("editor"),
+    /** Set when an admin deactivates the user; they cannot sign in until cleared. */
+    deactivatedAt: timestamp("deactivated_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
