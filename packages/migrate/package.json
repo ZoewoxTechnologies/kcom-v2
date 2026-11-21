@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "typecheck": "tsc",
     "test": "vitest run",
-    "transform": "tsx src/transform-cli.ts"
+    "transform": "tsx src/transform-cli.ts",
+    "import": "tsx src/import-cli.ts"
   },
   "devDependencies": {
     "@kcom/config": "workspace:*",
@@ -19,6 +20,8 @@
     "tsx": "^4.19.2"
   },
   "dependencies": {
-    "@kcom/content": "workspace:*"
+    "@kcom/content": "workspace:*",
+    "@kcom/db": "workspace:*",
+    "drizzle-orm": "^0.45.4"
   }
 }
