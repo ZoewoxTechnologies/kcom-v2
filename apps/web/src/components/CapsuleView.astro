@@ -51,7 +51,7 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
   </header>
 
   {hasMeditation && (
-    <section class="meditation" aria-label="Bible meditation">
+    <section class:list={["meditation", { "kc-arrive": mode === "today" }]} aria-label="Bible meditation">
       <span class="eyebrow">BIBLE MEDITATION</span>
       <span class="rule" aria-hidden="true"></span>
       <p class="verse">{meditation}</p>

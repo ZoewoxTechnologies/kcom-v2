@@ -38,7 +38,7 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
       <svg class="icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
       <svg class="icon-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
     </summary>
-    <nav aria-label="Main mobile">
+    <nav class="kc-slide-in" aria-label="Main mobile">
       {navItems.map((item) =>
         item.children ? (
           <details class="group" open={isCurrent(item, current) || undefined}>
@@ -101,6 +101,11 @@ const quote = capsule?.scriptureText ? `“${capsule.scriptureText}” ${capsule
   .menu .group:last-child { border-bottom: 0; }
   .menu .sub { display: flex; flex-direction: column; padding: 0 0 var(--space-2) var(--space-3); line-height: 1.3; font-family: var(--font-body); font-size: 0.9375rem; color: var(--color-muted); }
   .menu .sub a { color: inherit; padding: var(--space-2) 0; }
+  .verse-bar .verse { display: inline-flex; align-items: center; min-block-size: var(--touch-target); }
+  .verse-bar { padding-block: 0; }
+  .brand { min-block-size: var(--touch-target); }
+  .menu nav a, .menu details.group > summary { min-block-size: var(--touch-target); display: flex; align-items: center; padding-block: 0; }
+  .menu .sub a { min-block-size: var(--touch-target); display: flex; align-items: center; padding-block: 0; }
   .verse .short { display: inline; }
   .verse .long { display: none; }
   .cta, .search { display: none; }

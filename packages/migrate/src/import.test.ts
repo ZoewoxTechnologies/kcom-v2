@@ -69,6 +69,26 @@ describe("buildRedirects", () => {
     expect(to("/node/2")).toBe("/blog/a-good-post");
   });
 
+  it("maps /content/* aliases to the new capsule or post page", () => {
+    const list = [
+      node(10, "daily_digest", "Grace", ["content/grace-abounds"], {
+        ...body("<p>Grace is enough – 2 Corinthians 12:9</p><p>Rest.</p>"),
+        field_daily_digest_date: [{ field_daily_digest_date_value: "2020-04-02 00:00:00" }],
+      }),
+      node(11, "blog", "Old Post", ["content/old-post"], body("<p>Hi</p>")),
+      node(12, "events", "Retreat", ["content/retreat"]),
+      node(13, "page", "Info", ["content/info"], body("<p>Info</p>")),
+    ];
+    const c = transformCapsules(list).capsules;
+    const p = transformBlog(list).posts;
+    const m = buildRedirects(list, c, p);
+    const find = (from: string) => m.redirects.find((r) => r.from === from);
+    expect(find("/content/grace-abounds")).toMatchObject({ to: "/capsules/grace-abounds", kind: "capsule" });
+    expect(find("/content/old-post")).toMatchObject({ to: "/blog/old-post", kind: "blog" });
+    expect(find("/content/retreat")?.to).toBe("/events");
+    expect(find("/content/info")?.to).toBe("/");
+  });
+
   it("sends unimported nodes to the closest page or listing", () => {
     expect(to("/who-we-are")).toBe("/about");
     expect(to("/node/5")).toBe("/events");
@@ -116,6 +136,23 @@ describe("importContent", () => {
     const res = await importContent(db, input(), { since: new Date("2030-01-01") });
     expect(res.capsules).toEqual({ inserted: 0, updated: 0, unchanged: 0 });
     expect(res.inDatabase.capsules).toBe(1);
+  });
+
+  it("counts only legacy series and redirects, ignoring editors' rows", async () => {
+    const db = await createTestDb();
+    await db.insert(redirects).values({ fromPath: "/editor-made", toPath: "/x" });
+    const res = await importContent(db, input());
+    const data = input();
+    expect(res.inDatabase.redirects).toBe(data.redirects.length);
+  });
+
+  it("names the clashing slug and imports nothing", async () => {
+    const db = await createTestDb();
+    const data = input();
+    const post = data.posts[0]!;
+    await db.insert(blogPosts).values({ slug: post.slug, title: "Editor post", date: "2024-01-01", body: post.body as never, status: "draft" });
+    await expect(importContent(db, data)).rejects.toThrow(`"${post.slug}"`);
+    expect(await db.select().from(capsules)).toHaveLength(0);
   });
 
   it("dry run rolls back", async () => {

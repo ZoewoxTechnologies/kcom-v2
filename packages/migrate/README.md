@@ -62,7 +62,8 @@ Run `extract` first. Imports series, capsules and blog posts into the database a
 - `--dry-run` runs everything and rolls back.
 - `--final` imports only capsules and posts changed since the last run (read from
   `import-state.json`); `--since=2026-01-31T00:00:00Z` sets the date by hand. Redirects always run in full.
-- A full run exits non-zero if the database counts differ from the extracted counts.
+- A full run exits non-zero if the database counts differ from the extracted counts. Only legacy rows are counted (series and redirects by the imported slugs and paths), so editors' own rows never fail it.
+- A slug already held by another row (an editor's, or two legacy nodes) stops the run before anything is written, and the error names the slug.
 - Redirects cover every alias, `/node/<nid>`, `/archive/YYYYMM`, `/daily-digest` and the page
   mappings. Nodes that are not imported (pages, events, books, gallery, skipped capsules) redirect to
   the closest listing. `/rss.xml` is already served at the same path, so it needs no redirect.

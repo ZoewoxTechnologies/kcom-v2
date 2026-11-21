@@ -127,11 +127,17 @@ export async function importContent(db: CapsuleDb, input: ImportInput, options: 
       res.redirects.inserted = newRedirects.length;
 
       const count = async (table: typeof capsules | typeof blogPosts) => (await tx.select({ n: table.legacyNid }).from(table).where(isNotNull(table.legacyNid))).length;
+      // Count only rows that came from the legacy site, so editors' own rows never fail the check.
+      const countIn = async (column: typeof series.slug | typeof redirects.fromPath, values: string[], table: typeof series | typeof redirects) => {
+        let n = 0;
+        for (const batch of chunks(values)) n += (await tx.select({ v: column }).from(table).where(inArray(column, batch))).length;
+        return n;
+      };
       res.inDatabase = {
-        series: existingSeries.size,
+        series: await countIn(series.slug, input.series.map((s) => s.slug), series),
         capsules: await count(capsules),
         posts: await count(blogPosts),
-        redirects: (await tx.select({ id: redirects.id }).from(redirects)).length,
+        redirects: await countIn(redirects.fromPath, input.redirects.map((r) => r.from), redirects),
       };
       result = res;
       if (dryRun) throw new DryRun();
@@ -145,6 +151,30 @@ export async function importContent(db: CapsuleDb, input: ImportInput, options: 
 type Writable = typeof capsules | typeof blogPosts;
 type Row = { legacyNid: number; updatedAt: Date } & Record<string, unknown>;
 
+/**
+ * Names the slug that clashes, and what it clashes with, before the database refuses the write with
+ * a bare unique-constraint error. A clash is a slug used twice in this import or already held by a
+ * row that has a different legacy node id (or none, like an editor's own row).
+ */
+async function assertSlugsFree(tx: CapsuleDb, table: Writable, rows: Row[]): Promise<void> {
+  const clashes: string[] = [];
+  const seen = new Map<string, number>();
+  for (const row of rows) {
+    const slug = row.slug as string;
+    const other = seen.get(slug);
+    if (other !== undefined) clashes.push(`"${slug}" used by legacy nodes ${other} and ${row.legacyNid}`);
+    else seen.set(slug, row.legacyNid);
+  }
+  for (const batch of chunks([...seen.keys()])) {
+    const held = await tx.select({ slug: table.slug, legacyNid: table.legacyNid }).from(table).where(inArray(table.slug, batch));
+    for (const h of held) {
+      const nid = seen.get(h.slug);
+      if (nid !== undefined && h.legacyNid !== nid) clashes.push(`"${h.slug}" (legacy node ${nid}) is already held by ${h.legacyNid === null ? "a row with no legacy node id" : `legacy node ${h.legacyNid}`}`);
+    }
+  }
+  if (clashes.length > 0) throw new Error(`Slug clash, nothing was imported: ${clashes.join("; ")}`);
+}
+
 /** Inserts rows with a new legacy node id and updates those whose fields differ; counts each outcome. */
 async function upsertByNid(
   tx: CapsuleDb,
@@ -155,6 +185,8 @@ async function upsertByNid(
   const counts = none();
   const existing = new Map<number, Record<string, unknown>>();
   for (const batch of chunks(rows)) for (const r of await load(batch.map((b) => b.legacyNid))) existing.set(r.legacyNid as number, r);
+
+  await assertSlugsFree(tx, table, rows);
 
   const fresh: Row[] = [];
   for (const row of rows) {

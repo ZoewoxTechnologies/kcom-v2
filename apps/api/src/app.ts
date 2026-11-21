@@ -10,6 +10,7 @@ import { capsuleRoutes } from "./routes/capsules.js";
 import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
 import { homepageRoutes } from "./routes/homepage.js";
+import { redirectRoutes } from "./routes/redirects.js";
 import { pageRoutes } from "./routes/pages.js";
 import { contactRoutes, type BotCheck } from "./routes/contact.js";
 import { settingsRoutes } from "./routes/settings.js";
@@ -90,6 +91,7 @@ export function createApp(
     .route("/series", seriesRoutes(db))
     .route("/pages", pageRoutes(db))
     .route("/homepage", homepageRoutes(db))
+    .route("/redirects", redirectRoutes(db))
     .route("/admin", adminRoutes(db, authInstance, capsuleEvents, cloudinary))
     .route("/internal", internalRoutes(db, capsuleEvents, internalToken))
     .route("/users", userRoutes(db, authInstance))
