@@ -29,6 +29,9 @@ importers:
       '@kcom/content':
         specifier: workspace:*
         version: link:../../packages/content
+      '@kcom/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@kcom/media':
         specifier: workspace:*
         version: link:../../packages/media

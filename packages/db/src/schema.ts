@@ -217,6 +217,7 @@ export const siteSettings = pgTable(
     siteName: text("site_name").notNull(),
     tagline: text("tagline"),
     contactEmail: text("contact_email"),
+    contactPhone: text("contact_phone"),
     copyrightText: text("copyright_text"),
     footerTagline: text("footer_tagline"),
     postalAddress: text("postal_address"),
@@ -229,6 +230,7 @@ export const siteSettings = pgTable(
     bankName: text("bank_name"),
     bankAccountName: text("bank_account_name"),
     bankAccountNumber: text("bank_account_number"),
+    bankSortOrSwift: text("bank_sort_or_swift"),
     givingNote: text("giving_note"),
     updatedAt: updatedAt(),
   },
@@ -390,3 +392,26 @@ export const contactMessages = pgTable(
   },
   (t) => [index("contact_messages_status_created_at_idx").on(t.status, t.createdAt)],
 );
+
+export const teamMembers = pgTable("team_members", {
+  id: id(),
+  name: text("name").notNull(),
+  role: text("role").notNull(),
+  bio: text("bio"),
+  /** Cloudinary image URL. */
+  portraitUrl: text("portrait_url"),
+  position: integer("position").notNull(),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+export const ministryArms = pgTable("ministry_arms", {
+  id: id(),
+  name: text("name").notNull(),
+  description: text("description"),
+  /** Cloudinary image URL. */
+  imageUrl: text("image_url"),
+  position: integer("position").notNull(),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});

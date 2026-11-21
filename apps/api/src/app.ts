@@ -12,6 +12,7 @@ import { adminRoutes } from "./routes/admin.js";
 import { homepageRoutes } from "./routes/homepage.js";
 import { pageRoutes } from "./routes/pages.js";
 import { contactRoutes } from "./routes/contact.js";
+import { settingsRoutes } from "./routes/settings.js";
 import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
 import type { CloudinaryConfig } from "./uploads/cloudinary.js";
@@ -82,13 +83,14 @@ export function createApp(
     .route("/capsules", capsuleRoutes(db))
     .route("/contact", contactRoutes(db, trustedProxyHops))
     .route("/events", eventRoutes(db))
+    .route("/settings", settingsRoutes(db))
     .route("/series", seriesRoutes(db))
     .route("/pages", pageRoutes(db))
     .route("/homepage", homepageRoutes(db))
     .route("/admin", adminRoutes(db, authInstance, capsuleEvents, cloudinary))
     .route("/internal", internalRoutes(db, capsuleEvents, internalToken))
     .route("/users", userRoutes(db, authInstance))
-    .route("/api/auth", authRoutes(authInstance));
+    .route("/api/auth", authRoutes(authInstance, trustedProxyHops));
 }
 
 export type App = ReturnType<typeof createApp>;
