@@ -6,6 +6,7 @@ import { EditorKitDemo } from "../demo/EditorKitDemo";
 import { MenuDemo } from "../demo/MenuDemo";
 import { DateTimePickerDemo } from "../demo/DateTimePickerDemo";
 import { FormFieldsDemo } from "../demo/FormFieldsDemo";
+import { RichTextDemo } from "../demo/RichTextDemo";
 import { ToastDemo } from "../demo/ToastDemo";
 
 /** Component demos, public so review screenshots need no sign-in. */
@@ -21,6 +22,7 @@ export function DemoPage() {
       <EditorKitDemo />
       <MenuDemo />
       <FormFieldsDemo />
+      <RichTextDemo />
       <AvatarBadgeTagDemo />
       <DateTimePickerDemo />
       <ToastDemo />
