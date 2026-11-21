@@ -1,4 +1,6 @@
 /* On/off switch: a 40x22 track inside a 44px hit area. Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-switch {
     display: inline-flex;
