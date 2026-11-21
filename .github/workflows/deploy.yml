@@ -69,7 +69,7 @@ jobs:
             --cpu-throttling \
             --memory=512Mi \
             --service-account="kcom-run@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
-            --set-env-vars="NODE_ENV=production"
+            --set-env-vars="NODE_ENV=production,PUBLIC_SITE_URL=${{ vars.PUBLIC_SITE_URL }}"
           # Re-assert public access (domain-restricted orgs skip the binding).
           gcloud run services add-iam-policy-binding "kcom-${{ matrix.app }}-staging" \
             --project="${{ vars.GCP_PROJECT_ID }}" --region="$REGION" \

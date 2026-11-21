@@ -16,7 +16,7 @@ const rows = programmeRows(event.programme);
 const description = event.description ? richTextToPlain(event.description).slice(0, 160) || undefined : undefined;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title={event.title} description={description} current="/events">
+<BaseLayout title={event.title} description={description} current="/events" image={event.imageUrl ?? undefined}>
   <section class="hero">
     <div class="hero-in">
       <div class="badge" aria-hidden="true"><span>{badge.month}</span><strong>{badge.day}</strong><span>{badge.year}</span></div>
