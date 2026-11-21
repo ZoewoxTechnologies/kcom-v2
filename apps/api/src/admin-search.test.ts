@@ -51,9 +51,8 @@ describe("GET /admin/search", () => {
     expect(res.status).toBe(200);
     const { items } = (await res.json()) as { items: { kind: string; title: string }[] };
     expect(items.map((i) => i.kind).sort()).toEqual(["blog", "capsule"]);
-    expect((await (await search("prayer")).json()).items).toMatchObject([
-      { kind: "event", title: "Prayer night" },
-    ]);
+    const prayer = (await (await search("prayer")).json()) as { items: unknown[] };
+    expect(prayer.items).toMatchObject([{ kind: "event", title: "Prayer night" }]);
   });
 
   it("treats % and _ literally and caps results per kind", async () => {
