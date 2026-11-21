@@ -1,0 +1,42 @@
+/* Admin Subscribers: searchable list with status filter. */
+@layer components {
+  .kc-subscribers {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-inline-size: 0;
+  }
+  .kc-subscribers__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .kc-subscribers h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 5vw, 2.375rem);
+    line-height: 1.1;
+  }
+  .kc-subscribers__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-3);
+  }
+  .kc-subscribers__filters .kc-field {
+    flex: 1 1 16rem;
+    max-inline-size: 22rem;
+  }
+  /* The search box is placeholder-only; its label stays for screen readers. */
+  .kc-subscribers__filters .kc-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
