@@ -184,6 +184,11 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       const p = await res.json();
       return { ...toBlogSummary(p), body: p.body };
     },
+    async listRedirects() {
+      const res = await client.redirects.$get(undefined, signal());
+      if (!res.ok) throw new Error(`API /redirects responded ${res.status}`);
+      return res.json();
+    },
     async listHomepageSections() {
       const res = await client.homepage.$get(undefined, signal());
       if (!res.ok) throw new Error(`API /homepage responded ${res.status}`);
