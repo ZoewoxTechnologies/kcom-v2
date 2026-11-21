@@ -7,6 +7,7 @@ import { navItems } from "./shell/nav";
 import { Shell } from "./shell/Shell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { EventsPage } from "./events/EventsPage";
+import { SubscribersPage } from "./subscribers/SubscribersPage";
 import { InboxPage } from "./inbox/InboxPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -26,6 +27,7 @@ const sections = navItems.filter((item) => !BUILT.has(item.path));
 const pages: Partial<Record<string, ReactElement>> = {
   "/events": <EventsPage />,
   "/inbox": <InboxPage />,
+  "/subscribers": <SubscribersPage />,
 };
 
 export function App() {

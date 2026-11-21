@@ -4,7 +4,7 @@ export type UserRole = (typeof userRoles)[number];
 
 /**
  * Every guarded capability. `inbox:read` opens contact messages; `prayer:read`
- * additionally shows the ones senders marked private. Editors and admins both have it for now; a narrower prayer-team role comes later.
+ * additionally shows the ones senders marked private. `subscribers:export` downloads the subscriber CSV and is admin only. Editors and admins both have it for now; a narrower prayer-team role comes later.
  * Routes and menu items declare which of these they need.
  */
 export const permissions = [
@@ -15,6 +15,7 @@ export const permissions = [
   "settings:manage",
   "inbox:read",
   "prayer:read",
+  "subscribers:export",
 ] as const;
 export type Permission = (typeof permissions)[number];
 
