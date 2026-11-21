@@ -192,7 +192,8 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .fcopy h2 { margin: 0; font: 500 clamp(1.875rem, 5vw, 2.875rem) / 1.08 var(--font-title); }
   .fcopy p { margin: 0; max-inline-size: 40rem; }
   blockquote { flex: 1 1 18.75rem; margin: 0; font: italic 400 1.875rem / 1.3 var(--font-title); border-top: 2px solid var(--color-gold); padding-top: var(--space-4); }
-  cite { display: block; margin-top: var(--space-2); font: normal 700 0.8125rem / 1.3 var(--font-body); letter-spacing: 0.1em; font-variant: small-caps; color: var(--color-gold-text); }
+  cite { display: block; margin-top: var(--space-2); font: normal 700 0.8125rem / 1.3 var(--font-body); letter-spacing: 0.1em; font-variant: small-caps; color: var(--color-gold-text-tint); }
+  .fcopy .eyebrow { color: var(--color-gold-text-tint); }
   .events { list-style: none; margin: 0; padding: 0; }
   .events a { display: flex; align-items: center; column-gap: var(--space-4); row-gap: 0; padding: var(--space-3) 0; border-top: 1px solid var(--color-line); color: var(--color-text); text-decoration: none; flex-wrap: wrap; }
   .tile { inline-size: 3.5rem; block-size: 3.5rem; flex: none; border-radius: 12px; background: var(--color-wash); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
@@ -224,5 +225,4 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     .grid4 > :nth-child(n + 3) { display: none; }
     .narrow { align-items: flex-start; text-align: start; }
   }
-  @media (min-width: 85rem) { .feature { inline-size: calc(100% + 7rem); margin-inline: -3.5rem; } }
 </style>
