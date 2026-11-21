@@ -1,0 +1,81 @@
+/* Admin homepage builder: a fixed first row, then reorderable rows with a hide switch. */
+@layer components {
+  .kc-home {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-inline-size: 0;
+  }
+  .kc-home__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .kc-home h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 5vw, 2.375rem);
+    line-height: 1.1;
+  }
+  .kc-home__tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .kc-home__status {
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+  }
+  .kc-home__hint {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+  }
+  .kc-home__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-inline-size: 40rem;
+  }
+  .kc-home__row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+  }
+  .kc-home__row[data-dragging="true"] {
+    border: 2px solid var(--color-primary);
+  }
+  .kc-home__row[data-visible="false"] .kc-home__name {
+    opacity: 0.6;
+  }
+  .kc-home__name {
+    flex: 1;
+    min-inline-size: 0;
+    font-weight: 600;
+  }
+  .kc-home__note {
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+  }
+  .kc-home__handle {
+    touch-action: none;
+    cursor: grab;
+    color: var(--color-muted);
+  }
+  .kc-home__lock {
+    display: inline-flex;
+    inline-size: 44px;
+    justify-content: center;
+    color: var(--color-muted);
+  }
+}
