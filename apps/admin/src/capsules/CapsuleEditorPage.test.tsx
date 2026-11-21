@@ -245,7 +245,8 @@ describe("CapsuleEditorPage", () => {
       message: "series slug already exists",
     };
     await userEvent.click(screen.getByRole("button", { name: "Save draft" }));
-    expect(await screen.findByText("series slug already exists")).toBeInTheDocument();
+    expect(await screen.findByText(/A series with this name already exists/)).toBeInTheDocument();
+    expect(screen.queryByText(/Another capsule already uses this title/)).toBeNull();
     expect(sent("PATCH")).toHaveLength(0);
   });
 

@@ -32,6 +32,15 @@
     font-weight: 600;
     line-height: 1.2;
   }
+  /* The glyph stays small; the hit area grows to 44px. */
+  .kc-capsule-editor__more {
+    position: relative;
+  }
+  .kc-capsule-editor__more::after {
+    content: "";
+    position: absolute;
+    inset: -0.375rem;
+  }
   .kc-capsule-editor__saved {
     color: var(--color-muted);
     font-size: 0.875rem;

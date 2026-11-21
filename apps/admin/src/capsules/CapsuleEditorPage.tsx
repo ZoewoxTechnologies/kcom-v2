@@ -116,8 +116,8 @@ const statusLabel: Record<CapsuleStatus, string> = {
 };
 
 /** "just now", "2 min ago", "3 hours ago" or the date. */
-function savedAgo(at: Date): string {
-  const mins = Math.max(0, Math.round((Date.now() - at.getTime()) / 60_000));
+function savedAgo(at: Date, now: number): string {
+  const mins = Math.max(0, Math.round((now - at.getTime()) / 60_000));
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins} min ago`;
   const hours = Math.round(mins / 60);
@@ -217,6 +217,12 @@ function CapsuleForm({
   const [series, setSeries] = useState<SeriesSummary[]>([]);
   const [takenDays, setTakenDays] = useState<string[]>([]);
   const redirect = useRef(false);
+  // Re-rendered every minute so "Saved N min ago" keeps counting.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     listSeries().then(setSeries, () => setSeries([]));
@@ -266,6 +272,8 @@ function CapsuleForm({
   const save = async (target: CapsuleStatus, opts: { now?: boolean } = {}) => {
     if (!validate(target)) throw new Error("invalid");
     setSaving(true);
+    // Set once the series step has reported its own error, so the capsule handler leaves it be.
+    let seriesHandled = false;
     try {
       let seriesId: string | null = v.seriesId || null;
       if (v.seriesId === NEW_SERIES) {
@@ -276,12 +284,13 @@ function CapsuleForm({
           // Pick it now, so a failed capsule save can be retried without creating the series again.
           form.setValue({ ...form.value, seriesId: created.id, newSeriesTitle: "" });
         } catch (err) {
+          seriesHandled = true;
           if (err instanceof ApiError && err.status === 409)
             setErrors({
               newSeriesTitle:
                 "A series with this name already exists. Choose it from the list or pick another name.",
             });
-          else if (!(err instanceof ApiError && err.status === 409))
+          else
             toast({
               variant: "error",
               title: "Couldn’t create the series",
@@ -317,10 +326,9 @@ function CapsuleForm({
       setErrors({});
       return result;
     } catch (err) {
+      if (seriesHandled) throw err;
       if (err instanceof ApiError && err.status === 409) {
-        if (/series/i.test(err.message)) setErrors({ newSeriesTitle: err.message });
-        else if (err.code === "day_taken" || /day/i.test(err.message))
-          setErrors({ publishAt: err.message });
+        if (err.code === "day_taken") setErrors({ publishAt: err.message });
         else setErrors({ title: "Another capsule already uses this title. Make it different." });
       } else if (err instanceof ApiError && err.status === 422) {
         setErrors({ publishAt: err.message });
@@ -377,6 +385,7 @@ function CapsuleForm({
     <Menu
       trigger="⋯"
       triggerVariant="tertiary"
+      triggerClassName="kc-capsule-editor__more"
       triggerLabel="More actions"
       hideChevron
       align="start"
@@ -425,7 +434,7 @@ function CapsuleForm({
           <Badge variant={status}>{statusLabel[status]}</Badge>
           {savedAt && (
             <span className="kc-capsule-editor__saved" role="status">
-              Saved {savedAgo(savedAt)}
+              Saved {savedAgo(savedAt, now)}
             </span>
           )}
           {actions}
@@ -491,24 +500,14 @@ function CapsuleForm({
             value={v.prayer}
             onChange={(e) => set({ prayer: e.target.value })}
           />
-          <Field label="Bible meditation" optional error={errors.bibleMeditation}>
-            {(control) => (
-              <>
-                <p className="kc-capsule-editor__hint" id={`${control.id}-intro`}>
-                  Passages to read and meditate on today.
-                </p>
-                <input
-                  {...control}
-                  aria-describedby={[`${control.id}-intro`, control["aria-describedby"]]
-                    .filter(Boolean)
-                    .join(" ")}
-                  className="kc-input"
-                  value={v.bibleMeditation}
-                  onChange={(e) => set({ bibleMeditation: e.target.value })}
-                />
-              </>
-            )}
-          </Field>
+          <TextField
+            label="Bible meditation"
+            optional
+            intro="Passages to read and meditate on today."
+            value={v.bibleMeditation}
+            error={errors.bibleMeditation}
+            onChange={(e) => set({ bibleMeditation: e.target.value })}
+          />
           <TextField
             label="Author / source"
             optional
