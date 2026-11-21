@@ -1,6 +1,8 @@
 /* Toasts: rendered by ToastProvider on Radix Toast. Variants: success, error, info.
    Enter and exit are a 12px rise plus fade; reduced motion drops the movement.
    Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-toast-viewport {
     position: fixed;

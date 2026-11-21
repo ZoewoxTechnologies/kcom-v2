@@ -151,10 +151,41 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
 
+  # Accessibility (axe, WCAG 2.2 AA) against the built site on sample data.
+  audit:
+    needs: changes
+    if: contains(needs.changes.outputs.apps, '"web"')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATA_SOURCE: sample
+      SEARCH_INDEX_PARTIAL_OK: "true"
+      HOST: 127.0.0.1
+      PORT: "4321"
+      PUBLIC_SITE_URL: http://127.0.0.1:4321
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @kcom/web exec astro build
+      - run: pnpm --filter @kcom/web exec playwright install --with-deps chromium
+      - name: Start site
+        run: |
+          nohup node apps/web/dist/server/entry.mjs > site.log 2>&1 &
+          pnpm --filter @kcom/web exec wait-on -t 60000 http://127.0.0.1:4321/
+      - name: axe (WCAG AA)
+        run: pnpm --filter @kcom/web audit:a11y
+      - if: failure()
+        run: tail -n 50 site.log
+
   # Single required check: passes when jobs were skipped, fails if any failed.
   ci-ok:
     if: always()
-    needs: [changes, check, docker]
+    needs: [changes, check, docker, audit]
     runs-on: ubuntu-latest
     steps:
       - env:

@@ -1,5 +1,7 @@
 /* Avatar: .kc-avatar (+ --sm, --lg) wrapping an image and an initials fallback.
    Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-avatar {
     --kc-avatar-size: 2.5rem;

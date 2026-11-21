@@ -26,7 +26,7 @@ const year = new Date().getFullYear();
     <span class="legal">© {year} {siteName}<a href="/privacy">Privacy policy</a></span>
     <span class="social">
       <span class="links">{socialLinks.map((l) => <a href={l.href}>{l.label}</a>)}</span>
-      <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary" aria-label="Switch colour theme"><span class="icon" aria-hidden="true">☾</span> <span class="label">Dark</span></button>
+      <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary"><span class="icon" aria-hidden="true">☾</span> <span class="label">Dark</span></button>
     </span>
   </div>
 </footer>
@@ -57,7 +57,7 @@ const year = new Date().getFullYear();
   .brand :global(img) { width: 44px; height: 44px; object-fit: contain; }
   .line2 { display: block; }
   .rule { width: 40px; height: 2px; background: var(--color-gold); margin-block: var(--space-3); }
-  .about p { margin: 0; opacity: 0.9; }
+  .about p { margin: 0; }
   .ref { display: block; font-size: var(--text-xs); letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-footer-gold); margin-top: var(--space-1); }
   .col { display: flex; flex-direction: column; gap: var(--space-2); }
   .col strong, .signup :global(label) { font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-footer-gold); font-weight: 700; }
