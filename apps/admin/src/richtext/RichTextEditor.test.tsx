@@ -111,7 +111,7 @@ describe("RichTextEditor", () => {
     await screen.findByRole("textbox");
     expect(screen.getByRole("heading", { level: 2, name: "Peace" })).toBeInTheDocument();
     expect(screen.getByRole("textbox").querySelector("blockquote")).toBeTruthy();
-    expect(screen.getByRole("textbox").querySelector("img")).toHaveAttribute("src", IMG);
+    expect(screen.getByRole("textbox").querySelector("img")).toHaveAttribute("data-src", IMG);
     // Edit to force an emit, then check the emitted doc is exactly what the API keeps.
     await userEvent.click(screen.getByRole("textbox"));
     await userEvent.keyboard("x");
@@ -152,6 +152,11 @@ describe("RichTextEditor", () => {
       width: 800,
       height: 600,
     });
+    // The editor shows an optimised, width-limited rendition, never the original file.
+    const img = document.querySelector<HTMLImageElement>(".ProseMirror img")!;
+    expect(img.getAttribute("src")).toContain("c_limit,w_800,f_auto,q_auto");
+    expect(img.getAttribute("srcset")).toContain("w_480");
+    expect(img.getAttribute("srcset")).not.toContain(` ${IMG} `);
   });
 
   it("shows an error for a failed upload and for a wrong file type", async () => {

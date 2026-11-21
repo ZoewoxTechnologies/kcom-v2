@@ -1,5 +1,6 @@
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
+import { imageSrcSet, imageUrl } from "@kcom/media";
 
 /** Block image holding only what the stored format keeps: `src`, `alt`, and optional `width`/`height`. */
 const StoredImage = Image.extend({
@@ -10,6 +11,31 @@ const StoredImage = Image.extend({
       width: { default: null },
       height: { default: null },
     };
+  },
+  // The editor shows a width-limited f_auto,q_auto rendition so the original never loads.
+  // `data-src` keeps the stored URL so copying within the editor round-trips it.
+  parseHTML() {
+    return [
+      {
+        tag: "img[src]",
+        getAttrs: (el) => ({ src: el.getAttribute("data-src") ?? el.getAttribute("src") }),
+      },
+    ];
+  },
+  renderHTML({ HTMLAttributes }) {
+    const { src, ...rest } = HTMLAttributes as Record<string, string | undefined>;
+    if (!src) return ["img", rest];
+    return [
+      "img",
+      {
+        ...rest,
+        src: imageUrl(src, { width: 800 }),
+        srcset: imageSrcSet(src, [480, 800, 1200]),
+        sizes: "(min-width: 48rem) 42rem, 100vw",
+        "data-src": src,
+        loading: "lazy",
+      },
+    ];
   },
 }).configure({ inline: false, allowBase64: false });
 
