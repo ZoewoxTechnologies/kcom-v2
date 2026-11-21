@@ -88,6 +88,29 @@ describe("admin uploads", () => {
     expect((await sign({ contentType: "image/png" })).status).toBe(400);
   });
 
+  it("signs without an upload preset when none is configured", async () => {
+    const noPreset = {
+      cloudName: cloudinary.cloudName,
+      apiKey: cloudinary.apiKey,
+      apiSecret: cloudinary.apiSecret,
+    };
+    app = createApp(db, {
+      corsOrigins: [ORIGIN],
+      auth: { secret: "x".repeat(40), baseURL: "http://api.test" },
+      cloudinary: noPreset,
+    });
+    vi.spyOn(Date, "now").mockReturnValue(1_700_000_000_000);
+    const res = await sign({ contentType: "image/png", size: 1000 });
+    vi.restoreAllMocks();
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { signature: string; params: Record<string, unknown> };
+    expect(body.params).not.toHaveProperty("upload_preset");
+    const expected = createHash("sha1")
+      .update(`context=${body.params.context}&timestamp=1700000000secret456`)
+      .digest("hex");
+    expect(body.signature).toBe(expected);
+  });
+
   it("returns a valid signature without leaking the secret", async () => {
     vi.spyOn(Date, "now").mockReturnValue(1_700_000_000_000);
     const res = await sign({ contentType: "image/webp", size: 1000 });

@@ -25,6 +25,10 @@
     display: block;
     max-width: 100%;
   }
+  /* Images carry width/height attributes to reserve space; keep the ratio when they shrink. */
+  img {
+    height: auto;
+  }
   input,
   button,
   textarea,
