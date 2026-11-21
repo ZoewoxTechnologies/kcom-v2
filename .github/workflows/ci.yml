@@ -162,6 +162,7 @@ jobs:
       SEARCH_INDEX_PARTIAL_OK: "true"
       HOST: 127.0.0.1
       PORT: "4321"
+      PUBLIC_SITE_URL: http://127.0.0.1:4321
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
