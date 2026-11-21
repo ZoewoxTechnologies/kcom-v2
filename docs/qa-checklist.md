@@ -9,7 +9,7 @@ Run this on staging before launch. Tick each box, note the browser or device and
 - [ ] Staging site, API and admin are deployed from the same commit; note the commit.
 - [ ] An editor account and an admin account exist. Use the editor for content tests.
 - [ ] A mailbox you can read is available for subscribe and contact tests.
-- [ ] Staging is configured to rebuild the site on publish (see `docs/deploy.md`).
+- [ ] Staging is configured to rebuild the site on publish (see `docs/deploy.md`). The site is server-rendered, so content appears without a rebuild; the rebuild refreshes search.
 
 ## Test matrix
 
@@ -54,7 +54,7 @@ For each row of the matrix:
 ## 3. Email signup
 
 - [ ] Subscribe with a valid address; the check-your-inbox page shows.
-- [ ] The confirmation email arrives, from the right sender, and renders in Gmail, Apple Mail and Outlook.
+- [ ] Once email is live: the confirmation email arrives, from the right sender, and renders in Gmail, Apple Mail and Outlook.
 - [ ] The confirm link opens the confirmed page; a second use or an old link shows the expired page.
 - [ ] Subscribing twice with the same address is handled gracefully.
 - [ ] An invalid address shows an inline error; the form can be fixed and resubmitted.
@@ -76,11 +76,11 @@ Do this once on desktop, then check the result on a phone.
 - [ ] As an editor, create a capsule, save a draft, and confirm it is not on the public site.
 - [ ] Schedule it for a time a few minutes ahead; it shows as Scheduled in the list and calendar.
 - [ ] At that time it becomes Published without any action.
-- [ ] The site rebuilds and the capsule appears on its page, the capsules index, Today's Capsule (when it is today's), the month archive, RSS and sitemap.
-- [ ] The subscriber email for the capsule arrives once, with the right content and links.
+- [ ] Within about a minute (search updates after the next rebuild), the capsule appears on its page, the capsules index, Today's Capsule (when it is today's), the month archive, RSS and sitemap.
+- [ ] Once email is live: the subscriber email for the capsule arrives once, with the right content and links.
 - [ ] Repeat with the default time (next midnight, Lagos): check the date shown is the Lagos date.
 - [ ] Publish now works and follows the same path.
-- [ ] Unpublish removes it from the site after the next rebuild.
+- [ ] Unpublish removes it from the site within about a minute (search updates after the next rebuild).
 - [ ] Unscheduling returns it to Draft.
 
 ## 6. Admin app
@@ -93,7 +93,7 @@ On desktop and on a tablet in both orientations:
 - [ ] Blog, Events, Books, Pages and Homepage: create, edit, reorder where offered, and publish.
 - [ ] Rich text toolbar works, including links and image upload.
 - [ ] Leaving an edited page shows the discard prompt; Keep editing and Discard both work.
-- [ ] Content search finds items and opens them.
+- [ ] Content search finds items and opens them. It matches titles only.
 - [ ] Inbox and Subscribers load and update.
 - [ ] Buttons and controls are large enough to tap on a tablet; nothing is clipped.
 - [ ] Reduced-motion setting turns off animations.
