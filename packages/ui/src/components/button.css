@@ -115,7 +115,7 @@
 
   .kc-btn--give {
     --kc-btn-bg: var(--color-sandstone);
-    --kc-btn-fg: var(--color-gold-text);
+    --kc-btn-fg: var(--color-gold-text-tint);
     --kc-btn-border: var(--color-gold);
     --kc-btn-ring: var(--focus-ring-on-gold);
 
