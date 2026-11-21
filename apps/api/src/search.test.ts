@@ -110,6 +110,45 @@ describe("GET /search", () => {
     expect((await search("zebra")).hits.map((h) => h.url)).toEqual(["/capsules/d"]);
   });
 
+  it("does not return a series that has no live capsules", async () => {
+    const [draft, later, live] = await db
+      .insert(series)
+      .values([
+        { title: "Quartz draft", slug: "q-draft" },
+        { title: "Quartz later", slug: "q-later" },
+        { title: "Quartz live", slug: "q-live" },
+      ])
+      .returning();
+    await db.insert(capsules).values([
+      {
+        title: "A",
+        slug: "qa",
+        status: "draft",
+        publishAt: past(20),
+        body: doc("x"),
+        seriesId: draft!.id,
+      },
+      {
+        title: "B",
+        slug: "qb",
+        status: "published",
+        publishAt: future(9),
+        body: doc("x"),
+        seriesId: later!.id,
+      },
+      {
+        title: "C",
+        slug: "qc",
+        status: "published",
+        publishAt: past(21),
+        body: doc("x"),
+        seriesId: live!.id,
+      },
+    ]);
+    const urls = (await search("quartz")).hits.filter((h) => h.type === "Series").map((h) => h.url);
+    expect(urls).toEqual(["/series/q-live"]);
+  });
+
   it("ranks title matches above body matches", async () => {
     await db.insert(capsules).values([
       {

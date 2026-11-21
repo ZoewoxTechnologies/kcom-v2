@@ -96,7 +96,8 @@ export function searchRoutes(db: CapsuleDb, trustedProxyHops = DEFAULT_TRUSTED_P
         select 'Series', '/series/' || r.slug, r.title, null, r.title,
           coalesce(r.description, ''), kcom_series_tsv(r.title, r.description)
         from series r
-        where kcom_series_tsv(r.title, r.description) @@ (select tsq from q)
+        where exists (select 1 from capsules c where c.series_id = r.id and ${live("c")})
+          and kcom_series_tsv(r.title, r.description) @@ (select tsq from q)
         union all
         select 'Page', p.url, p.title, 'About', null, p.content,
           setweight(to_tsvector('english', p.title), 'A') || setweight(to_tsvector('english', p.content), 'C')

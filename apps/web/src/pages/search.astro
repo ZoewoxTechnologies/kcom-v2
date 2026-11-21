@@ -232,6 +232,14 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     renderPage();
   }
 
+  /** After a failed search, drop the previous results rather than leave them looking current. */
+  function showFailure() {
+    fetched = null;
+    shown = [];
+    body.hidden = true;
+    results.replaceChildren();
+  }
+
   async function run(keepPage = false) {
     clearTimeout(timer);
     controller?.abort();
@@ -250,6 +258,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       const res = await fetch(`${API}/search?q=${encodeURIComponent(q)}`, { signal: controller.signal });
       if (mine !== token) return;
       if (res.status === 429) {
+        showFailure();
         status.textContent = "Too many searches. Please wait a moment and try again.";
         return;
       }
@@ -257,6 +266,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       fetched = { q, hits: ((await res.json()) as { hits: Hit[] }).hits };
     } catch (err) {
       if (mine !== token || (err as Error).name === "AbortError") return;
+      showFailure();
       status.textContent = "Search is not available right now.";
       return;
     }
