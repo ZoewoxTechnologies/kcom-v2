@@ -112,7 +112,7 @@ export function Shell() {
             ☰
           </Button>
           <span className="kc-admin__title">{title}</span>
-          <AdminSearch />
+          {can(user.role, "content:read") && <AdminSearch />}
           <Menu
             className="kc-admin__user"
             align="end"

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { contactMessages, rateLimits } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
-import { createApp } from "./app.js";
+import { createApp, type AppOptions } from "./app.js";
 import { clientIp, parseTrustedProxyHops } from "./client-ip.js";
 
 const ok = { topic: "prayer", name: "Grace", email: "grace@example.org", message: "Please pray." };
@@ -18,12 +18,48 @@ const post = (body: unknown, ip: string | null = "203.0.113.5", target = app, en
     "/contact",
     {
       method: "POST",
-      headers: { "content-type": "application/json", origin: "http://web.test", ...(ip === null ? {} : { "x-forwarded-for": ip }) },
+      headers: {
+        "content-type": "application/json",
+        origin: "http://web.test",
+        ...(ip === null ? {} : { "x-forwarded-for": ip }),
+      },
       body: JSON.stringify(body),
     },
     env,
   );
 const socket = (address: string) => ({ incoming: { socket: { remoteAddress: address } } });
+
+describe("POST /contact bot check", () => {
+  const withCheck = (check: NonNullable<AppOptions["contactBotCheck"]>) =>
+    createApp(db, { corsOrigins: ["http://web.test"], contactBotCheck: check });
+
+  it("passes the token and IP to the check and stores the message when it passes", async () => {
+    const check = vi.fn().mockResolvedValue(true);
+    const res = await post({ ...ok, botToken: "tok" }, "203.0.113.9", withCheck(check));
+    expect(res.status).toBe(201);
+    expect(check).toHaveBeenCalledWith({ token: "tok", ip: "203.0.113.9" });
+    expect(await db.select().from(contactMessages)).toHaveLength(1);
+  });
+
+  it("rejects with 400 verification_failed and stores nothing when the check fails", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const res = await post(
+      ok,
+      "203.0.113.9",
+      withCheck(() => false),
+    );
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      "verification_failed",
+    );
+    expect(await db.select().from(contactMessages)).toHaveLength(0);
+    warn.mockRestore();
+  });
+
+  it("accepts a botToken when no check is configured", async () => {
+    expect((await post({ ...ok, botToken: "tok" })).status).toBe(201);
+  });
+});
 
 describe("POST /contact", () => {
   it("stores the message and returns 201 with its id", async () => {
@@ -32,7 +68,14 @@ describe("POST /contact", () => {
     const { id } = (await res.json()) as { id: string };
     const rows = await db.select().from(contactMessages);
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ id, topic: "prayer", name: "Grace", email: "grace@example.org", keepPrivate: true, status: "new" });
+    expect(rows[0]).toMatchObject({
+      id,
+      topic: "prayer",
+      name: "Grace",
+      email: "grace@example.org",
+      keepPrivate: true,
+      status: "new",
+    });
     expect(rows[0]!.createdAt).toBeInstanceOf(Date);
   });
 
@@ -56,7 +99,11 @@ describe("POST /contact", () => {
   it("allows the web origin to POST cross-origin", async () => {
     const res = await app.request("/contact", {
       method: "OPTIONS",
-      headers: { origin: "http://web.test", "access-control-request-method": "POST", "access-control-request-headers": "content-type" },
+      headers: {
+        origin: "http://web.test",
+        "access-control-request-method": "POST",
+        "access-control-request-headers": "content-type",
+      },
     });
     expect(res.headers.get("access-control-allow-origin")).toBe("http://web.test");
     expect(res.headers.get("access-control-allow-methods")).toContain("POST");
@@ -97,19 +144,22 @@ describe("POST /contact spam protection", () => {
   });
 
   it("ignores client-supplied x-forwarded-for entries, so a spoofed header does not change the bucket", async () => {
-    for (let i = 0; i < 5; i++) expect((await post(ok, `spoof-${i}, 203.0.113.5`)).status).toBe(201);
+    for (let i = 0; i < 5; i++)
+      expect((await post(ok, `spoof-${i}, 203.0.113.5`)).status).toBe(201);
     expect((await post(ok, "another-spoof, 203.0.113.5")).status).toBe(429);
   });
 
   it("picks the hop set by trustedProxyHops from the right of a multi-hop chain", async () => {
     const two = createApp(db, { corsOrigins: ["http://web.test"], trustedProxyHops: 2 });
-    for (let i = 0; i < 5; i++) expect((await post(ok, `198.51.100.${i}, 203.0.113.5, 10.0.0.1`, two)).status).toBe(201);
+    for (let i = 0; i < 5; i++)
+      expect((await post(ok, `198.51.100.${i}, 203.0.113.5, 10.0.0.1`, two)).status).toBe(201);
     expect((await post(ok, "198.51.100.99, 203.0.113.5, 10.0.0.1", two)).status).toBe(429);
     expect((await post(ok, "198.51.100.99, 203.0.113.6, 10.0.0.1", two)).status).toBe(201);
   });
 
   it("falls back to the socket address when the header is missing", async () => {
-    for (let i = 0; i < 5; i++) expect((await post(ok, null, app, socket("192.0.2.7"))).status).toBe(201);
+    for (let i = 0; i < 5; i++)
+      expect((await post(ok, null, app, socket("192.0.2.7"))).status).toBe(201);
     expect((await post(ok, null, app, socket("192.0.2.7"))).status).toBe(429);
     expect((await post(ok, null, app, socket("192.0.2.8"))).status).toBe(201);
   });
