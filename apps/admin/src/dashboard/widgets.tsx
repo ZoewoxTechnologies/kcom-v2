@@ -65,14 +65,16 @@ export function PanelRow({
 export function Notice({
   label,
   action,
+  role = "status",
   children,
 }: {
   label: string;
+  role?: "status" | "alert";
   action?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <div className="kc-notice" role="status">
+    <div className="kc-notice" role={role}>
       <span className="kc-notice__label">{label}</span>
       <span className="kc-notice__text">{children}</span>
       {action}

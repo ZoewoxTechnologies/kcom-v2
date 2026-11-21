@@ -15,7 +15,11 @@ const cap = (id: string, title: string, status: string, publishAt: string) => ({
   publishAt,
 });
 
-function mockApi(data: { capsules?: unknown[]; events?: unknown[]; fail?: boolean }) {
+function mockApi(data: {
+  capsules?: unknown[];
+  events?: { total: number; next: string | null };
+  fail?: boolean;
+}) {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
@@ -24,8 +28,13 @@ function mockApi(data: { capsules?: unknown[]; events?: unknown[]; fail?: boolea
       if (data.fail) return new Response("{}", { status: 500 });
       if (url.includes("/admin/subscribers/count"))
         return json({ confirmed: 1284, addedThisMonth: 36 });
-      if (url.includes("/admin/events")) return json({ items: data.events ?? [], total: 0 });
-      return json({ items: data.capsules ?? [], total: (data.capsules ?? []).length });
+      if (url.includes("/admin/events/upcoming"))
+        return json(data.events ?? { total: 0, next: null });
+      const all = data.capsules ?? [];
+      const items = url.includes("status=draft")
+        ? all.filter((c) => (c as { status: string }).status === "draft")
+        : all;
+      return json({ items, total: items.length });
     }),
   );
 }
@@ -51,7 +60,7 @@ describe("dashboard", () => {
         cap("m", "Thinking on These Things", "scheduled", "2026-11-20T23:00:00Z"),
         cap("d", "A Sound Mind", "draft", "2026-11-25T23:00:00Z"),
       ],
-      events: [{ id: "e", status: "published", startsAt: "2026-12-06T10:00:00Z", endsAt: null }],
+      events: { total: 3, next: "2026-12-06T10:00:00Z" },
     });
     renderPage();
     expect(await screen.findByText("1,284")).toBeTruthy();
@@ -90,6 +99,6 @@ describe("dashboard", () => {
   it("says so when loading fails", async () => {
     mockApi({ fail: true });
     renderPage();
-    expect(await screen.findByText("The dashboard could not be loaded.")).toBeTruthy();
+    expect((await screen.findByRole("alert")).textContent).toContain("could not be loaded");
   });
 });

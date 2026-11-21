@@ -196,3 +196,29 @@ describe("public events", () => {
     expect((await json(await call("/events/soon", null))).title).toBe("soon");
   });
 });
+
+describe("GET /admin/events/upcoming", () => {
+  it("needs a session", async () => {
+    expect((await call("/admin/events/upcoming", null)).status).toBe(401);
+  });
+
+  it("counts published events that have not ended and reports the next start", async () => {
+    const make = (slug: string, over: Record<string, unknown>) =>
+      call("/admin/events", editor, "POST", valid({ slug, title: slug, ...over }));
+    await make("later", { status: "published", startsAt: "2099-06-01T10:00:00Z" });
+    await make("soon", { status: "published", startsAt: "2099-02-01T10:00:00Z" });
+    await make("draft", { status: "draft", startsAt: "2098-01-01T10:00:00Z" });
+    await make("done", { status: "published", startsAt: PAST });
+    const res = await call("/admin/events/upcoming", editor);
+    expect(res.status).toBe(200);
+    expect(await json<{ total: number; next: string }>(res)).toEqual({
+      total: 2,
+      next: "2099-02-01T10:00:00.000Z",
+    });
+  });
+
+  it("is empty when nothing is upcoming", async () => {
+    const res = await call("/admin/events/upcoming", editor);
+    expect(await json(res)).toEqual({ total: 0, next: null });
+  });
+});

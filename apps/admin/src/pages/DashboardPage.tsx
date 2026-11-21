@@ -3,7 +3,7 @@ import { Badge, Button } from "@kcom/ui";
 import { capsuleEditPath } from "../capsules/api";
 import { addDays, lagosDay, shortDayLabel } from "../capsules/days";
 import { useDashboard } from "../dashboard/api";
-import { comingUp, draftsOf, greeting, upcomingEvents } from "../dashboard/summary";
+import { comingUp, draftsOf, greeting } from "../dashboard/summary";
 import { Notice, Panel, PanelRow, StatTile } from "../dashboard/widgets";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -29,6 +29,7 @@ export function DashboardPage() {
       {state === "loading" && <p className="kc-admin-loading">Loading…</p>}
       {state === "error" && (
         <Notice
+          role="alert"
           label="Problem"
           action={
             <Button size="sm" onClick={reload}>
@@ -57,9 +58,7 @@ function Loaded({
 }) {
   const days = comingUp(data.capsules, now);
   const tomorrowCapsule = days.find((d) => d.day === tomorrow)?.capsule ?? null;
-  const drafts = draftsOf(data.capsules);
-  const events = upcomingEvents(data.events, now);
-  const nextEvent = events[0];
+  const drafts = draftsOf(data.drafts);
   const dayName = (day: string) =>
     day === today ? "Today" : shortDayLabel(day).split(" ").slice(0, 2).join(" ");
 
@@ -78,10 +77,10 @@ function Loaded({
         />
         <StatTile
           label="Upcoming events"
-          value={events.length}
+          value={data.events.total}
           note={
-            nextEvent
-              ? `Next: ${shortDayLabel(lagosDay(nextEvent.startsAt)).slice(4)}`
+            data.events.next
+              ? `Next: ${shortDayLabel(lagosDay(data.events.next)).slice(4)}`
               : "None planned"
           }
         />

@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiJson } from "../api/client";
-import { listCapsules } from "../capsules/api";
+import { listCapsulesBetween, listDrafts } from "../capsules/api";
+import { addDays, lagosDay, lagosMidnight } from "../capsules/days";
 import type { CapsuleSummary } from "../capsules/api";
-import { listEvents } from "../events/api";
-import type { EventRecord } from "../events/api";
+import { upcomingEventsSummary } from "../events/api";
+
+/** Days listed under Coming up, today included. */
+export const COMING_UP_DAYS = 4;
 
 export interface SubscriberCount {
   confirmed: number;
@@ -11,8 +14,10 @@ export interface SubscriberCount {
 }
 
 export interface DashboardData {
+  /** Today and the next few Lagos days. */
   capsules: CapsuleSummary[];
-  events: EventRecord[];
+  drafts: CapsuleSummary[];
+  events: { total: number; next: string | null };
   subscribers: SubscriberCount;
 }
 
@@ -23,13 +28,15 @@ export function useDashboard() {
 
   const load = useCallback(() => {
     setState("loading");
+    const today = lagosDay(new Date());
     Promise.all([
-      listCapsules(),
-      listEvents(),
+      listCapsulesBetween(lagosMidnight(today), lagosMidnight(addDays(today, COMING_UP_DAYS))),
+      listDrafts(),
+      upcomingEventsSummary(),
       apiJson<SubscriberCount>("/admin/subscribers/count"),
     ]).then(
-      ([capsules, events, subscribers]) => {
-        setData({ capsules, events, subscribers });
+      ([capsules, drafts, events, subscribers]) => {
+        setData({ capsules, drafts, events, subscribers });
         setState("ready");
       },
       () => setState("error"),

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CapsuleSummary } from "../capsules/api";
-import type { EventRecord } from "../events/api";
-import { comingUp, draftsOf, greeting, upcomingEvents } from "./summary";
+import { comingUp, draftsOf, greeting } from "./summary";
 
 const cap = (id: string, status: CapsuleSummary["status"], publishAt: string): CapsuleSummary => ({
   id,
@@ -12,9 +11,6 @@ const cap = (id: string, status: CapsuleSummary["status"], publishAt: string): C
   partNumber: null,
   publishAt,
 });
-const event = (status: EventRecord["status"], startsAt: string, endsAt: string | null = null) =>
-  ({ id: startsAt, status, startsAt, endsAt }) as EventRecord;
-
 // 23:30 on 19 Nov in Lagos.
 const NOW = new Date("2026-11-19T22:30:00Z");
 
@@ -45,21 +41,6 @@ describe("draftsOf", () => {
       cap("soon", "draft", "2026-11-20T00:00:00Z"),
     ];
     expect(draftsOf(list).map((c) => c.id)).toEqual(["soon", "late"]);
-  });
-});
-
-describe("upcomingEvents", () => {
-  it("skips drafts and events that have ended", () => {
-    const list = [
-      event("published", "2026-12-06T10:00:00Z"),
-      event("draft", "2026-12-01T10:00:00Z"),
-      event("published", "2026-11-01T10:00:00Z"),
-      event("published", "2026-11-18T10:00:00Z", "2026-11-25T10:00:00Z"),
-    ];
-    expect(upcomingEvents(list, NOW).map((e) => e.startsAt)).toEqual([
-      "2026-11-18T10:00:00Z",
-      "2026-12-06T10:00:00Z",
-    ]);
   });
 });
 
