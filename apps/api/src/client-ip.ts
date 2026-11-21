@@ -10,7 +10,7 @@ export const CLIENT_IP_HEADER = "x-kcom-client-ip";
 export function parseTrustedProxyHops(raw: string | undefined): number {
   if (raw === undefined || raw.trim() === "") return DEFAULT_TRUSTED_PROXY_HOPS;
   if (/^[1-9]\d*$/.test(raw.trim())) return Number(raw.trim());
-  console.warn(`[contact] invalid TRUSTED_PROXY_HOPS "${raw}"; using ${DEFAULT_TRUSTED_PROXY_HOPS}`);
+  console.warn(`[client-ip] invalid TRUSTED_PROXY_HOPS "${raw}"; using ${DEFAULT_TRUSTED_PROXY_HOPS}`);
   return DEFAULT_TRUSTED_PROXY_HOPS;
 }
 
