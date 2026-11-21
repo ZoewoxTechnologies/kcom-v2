@@ -99,6 +99,13 @@
       "when": 1795266109313,
       "tag": "0013_luxuriant_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1795269401217,
+      "tag": "0014_search_indexes",
+      "breakpoints": true
     }
   ]
 }

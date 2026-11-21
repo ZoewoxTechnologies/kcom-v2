@@ -47,10 +47,8 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 <script>
   import { pageWindow } from "@kcom/ui/pagination";
 
-  type Filters = Record<string, { [value: string]: number }>;
-  interface Hit { url: string; excerpt: string; meta: { title?: string; type?: string; date?: string } }
-  interface Found { results: { data(): Promise<Hit> }[]; filters: Filters; totalFilters: Filters }
-  interface Pagefind { options(o: object): Promise<void>; filters(): Promise<Filters>; search(q: string | null, o?: object): Promise<Found | null> }
+  interface Segment { text: string; match: boolean }
+  interface Hit { type: string; url: string; title: string; date: string | null; series: string | null; excerpt: Segment[] }
 
   const root = document.querySelector<HTMLElement>("[data-search]")!;
   const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -66,6 +64,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   const empty = $("[data-empty]");
   const emptyTitle = $("[data-empty-title]");
 
+  const API = (import.meta.env.PUBLIC_API_URL ?? "").replace(/\/+$/, "");
   const PAGE = 10;
   const TYPING_MS = 300;
   const TYPE_LABELS: Record<string, string> = { Capsule: "Capsules", Blog: "Blog", Series: "Series", Event: "Events", Book: "Books", Page: "Pages" };
@@ -76,12 +75,12 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   series.dataset.want = params.get("series") ?? "";
   input.value = params.get("q") ?? "";
 
-  let pf: Pagefind | null = null;
-  let totals: Filters = {};
-  let found: Found | null = null;
+  let fetched: { q: string; hits: Hit[] } | null = null;
+  let shown: Hit[] = [];
   let page = Math.max(1, Number.parseInt(params.get("page") ?? "1", 10) || 1);
   let timer: ReturnType<typeof setTimeout> | undefined;
   let token = 0;
+  let controller: AbortController | undefined;
 
   const el = (tag: string, cls?: string, text?: string) => {
     const n = document.createElement(tag);
@@ -89,7 +88,8 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     if (text !== undefined) n.textContent = text;
     return n;
   };
-  const dateLabel = (d?: string) => (d && /^\d{4}-\d{2}-\d{2}$/.test(d) ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(d)) : (d ?? ""));
+  const dateLabel = (d: string | null) => (d && /^\d{4}-\d{2}-\d{2}$/.test(d) ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(d)) : (d ?? ""));
+  const yearOf = (h: Hit) => (h.date && /^\d{4}/.test(h.date) ? h.date.slice(0, 4) : null);
 
   function syncUrl() {
     const u = new URL(location.href);
@@ -102,18 +102,18 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     history.replaceState(null, "", u);
   }
 
-  function fillSelect(sel: HTMLSelectElement, any: string, counts: { [value: string]: number }, newestFirst: boolean) {
+  function fillSelect(sel: HTMLSelectElement, any: string, values: Set<string>, newestFirst: boolean) {
     const want = sel.value || sel.dataset.want || "";
     sel.dataset.want = "";
-    const keys = Object.keys(counts).sort((a, b) => (newestFirst ? b.localeCompare(a) : a.localeCompare(b)));
+    const keys = [...values].sort((a, b) => (newestFirst ? b.localeCompare(a) : a.localeCompare(b)));
     if (want && !keys.includes(want)) keys.push(want);
     sel.replaceChildren(new Option(any, ""), ...keys.map((k) => new Option(k, k)));
     sel.value = want;
   }
 
-  function fillTypes(counts: { [value: string]: number }, totals: { [value: string]: number }) {
+  function fillTypes(counts: Record<string, number>) {
     typesBox.querySelectorAll("label").forEach((l) => l.remove());
-    for (const type of Object.keys(totals).sort((a, b) => TYPE_ORDER.indexOf(a) - TYPE_ORDER.indexOf(b))) {
+    for (const type of TYPE_ORDER) {
       const label = el("label", "kc-choice");
       const box = el("input") as HTMLInputElement;
       box.type = "checkbox";
@@ -123,7 +123,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
         const on = boxes.filter((b) => b.checked);
         selected.clear();
         if (on.length && on.length < boxes.length) on.forEach((b) => selected.add(b.closest("label")!.querySelector<HTMLElement>(".count")!.dataset.type!));
-        void run(false);
+        apply(false);
       });
       const count = el("span", "count", String(counts[type] ?? 0));
       count.dataset.type = type;
@@ -141,7 +141,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     typeof content === "string" ? (a.textContent = content) : a.append(content);
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      if (!current) void go(n);
+      if (!current) go(n);
     });
     return a;
   }
@@ -176,22 +176,19 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     pager.append(edge("next", page + 1, page < pages));
   }
 
-  async function renderPage() {
-    if (!found) return;
-    const mine = token;
-    const pages = Math.max(1, Math.ceil(found.results.length / PAGE));
+  function renderPage() {
+    const pages = Math.max(1, Math.ceil(shown.length / PAGE));
     page = Math.min(Math.max(page, 1), pages);
-    const hits = await Promise.all(found.results.slice((page - 1) * PAGE, page * PAGE).map((r) => r.data()));
-    if (mine !== token) return;
     results.replaceChildren();
-    for (const h of hits) {
+    for (const h of shown.slice((page - 1) * PAGE, page * PAGE)) {
       const a = el("a", "hit") as HTMLAnchorElement;
       a.href = h.url;
       const meta = el("span", "hit-meta");
-      meta.append(el("span", "chip", h.meta.type ?? ""), el("span", "date", dateLabel(h.meta.date)));
-      const title = el("span", "hit-title", h.meta.title ?? h.url);
+      meta.append(el("span", "chip", h.type), el("span", "date", dateLabel(h.date)));
+      const title = el("span", "hit-title", h.title);
       const ex = el("span", "excerpt");
-      ex.innerHTML = h.excerpt; // Pagefind escapes content and only adds <mark>
+      // Excerpts arrive as plain-text segments; matches become <mark>, never markup.
+      for (const seg of h.excerpt) ex.append(seg.match ? el("mark", undefined, seg.text) : document.createTextNode(seg.text));
       a.append(meta, title, ex);
       results.append(a);
     }
@@ -199,43 +196,32 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     syncUrl();
   }
 
-  async function go(n: number) {
+  function go(n: number) {
     page = n;
-    await renderPage();
+    renderPage();
     results.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
-  async function run(refill: boolean, keepPage = false) {
-    clearTimeout(timer);
+  /** Filters the fetched hits by type, year and series and draws them. `refill` rebuilds the filter lists. */
+  function apply(refill: boolean, keepPage = false) {
+    if (!fetched) return;
     if (!keepPage) page = 1;
-    const q = input.value.trim();
-    const mine = ++token;
-    syncUrl();
-    if (!pf) return;
-    if (!q) {
-      found = null;
-      body.hidden = true;
-      status.textContent = "";
-      return;
-    }
-    const filters: Record<string, unknown> = {};
-    if (selected.size) filters.type = { any: [...selected] };
-    if (year.value) filters.year = year.value;
-    if (series.value) filters.series = series.value;
-    const res = await pf.search(q, { filters });
-    if (!res || mine !== token) return;
-    found = res;
-    body.hidden = false;
+    const { q, hits } = fetched;
+    const inYearAndSeries = hits.filter((h) => (!year.value || yearOf(h) === year.value) && (!series.value || h.series === series.value));
+    const counts: Record<string, number> = {};
+    for (const h of inYearAndSeries) counts[h.type] = (counts[h.type] ?? 0) + 1;
     if (refill) {
-      fillTypes(res.filters.type ?? {}, totals.type ?? {});
-      fillSelect(year, "Any year", totals.year ?? {}, true);
-      fillSelect(series, "Any series", totals.series ?? {}, false);
+      fillTypes(counts);
+      fillSelect(year, "Any year", new Set(hits.map(yearOf).filter((y): y is string => !!y)), true);
+      fillSelect(series, "Any series", new Set(hits.map((h) => h.series).filter((s): s is string => !!s)), false);
     } else {
       typesBox.querySelectorAll<HTMLElement>(".count").forEach((c) => {
-        c.textContent = String(res.filters.type?.[c.dataset.type ?? ""] ?? 0);
+        c.textContent = String(counts[c.dataset.type ?? ""] ?? 0);
       });
     }
-    const n = res.results.length;
+    shown = inYearAndSeries.filter((h) => selected.size === 0 || selected.has(h.type));
+    body.hidden = false;
+    const n = shown.length;
     empty.hidden = n > 0;
     if (n === 0) {
       results.replaceChildren();
@@ -243,38 +229,58 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     }
     emptyTitle.textContent = `No results for “${q}”`;
     status.textContent = n ? `${n} ${n === 1 ? "result" : "results"} for “${q}”` : "";
-    await renderPage();
+    renderPage();
   }
 
-  year.addEventListener("change", () => void run(false));
-  series.addEventListener("change", () => void run(false));
+  async function run(keepPage = false) {
+    clearTimeout(timer);
+    controller?.abort();
+    const q = input.value.trim();
+    const mine = ++token;
+    if (!keepPage) page = 1;
+    if (!q) {
+      fetched = null;
+      body.hidden = true;
+      status.textContent = "";
+      syncUrl();
+      return;
+    }
+    controller = new AbortController();
+    try {
+      const res = await fetch(`${API}/search?q=${encodeURIComponent(q)}`, { signal: controller.signal });
+      if (mine !== token) return;
+      if (res.status === 429) {
+        status.textContent = "Too many searches. Please wait a moment and try again.";
+        return;
+      }
+      if (!res.ok) throw new Error(String(res.status));
+      fetched = { q, hits: ((await res.json()) as { hits: Hit[] }).hits };
+    } catch (err) {
+      if (mine !== token || (err as Error).name === "AbortError") return;
+      status.textContent = "Search is not available right now.";
+      return;
+    }
+    apply(true, keepPage);
+  }
+
+  year.addEventListener("change", () => apply(false));
+  series.addEventListener("change", () => apply(false));
   input.addEventListener("input", () => {
     clearTimeout(timer);
-    timer = setTimeout(() => void run(true), TYPING_MS);
+    timer = setTimeout(() => void run(), TYPING_MS);
   });
   input.form!.addEventListener("submit", (e) => {
     e.preventDefault();
-    void run(true);
+    void run();
   });
   clear.addEventListener("click", (e) => {
     e.preventDefault();
     selected.clear();
     year.value = series.value = "";
-    void run(false);
+    apply(false);
   });
 
-  (async () => {
-    try {
-      const url = "/pagefind/pagefind.js"; // built by scripts/search-index.ts after astro build
-      pf = (await import(/* @vite-ignore */ url)) as Pagefind;
-      await pf.options({ excerptLength: 24 });
-      totals = await pf.filters();
-    } catch {
-      status.textContent = "Search is not available right now.";
-      return;
-    }
-    void run(true, true);
-  })();
+  void run(true);
 </script>
 <style is:global>
   .search { display: flex; flex-direction: column; }

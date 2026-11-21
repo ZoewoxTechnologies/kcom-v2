@@ -44,7 +44,7 @@ The Capsules list shows each capsule's status and its Lagos date. The Calendar s
 
 ## 6. Pages and subscribers
 
-- **Pages:** choose **Pages** to edit the text of fixed pages such as About and Partner. Save, then publish.
+- **Pages:** choose **Pages** to edit the text of fixed pages such as About and Partner. Tick **Published**, then **Save**.
 - **Subscribers:** choose **Subscribers** to see who has signed up for email and whether each address is confirmed or unsubscribed.
 
 ## 7. Unsaved changes
