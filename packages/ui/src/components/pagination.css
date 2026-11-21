@@ -2,6 +2,8 @@
    chevron-only prev/next. Shared by the React <Pagination> and the Astro one.
    Markup: nav.kc-pagination > (a|button).kc-pagination__item, .kc-pagination__gap.
    Items are 32px visually with a 44px hit area. Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-pagination {
     display: flex;

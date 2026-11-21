@@ -1,5 +1,7 @@
 /* Two-line list items for phone width: .kc-compact-list > li > .kc-compact-list__item
    with a title line (title + trailing badge) and a sub line. Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-compact-list {
     list-style: none;

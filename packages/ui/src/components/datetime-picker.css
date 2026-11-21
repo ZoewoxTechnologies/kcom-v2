@@ -1,5 +1,7 @@
 /* Date and time picker. Import after tokens.css. The trigger reuses the shared
    select styling from forms.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-datetime {
     display: grid;

@@ -1,3 +1,5 @@
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   /* Text for screen readers only. */
   .kc-visually-hidden {

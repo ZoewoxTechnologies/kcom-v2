@@ -2,6 +2,8 @@
    .kc-menu-trigger button (popovertarget) and a [popover].kc-menu panel of
    .kc-menu__item links or buttons. Behaviour lives in menu.ts; the React and Astro
    wrappers render the same markup. Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-menu-wrap {
     position: relative;
