@@ -30,6 +30,12 @@ export function Shell() {
   const phone = useIsPhone();
   // Read at render so it follows the build's env.
   const siteUrl = import.meta.env.VITE_SITE_URL || undefined;
+  const brand = (
+    <>
+      <img src="/logo.png" alt="" width="36" height="36" />
+      <span>KCOM Admin</span>
+    </>
+  );
   const focusBurger = () => burgerRef.current?.focus();
   const sideRef = useRef<HTMLElement>(null);
 
@@ -65,10 +71,17 @@ export function Shell() {
         aria-label="Main"
         inert={phone && !open}
       >
-        <div className="kc-admin__brand">
-          <img src="/logo.png" alt="" width="36" height="36" />
-          <span>KCOM Admin</span>
-        </div>
+        {siteUrl ? (
+          <a
+            className="kc-admin__brand"
+            href={siteUrl}
+            aria-label="Kingdom Capstone Outreach Ministries site"
+          >
+            {brand}
+          </a>
+        ) : (
+          <div className="kc-admin__brand">{brand}</div>
+        )}
         <nav>
           {navFor(user.role).map((item) => (
             <NavLink

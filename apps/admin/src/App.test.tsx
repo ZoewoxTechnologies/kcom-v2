@@ -163,6 +163,35 @@ describe("account menu", () => {
   });
 });
 
+describe("logo link", () => {
+  it("links to the public site in the same tab, with an accessible name", async () => {
+    vi.stubEnv("VITE_SITE_URL", "https://site.example");
+    mockApi(user("editor"));
+    renderAt("/");
+    const link = await screen.findByRole("link", {
+      name: "Kingdom Capstone Outreach Ministries site",
+      hidden: true,
+    });
+    expect(link).toHaveAttribute("href", "https://site.example");
+    expect(link).not.toHaveAttribute("target");
+    vi.unstubAllEnvs();
+  });
+
+  it("is not a link when no site URL is configured", async () => {
+    vi.stubEnv("VITE_SITE_URL", "");
+    mockApi(user("editor"));
+    renderAt("/");
+    await screen.findByRole("button", { name: /account menu/i });
+    expect(
+      screen.queryByRole("link", {
+        name: "Kingdom Capstone Outreach Ministries site",
+        hidden: true,
+      }),
+    ).toBeNull();
+    vi.unstubAllEnvs();
+  });
+});
+
 describe("phone drawer", () => {
   const stubPhone = (matches: boolean) =>
     vi.stubGlobal("matchMedia", () => ({
