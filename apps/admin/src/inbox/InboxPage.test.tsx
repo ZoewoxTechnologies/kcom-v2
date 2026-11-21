@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ToastProvider } from "@kcom/ui";
 import { InboxPage, replyHref } from "./InboxPage";
@@ -67,7 +67,8 @@ describe("InboxPage", () => {
     setup();
     await screen.findByText("Peter");
     expect(rows()).toHaveLength(3);
-    expect(rows()[1]).toHaveTextContent("Private");
+    expect(rows()[1]).not.toHaveTextContent("Private");
+    expect(within(rows()[1]!).getByRole("img", { name: "Private" })).toBeInTheDocument();
     expect(rows()[2]).toHaveTextContent("Read");
   });
 
@@ -105,5 +106,25 @@ describe("InboxPage", () => {
       expect(calls.at(-2)?.body?.status ?? calls.at(-1)?.body?.status).toBe("new"),
     );
     expect(rows()[2]).toHaveTextContent("New");
+  });
+
+  it("shows two-line list items without a table at phone width", async () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({
+      matches: true,
+      media: q,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    setup();
+    await screen.findByText("Peter");
+    expect(screen.queryByRole("table")).toBeNull();
+    const items = screen.getAllByRole("listitem");
+    expect(items).toHaveLength(3);
+    expect(items[1]).toHaveTextContent("Peter");
+    expect(items[1]).toHaveTextContent("A prayer request");
+    expect(items[1]).toHaveTextContent("1 Nov");
+    expect(within(items[1]!).getByRole("img", { name: "Private" })).toBeInTheDocument();
+    await userEvent.click(within(items[0]!).getByRole("button"));
+    expect(await screen.findByText("Do you meet on Sundays?")).toBeInTheDocument();
   });
 });

@@ -8,7 +8,9 @@ import {
   IconButton,
   SegmentedControl,
   SelectField,
-  Tag,
+  Tooltip,
+  CompactList,
+  Pagination,
   useToast,
 } from "@kcom/ui";
 import type { DataTableColumn } from "@kcom/ui";
@@ -20,6 +22,7 @@ import {
   type ContactMessage,
   type MessageStatus,
 } from "./api";
+import { useIsPhone } from "../shell/useIsPhone";
 import { bumpUnread, refreshUnread } from "./unread";
 
 type StatusFilter = "all" | MessageStatus;
@@ -31,6 +34,13 @@ const STATUS_OPTIONS = [
 ] as const;
 
 export const topicLabel = (t: ContactTopic) => contactTopicLabels[t];
+
+const formatShortDate = (iso: string) =>
+  new Intl.DateTimeFormat("en-GB", {
+    timeZone: DEFAULT_TIME_ZONE,
+    day: "numeric",
+    month: "short",
+  }).format(new Date(iso));
 
 const formatDate = (iso: string, time = false) =>
   new Intl.DateTimeFormat("en-GB", {
@@ -60,6 +70,30 @@ const icon = (path: string) => (
     <path d={path} />
   </svg>
 );
+/** Small lock for messages the sender asked to keep private. Icon only, named by its tooltip. */
+function PrivateMark() {
+  return (
+    <Tooltip label="Private">
+      <span className="kc-inbox__lock" role="img" aria-label="Private" tabIndex={0}>
+        <svg
+          viewBox="0 0 24 24"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="5" y="11" width="14" height="9" rx="2" />
+          <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+        </svg>
+      </span>
+    </Tooltip>
+  );
+}
+
 const UNREAD_ICON = "M4 6h16v12H4zM4 7l8 6 8-6";
 const READ_ICON = "M4 9l8-5 8 5v10H4zM4 9l8 6 8-6";
 
@@ -117,32 +151,42 @@ export function InboxPage() {
     if (m.status === "new") update(m, "read");
   };
 
+  const stateBadge = (m: ContactMessage) =>
+    m.status === "new" ? (
+      <Badge variant="pending">New</Badge>
+    ) : (
+      <Badge variant="confirmed">Read</Badge>
+    );
+
   const columns: DataTableColumn<ContactMessage>[] = [
     {
       key: "name",
       header: "From",
       render: (m) => (
-        <span className={m.status === "new" ? "kc-inbox__unread" : undefined}>
-          {m.name}
-          {m.keepPrivate && <Tag className="kc-inbox__private">Private</Tag>}
+        <span className={m.status === "new" ? "kc-inbox__unread" : undefined}>{m.name}</span>
+      ),
+    },
+    {
+      key: "topic",
+      header: "Topic",
+      width: "9rem",
+      render: (m) => (
+        <span className="kc-inbox__topic">
+          {topicLabel(m.topic)}
+          {m.keepPrivate && <PrivateMark />}
         </span>
       ),
     },
-    { key: "topic", header: "Topic", width: "7rem", accessor: (m) => topicLabel(m.topic) },
     { key: "date", header: "Date", width: "8rem", accessor: (m) => formatDate(m.createdAt) },
     {
       key: "status",
       header: "State",
       width: "6rem",
-      render: (m) =>
-        m.status === "new" ? (
-          <Badge variant="pending">New</Badge>
-        ) : (
-          <Badge variant="confirmed">Read</Badge>
-        ),
+      render: stateBadge,
     },
   ];
 
+  const phone = useIsPhone();
   const filtered = status !== "all" || topic !== "";
   return (
     <section className="kc-inbox">
@@ -187,21 +231,64 @@ export function InboxPage() {
           ) : data === null ? (
             <p className="kc-inbox__loading">Loading messages…</p>
           ) : (
-            <DataTable
-              caption="Contact messages"
-              columns={columns}
-              rows={items}
-              getRowId={(m) => m.id}
-              selectedRowId={selected?.id ?? null}
-              onRowClick={open}
-              pagination={{ page, pageSize: PAGE_SIZE, total: data.total, onPageChange: setPage }}
-              emptyTitle={filtered ? "No messages match" : "No messages yet"}
-              emptyMessage={
-                filtered
-                  ? "Try a different filter."
-                  : "Messages sent from the contact page appear here."
-              }
-            />
+            <>
+              {phone ? (
+                <>
+                  <CompactList
+                    caption="Contact messages"
+                    rows={items}
+                    getRowId={(m) => m.id}
+                    selectedRowId={selected?.id ?? null}
+                    onRowClick={open}
+                    isEmphasised={(m) => m.status === "new"}
+                    title={(m) => m.name}
+                    trailing={stateBadge}
+                    subtitle={(m) => (
+                      <>
+                        {topicLabel(m.topic)}
+                        {m.keepPrivate && <PrivateMark />}
+                        <span aria-hidden="true">·</span>
+                        {formatShortDate(m.createdAt)}
+                      </>
+                    )}
+                    emptyTitle={filtered ? "No messages match" : "No messages yet"}
+                    emptyMessage={
+                      filtered
+                        ? "Try a different filter."
+                        : "Messages sent from the contact page appear here."
+                    }
+                  />
+                  {data.total > PAGE_SIZE && (
+                    <Pagination
+                      page={page}
+                      pageCount={Math.ceil(data.total / PAGE_SIZE)}
+                      onPageChange={setPage}
+                    />
+                  )}
+                </>
+              ) : (
+                <DataTable
+                  caption="Contact messages"
+                  columns={columns}
+                  rows={items}
+                  getRowId={(m) => m.id}
+                  selectedRowId={selected?.id ?? null}
+                  onRowClick={open}
+                  pagination={{
+                    page,
+                    pageSize: PAGE_SIZE,
+                    total: data.total,
+                    onPageChange: setPage,
+                  }}
+                  emptyTitle={filtered ? "No messages match" : "No messages yet"}
+                  emptyMessage={
+                    filtered
+                      ? "Try a different filter."
+                      : "Messages sent from the contact page appear here."
+                  }
+                />
+              )}
+            </>
           )}
         </div>
         <div className="kc-inbox__side">
@@ -212,7 +299,7 @@ export function InboxPage() {
                   <h2>{selected.name}</h2>
                   <p className="kc-inbox__meta">
                     {topicLabel(selected.topic)} · {formatDate(selected.createdAt, true)}
-                    {selected.keepPrivate && <Tag className="kc-inbox__private">Private</Tag>}
+                    {selected.keepPrivate && <PrivateMark />}
                   </p>
                 </div>
                 <IconButton

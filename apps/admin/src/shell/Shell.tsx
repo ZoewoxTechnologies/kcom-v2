@@ -12,24 +12,9 @@ import {
 } from "@kcom/ui";
 import { useAuth } from "../auth/AuthProvider";
 import { can } from "@kcom/permissions";
+import { useIsPhone } from "./useIsPhone";
 import { useUnreadCount } from "../inbox/unread";
 import { navFor, navItemFor } from "./nav";
-
-const PHONE_QUERY = "(max-width: 47.99rem)";
-
-/** True at phone width, where the side menu is an off-screen drawer. */
-function useIsPhone() {
-  const [phone, setPhone] = useState(() => window.matchMedia?.(PHONE_QUERY).matches ?? false);
-  useEffect(() => {
-    const query = window.matchMedia?.(PHONE_QUERY);
-    if (!query) return;
-    const onChange = () => setPhone(query.matches);
-    onChange();
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
-  }, []);
-  return phone;
-}
 
 const capitalise = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 

@@ -35,6 +35,8 @@ export { ButtonLink } from "./react/ButtonLink";
 export type { ButtonLinkProps } from "./react/ButtonLink";
 export { IconButton } from "./react/IconButton";
 export type { IconButtonProps } from "./react/IconButton";
+export { CompactList } from "./react/CompactList";
+export type { CompactListProps } from "./react/CompactList";
 export { Tag } from "./react/Tag";
 export type { TagProps } from "./react/Tag";
 export { DataTable, SortableTh, TableEmpty, TablePagination, TableWrap } from "./react/DataTable";

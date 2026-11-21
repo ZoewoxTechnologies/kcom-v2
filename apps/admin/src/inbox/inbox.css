@@ -33,8 +33,20 @@
   .kc-inbox__unread {
     font-weight: 700;
   }
-  .kc-inbox__private {
-    margin-inline-start: var(--space-2);
+  .kc-inbox__topic {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .kc-inbox__lock {
+    display: inline-flex;
+    color: var(--color-muted);
+  }
+  .kc-inbox__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
   }
   .kc-inbox__loading {
     color: var(--color-muted);
