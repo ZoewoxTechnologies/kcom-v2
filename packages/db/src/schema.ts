@@ -156,6 +156,7 @@ export const redirects = pgTable(
   (t) => [
     uniqueIndex("redirects_from_path_idx").on(t.fromPath),
     check("redirects_from_path_format", sql`${t.fromPath} LIKE '/%'`),
+    check("redirects_to_path_format", sql`${t.toPath} LIKE '/%' AND left(${t.toPath}, 2) NOT IN ('//', '/\\')`),
     check("redirects_status", sql`${t.status} IN (301, 302, 307, 308)`),
   ],
 );

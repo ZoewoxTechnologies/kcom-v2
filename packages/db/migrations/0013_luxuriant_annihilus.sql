@@ -1,0 +1,1 @@
+ALTER TABLE "redirects" ADD CONSTRAINT "redirects_to_path_format" CHECK ("redirects"."to_path" LIKE '/%' AND left("redirects"."to_path", 2) NOT IN ('//', '/\'));

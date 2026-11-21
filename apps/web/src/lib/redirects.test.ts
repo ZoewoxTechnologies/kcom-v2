@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildMap, createRedirectLookup, normalisePath } from "./redirects";
+import { buildMap, createRedirectLookup, isLegacyPath, isSameSitePath, normalisePath } from "./redirects";
 
 const rules = [
   { from: "/content/Its-A-Test", to: "/capsules/its-a-test", status: 301 },
@@ -18,6 +18,47 @@ describe("buildMap", () => {
   it("keeps the first rule for a path", () => {
     const map = buildMap([...rules, { from: "/node/7", to: "/other", status: 302 }]);
     expect(map.get("/node/7")).toEqual({ to: "/blog/x", status: 301 });
+  });
+});
+
+describe("open redirect protection", () => {
+  it.each(["//evil.com", "/\\evil.com", "https://evil.com", "evil.com", "javascript:alert(1)", ""])("rejects %j", (to) => {
+    expect(isSameSitePath(to)).toBe(false);
+    expect(buildMap([{ from: "/node/1", to, status: 301 }]).size).toBe(0);
+  });
+
+  it("accepts site paths", () => {
+    expect(isSameSitePath("/capsules/a")).toBe(true);
+    expect(isSameSitePath("/")).toBe(true);
+  });
+});
+
+describe("chains and loops", () => {
+  it("collapses chains to one hop", () => {
+    const map = buildMap([
+      { from: "/a", to: "/b", status: 301 },
+      { from: "/b", to: "/c", status: 301 },
+      { from: "/c", to: "/d", status: 301 },
+    ]);
+    expect(map.get("/a")?.to).toBe("/d");
+    expect(map.get("/b")?.to).toBe("/d");
+  });
+
+  it("drops loops", () => {
+    const map = buildMap([
+      { from: "/a", to: "/b", status: 301 },
+      { from: "/b", to: "/a", status: 301 },
+    ]);
+    expect(map.size).toBe(0);
+  });
+});
+
+describe("isLegacyPath", () => {
+  it("matches the legacy prefixes only", () => {
+    expect(isLegacyPath("/node/5")).toBe(true);
+    expect(isLegacyPath("/Content/x")).toBe(true);
+    expect(isLegacyPath("/archive/202003")).toBe(true);
+    expect(isLegacyPath("/capsules/x")).toBe(false);
   });
 });
 

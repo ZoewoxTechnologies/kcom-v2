@@ -9,14 +9,36 @@ export function normalisePath(pathname: string): string {
   return p === "" ? "/" : p;
 }
 
+/** Only a path on this site: one slash, then not another slash or a backslash (browsers read `//` and `/\` as another host). */
+export const isSameSitePath = (to: string) => /^\/(?![/\\])/.test(to);
+
+const MAX_HOPS = 10;
+
+/**
+ * Builds the lookup. Rules whose target is not a same-site path are dropped, so a bad row can never
+ * send readers to another site. Chains (a to b, b to c) collapse to one hop (a to c); a loop drops its rules.
+ */
 export function buildMap(rules: RedirectRule[]): RedirectMap {
   const map: RedirectMap = new Map();
   for (const r of rules) {
     const key = normalisePath(r.from);
-    if (!map.has(key)) map.set(key, { to: r.to, status: r.status });
+    if (isSameSitePath(r.to) && !map.has(key)) map.set(key, { to: r.to, status: r.status });
+  }
+  // Resolve against the original targets, so a loop drops every rule in it, not just the first.
+  const original = new Map([...map].map(([k, v]) => [k, v.to]));
+  for (const [key, rule] of [...map]) {
+    let to = rule.to;
+    let hops = 0;
+    for (let next = original.get(normalisePath(to)); next !== undefined && hops <= MAX_HOPS; next = original.get(normalisePath(to)), hops++) to = next;
+    if (hops > MAX_HOPS || normalisePath(to) === key) map.delete(key);
+    else rule.to = to;
   }
   return map;
 }
+
+/** Legacy prefixes that never match a live page, so their redirect is checked before rendering a 404. */
+export const LEGACY_PREFIXES = ["/node/", "/content/", "/archive/"];
+export const isLegacyPath = (pathname: string) => LEGACY_PREFIXES.some((p) => pathname.toLowerCase().startsWith(p));
 
 export interface RedirectLookup {
   find(pathname: string): Promise<{ to: string; status: number } | null>;
