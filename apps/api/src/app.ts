@@ -16,6 +16,7 @@ import { contactRoutes, type BotCheck } from "./routes/contact.js";
 import { settingsRoutes } from "./routes/settings.js";
 import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
+import { searchRoutes } from "./routes/search.js";
 import type { CloudinaryConfig } from "./uploads/cloudinary.js";
 import { userRoutes } from "./routes/users.js";
 import { internalRoutes } from "./routes/internal.js";
@@ -88,6 +89,7 @@ export function createApp(
     .route("/contact", contactRoutes(db, trustedProxyHops, contactBotCheck))
     .route("/events", eventRoutes(db))
     .route("/settings", settingsRoutes(db))
+    .route("/search", searchRoutes(db, trustedProxyHops))
     .route("/series", seriesRoutes(db))
     .route("/pages", pageRoutes(db))
     .route("/homepage", homepageRoutes(db))

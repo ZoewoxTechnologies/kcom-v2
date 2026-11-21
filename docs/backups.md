@@ -73,10 +73,10 @@ All optional; every integration is a no-op when its variable is unset.
 | App | Variables |
 | --- | --- |
 | api | `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`, `SENTRY_TRACES_SAMPLE_RATE` |
-| web | `SENTRY_DSN` (server, runtime), `PUBLIC_SENTRY_DSN` (browser, build time), `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`, `PUBLIC_SENTRY_*`, `SENTRY_AUTH_TOKEN`/`SENTRY_ORG`/`SENTRY_PROJECT` (source maps), `PUBLIC_POSTHOG_KEY`, `PUBLIC_POSTHOG_HOST`, `PUBLIC_API_URL` (build time as well: the search index is built from the API, and the build fails if it is unreachable; set it as a Docker build arg / Railway build variable, and as the repo variable `PUBLIC_API_URL` for CI and deploy builds) |
+| web | `SENTRY_DSN` (server, runtime), `PUBLIC_SENTRY_DSN` (browser, build time), `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`, `PUBLIC_SENTRY_*`, `SENTRY_AUTH_TOKEN`/`SENTRY_ORG`/`SENTRY_PROJECT` (source maps), `PUBLIC_POSTHOG_KEY`, `PUBLIC_POSTHOG_HOST`, `PUBLIC_API_URL` (build time as well: the browser calls the API for search and the contact form; set it as a Docker build arg / Railway build variable, and as the repo variable `PUBLIC_API_URL` for CI and deploy builds) |
 | admin | `VITE_SENTRY_DSN`, `VITE_SENTRY_ENVIRONMENT`, `VITE_SENTRY_RELEASE` (all build time) |
 
-`pnpm build` in `apps/web` also needs `PUBLIC_API_URL`; for a local build without an API run it with `SEARCH_INDEX_PARTIAL_OK=true`.
+`pnpm build` in `apps/web` also needs `PUBLIC_API_URL`, because search and the contact form call the API from the browser.
 
 Set the Sentry and PostHog keys only on the production services and the production build, never in local `.env` files.
 

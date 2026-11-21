@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/search-index.ts",
+    "build": "astro build",
     "start": "node dist/server/entry.mjs",
     "lint": "eslint .",
     "typecheck": "astro check",
@@ -34,7 +34,6 @@
     "@kcom/api": "workspace:*",
     "@kcom/config": "workspace:*",
     "eslint": "^10.14.0",
-    "pagefind": "^1.6.0",
     "playwright": "^1.65.1",
     "typescript": "^5.7.2",
     "vitest": "^5.1.0",

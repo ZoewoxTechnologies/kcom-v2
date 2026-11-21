@@ -9,7 +9,7 @@ Run this on staging before launch. Tick each box, note the browser or device and
 - [ ] Staging site, API and admin are deployed from the same commit; note the commit.
 - [ ] An editor account and an admin account exist. Use the editor for content tests.
 - [ ] A mailbox you can read is available for subscribe and contact tests.
-- [ ] Staging is configured to rebuild the site on publish (see `docs/deploy.md`). The site is server-rendered, so content appears without a rebuild; the rebuild refreshes search.
+- [ ] The site is server-rendered, so published content appears without a rebuild or deploy.
 
 ## Test matrix
 
@@ -76,11 +76,11 @@ Do this once on desktop, then check the result on a phone.
 - [ ] As an editor, create a capsule, save a draft, and confirm it is not on the public site.
 - [ ] Schedule it for a time a few minutes ahead; it shows as Scheduled in the list and calendar.
 - [ ] At that time it becomes Published without any action.
-- [ ] Within about a minute (search updates after the next rebuild), the capsule appears on its page, the capsules index, Today's Capsule (when it is today's), the month archive, RSS and sitemap.
+- [ ] Within about a minute, the capsule appears on its page, the capsules index, Today's Capsule (when it is today's), the month archive, RSS, sitemap and search results.
 - [ ] Once email is live: the subscriber email for the capsule arrives once, with the right content and links.
 - [ ] Repeat with the default time (next midnight, Lagos): check the date shown is the Lagos date.
 - [ ] Publish now works and follows the same path.
-- [ ] Unpublish removes it from the site within about a minute (search updates after the next rebuild).
+- [ ] Unpublish removes it from the site within about a minute, including from search results.
 - [ ] Unscheduling returns it to Draft.
 
 ## 6. Admin app

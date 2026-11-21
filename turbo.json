@@ -4,7 +4,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".astro/**"],
-      "env": ["PUBLIC_API_URL", "SEARCH_INDEX_PARTIAL_OK"]
+      "env": ["PUBLIC_API_URL"]
     },
     "dev": { "cache": false, "persistent": true },
     "lint": { "dependsOn": ["^build"] },
