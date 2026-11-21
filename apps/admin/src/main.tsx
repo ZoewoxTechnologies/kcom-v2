@@ -20,7 +20,6 @@ import "./shell/shell.css";
 import "./editor/editor.css";
 import "./events/events.css";
 import "./books/books.css";
-import "./media/image-upload-field.css";
 import "./capsules/capsules.css";
 import "./blog/blog.css";
 import "./dashboard/dashboard.css";

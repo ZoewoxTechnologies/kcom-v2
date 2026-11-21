@@ -16,8 +16,7 @@ import { can } from "@kcom/permissions";
 import { slugify } from "@kcom/content";
 import { ApiError } from "../api/client";
 import { useAuth } from "../auth/AuthProvider";
-import { EditorContainer, useDirtyState } from "../editor";
-import { ImageUploadField } from "../media/ImageUploadField";
+import { EditorContainer, ImageUploadField, useDirtyState } from "../editor";
 import { emptyRichText, RichTextEditor } from "../richtext/RichTextEditor";
 import type { RichTextDoc } from "../richtext/RichTextEditor";
 import {
@@ -440,6 +439,8 @@ function BookEditor({ book, nextPosition, guard, onClose, onSaved, onDelete }: E
         <ImageUploadField
           label="Cover"
           optional
+          visibleLabel
+          aspectRatio="2 / 3"
           help="PNG, JPEG or WebP."
           value={v.coverUrl}
           onChange={(coverUrl) => set({ coverUrl })}
