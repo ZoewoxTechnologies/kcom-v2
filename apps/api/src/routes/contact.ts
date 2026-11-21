@@ -1,10 +1,10 @@
 import { Hono } from "hono";
-import { getConnInfo } from "@hono/node-server/conninfo";
 import { z } from "zod";
 import { contactMessages, type CapsuleDb } from "@kcom/db";
 import { contactTopics } from "@kcom/db/contact-topics";
 import { validate } from "../validate.js";
-import { clientIp, DEFAULT_TRUSTED_PROXY_HOPS, overRateLimit } from "../contact-spam.js";
+import { DEFAULT_TRUSTED_PROXY_HOPS, requestClientIp } from "../client-ip.js";
+import { overRateLimit } from "../contact-spam.js";
 
 
 // Mirrors the web form's rules (apps/web/src/lib/contact.ts), plus length caps.
@@ -36,13 +36,7 @@ export const contactRoutes = (db: CapsuleDb, trustedProxyHops = DEFAULT_TRUSTED_
     })
     .post("/", validate("json", body), async (c) => {
       const { topic, name, email, message: text, keepPrivate } = c.req.valid("json");
-      let socketAddress: string | undefined;
-      try {
-        socketAddress = getConnInfo(c).remote.address;
-      } catch {
-        // No Node socket (e.g. in-process requests); fall through.
-      }
-      const ip = clientIp(c.req.header("x-forwarded-for"), trustedProxyHops, socketAddress);
+      const ip = requestClientIp(c, trustedProxyHops);
       if (!ip) console.warn("[contact] no client IP available; rate limit skipped for this request");
       if (ip && (await overRateLimit(db, ip))) {
         console.warn(`[contact] rate limit exceeded (ip: ${ip})`);

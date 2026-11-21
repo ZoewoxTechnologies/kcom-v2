@@ -2,7 +2,7 @@ import { initSentry } from "./instrument.js";
 import { serve } from "@hono/node-server";
 import { createDb } from "@kcom/db";
 import { createApp } from "./app.js";
-import { parseTrustedProxyHops } from "./contact-spam.js";
+import { parseTrustedProxyHops } from "./client-ip.js";
 import { cloudinaryFromEnv } from "./uploads/cloudinary.js";
 
 initSentry();

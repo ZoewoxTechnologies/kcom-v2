@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { contactMessages, rateLimits } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
-import { clientIp, parseTrustedProxyHops } from "./contact-spam.js";
+import { clientIp, parseTrustedProxyHops } from "./client-ip.js";
 
 const ok = { topic: "prayer", name: "Grace", email: "grace@example.org", message: "Please pray." };
 
