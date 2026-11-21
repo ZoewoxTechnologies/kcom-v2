@@ -4,29 +4,34 @@ Run against the built public site on sample data (`DATA_SOURCE=sample`); CI job 
 
 ```bash
 pnpm --filter @kcom/web exec astro build
-DATA_SOURCE=sample HOST=127.0.0.1 PORT=4321 node apps/web/dist/server/entry.mjs &
-pnpm --filter @kcom/web audit:a11y   # axe, WCAG 2.2 AA
-pnpm --filter @kcom/web audit:perf   # Lighthouse
+DATA_SOURCE=sample PUBLIC_SITE_URL=http://127.0.0.1:4321 HOST=127.0.0.1 PORT=4321 node apps/web/dist/server/entry.mjs &
+pnpm --filter @kcom/web audit:a11y
 ```
 
-Set `PW_CHANNEL=chrome` and `CHROME_PATH` to use a local Chrome instead of the Playwright download.
+Set `PW_CHANNEL=chrome` to use a local Chrome instead of the Playwright download.
 
-## Accessibility
-
-`apps/web/audit/a11y.mjs` runs axe (wcag2a, wcag2aa, wcag21a, wcag21aa, wcag22aa) on every page in `audit/pages.json`, in light and dark, at 375px and 1280px. Any violation fails the check. Add new public page types to `pages.json`.
-
-## Performance targets
-
-Lighthouse, default mobile emulation (slow 4G, 4x CPU throttle), median of 3 runs per page (`apps/web/lighthouserc.json`):
-
-| Metric | Budget |
-| --- | --- |
-| Performance score | at least 0.90 |
-| Largest Contentful Paint | at most 2.5 s |
-| Total Blocking Time | at most 300 ms |
-| Cumulative Layout Shift | at most 0.1 |
-| JavaScript | at most 150 KB transferred (compressed over the wire, Lighthouse `resource-summary:script:size`) |
+`apps/web/audit/a11y.mjs` runs axe (wcag2a, wcag2aa, wcag21a, wcag21aa, wcag22aa) on every page in `audit/pages.json`, in light and dark, at 375px and 1280px. Any violation fails. Add new public page types to `pages.json`.
 
 ## Manual pass (per release)
 
 Keyboard only: skip link, header menu, theme toggle, search, forms, focus always visible. Screen reader (VoiceOver): landmarks, headings order, form labels and errors, image alt text.
+
+## Run the performance audit
+
+On demand only (CI runs axe, not Lighthouse). Lighthouse, default mobile emulation (slow 4G, 4x CPU throttle), median of 3 runs on 6 pages. Budgets: performance at least 0.90, LCP at most 2.5 s, TBT at most 300 ms, CLS at most 0.1, JavaScript at most 150 KB transferred (compressed). Set in `apps/web/lighthouserc.cjs`.
+
+Local build:
+
+```bash
+pnpm --filter @kcom/web exec astro build
+DATA_SOURCE=sample PUBLIC_SITE_URL=http://localhost:4321 HOST=127.0.0.1 PORT=4321 node apps/web/dist/server/entry.mjs &
+pnpm --filter @kcom/web audit:perf
+```
+
+Deployed URL (staging or production):
+
+```bash
+BASE_URL=https://example.org pnpm --filter @kcom/web audit:perf
+```
+
+Use `CHROME_PATH` to point at a local Chrome. The same run is available in GitHub as the manual "Performance audit" workflow (Actions tab, enter the URL).

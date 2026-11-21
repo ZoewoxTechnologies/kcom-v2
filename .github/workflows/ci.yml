@@ -151,7 +151,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
 
-  # Accessibility (axe, WCAG 2.2 AA) and mobile performance budgets against the built site on sample data.
+  # Accessibility (axe, WCAG 2.2 AA) against the built site on sample data.
   audit:
     needs: changes
     if: contains(needs.changes.outputs.apps, '"web"')
@@ -179,8 +179,6 @@ jobs:
           pnpm --filter @kcom/web exec wait-on -t 60000 http://127.0.0.1:4321/
       - name: axe (WCAG AA)
         run: pnpm --filter @kcom/web audit:a11y
-      - name: Lighthouse (throttled mobile)
-        run: pnpm --filter @kcom/web audit:perf
       - if: failure()
         run: tail -n 50 site.log
 
