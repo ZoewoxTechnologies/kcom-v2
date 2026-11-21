@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { Route, Routes } from "react-router";
+import { MotionConfig } from "motion/react";
 import { ToastProvider } from "@kcom/ui";
 import { AuthProvider } from "./auth/AuthProvider";
 import { RequireAuth, RequirePermission } from "./auth/guards";
@@ -38,38 +39,43 @@ const pages: Partial<Record<string, ReactElement>> = {
 
 export function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <Routes>
-          <Route path="/forgot-password" element={<PlaceholderPage title="Forgot password" />} />
-          <Route path="/sign-in" element={<SignInPage />} />
-          {import.meta.env.DEV && <Route path="/demo" element={<DemoPage />} />}
-          <Route element={<RequireAuth />}>
-            <Route element={<Shell />}>
-              <Route index element={<DashboardPage />} />
-              <Route path="profile" element={<PlaceholderPage title="Profile" />} />
-              <Route element={<RequirePermission permission="content:read" />}>
-                <Route path="capsules" element={<CapsulesPage />} />
-                <Route path="capsules/new" element={<CapsuleEditorPage isNew />} />
-                <Route path="capsules/:id" element={<CapsuleEditorPage />} />
-                <Route path="calendar" element={<CalendarPage />} />
-                <Route path="blog" element={<BlogPage />} />
-                <Route path="blog/new" element={<BlogEditorPage isNew />} />
-                <Route path="blog/:id" element={<BlogEditorPage />} />
-              </Route>
-              {sections.map((item) => (
-                <Route key={item.path} element={<RequirePermission permission={item.permission} />}>
-                  <Route
-                    path={`${item.path}/*`}
-                    element={pages[item.path] ?? <PlaceholderPage title={item.label} />}
-                  />
+    <MotionConfig reducedMotion="user">
+      <ToastProvider>
+        <AuthProvider>
+          <Routes>
+            <Route path="/forgot-password" element={<PlaceholderPage title="Forgot password" />} />
+            <Route path="/sign-in" element={<SignInPage />} />
+            {import.meta.env.DEV && <Route path="/demo" element={<DemoPage />} />}
+            <Route element={<RequireAuth />}>
+              <Route element={<Shell />}>
+                <Route index element={<DashboardPage />} />
+                <Route path="profile" element={<PlaceholderPage title="Profile" />} />
+                <Route element={<RequirePermission permission="content:read" />}>
+                  <Route path="capsules" element={<CapsulesPage />} />
+                  <Route path="capsules/new" element={<CapsuleEditorPage isNew />} />
+                  <Route path="capsules/:id" element={<CapsuleEditorPage />} />
+                  <Route path="calendar" element={<CalendarPage />} />
+                  <Route path="blog" element={<BlogPage />} />
+                  <Route path="blog/new" element={<BlogEditorPage isNew />} />
+                  <Route path="blog/:id" element={<BlogEditorPage />} />
                 </Route>
-              ))}
-              <Route path="*" element={<NotFoundPage />} />
+                {sections.map((item) => (
+                  <Route
+                    key={item.path}
+                    element={<RequirePermission permission={item.permission} />}
+                  >
+                    <Route
+                      path={`${item.path}/*`}
+                      element={pages[item.path] ?? <PlaceholderPage title={item.label} />}
+                    />
+                  </Route>
+                ))}
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </AuthProvider>
-    </ToastProvider>
+          </Routes>
+        </AuthProvider>
+      </ToastProvider>
+    </MotionConfig>
   );
 }

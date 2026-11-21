@@ -16,7 +16,7 @@ import { can } from "@kcom/permissions";
 import { slugify } from "@kcom/content";
 import { ApiError } from "../api/client";
 import { useAuth } from "../auth/AuthProvider";
-import { EditorContainer, ImageUploadField, useDirtyState } from "../editor";
+import { EditorContainer, ImageUploadField, PanelSwap, useDirtyState } from "../editor";
 import { emptyRichText, RichTextEditor } from "../richtext/RichTextEditor";
 import type { RichTextDoc } from "../richtext/RichTextEditor";
 import {
@@ -236,22 +236,24 @@ export function BooksPage() {
           )}
         </div>
         <div className="kc-books__side">
-          {selected && (selected === "new" || editing) ? (
-            <BookEditor
-              key={selected}
-              book={editing ?? null}
-              nextPosition={books?.length ?? 0}
-              guard={guard}
-              onClose={() => setSelected(null)}
-              onSaved={load}
-              onDelete={editing ? () => setDeleting(editing) : undefined}
-            />
-          ) : (
-            <aside className="kc-books__empty">
-              <h2>No book selected</h2>
-              <p>Pick a book on the left to edit it{canWrite ? ", or click New book" : ""}.</p>
-            </aside>
-          )}
+          <PanelSwap id={selected && (selected === "new" || editing) ? selected : "none"}>
+            {selected && (selected === "new" || editing) ? (
+              <BookEditor
+                key={selected}
+                book={editing ?? null}
+                nextPosition={books?.length ?? 0}
+                guard={guard}
+                onClose={() => setSelected(null)}
+                onSaved={load}
+                onDelete={editing ? () => setDeleting(editing) : undefined}
+              />
+            ) : (
+              <aside className="kc-books__empty">
+                <h2>No book selected</h2>
+                <p>Pick a book on the left to edit it{canWrite ? ", or click New book" : ""}.</p>
+              </aside>
+            )}
+          </PanelSwap>
         </div>
       </div>
       <UnsavedChangesPrompt
