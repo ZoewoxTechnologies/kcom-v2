@@ -22,6 +22,7 @@ import "./events/events.css";
 import "./books/books.css";
 import "./media/image-upload-field.css";
 import "./capsules/capsules.css";
+import "./blog/blog.css";
 import "./dashboard/dashboard.css";
 import "./inbox/inbox.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
