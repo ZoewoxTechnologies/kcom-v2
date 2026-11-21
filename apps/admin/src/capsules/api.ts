@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { lagosMonthRange } from "@kcom/content";
+import { lagosMonthRange, slugify } from "@kcom/content";
 import { apiJson } from "../api/client";
 
 export type CapsuleStatus = "draft" | "scheduled" | "published";
@@ -17,6 +17,36 @@ export interface CapsuleSummary {
 export interface SeriesSummary {
   id: string;
   title: string;
+}
+
+type RichText = Record<string, unknown>;
+
+/** A capsule as the admin API returns it, with every editable field. */
+export interface CapsuleRecord extends CapsuleSummary {
+  scriptureRef: string | null;
+  scriptureText: RichText | null;
+  body: RichText;
+  decrees: string[];
+  prayer: RichText | null;
+  bibleMeditation: string | null;
+  authorSource: string | null;
+}
+
+/** Fields sent when saving. Rich-text fields are left out when unchanged. */
+export interface CapsuleInput {
+  title: string;
+  slug?: string;
+  scriptureRef: string | null;
+  scriptureText?: RichText | null;
+  body?: RichText;
+  decrees: string[];
+  prayer?: RichText | null;
+  bibleMeditation: string | null;
+  authorSource: string | null;
+  seriesId: string | null;
+  partNumber: number | null;
+  status: CapsuleStatus;
+  publishAt?: string;
 }
 
 const PAGE = 100;
@@ -87,3 +117,17 @@ export function useCapsules(month?: string) {
 
 /** Route to a capsule's editor (built separately). */
 export const capsuleEditPath = (id: string) => `/capsules/${id}`;
+
+export const getCapsule = (id: string) => apiJson<CapsuleRecord>(`/admin/capsules/${id}`);
+
+export const createCapsule = (input: CapsuleInput) =>
+  apiJson<CapsuleRecord>("/admin/capsules", { method: "POST", body: JSON.stringify(input) });
+
+export const updateCapsule = (id: string, input: Partial<CapsuleInput>) =>
+  apiJson<CapsuleRecord>(`/admin/capsules/${id}`, { method: "PATCH", body: JSON.stringify(input) });
+
+export const createSeries = (title: string) =>
+  apiJson<SeriesSummary>("/admin/series", {
+    method: "POST",
+    body: JSON.stringify({ title, slug: slugify(title) }),
+  });
