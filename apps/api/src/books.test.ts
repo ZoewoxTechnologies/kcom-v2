@@ -186,6 +186,14 @@ describe("/admin/books CRUD", () => {
 });
 
 describe("PUT /admin/books/order", () => {
+  it("answers the admin UI's cross-origin preflight for PUT", async () => {
+    const res = await app.request("/admin/books/order", {
+      method: "OPTIONS",
+      headers: { origin: ORIGIN, "access-control-request-method": "PUT" },
+    });
+    expect(res.headers.get("access-control-allow-methods")).toContain("PUT");
+  });
+
   it("saves the order, and public and admin lists follow it", async () => {
     const [a, b, c] = await db
       .insert(books)
