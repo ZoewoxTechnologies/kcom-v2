@@ -12,14 +12,21 @@ export const RICH_TEXT_NODES: ReadonlySet<string> = new Set([
   "listItem",
   "blockquote",
   "hardBreak",
+  "image",
 ]);
 
-export const RICH_TEXT_MARKS: ReadonlySet<string> = new Set(["bold", "italic", "underline", "link"]);
+export const RICH_TEXT_MARKS: ReadonlySet<string> = new Set([
+  "bold",
+  "italic",
+  "underline",
+  "link",
+]);
 
 const SAFE_HREF = /^(https?:\/\/|mailto:)[^\s]+$/i;
 
 /** Only http(s) and mailto links are kept. */
-export const isSafeHref = (href: unknown): href is string => typeof href === "string" && SAFE_HREF.test(href);
+export const isSafeHref = (href: unknown): href is string =>
+  typeof href === "string" && SAFE_HREF.test(href);
 
 /** Heading levels allowed in content; anything else becomes 2. */
 export const richTextHeadingLevel = (level: unknown): 1 | 2 | 3 | 4 =>

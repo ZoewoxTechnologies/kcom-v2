@@ -154,6 +154,9 @@ importers:
       '@kcom/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@kcom/media':
+        specifier: workspace:*
+        version: link:../../packages/media
       '@kcom/ui':
         specifier: workspace:*
         version: link:../../packages/ui

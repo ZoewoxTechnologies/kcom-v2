@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isCloudinaryImageUrl } from "@kcom/media";
 import { RICH_TEXT_MARKS, RICH_TEXT_NODES, isSafeHref, richTextHeadingLevel } from "@kcom/content";
 import type { RichText } from "@kcom/db";
 
@@ -29,7 +30,12 @@ function cleanMarks(marks: unknown): Raw[] | undefined {
 }
 
 function cleanNode(node: unknown, depth: number): Raw | null {
-  if (!isObj(node) || typeof node.type !== "string" || !RICH_TEXT_NODES.has(node.type) || depth > MAX_DEPTH) {
+  if (
+    !isObj(node) ||
+    typeof node.type !== "string" ||
+    !RICH_TEXT_NODES.has(node.type) ||
+    depth > MAX_DEPTH
+  ) {
     return null;
   }
   const out: Raw = { type: node.type };
@@ -43,6 +49,26 @@ function cleanNode(node: unknown, depth: number): Raw | null {
   if (node.type === "heading") {
     const level = isObj(node.attrs) ? node.attrs.level : undefined;
     out.attrs = { level: richTextHeadingLevel(level) };
+  }
+  if (node.type === "image") {
+    // Cloudinary-hosted images only, and alt text is required; otherwise the image is dropped.
+    const attrs = isObj(node.attrs) ? node.attrs : {};
+    if (typeof attrs.src !== "string" || !isCloudinaryImageUrl(attrs.src)) return null;
+    const alt = typeof attrs.alt === "string" ? attrs.alt.trim() : "";
+    if (!alt) return null;
+    const size = (v: unknown) =>
+      Number.isInteger(v) && (v as number) > 0 && (v as number) <= 20_000
+        ? (v as number)
+        : undefined;
+    const width = size(attrs.width);
+    const height = size(attrs.height);
+    out.attrs = {
+      // Store the parsed, normalised URL rather than the raw string.
+      src: new URL(attrs.src).href,
+      alt: alt.slice(0, 300),
+      ...(width && height ? { width, height } : {}),
+    };
+    return out;
   }
   if (Array.isArray(node.content)) {
     out.content = node.content
