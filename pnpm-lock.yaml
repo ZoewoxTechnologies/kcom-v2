@@ -331,6 +331,12 @@ importers:
       '@kcom/content':
         specifier: workspace:*
         version: link:../content
+      '@kcom/db':
+        specifier: workspace:*
+        version: link:../db
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@electric-sql/pglite@0.5.16)(@opentelemetry/api@1.10.0)(@types/pg@8.23.1)(gel@2.2.1)(kysely@0.29.9)(pg@8.23.1)
     devDependencies:
       '@kcom/config':
         specifier: workspace:*
