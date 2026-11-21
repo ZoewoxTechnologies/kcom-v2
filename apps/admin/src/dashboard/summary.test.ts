@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CapsuleSummary } from "../capsules/api";
-import { comingUp, draftsOf, greeting } from "./summary";
+import { activityWhen, comingUp, draftsOf, greeting } from "./summary";
 
 const cap = (id: string, status: CapsuleSummary["status"], publishAt: string): CapsuleSummary => ({
   id,
@@ -50,5 +50,14 @@ describe("greeting", () => {
     expect(greeting(new Date("2026-11-19T12:00:00Z"))).toBe("Good afternoon"); // 13:00
     expect(greeting(new Date("2026-11-19T22:30:00Z"))).toBe("Good evening"); // 23:30
     expect(greeting(new Date("2026-11-19T23:30:00Z"))).toBe("Good morning"); // 00:30
+  });
+});
+
+describe("activityWhen", () => {
+  const now = new Date("2026-11-19T10:00:00Z");
+  it("shows the Lagos time today, Yesterday, then the date", () => {
+    expect(activityWhen("2026-11-19T08:12:00Z", now)).toBe("09:12");
+    expect(activityWhen("2026-11-18T09:00:00Z", now)).toBe("Yesterday");
+    expect(activityWhen("2026-11-12T09:00:00Z", now)).toBe("12 Nov");
   });
 });
