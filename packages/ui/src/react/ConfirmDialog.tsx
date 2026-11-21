@@ -52,7 +52,6 @@ export function ConfirmDialog({
   const confirm = (
     <AlertDialog.Action asChild key="confirm">
       <Button
-        size="sm"
         variant={danger ? "tertiary" : "primary"}
         className={danger ? "kc-dialog__actions-end" : undefined}
         disabled={busy}
@@ -64,7 +63,7 @@ export function ConfirmDialog({
   );
   const cancel = (
     <AlertDialog.Cancel asChild key="cancel">
-      <Button size="sm" variant="secondary" disabled={busy} onClick={onCancel}>
+      <Button variant="secondary" disabled={busy} onClick={onCancel}>
         {cancelLabel}
       </Button>
     </AlertDialog.Cancel>

@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./contact-topics": "./src/contact-topics.ts",
     "./test-db": "./src/test-db.ts",
     "./seed-data": "./src/seed-data.ts"
   },

@@ -1,0 +1,12 @@
+---
+interface Props { title: string; coverUrl: string | null; tone?: number }
+const { title, coverUrl, tone = 0 } = Astro.props;
+---
+<span class={`cover t${tone}`}>{coverUrl ? <img src={coverUrl} alt="" loading="lazy" /> : <span class="ph">{title}</span>}</span>
+<style>
+  .cover { display: block; aspect-ratio: 2 / 3; border-radius: 8px; background: var(--d-cover-1); border: 1px solid var(--color-line); overflow: hidden; }
+  .t1 { background: var(--d-cover-2); }
+  .t2 { background: var(--d-cover-3); }
+  .cover img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
+  .ph { display: flex; align-items: center; justify-content: center; block-size: 100%; padding: var(--space-3); text-align: center; font: 600 1.125rem / 1.2 var(--font-title); }
+</style>

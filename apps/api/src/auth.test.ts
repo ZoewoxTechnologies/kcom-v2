@@ -112,6 +112,16 @@ describe("auth", () => {
     expect(((await res.json()) as { error?: unknown }).error).toBeDefined();
   });
 
+  it("keys the sign-in limit on the trusted hop, so a spoofed x-forwarded-for does not reset it", async () => {
+    const bad = { email: EMAIL, password: "wrong password!!" };
+    // One trusted hop: the proxy appended 203.0.113.5; everything to its left is client-supplied.
+    for (let i = 0; i < 5; i++) await post("/sign-in/email", bad, "", `spoof-${i}, 203.0.113.5`);
+    const res = await post("/sign-in/email", { email: EMAIL, password: PASSWORD }, "", "spoof-new, 203.0.113.5");
+    expect(res.status).toBe(429);
+    // A different real client is unaffected.
+    expect((await post("/sign-in/email", bad, "", "spoof-new, 203.0.113.6")).status).toBe(401);
+  });
+
   it("emails a reset link and accepts the new password", async () => {
     await post("/request-password-reset", { email: EMAIL, redirectTo: `${ORIGIN}/reset` });
     expect(resets).toHaveLength(1);

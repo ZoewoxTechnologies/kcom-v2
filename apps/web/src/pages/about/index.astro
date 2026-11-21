@@ -1,0 +1,60 @@
+---
+import AboutLayout from "../../components/AboutLayout.astro";
+import LinkCard from "../../components/LinkCard.astro";
+const pillars = ["Revelation", "Restoration", "Revival"];
+const mandate = [
+  { title: "Publishing", items: ["Heart-to-Heart (Champions’ Choice), a quarterly prophetic script", "Kingdom Capstone Publications: books, mini-books, e-books, scripts and tracts", "Articles and columns in the Christian and secular press", "Counselling by post and online"] },
+  { title: "Proclaiming", items: ["The annual Kingdom Capstone Conference (KCC)", "Kingdom Capstone seminars, symposia and workshops", "More items to come"] },
+];
+---
+<AboutLayout reading title="Who We Are" description="Kingdom Capstone Outreach Ministries is a prophetic, teaching and intercessory outreach." intro="A prophetic, teaching and intercessory outreach, encouraging, equipping and motivating individuals and churches to operate in the realms of grace and glory.">
+  <blockquote slot="band">Thy kingdom come. Thy will be done in earth, as it is in heaven.<cite>Matthew 6:10</cite></blockquote>
+  <p>Kingdom Capstone Outreach Ministries is a prophetic, teaching and intercessory outreach with a mandate to encourage, equip and motivate individuals and churches to operate in the realms of grace and glory, from the divine platforms of power, purity and perfection in Christ.</p>
+  <p>Inspired by Matthew 6:10, we seek to touch and transform lives with the prophetic messages of revelation, restoration and revival.</p>
+  <ul class="pillars">{pillars.map((p) => <li>{p}</li>)}</ul>
+  <section class="vision">
+    <div class="verses">
+      <span class="label">The vision</span>
+      <div class="rule"></div>
+      <p class="main-verse">For the earth shall be filled with the knowledge of the glory of the Lord, as the waters cover the sea.</p>
+      <span class="ref">Habakkuk 2:14</span>
+      <p class="verse">But we all, with open face beholding as in a glass the glory of the Lord, are changed into the same image from glory to glory, even as by the Spirit of the Lord.</p>
+      <span class="ref">2 Corinthians 3:18</span>
+    </div>
+    <div class="mission">
+      <span class="label">The mission</span>
+      <p>To publish and proclaim the prophetic Word of God with power and proof, and to prepare the saints for the Second Coming of the Lord Jesus Christ.</p>
+    </div>
+  </section>
+  <h2>Our mandate</h2>
+  <p class="sub">Prophetic, teaching and intercessory ministries</p>
+  <div class="lists">
+    {mandate.map((m) => <div class="card"><h2>{m.title}</h2><ul>{m.items.map((i) => <li>{i}</li>)}</ul></div>)}
+  </div>
+  <div class="photo" role="img" aria-label="Placeholder photo of a ministry gathering">Placeholder photo · ministry gathering</div>
+  <p>For over 20 years we have been discovering more of our Heavenly Father’s love and the revelation of His eternal purpose, and we have seen diverse lives changed by the power of His Word.</p>
+  <LinkCard large dir="next" href="/about/team" label="Next in About" title="Ministry Team" />
+</AboutLayout>
+<style>
+  p { margin: 0; max-inline-size: 720px; }
+  .pillars { list-style: none; margin: 12px 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .pillars li { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 22px 8px; text-align: center; font-family: var(--font-title); font-weight: 600; font-size: clamp(1.125rem, 4vw, 1.625rem); }
+  .vision { padding-block: 24px; display: flex; flex-direction: column; gap: 40px; align-items: center; text-align: center; }
+  .verses { max-inline-size: 720px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .label { font-size: 0.8125rem; letter-spacing: 0.14em; font-weight: 700; text-transform: uppercase; color: var(--color-muted); }
+  .rule { inline-size: 40px; block-size: 2px; background: var(--color-gold); }
+  .main-verse { max-inline-size: none; font-family: var(--font-title); font-style: italic; font-size: clamp(1.75rem, 5vw, 2.375rem); line-height: 1.25; }
+  .ref { font-size: 0.8125rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
+  .verse { max-inline-size: none; margin-block-start: 12px; font-family: var(--font-scripture); font-style: italic; font-size: 1.1875rem; color: color-mix(in srgb, var(--color-text) 52%, var(--color-muted)); }
+  .mission { inline-size: 100%; max-inline-size: 720px; box-sizing: border-box; background: var(--color-bar); color: var(--color-on-bar); border-radius: var(--radius); padding: 36px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .mission .label { color: var(--color-bar-gold); }
+  .mission p { max-inline-size: none; font-family: var(--font-title); font-size: clamp(1.5rem, 4vw, 1.875rem); line-height: 1.3; }
+  h2 { margin: 12px 0 0; font-family: var(--font-title); font-weight: 600; font-size: 2.125rem; line-height: 1.7; }
+  .sub { color: var(--color-muted); margin-block-start: -10px; }
+  .lists { display: grid; gap: 32px; grid-template-columns: minmax(0, 1fr); }
+  .card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); padding: 28px; }
+  .card h2 { margin: 0 0 12px; font-family: var(--font-title); font-weight: 600; font-size: 1.875rem; line-height: 1.7; }
+  .card ul { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 6px; }
+  .photo { aspect-ratio: 16 / 7; border-radius: var(--radius); background: linear-gradient(160deg, #9fbcc6, var(--color-sage)); display: flex; align-items: center; justify-content: center; text-align: center; padding: var(--space-3); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.8); margin-block-start: 12px; }
+  @media (min-width: 48rem) { .lists { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>

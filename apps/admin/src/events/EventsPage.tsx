@@ -8,6 +8,8 @@ import {
   UnsavedChangesPrompt,
   DataTable,
   DateTimePicker,
+  Checkbox,
+  SelectField,
   TextareaField,
   TextField,
   DEFAULT_TIME_ZONE,
@@ -23,11 +25,13 @@ import {
   createEvent,
   deleteEvent,
   listEvents,
+  listPostOptions,
   plainToRichText,
   richTextToPlain,
   updateEvent,
   type EventRecord,
   type EventStatus,
+  type PostOption,
 } from "./api";
 
 interface Form {
@@ -36,9 +40,23 @@ interface Form {
   endsAt: string | null;
   place: string;
   description: string;
+  allDay: boolean;
+  onlineUrl: string;
+  programme: string;
+  relatedPostId: string;
 }
 
-const blank: Form = { title: "", startsAt: null, endsAt: null, place: "", description: "" };
+const blank: Form = {
+  title: "",
+  startsAt: null,
+  endsAt: null,
+  place: "",
+  description: "",
+  allDay: false,
+  onlineUrl: "",
+  programme: "",
+  relatedPostId: "",
+};
 
 const toForm = (e: EventRecord): Form => ({
   title: e.title,
@@ -46,6 +64,10 @@ const toForm = (e: EventRecord): Form => ({
   endsAt: e.endsAt,
   place: e.place ?? "",
   description: richTextToPlain(e.description),
+  allDay: e.allDay,
+  onlineUrl: e.onlineUrl ?? "",
+  programme: e.programme ?? "",
+  relatedPostId: e.relatedPostId ?? "",
 });
 
 const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) =>
@@ -153,9 +175,7 @@ export function EventsPage() {
     <section className="kc-events">
       <header className="kc-events__head">
         <h1>Events</h1>
-        <Button size="sm" onClick={() => select("new")}>
-          New event
-        </Button>
+        <Button onClick={() => select("new")}>New event</Button>
       </header>
       <div className="kc-events__body">
         <div className="kc-events__list">
@@ -169,7 +189,7 @@ export function EventsPage() {
           {loadFailed ? (
             <div className="kc-events__error" role="alert">
               <strong>Couldn&rsquo;t load events</strong>
-              <Button size="sm" variant="secondary" onClick={() => void load()}>
+              <Button variant="secondary" onClick={() => void load()}>
                 Retry
               </Button>
             </div>
@@ -260,6 +280,17 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(event);
+  const [posts, setPosts] = useState<PostOption[]>([]);
+  useEffect(() => {
+    listPostOptions().then(setPosts, () => setPosts([]));
+  }, []);
+  // The list is capped, so an older linked post may be missing from it. Keep it selectable
+  // so saving never clears the link.
+  const linked = event?.relatedPostId;
+  const options =
+    linked && !posts.some((p) => p.id === linked)
+      ? [...posts, { id: linked, title: "Linked post" }]
+      : posts;
   const v = form.value;
   const set = (patch: Partial<Form>) => form.setValue({ ...form.value, ...patch });
 
@@ -270,6 +301,8 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
     if (!v.startsAt) next.startsAt = "Choose a start time.";
     if (v.startsAt && v.endsAt && new Date(v.endsAt) < new Date(v.startsAt))
       next.endsAt = "The end can’t be before the start.";
+    if (v.onlineUrl.trim() && !/^https?:\/\/\S+$/i.test(v.onlineUrl.trim()))
+      next.onlineUrl = "Enter a link starting with https://";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -282,6 +315,10 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
       startsAt: v.startsAt!,
       endsAt: v.endsAt,
       place: v.place.trim() || null,
+      allDay: v.allDay,
+      onlineUrl: v.onlineUrl.trim() || null,
+      programme: v.programme.trim() || null,
+      relatedPostId: v.relatedPostId || null,
       status,
       ...(v.description !== baseDescription && { description: plainToRichText(v.description) }),
     };
@@ -332,7 +369,6 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
         onDelete && canDelete ? (
           <Tooltip label="Delete event">
             <Button
-              size="sm"
               variant="tertiary"
               className="kc-events__delete"
               aria-label="Delete event"
@@ -360,15 +396,10 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
         <>
           {published && canPublish && (
             <>
-              <Button
-                size="sm"
-                disabled={saving}
-                onClick={saveAndClose("published", "Event saved")}
-              >
+              <Button disabled={saving} onClick={saveAndClose("published", "Event saved")}>
                 Save changes
               </Button>
               <Button
-                size="sm"
                 variant="tertiary"
                 disabled={saving}
                 onClick={saveAndClose("draft", "Event unpublished")}
@@ -380,17 +411,12 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
           {!published && (
             <>
               {canPublish && (
-                <Button
-                  size="sm"
-                  disabled={saving}
-                  onClick={saveAndClose("published", "Event published")}
-                >
+                <Button disabled={saving} onClick={saveAndClose("published", "Event published")}>
                   Publish
                 </Button>
               )}
               {canWrite && (
                 <Button
-                  size="sm"
                   variant={canPublish ? "tertiary" : "primary"}
                   disabled={saving}
                   onClick={saveAndClose("draft", "Draft saved")}
@@ -413,7 +439,7 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
         />
         <div className="kc-events__dates">
           <DateTimePicker
-            label="Starts"
+            label={v.allDay ? "Starts (day)" : "Starts"}
             value={v.startsAt ? new Date(v.startsAt) : null}
             error={errors.startsAt}
             onChange={(d) => set({ startsAt: d?.toISOString() ?? null })}
@@ -425,12 +451,29 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
             onChange={(d) => set({ endsAt: d?.toISOString() ?? null })}
           />
         </div>
-        <p className="kc-events__hint">Times are in Lagos time.</p>
+        <Checkbox
+          label="All day"
+          checked={v.allDay}
+          onChange={(e) => set({ allDay: e.target.checked })}
+        />
+        <p className="kc-events__hint">
+          Times are in Lagos time.{v.allDay && " Times are hidden on the public page."}
+        </p>
         <TextField
           label="Venue"
           optional
           value={v.place}
           onChange={(e) => set({ place: e.target.value })}
+        />
+        <TextField
+          label="Also online (link)"
+          optional
+          type="url"
+          inputMode="url"
+          help="Shown on the event page when set."
+          error={errors.onlineUrl}
+          value={v.onlineUrl}
+          onChange={(e) => set({ onlineUrl: e.target.value })}
         />
         <TextareaField
           label="Description"
@@ -439,6 +482,28 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
           value={v.description}
           onChange={(e) => set({ description: e.target.value })}
         />
+        <TextareaField
+          label="Programme"
+          optional
+          rows={4}
+          help="One line per item, like “Fri · 6 p.m. · Opening service”."
+          value={v.programme}
+          onChange={(e) => set({ programme: e.target.value })}
+        />
+        <SelectField
+          label="Related blog post"
+          optional
+          help="Add after the event, so the page links to the write-up."
+          value={v.relatedPostId}
+          onChange={(e) => set({ relatedPostId: e.target.value })}
+        >
+          <option value="">None</option>
+          {options.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title}
+            </option>
+          ))}
+        </SelectField>
       </div>
     </EditorContainer>
   );

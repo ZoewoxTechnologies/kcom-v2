@@ -88,10 +88,60 @@ export interface BlogPost extends BlogPostSummary {
   body: RichTextDoc;
 }
 
+/** A published event in full. Optional parts are null when not set. */
+export interface EventDetail {
+  slug: string;
+  title: string;
+  startsAt: string;
+  endsAt: string | null;
+  allDay: boolean;
+  place: string | null;
+  description: RichTextDoc | null;
+  imageUrl: string | null;
+  /** Join link when the event is also online. */
+  onlineUrl: string | null;
+  /** One "time · item" line per entry. */
+  programme: string | null;
+  /** The write-up, once it is published. */
+  relatedPost: { slug: string; title: string } | null;
+}
+
+/** An event as listed on the Events page. */
+export interface EventSummary {
+  slug: string;
+  title: string;
+  startsAt: string;
+  endsAt: string | null;
+  allDay: boolean;
+  place: string | null;
+  /** Plain-text description. */
+  summary: string | null;
+  /** Also streamed online. */
+  online: boolean;
+}
+
 export interface BlogListQuery {
   limit?: number;
   offset?: number;
 }
+
+/** A published book, as listed on the Books page. */
+export interface Book {
+  slug: string;
+  title: string;
+  /** Plain-text blurb. */
+  description: string | null;
+  coverUrl: string | null;
+  purchaseUrl: string | null;
+  publishedYear: number | null;
+  /** Not in the API yet: null there, so the kind label and filter stay hidden. */
+  kind: BookKind | null;
+  author: string | null;
+  sampleUrl: string | null;
+}
+
+export const bookKinds = ["Book", "Mini-book", "New Year message"] as const;
+export type BookKind = (typeof bookKinds)[number];
 
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
@@ -108,13 +158,18 @@ export interface DataSource {
   /** Published posts, newest first. */
   listBlogPosts(query?: BlogListQuery): Promise<BlogPostSummary[]>;
   blogPostBySlug(slug: string): Promise<BlogPost | null>;
+  /** Published books, A to Z. */
+  listBooks(): Promise<Book[]>;
+  eventBySlug(slug: string): Promise<EventDetail | null>;
+  /** Published events: upcoming soonest first, past newest first. */
+  listEvents(when: "upcoming" | "past"): Promise<EventSummary[]>;
 }
 
 /**
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug", "listEvents"] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */

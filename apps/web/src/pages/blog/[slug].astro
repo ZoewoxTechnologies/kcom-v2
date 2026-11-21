@@ -16,7 +16,7 @@ const html = richTextToHtml(post.body);
 const description = post.excerpt ?? (richTextToPlain(post.body).slice(0, 160) || undefined);
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title={post.title} description={description} current="/blog">
+<BaseLayout title={post.title} description={description} current="/blog" hideSignup>
   <article class="post">
     <nav class="crumbs" aria-label="Breadcrumb">
       <a href="/blog">Blog</a>{post.tags[0] && <> / {post.tags[0]}</>}
@@ -61,7 +61,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .prose :global(blockquote p:last-child:not(:first-child)) { margin-block-start: 6px; font-family: var(--font-body); font-style: normal; font-size: 0.8125rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
   .tags { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; font-size: var(--text-sm); font-weight: 600; line-height: 1.4; }
   .tags li { padding: 6px 12px; border-radius: var(--radius-pill); background: var(--color-wash); }
-  .more { display: flex; flex-direction: column; gap: var(--space-5); padding-block: var(--space-7) 0; }
+  .more { display: flex; flex-direction: column; gap: var(--space-5); padding-block: var(--space-7) var(--space-8); }
   .more h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 1.75rem; }
   @media (min-width: 48rem) {
     .post { font-size: 1.0625rem; gap: 1.5rem; padding-block: var(--space-7) 0; }
