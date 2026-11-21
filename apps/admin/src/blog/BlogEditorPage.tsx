@@ -292,7 +292,7 @@ function PostEditor({ initial }: { initial: PostRecord | null }) {
               label="Slug"
               required
               disabled={locked}
-              help="The post’s web address: /blog/your-slug"
+              help={`The post’s web address: /blog/${v.slug.trim() || "your-slug"}`}
               error={errors.slug}
               value={v.slug}
               onChange={(e) => {

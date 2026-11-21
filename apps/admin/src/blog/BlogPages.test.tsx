@@ -187,3 +187,12 @@ describe("listPosts", () => {
     expect(await listPosts()).toHaveLength(150);
   });
 });
+
+describe("slug help", () => {
+  it("shows the live slug, with a placeholder when empty", async () => {
+    setup("/blog/new");
+    expect(await screen.findByText(/\/blog\/your-slug/)).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText(/Title/), "Prayer changes things");
+    expect(screen.getByText(/\/blog\/prayer-changes-things/)).toBeInTheDocument();
+  });
+});
