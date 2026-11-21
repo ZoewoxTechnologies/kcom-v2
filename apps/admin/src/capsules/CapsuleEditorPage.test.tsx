@@ -158,7 +158,16 @@ describe("CapsuleEditorPage", () => {
   it("defaults a new capsule to the next Lagos midnight and lets the editor change it", async () => {
     setup("/capsules/new");
     await screen.findByLabelText(/Title/);
-    expect(screen.getByText(/12:00 am|12:00 AM|00:00/i)).toBeInTheDocument();
+    // The picker shows the default in Lagos time: midnight, on the day after today's Lagos date.
+    const shown = screen.getByRole("button", { name: /Publishes on/ });
+    expect(shown).toHaveTextContent(/, 00:00$/);
+    const tomorrow = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Africa/Lagos",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(nextLagosMidnight());
+    expect(shown).toHaveTextContent(tomorrow);
     await userEvent.type(screen.getByLabelText(/Title/), "Fresh start");
     await userEvent.click(screen.getByRole("button", { name: "Save draft" }));
     await waitFor(() => expect(sent("POST").some((c) => c.path === "/admin/capsules")).toBe(true));
@@ -289,20 +298,20 @@ describe("CapsuleEditorPage", () => {
   it("asks before leaving with unsaved edits", async () => {
     const router = setup("/capsules/c1");
     await userEvent.type(await screen.findByLabelText(/Title/), "!");
-    await userEvent.click(screen.getByRole("button", { name: "Close panel" }));
+    void router.navigate("/capsules");
     expect(await screen.findByText("Discard your changes?")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Keep editing" }));
     expect(router.state.location.pathname).toBe("/capsules/c1");
-    await userEvent.click(screen.getByRole("button", { name: "Close panel" }));
+    void router.navigate("/capsules");
     await userEvent.click(await screen.findByRole("button", { name: "Discard" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/capsules"));
   });
 
-  it("closes without asking when nothing changed", async () => {
+  it("leaves without asking when nothing changed", async () => {
     const router = setup("/capsules/c1");
     await screen.findByLabelText(/Title/);
-    await userEvent.click(screen.getByRole("button", { name: "Close panel" }));
-    await waitFor(() => expect(router.state.location.pathname).toBe("/capsules"));
+    await router.navigate("/capsules");
+    expect(router.state.location.pathname).toBe("/capsules");
   });
 
   it("says when the capsule does not exist", async () => {

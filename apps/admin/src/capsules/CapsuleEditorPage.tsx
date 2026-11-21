@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import {
   Badge,
   Banner,
@@ -12,13 +12,14 @@ import {
   SelectField,
   TextareaField,
   TextField,
+  UnsavedChangesPrompt,
   useToast,
 } from "@kcom/ui";
 import { CAPSULE_LIMITS, lagosDate, nextLagosMidnight, slugify } from "@kcom/content";
 import { can } from "@kcom/permissions";
 import { ApiError } from "../api/client";
 import { useAuth } from "../auth/AuthProvider";
-import { EditorContainer, useDirtyState } from "../editor";
+import { useDirtyState, useEditorGuard } from "../editor";
 import { plainToRichText, richTextToPlain } from "../richtext/plainText";
 import { RichTextEditor, emptyRichText } from "../richtext/RichTextEditor";
 import type { RichTextDoc } from "../richtext/RichTextEditor";
@@ -158,10 +159,11 @@ export function CapsuleEditorPage({ isNew = false }: { isNew?: boolean }) {
 
   return (
     <section className="kc-capsule-editor">
-      <header className="kc-capsule-editor__head">
-        <h1>{isNew ? "New capsule" : "Edit capsule"}</h1>
-        <Link to="/capsules">All capsules</Link>
-      </header>
+      {state !== "ready" && (
+        <header className="kc-capsule-editor__head">
+          <h1>{isNew ? "New capsule" : "Edit capsule"}</h1>
+        </header>
+      )}
       {state === "loading" && <p className="kc-admin-loading">Loading capsule…</p>}
       {state === "missing" && <Banner variant="danger">This capsule doesn&rsquo;t exist.</Banner>}
       {state === "error" && (
@@ -177,13 +179,26 @@ export function CapsuleEditorPage({ isNew = false }: { isNew?: boolean }) {
         </Banner>
       )}
       {state === "ready" && (
-        <CapsuleForm key={capsule?.id ?? "new"} capsule={capsule} day={params.get("day")} />
+        <CapsuleForm
+          key={capsule?.id ?? "new"}
+          capsule={capsule}
+          day={params.get("day")}
+          isNew={isNew}
+        />
       )}
     </section>
   );
 }
 
-function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: string | null }) {
+function CapsuleForm({
+  capsule,
+  day,
+  isNew,
+}: {
+  capsule: CapsuleRecord | null;
+  day: string | null;
+  isNew: boolean;
+}) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -319,6 +334,7 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
   };
 
   /** Saves with `target`, then either stays (`stay`) or goes back to the list. */
+  const { blocker, allowNavigation } = useEditorGuard(form.dirty);
   const run =
     (target: CapsuleStatus, message: string, opts: { stay?: boolean; now?: boolean } = {}) =>
     async () => {
@@ -333,7 +349,10 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
         // A new capsule moves to its own address once the form is clean again.
         if (!capsule) redirect.current = true;
         setSaved(result);
-      } else navigate("/capsules");
+      } else {
+        allowNavigation();
+        navigate("/capsules");
+      }
     };
 
   useEffect(() => {
@@ -399,24 +418,19 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
   const seriesTitle = series.find((s) => s.id === v.seriesId)?.title;
 
   return (
-    <EditorContainer
-      variant="inline"
-      title={saved ? "Editing" : "New capsule"}
-      subject={v.title || undefined}
-      dirty={form.dirty}
-      onClose={() => navigate("/capsules")}
-      headerActions={
-        <>
+    <>
+      <header className="kc-capsule-editor__head">
+        <h1>{isNew ? "New capsule" : "Edit capsule"}</h1>
+        <div className="kc-capsule-editor__actions">
+          <Badge variant={status}>{statusLabel[status]}</Badge>
           {savedAt && (
             <span className="kc-capsule-editor__saved" role="status">
               Saved {savedAgo(savedAt)}
             </span>
           )}
-          <Badge variant={status}>{statusLabel[status]}</Badge>
-        </>
-      }
-      actions={actions}
-    >
+          {actions}
+        </div>
+      </header>
       {locked && (
         <Banner variant="info">
           This capsule is {status}. Only people who can publish can change it.
@@ -425,6 +439,7 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
       <div className="kc-capsule-editor__layout">
         <div className="kc-capsule-editor__main">
           <TextField
+            className="kc-capsule-editor__title"
             label="Title"
             required
             maxLength={CAPSULE_LIMITS.title + 50}
@@ -574,6 +589,16 @@ function CapsuleForm({ capsule, day }: { capsule: CapsuleRecord | null; day: str
           </section>
         </div>
       </div>
-    </EditorContainer>
+      <UnsavedChangesPrompt
+        open={blocker.state === "blocked"}
+        onOpenChange={(open) => !open && blocker.reset?.()}
+        subject={v.title || undefined}
+        onKeepEditing={() => blocker.reset?.()}
+        onDiscard={() => {
+          allowNavigation();
+          blocker.proceed?.();
+        }}
+      />
+    </>
   );
 }

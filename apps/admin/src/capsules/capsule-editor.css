@@ -11,8 +11,26 @@
     justify-content: space-between;
     gap: var(--space-3);
   }
+  .kc-capsule-editor__head {
+    flex-wrap: wrap;
+  }
   .kc-capsule-editor__head h1 {
     margin: 0;
+    font-family: var(--font-title);
+    font-weight: 600;
+  }
+  .kc-capsule-editor__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  /* The title is the page's headline, so it is set in the display face. */
+  .kc-capsule-editor__title input {
+    font-family: var(--font-title);
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.2;
   }
   .kc-capsule-editor__saved {
     color: var(--color-muted);
