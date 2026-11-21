@@ -143,6 +143,13 @@ export interface Book {
 export const bookKinds = ["Book", "Mini-book", "New Year message"] as const;
 export type BookKind = (typeof bookKinds)[number];
 
+/** A page edited in the admin (privacy policy and similar): its title and one rich-text body. */
+export interface StaticPage {
+  slug: string;
+  title: string;
+  body: RichTextDoc;
+}
+
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
   capsuleBySlug(slug: string): Promise<Capsule | null>;
@@ -163,13 +170,15 @@ export interface DataSource {
   eventBySlug(slug: string): Promise<EventDetail | null>;
   /** Published events: upcoming soonest first, past newest first. */
   listEvents(when: "upcoming" | "past"): Promise<EventSummary[]>;
+  /** A published page from the pages API; null when it does not exist. */
+  pageBySlug(slug: string): Promise<StaticPage | null>;
 }
 
 /**
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug", "listEvents"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug", "listEvents", "pageBySlug"] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */
