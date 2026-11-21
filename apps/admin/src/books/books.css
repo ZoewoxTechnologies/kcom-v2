@@ -44,15 +44,15 @@
   }
   .kc-books__move {
     display: flex;
-    gap: var(--space-1);
+    gap: var(--space-2);
     justify-content: flex-end;
   }
   .kc-books__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: 2rem;
-    block-size: 2rem;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
     padding: 0;
   }
   .kc-books__side {
@@ -68,6 +68,10 @@
     flex: 1;
     min-block-size: 0;
     overflow-y: auto;
+  }
+  /* The "nothing selected" note takes only the height of its text, not the whole panel. */
+  .kc-books__side > .kc-books__empty {
+    flex: none;
   }
   .kc-books__empty {
     display: flex;
@@ -117,4 +121,28 @@
 }
 .kc-books__form .kc-rte__content {
   min-height: 100px;
+}
+
+/* The trash icon matches the × beside it: same size, border and shape. */
+.kc-books__delete {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  background: var(--color-surface);
+  text-decoration: none;
+  color: inherit;
+}
+.kc-books__delete::after {
+  content: "";
+  position: absolute;
+  inset: -0.375rem;
+}
+.kc-books__delete:hover {
+  color: var(--color-error);
 }

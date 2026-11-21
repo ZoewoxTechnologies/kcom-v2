@@ -57,7 +57,7 @@ export const adminBookRoutes = (db: CapsuleDb) => {
     orderBy: order,
     errors: { messages: { reference: "author does not exist" } },
   });
-  // Declared before the CRUD router so "order" is not read as an id.
+  // Chained after the CRUD router: its "/:id" routes only take PATCH, GET and DELETE, so PUT "/order" never collides.
   return crud.put("/order", requireCan("content:write"), validate("json", orderBody), async (c) => {
     const { ids } = c.req.valid("json");
     await db.transaction(async (tx) => {

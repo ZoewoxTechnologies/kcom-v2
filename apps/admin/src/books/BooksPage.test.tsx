@@ -25,6 +25,7 @@ vi.mock("../auth/AuthProvider", () => ({
 }));
 
 let store: BookRecord[];
+let gate: Promise<void> | null = null;
 let calls: { method: string; path: string; body?: Record<string, unknown> }[];
 
 beforeEach(() => {
@@ -53,7 +54,10 @@ beforeEach(() => {
         store.push(row);
         return json(row, 201);
       }
-      if (method === "PUT") return json({ items: store });
+      if (method === "PUT") {
+        await gate;
+        return json({ items: store });
+      }
       const id = path.slice(1);
       if (method === "PATCH") {
         store = store.map((b) => (b.id === id ? { ...b, ...body } : b));
@@ -94,6 +98,20 @@ describe("BooksPage", () => {
     expect(rows()[0]).toHaveTextContent("Beta");
     await waitFor(() =>
       expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ ids: ["2", "1", "3"] }),
+    );
+  });
+
+  it("disables every arrow while a move is being saved", async () => {
+    let release!: () => void;
+    gate = new Promise<void>((r) => (release = r));
+    setup();
+    await screen.findByText("Alpha");
+    await userEvent.click(screen.getByRole("button", { name: "Move Alpha down" }));
+    expect(screen.getByRole("button", { name: "Move Beta down" })).toBeDisabled();
+    release();
+    gate = null;
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Move Beta down" })).toBeEnabled(),
     );
   });
 

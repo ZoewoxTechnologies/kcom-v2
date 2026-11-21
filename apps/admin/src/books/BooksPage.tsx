@@ -89,6 +89,7 @@ export function BooksPage() {
   const [switchTo, setSwitchTo] = useState<{ target: string | "new" } | null>(null);
   const [deleting, setDeleting] = useState<BookRecord | null>(null);
   const [busy, setBusy] = useState(false);
+  const [moving, setMoving] = useState(false);
 
   const select = (target: string | "new") => {
     if (target === selected) return;
@@ -111,18 +112,21 @@ export function BooksPage() {
   const editing = selected && selected !== "new" ? books?.find((b) => b.id === selected) : null;
 
   const move = async (book: BookRecord, by: -1 | 1) => {
-    if (!books) return;
+    if (!books || moving) return;
     const from = books.findIndex((b) => b.id === book.id);
     const to = from + by;
     if (to < 0 || to >= books.length) return;
     const next = [...books];
     next.splice(to, 0, next.splice(from, 1)[0]!);
     setBooks(next);
+    setMoving(true);
     try {
       await saveBookOrder(next.map((b) => b.id));
     } catch {
       toast({ variant: "error", title: "Couldn’t save the order", description: "Try again." });
       await load();
+    } finally {
+      setMoving(false);
     }
   };
 
@@ -162,7 +166,7 @@ export function BooksPage() {
           {
             key: "order",
             header: <span className="kc-visually-hidden">Order</span>,
-            width: "5rem",
+            width: "6.5rem",
             align: "end" as const,
             render: (b: BookRecord) => {
               const i = books?.findIndex((x) => x.id === b.id) ?? 0;
@@ -173,7 +177,7 @@ export function BooksPage() {
                       variant="tertiary"
                       className="kc-books__icon"
                       aria-label={`Move ${b.title} up`}
-                      disabled={i === 0}
+                      disabled={moving || i === 0}
                       onClick={() => void move(b, -1)}
                     >
                       <Arrow up />
@@ -184,7 +188,7 @@ export function BooksPage() {
                       variant="tertiary"
                       className="kc-books__icon"
                       aria-label={`Move ${b.title} down`}
-                      disabled={i === (books?.length ?? 1) - 1}
+                      disabled={moving || i === (books?.length ?? 1) - 1}
                       onClick={() => void move(b, 1)}
                     >
                       <Arrow up={false} />
@@ -366,7 +370,7 @@ function BookEditor({ book, nextPosition, guard, onClose, onSaved, onDelete }: E
           <Tooltip label="Delete book">
             <Button
               variant="tertiary"
-              className="kc-events__delete"
+              className="kc-books__delete"
               aria-label="Delete book"
               disabled={saving}
               onClick={onDelete}
