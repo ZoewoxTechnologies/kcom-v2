@@ -11,6 +11,7 @@ import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
 import { homepageRoutes } from "./routes/homepage.js";
 import { pageRoutes } from "./routes/pages.js";
+import { changesSiteContent, type RebuildTrigger } from "./rebuild.js";
 import { contactRoutes, type BotCheck } from "./routes/contact.js";
 import { settingsRoutes } from "./routes/settings.js";
 import { eventRoutes } from "./routes/events.js";
@@ -32,6 +33,8 @@ export type AppOptions = {
   trustedProxyHops?: number;
   /** Bot check for the public contact form; unset accepts every submission. */
   contactBotCheck?: BotCheck;
+  /** Asked for a rebuild when public content changes; unset leaves rebuilds off. */
+  rebuild?: RebuildTrigger;
 };
 
 export function createApp(
@@ -44,6 +47,7 @@ export function createApp(
     cloudinary,
     trustedProxyHops,
     contactBotCheck,
+    rebuild,
   }: AppOptions = {},
 ) {
   const publicCors = cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] });
@@ -68,7 +72,12 @@ export function createApp(
     allowHeaders: ["Content-Type"],
   });
   const authInstance = createAuth(db, { trustedOrigins: corsOrigins, ...auth });
+  if (rebuild) capsuleEvents.on(() => rebuild.schedule());
   return new Hono()
+    .use(async (c, next) => {
+      await next();
+      if (rebuild && changesSiteContent(c.req.method, c.req.path, c.res.status)) rebuild.schedule();
+    })
     .use((c, next) =>
       c.req.path.startsWith("/api/auth/")
         ? authCors(c, next)

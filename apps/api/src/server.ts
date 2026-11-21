@@ -3,6 +3,7 @@ import { serve } from "@hono/node-server";
 import { createDb } from "@kcom/db";
 import { createApp } from "./app.js";
 import { parseTrustedProxyHops } from "./client-ip.js";
+import { rebuildFromEnv } from "./rebuild.js";
 import { cloudinaryFromEnv } from "./uploads/cloudinary.js";
 
 initSentry();
@@ -14,6 +15,7 @@ const app = createApp(createDb(), {
     .map((o) => o.trim())
     .filter(Boolean),
   cloudinary: cloudinaryFromEnv(),
+  rebuild: rebuildFromEnv(),
   trustedProxyHops: parseTrustedProxyHops(process.env.TRUSTED_PROXY_HOPS),
   internalToken: process.env.INTERNAL_JOB_TOKEN || undefined,
   auth: {

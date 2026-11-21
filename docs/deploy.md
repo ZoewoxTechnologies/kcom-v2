@@ -108,3 +108,17 @@ Cloud Run domain mappings are not available in every region; `europe-west1` supp
 5. Optional: Cache Reserve/Tiered Cache are not needed. A rule that keeps cached pages warm reduces cold starts for visitors.
 
 Purge cache after a deploy if HTML looks stale: Cloudflare → Caching → Purge Everything.
+
+## Rebuild on publish
+
+The API asks for a site rebuild when a capsule is published (by an editor or by the scheduler) and after any successful write to blog, pages, events, books, settings, homepage or series. Requests are debounced: the webhook is called once, `REBUILD_DEBOUNCE_MS` (default 60 s) after the last change, so a burst of edits produces one build. A failed call is logged and reported to Sentry and never blocks the edit.
+
+Set `REBUILD_HOOK_URL` on the API service to turn it on. For the staging deploy workflow, use a GitHub `workflow_dispatch` call:
+
+```text
+REBUILD_HOOK_URL=https://api.github.com/repos/<org>/<repo>/actions/workflows/deploy.yml/dispatches
+REBUILD_HOOK_TOKEN=<token that can run workflows>
+REBUILD_HOOK_BODY={"ref":"main"}
+```
+
+The request is at-most-once like the publish event: a crash inside the debounce window loses it, and the next change or a manual run of "Deploy staging" catches up.
