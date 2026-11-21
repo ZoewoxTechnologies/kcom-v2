@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SignupState from "../../components/SignupState.astro";
+import { SIGNUP_EMAIL_COOKIE } from "../../lib/signup";
+
+const email = Astro.cookies.get(SIGNUP_EMAIL_COOKIE)?.value ?? "";
+Astro.response.headers.set("cache-control", "private, no-store");
+---
+<BaseLayout title="Check your inbox" current="/subscribe" hideSignup>
+  <meta slot="head" name="robots" content="noindex" />
+  <SignupState tone="info" icon="✉" title="Check your inbox">
+    {email
+      ? <>We’ve sent a link to <strong>{email}</strong>. Click it to confirm and your first Capsule arrives tomorrow morning.</>
+      : <>We’ve sent you a link. Click it to confirm and your first Capsule arrives tomorrow morning.</>}
+    <Fragment slot="extra">
+      {email
+        ? (
+          <form class="sub" action="/subscribe" method="post">
+            <span>Nothing there? Check spam, or</span>
+            <input type="hidden" name="email" value={email} />
+            <button type="submit" class="again">send it again.</button>
+          </form>
+        )
+        : <span class="sub">Nothing there? Check spam, or <a href="/subscribe">try again</a>.</span>}
+    </Fragment>
+  </SignupState>
+</BaseLayout>
+<style>
+  .again { all: unset; cursor: pointer; color: var(--color-primary); text-decoration: underline; min-block-size: 44px; box-sizing: border-box; display: inline-flex; align-items: center; padding-inline: 0.25em; }
+  .again:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
+  form.sub { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; }
+</style>

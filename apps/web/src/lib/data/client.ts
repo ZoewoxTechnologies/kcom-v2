@@ -18,6 +18,21 @@ export function richTextToPlain(node: unknown): string {
   return walk(node).replace(/\s+/g, " ").trim();
 }
 
+/**
+ * One rich-text document from a page's sections: each richText section's heading becomes a
+ * level-2 heading, followed by its body. Other section kinds are not part of a text page.
+ */
+export function pageBody(sections: { type: string; props: unknown }[]): Record<string, unknown> {
+  const content: unknown[] = [];
+  for (const s of sections) {
+    if (s.type !== "richText") continue;
+    const { heading, body } = s.props as { heading?: string; body?: { content?: unknown[] } };
+    if (heading) content.push({ type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: heading }] });
+    content.push(...(body?.content ?? []));
+  }
+  return { type: "doc", content };
+}
+
 type Fetch = typeof fetch;
 const PAGE = 100;
 const SERIES_TTL_MS = 5000;
@@ -202,6 +217,13 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
         summary: richTextToPlain(e.description) || null,
         online: e.onlineUrl !== null,
       }));
+    },
+    async pageBySlug(slug) {
+      const res = await client.pages[":slug"].$get({ param: { slug } }, signal());
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /pages/${slug} responded ${res.status}`);
+      const p = await res.json();
+      return { slug: p.slug, title: p.title, body: pageBody(p.sections) };
     },
     async eventBySlug(slug) {
       const res = await client.events[":slug"].$get({ param: { slug } }, signal());

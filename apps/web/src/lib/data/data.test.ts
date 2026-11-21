@@ -111,3 +111,19 @@ describe("archive reads", () => {
     expect(await createApiSource("http://api", f).seriesBySlug("nope")).toBeNull();
   });
 });
+
+describe("pageBody", () => {
+  it("joins richText sections, turning headings into level-2 headings", async () => {
+    const { pageBody } = await import("./client");
+    const para = { type: "paragraph", content: [{ type: "text", text: "Hello" }] };
+    const doc = pageBody([
+      { type: "hero", props: {} },
+      { type: "richText", props: { heading: "Data", body: { type: "doc", content: [para] } } },
+      { type: "richText", props: { body: { type: "doc", content: [para] } } },
+    ]);
+    expect(doc).toEqual({
+      type: "doc",
+      content: [{ type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Data" }] }, para, para],
+    });
+  });
+});

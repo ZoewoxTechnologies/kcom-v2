@@ -1,4 +1,5 @@
 ---
+import SignupForm from "./SignupForm.astro";
 import { footerColumns, socialLinks, siteName } from "../lib/site";
 const { hideSignup = false } = Astro.props;
 const year = new Date().getFullYear();
@@ -19,16 +20,10 @@ const year = new Date().getFullYear();
         {c.links.map((l) => <a href={l.href}>{l.label}</a>)}
       </div>
     ))}
-    {!hideSignup && <form class="signup" action="/subscribe" method="post">
-      <label for="footer-email">The daily capsule, by email</label>
-      <div class="row">
-        <input id="footer-email" class="kc-input" name="email" type="email" placeholder="you@example.com" autocomplete="email" />
-        <button type="submit" class="kc-btn kc-btn--md">Subscribe</button>
-      </div>
-    </form>}
+    {!hideSignup && <div class="signup"><SignupForm id="footer-email" label="The daily capsule, by email" visibleLabel placeholder="you@example.com" /></div>}
   </div>
   <div class="base">
-    <span class="legal">© {year} {siteName}</span>
+    <span class="legal">© {year} {siteName}<a href="/privacy">Privacy policy</a></span>
     <span class="social">
       <span class="links">{socialLinks.map((l) => <a href={l.href}>{l.label}</a>)}</span>
       <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary" aria-label="Switch colour theme"><span class="icon" aria-hidden="true">☾</span> <span class="label">Dark</span></button>
@@ -65,19 +60,19 @@ const year = new Date().getFullYear();
   .about p { margin: 0; opacity: 0.9; }
   .ref { display: block; font-size: var(--text-xs); letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-footer-gold); margin-top: var(--space-1); }
   .col { display: flex; flex-direction: column; gap: var(--space-2); }
-  .col strong, .signup label { font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-footer-gold); font-weight: 700; }
+  .col strong, .signup :global(label) { font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-footer-gold); font-weight: 700; }
   .col a, .base a { color: inherit; text-decoration: none; }
   .base a { text-decoration: underline; }
   .signup { display: flex; flex-direction: column; gap: var(--space-2); order: -1; }
-  .row { display: flex; flex-direction: column; gap: var(--space-2); }
-  .row :global(.kc-btn) { width: 100%; }
-  .row :global(.kc-input) { flex: none; min-width: 0; border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.08); color: inherit; }
-  .row :global(.kc-input::placeholder) { color: inherit; opacity: 0.7; }
-  .row .kc-btn { --kc-btn-bg: var(--color-footer-button); --kc-btn-fg: var(--color-on-footer-button); --kc-btn-border: var(--color-footer-button); }
+  .signup :global(.row) { flex-direction: column; gap: var(--space-2); }
+  .signup :global(.row .kc-btn) { width: 100%; }
+  .signup :global(.row .kc-input) { flex: none; min-width: 0; border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.08); color: inherit; }
+  .signup :global(.row .kc-input::placeholder) { color: inherit; opacity: 0.7; }
+  .signup :global(.row .kc-btn) { --kc-btn-bg: var(--color-footer-button); --kc-btn-fg: var(--color-on-footer-button); --kc-btn-border: var(--color-footer-button); }
   .base { display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--text-sm); border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: var(--space-4); }
   .social { display: flex; gap: var(--space-5); align-items: center; flex-wrap: wrap; }
   .links { display: contents; }
-  .legal { display: flex; flex-direction: column; }
+  .legal { display: flex; flex-direction: column; gap: var(--space-1) var(--space-4); }
   #theme-toggle .icon { font-size: 1em; }
   #theme-toggle { --kc-btn-fg: var(--color-on-footer); --kc-btn-border: rgba(255, 255, 255, 0.3); }
   @media (min-width: 64rem) {
@@ -85,9 +80,9 @@ const year = new Date().getFullYear();
     .cols { grid-template-columns: 1.4fr 1fr 1fr 2.68fr; }
     .cols.no-signup { grid-template-columns: 1.4fr 1fr 1fr; }
     .signup { order: 0; }
-    .row { flex-direction: row; }
-    .row :global(.kc-input) { flex: 1; }
-    .row :global(.kc-btn) { width: auto; }
+    .signup :global(.row) { flex-direction: row; }
+    .signup :global(.row .kc-input) { flex: 1; }
+    .signup :global(.row .kc-btn) { width: auto; }
     .legal { flex-direction: row; }
     .base { flex-direction: row; justify-content: space-between; align-items: center; }
   }

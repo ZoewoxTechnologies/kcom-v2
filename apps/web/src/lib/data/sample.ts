@@ -1,7 +1,7 @@
 import { lagosDate } from "@kcom/content";
 import { sampleBlogPosts } from "./sample-blog";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import type { Book, EventDetail, EventSummary, Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
+import type { StaticPage, Book, EventDetail, EventSummary, Capsule, CapsuleListItem, DataSource, SeriesDetail, SeriesSummary } from "./types";
 
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -159,6 +159,9 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
     async listBlogPosts({ limit = 20, offset = 0 } = {}) {
       return sampleBlogPosts.slice(offset, offset + limit).map((b) => ({ slug: b.slug, title: b.title, date: b.date, excerpt: b.excerpt, heroImageUrl: b.heroImageUrl, tags: b.tags }));
     },
+    async pageBySlug(slug) {
+      return slug === "privacy-policy" ? samplePrivacyPolicy : null;
+    },
     async blogPostBySlug(slug) {
       return sampleBlogPosts.find((b) => b.slug === slug) ?? null;
     },
@@ -212,5 +215,26 @@ const sampleEventList: EventSummary[] = [
   listed("salti-graduation", "SALTI Graduation", "2025-06-14T10:00:00Z", null, null, null),
   listed("new-year-prophetic-message-2025", "New Year Prophetic Message 2025", "2025-01-01T08:00:00Z", null, null, null),
 ];
+
+const para = (text: string) => ({ type: "paragraph", content: [{ type: "text", text }] });
+const h2 = (text: string) => ({ type: "heading", attrs: { level: 2 }, content: [{ type: "text", text }] });
+
+/** Stand-in for the privacy policy until the admin has published the real one. */
+const samplePrivacyPolicy: StaticPage = {
+  slug: "privacy-policy",
+  title: "Privacy Policy",
+  body: {
+    type: "doc",
+    content: [
+      para("Kingdom Capstone Outreach Ministries respects your privacy. This page explains what we collect and why."),
+      h2("What we collect"),
+      para("If you subscribe to the daily Capstone Capsule we keep your email address. If you write to us through the contact form we keep your name, email address and message."),
+      h2("How we use it"),
+      para("We use your email address to send the Capsule and to reply to you. We do not sell or share it."),
+      h2("Unsubscribing"),
+      para("Every email carries a one-click unsubscribe link. Once you unsubscribe we stop sending to that address."),
+    ],
+  },
+};
 
 export const sampleSource: DataSource = createSampleSource();
