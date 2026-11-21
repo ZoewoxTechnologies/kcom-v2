@@ -45,7 +45,11 @@ export interface SignupInput {
   clientIp?: string;
 }
 
-/** The visitor's address: the last x-forwarded-for entry (added by our own proxy), else the socket address. */
+/**
+ * The visitor's address: the last x-forwarded-for entry, else the socket address. It trusts only the
+ * last hop because exactly one proxy (Railway) sits in front of the web server and appends the
+ * address it saw; entries to its left are client-supplied and ignored.
+ */
 export function visitorIp(forwardedFor: string | null | undefined, socketAddress?: string): string | undefined {
   const last = (forwardedFor ?? "").split(",").at(-1)?.trim();
   return last || socketAddress || undefined;
