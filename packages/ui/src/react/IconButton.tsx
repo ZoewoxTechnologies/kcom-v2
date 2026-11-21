@@ -9,11 +9,22 @@ export interface IconButtonProps extends Omit<ButtonProps, "children" | "aria-la
   icon: ReactNode;
 }
 
-/** Icon-only secondary action: a tertiary Button with a tooltip. */
-export function IconButton({ label, icon, variant = "tertiary", ...rest }: IconButtonProps) {
+/** Icon-only secondary action: a tertiary Button with a tooltip and a 44px hit area. */
+export function IconButton({
+  label,
+  icon,
+  variant = "tertiary",
+  className,
+  ...rest
+}: IconButtonProps) {
   return (
     <Tooltip label={label}>
-      <Button {...rest} variant={variant} aria-label={label}>
+      <Button
+        {...rest}
+        variant={variant}
+        className={["kc-icon-btn", className].filter(Boolean).join(" ")}
+        aria-label={label}
+      >
         {icon}
       </Button>
     </Tooltip>

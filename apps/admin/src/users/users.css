@@ -1,0 +1,66 @@
+/* Admin Users and roles: list, invite dialog. */
+@layer components {
+  .kc-users {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-inline-size: 0;
+  }
+  .kc-users__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .kc-users h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 5vw, 2.375rem);
+    line-height: 1.1;
+  }
+  .kc-users__filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: var(--space-3);
+  }
+  .kc-users__person {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-inline-size: 0;
+  }
+  .kc-users__who {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+  }
+  .kc-users__name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  .kc-users__email {
+    color: var(--color-muted);
+    overflow-wrap: anywhere;
+  }
+  .kc-users__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-1);
+  }
+  /* The role select sits in a table cell; its label is for screen readers only. */
+  .kc-users__role .kc-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .kc-users__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+}

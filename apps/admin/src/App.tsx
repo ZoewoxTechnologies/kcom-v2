@@ -18,6 +18,7 @@ import { CalendarPage } from "./capsules/CalendarPage";
 import { CapsuleEditorPage } from "./capsules/CapsuleEditorPage";
 import { CapsulesPage } from "./capsules/CapsulesPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { UsersPage } from "./users/UsersPage";
 import { SignInPage } from "./pages/SignInPage";
 
 // Capsules and Calendar have their own pages below.
@@ -28,6 +29,7 @@ const sections = navItems.filter((item) => !BUILT.has(item.path));
 const pages: Partial<Record<string, ReactElement>> = {
   "/events": <EventsPage />,
   "/inbox": <InboxPage />,
+  "/users": <UsersPage />,
   "/subscribers": <SubscribersPage />,
   "/settings": <SettingsPage />,
 };

@@ -176,4 +176,14 @@
       animation: kc-pulse 1.6s ease-in-out infinite;
     }
   }
+
+  /* Icon-only button: the visible icon stays small, the hit area is 44px. */
+  .kc-icon-btn {
+    min-inline-size: 44px;
+    min-block-size: 44px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

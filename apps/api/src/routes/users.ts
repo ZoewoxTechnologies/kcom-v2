@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
-import { userRoles, users, sessions, type CapsuleDb, type UserRole } from "@kcom/db";
+import { accounts, userRoles, users, sessions, type CapsuleDb, type UserRole } from "@kcom/db";
 import type { Auth } from "../auth.js";
 import { HttpError } from "../errors.js";
 import { requirePermission, type AuthEnv } from "../require-permission.js";
@@ -16,6 +16,11 @@ const columns = {
   deactivatedAt: users.deactivatedAt,
   createdAt: users.createdAt,
 };
+
+/** True until the user has set a password, that is, has never been able to sign in. */
+// Qualified by hand: inside a single-table select drizzle prints bare column names,
+// which would resolve to the accounts table in the subquery.
+const invitePending = sql<boolean>`not exists (select 1 from ${accounts} where ${accounts.userId} = "users"."id" and ${accounts.password} is not null)`;
 
 const inviteBody = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
@@ -58,7 +63,14 @@ async function loadGuardingLastAdmin(
 export function userRoutes(db: CapsuleDb, auth: Auth) {
   return new Hono<AuthEnv>()
     .use(requirePermission(auth, "users:manage"))
-    .get("/", async (c) => c.json(await db.select(columns).from(users).orderBy(users.email)))
+    .get("/", async (c) =>
+      c.json(
+        await db
+          .select({ ...columns, invitePending })
+          .from(users)
+          .orderBy(users.email),
+      ),
+    )
     .post("/", validate("json", inviteBody), async (c) => {
       const { email, name, role } = c.req.valid("json");
       const [existing] = await db
@@ -77,7 +89,7 @@ export function userRoutes(db: CapsuleDb, auth: Auth) {
           role,
         })
         .returning(columns)
-        .then(([row]) => row!)
+        .then(([row]) => ({ ...row!, invitePending: true }))
         .catch((err) => rethrowWriteError(err, { label: "user with this email" }));
       // The invitee sets a password through the password-reset flow. Delivery
       // goes through the auth Mailer (see `sendPasswordReset`), so wiring an

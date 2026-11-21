@@ -24,6 +24,7 @@ import "./capsules/capsule-editor.css";
 import "./blog/blog.css";
 import "./dashboard/dashboard.css";
 import "./inbox/inbox.css";
+import "./users/users.css";
 import "./subscribers/subscribers.css";
 import "./settings/settings.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
