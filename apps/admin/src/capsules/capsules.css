@@ -151,7 +151,7 @@
   }
   a.kc-cal__capsule--draft {
     background: var(--color-sandstone);
-    color: var(--color-gold-text);
+    color: var(--color-gold-text-tint);
   }
   .kc-cal__move {
     align-self: flex-start;
