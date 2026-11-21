@@ -19,27 +19,14 @@ const links = [
     <p class="note">The link may be old, or the page may have moved. Try a search, or start from one of these.</p>
     <form role="search" action="/search" method="get" class="find" data-find>
       <label for="nf-q" class="sr-only">Search Capsules and the blog</label>
-      <input id="nf-q" name="q" type="search" class="kc-input kc-input--lg" placeholder="Search Capsules and the blog" autocomplete="off" />
+      <input id="nf-q" name="q" type="search" class="kc-input kc-input--lg kc-input--pill" placeholder="Search Capsules and the blog" autocomplete="off" />
     </form>
     <nav class="links" aria-label="Where to go next">
       {links.map((l) => <a href={l.href}>{l.label}</a>)}
     </nav>
   </section>
 </BaseLayout>
-<script>
-  const form = document.querySelector<HTMLFormElement>("[data-find]")!;
-  const input = form.querySelector("input")!;
-  let timer: number | undefined;
-  const go = () => {
-    const q = input.value.trim();
-    if (q) location.assign(`/search?q=${encodeURIComponent(q)}`);
-  };
-  input.addEventListener("input", () => {
-    clearTimeout(timer);
-    timer = window.setTimeout(go, 500);
-  });
-  form.addEventListener("submit", () => clearTimeout(timer));
-</script>
+
 <style>
   .nf { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; padding: var(--space-7) var(--gutter); }
   .code { font-family: var(--font-title); font-weight: 500; font-size: 5rem; line-height: 1; color: var(--color-primary); }
