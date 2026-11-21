@@ -440,7 +440,7 @@ function BookEditor({ book, nextPosition, guard, onClose, onSaved, onDelete }: E
           label="Cover"
           optional
           visibleLabel
-          aspectRatio="2 / 3"
+          aspectRatio={2 / 3}
           help="PNG, JPEG or WebP."
           value={v.coverUrl}
           onChange={(coverUrl) => set({ coverUrl })}

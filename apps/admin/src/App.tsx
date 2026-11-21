@@ -9,6 +9,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { BooksPage } from "./books/BooksPage";
 import { EventsPage } from "./events/EventsPage";
 import { InboxPage } from "./inbox/InboxPage";
+import { SettingsPage } from "./settings/SettingsPage";
 import { DemoPage } from "./pages/DemoPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { BlogEditorPage } from "./blog/BlogEditorPage";
@@ -28,6 +29,7 @@ const pages: Partial<Record<string, ReactElement>> = {
   "/books": <BooksPage />,
   "/events": <EventsPage />,
   "/inbox": <InboxPage />,
+  "/settings": <SettingsPage />,
 };
 
 export function App() {

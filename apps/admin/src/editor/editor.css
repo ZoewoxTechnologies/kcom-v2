@@ -64,10 +64,14 @@
   }
   .kc-image-field__preview {
     inline-size: 100%;
-    aspect-ratio: 16 / 9;
     object-fit: cover;
     border-radius: var(--radius);
     border: 1px solid var(--color-line);
+  }
+  /* Square and tall previews would fill the panel; cap their width. */
+  .kc-image-field__preview--narrow {
+    inline-size: 12rem;
+    max-inline-size: 100%;
   }
   .kc-image-field__actions {
     display: flex;

@@ -9,14 +9,14 @@ export interface ImageUploadFieldProps {
   value: string | null;
   onChange: (url: string | null) => void;
   help?: string;
+  upload?: (file: File, onProgress: (fraction: number) => void) => Promise<UploadedImage>;
+  disabled?: boolean;
   /** Show an "(optional)" marker beside the label. */
   optional?: boolean;
   /** Show the label above the field. Off by default, for pages that put their own heading above it. */
   visibleLabel?: boolean;
-  /** Preview shape as a CSS aspect-ratio, such as "2 / 3". Left to the image when unset. */
-  aspectRatio?: string;
-  upload?: (file: File, onProgress: (fraction: number) => void) => Promise<UploadedImage>;
-  disabled?: boolean;
+  /** Shape of the preview, width over height. Default 16/9; use 1 for portraits. */
+  aspectRatio?: number;
 }
 
 /** Pick, upload and preview one image. Uploads straight to Cloudinary through the admin API. */
@@ -25,11 +25,11 @@ export function ImageUploadField({
   value,
   onChange,
   help,
-  optional,
-  visibleLabel,
-  aspectRatio,
   upload = defaultUpload,
   disabled,
+  optional,
+  visibleLabel,
+  aspectRatio = 16 / 9,
 }: ImageUploadFieldProps) {
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
@@ -61,10 +61,10 @@ export function ImageUploadField({
       </span>
       {value && (
         <img
-          className="kc-image-field__preview"
+          className={`kc-image-field__preview${aspectRatio <= 1 ? " kc-image-field__preview--narrow" : ""}`}
+          style={{ aspectRatio }}
           src={value}
           alt=""
-          style={aspectRatio ? { aspectRatio, inlineSize: "6rem" } : undefined}
         />
       )}
       <div className="kc-image-field__actions">
