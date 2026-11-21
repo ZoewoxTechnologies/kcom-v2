@@ -18,6 +18,7 @@ const cap = (id: string, title: string, status: string, publishAt: string) => ({
 function mockApi(data: {
   capsules?: unknown[];
   events?: { total: number; next: string | null };
+  activity?: unknown[];
   fail?: boolean;
 }) {
   vi.stubGlobal(
@@ -26,6 +27,7 @@ function mockApi(data: {
       const json = (b: unknown) =>
         new Response(JSON.stringify(b), { headers: { "content-type": "application/json" } });
       if (data.fail) return new Response("{}", { status: 500 });
+      if (url.includes("/admin/activity")) return json({ items: data.activity ?? [] });
       if (url.includes("/admin/subscribers/count"))
         return json({ confirmed: 1284, addedThisMonth: 36 });
       if (url.includes("/admin/events/upcoming"))
@@ -61,10 +63,27 @@ describe("dashboard", () => {
         cap("d", "A Sound Mind", "draft", "2026-11-25T23:00:00Z"),
       ],
       events: { total: 3, next: "2026-12-06T10:00:00Z" },
+      activity: [
+        { at: "2026-11-19T08:12:00Z", text: "Grace A. subscribed", href: null, badge: null },
+        { at: "2026-11-18T09:00:00Z", text: "Contact: a prayer request", href: null, badge: "New" },
+        {
+          at: "2026-11-12T09:00:00Z",
+          text: "Blog post updated: Hi",
+          href: "/blog/b1",
+          badge: null,
+        },
+      ],
     });
     renderPage();
     expect(await screen.findByText("1,284")).toBeTruthy();
     expect(screen.getByText("+36 this month")).toBeTruthy();
+    expect(screen.getByText("Grace A. subscribed")).toBeTruthy();
+    expect(screen.getByText("09:12")).toBeTruthy();
+    expect(screen.getByText("Yesterday")).toBeTruthy();
+    expect(screen.getByText("New")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Blog post updated: Hi" }).getAttribute("href")).toBe(
+      "/blog/b1",
+    );
     expect(screen.getByText("Next: 6 Dec")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Be Ye Transformed" }).getAttribute("href")).toBe(
       "/capsules/t",

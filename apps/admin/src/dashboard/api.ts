@@ -13,12 +13,20 @@ export interface SubscriberCount {
   addedThisMonth: number;
 }
 
+export interface ActivityItem {
+  at: string;
+  text: string;
+  href: string | null;
+  badge: "New" | null;
+}
+
 export interface DashboardData {
   /** Today and the next few Lagos days. */
   capsules: CapsuleSummary[];
   drafts: CapsuleSummary[];
   events: { total: number; next: string | null };
   subscribers: SubscriberCount;
+  activity: ActivityItem[];
 }
 
 /** Everything the dashboard shows, loaded together. */
@@ -34,9 +42,10 @@ export function useDashboard() {
       listDrafts(),
       upcomingEventsSummary(),
       apiJson<SubscriberCount>("/admin/subscribers/count"),
+      apiJson<{ items: ActivityItem[] }>("/admin/activity"),
     ]).then(
-      ([capsules, drafts, events, subscribers]) => {
-        setData({ capsules, drafts, events, subscribers });
+      ([capsules, drafts, events, subscribers, activity]) => {
+        setData({ capsules, drafts, events, subscribers, activity: activity.items });
         setState("ready");
       },
       () => setState("error"),

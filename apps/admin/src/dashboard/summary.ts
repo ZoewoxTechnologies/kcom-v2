@@ -1,5 +1,5 @@
 import type { CapsuleSummary } from "../capsules/api";
-import { addDays, lagosDay } from "../capsules/days";
+import { addDays, lagosDay, shortDayLabel } from "../capsules/days";
 import type { DayKey } from "../capsules/days";
 import { COMING_UP_DAYS } from "./api";
 
@@ -38,4 +38,19 @@ export function greeting(now = new Date()): string {
       }).format(now),
     ) % 24;
   return hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+}
+
+/** "09:12" for today, "Yesterday", otherwise "12 Nov" (Lagos days). */
+export function activityWhen(at: string, now = new Date()): string {
+  const day = lagosDay(at);
+  const today = lagosDay(now);
+  if (day === today) {
+    return new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Africa/Lagos",
+    }).format(new Date(at));
+  }
+  return day === addDays(today, -1) ? "Yesterday" : shortDayLabel(day).slice(4);
 }

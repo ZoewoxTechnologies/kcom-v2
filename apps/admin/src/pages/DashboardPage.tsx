@@ -3,7 +3,7 @@ import { Badge, Banner, Button } from "@kcom/ui";
 import { capsuleEditPath } from "../capsules/api";
 import { addDays, lagosDay, shortDayLabel } from "../capsules/days";
 import { useDashboard } from "../dashboard/api";
-import { comingUp, draftsOf, greeting } from "../dashboard/summary";
+import { activityWhen, comingUp, draftsOf, greeting } from "../dashboard/summary";
 import { Panel, PanelRow, StatTile } from "../dashboard/widgets";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -132,6 +132,18 @@ function Loaded({
           )}
         </Panel>
       </div>
+
+      <Panel title="Recent activity" empty="Nothing yet.">
+        {data.activity.map((a, i) => (
+          <PanelRow
+            key={`${a.at}-${i}`}
+            lead={activityWhen(a.at, now)}
+            trail={a.badge && <Badge variant="scheduled">{a.badge}</Badge>}
+          >
+            {a.href ? <Link to={a.href}>{a.text}</Link> : a.text}
+          </PanelRow>
+        ))}
+      </Panel>
     </>
   );
 }

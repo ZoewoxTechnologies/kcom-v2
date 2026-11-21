@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { CapsuleDb } from "@kcom/db";
 import type { Auth } from "../auth.js";
 import { requirePermission, type AuthEnv } from "../require-permission.js";
+import { adminActivityRoutes } from "./admin-activity.js";
 import { adminBlogRoutes } from "./admin-blog.js";
 import { adminBookRoutes } from "./books.js";
 import { adminCapsuleRoutes } from "./admin-capsules.js";
@@ -29,6 +30,7 @@ export function adminRoutes(
 ) {
   return new Hono<AuthEnv>()
     .use(requirePermission(auth, "content:read"))
+    .route("/activity", adminActivityRoutes(db))
     .route("/blog", adminBlogRoutes(db))
     .route("/books", adminBookRoutes(db))
     .route("/capsules", adminCapsuleRoutes(db, events))
