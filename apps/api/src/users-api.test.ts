@@ -13,6 +13,7 @@ let app: ReturnType<typeof createApp>;
 let admin: string;
 let editor: string;
 let resets: string[];
+let mailerFails = false;
 
 async function signInRes(email: string) {
   return app.request("/api/auth/sign-in/email", {
@@ -46,7 +47,13 @@ const idOf = async (email: string) => (await listUsers()).find((u) => u.email ==
 beforeEach(async () => {
   const db = await createTestDb();
   resets = [];
-  const mailer: Mailer = { sendPasswordReset: async (_to, url) => void resets.push(url) };
+  mailerFails = false;
+  const mailer: Mailer = {
+    sendPasswordReset: async (_to, url) => {
+      if (mailerFails) throw new Error("mail down");
+      resets.push(url);
+    },
+  };
   await seedUser(db, { email: "admin@example.test", password: PASSWORD, role: "admin" });
   await seedUser(db, { email: "editor@example.test", password: PASSWORD, role: "editor" });
   app = createApp(db, {
@@ -66,6 +73,7 @@ describe("role checks", () => {
       [`/users/${id}`, "PATCH", { role: "admin" }],
       [`/users/${id}/deactivate`, "POST"],
       [`/users/${id}/reactivate`, "POST"],
+      [`/users/${id}/resend-invite`, "POST"],
     ];
     for (const [path, method, body] of routes) {
       expect((await call(path, null, method, body)).status).toBe(401);
@@ -95,6 +103,28 @@ describe("invite", () => {
     expect(
       (await call("/users", admin, "POST", { email: "a@example.test", role: "owner" })).status,
     ).toBe(400);
+  });
+});
+
+describe("invite failures", () => {
+  it("returns 409 for two racing invites, not 500", async () => {
+    const body = { email: "race@example.test", role: "editor" };
+    const results = await Promise.all([
+      call("/users", admin, "POST", body),
+      call("/users", admin, "POST", body),
+    ]);
+    expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
+  });
+
+  it("keeps the user and returns 201 when the mailer throws, and allows a resend", async () => {
+    mailerFails = true;
+    const res = await call("/users", admin, "POST", { email: "mail@example.test", role: "editor" });
+    expect(res.status).toBe(201);
+    const { id } = (await res.json()) as User;
+    mailerFails = false;
+    expect((await call(`/users/${id}/resend-invite`, admin, "POST")).status).toBe(204);
+    expect(resets).toHaveLength(1);
+    expect((await call(`/users/${id}/resend-invite`, editor, "POST")).status).toBe(403);
   });
 });
 
@@ -140,7 +170,9 @@ describe("deactivate", () => {
     const id = await idOf("editor@example.test");
     expect((await call(`/users/${id}/deactivate`, admin, "POST")).status).toBe(200);
     expect((await call("/users", editor)).status).toBe(401);
-    expect((await signInRes("editor@example.test")).status).toBeGreaterThanOrEqual(400);
+    const blocked = await signInRes("editor@example.test");
+    expect(blocked.status).toBe(403);
+    expect(await blocked.json()).toMatchObject({ error: { message: "account deactivated" } });
     expect((await call(`/users/${id}/reactivate`, admin, "POST")).status).toBe(200);
     expect((await signInRes("editor@example.test")).status).toBe(200);
   });
