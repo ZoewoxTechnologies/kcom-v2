@@ -9,5 +9,5 @@ if (i !== -1) {
   env.BASE_URL = args[i + 1];
   args.splice(i, 2);
 }
-const run = spawnSync("pnpm", ["exec", "lhci", "autorun", ...args], { stdio: "inherit", env });
+const run = spawnSync("pnpm", ["dlx", "@lhci/cli@0.16.1", "autorun", ...args], { stdio: "inherit", env });
 process.exit(run.status ?? 1);

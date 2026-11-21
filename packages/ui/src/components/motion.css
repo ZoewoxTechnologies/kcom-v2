@@ -1,6 +1,8 @@
 /* Motion: quiet and short. Motion confirms what happened or shows where something came from.
    Nothing re-animates on scroll, nothing delays content (animations start at once, opacity only
    ever starts at 0 for the length of the fade), and reduced motion keeps opacity fades only. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   /* Content arriving: fade in and rise 8px, once, on first paint. */
   .kc-arrive {
