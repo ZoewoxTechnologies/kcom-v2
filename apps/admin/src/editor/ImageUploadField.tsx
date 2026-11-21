@@ -11,6 +11,10 @@ export interface ImageUploadFieldProps {
   help?: string;
   upload?: (file: File, onProgress: (fraction: number) => void) => Promise<UploadedImage>;
   disabled?: boolean;
+  /** Show an "(optional)" marker beside the label. */
+  optional?: boolean;
+  /** Show the label above the field. Off by default, for pages that put their own heading above it. */
+  visibleLabel?: boolean;
   /** Shape of the preview, width over height. Default 16/9; use 1 for portraits. */
   aspectRatio?: number;
 }
@@ -23,6 +27,8 @@ export function ImageUploadField({
   help,
   upload = defaultUpload,
   disabled,
+  optional,
+  visibleLabel,
   aspectRatio = 16 / 9,
 }: ImageUploadFieldProps) {
   const id = useId();
@@ -49,8 +55,9 @@ export function ImageUploadField({
 
   return (
     <div className="kc-image-field">
-      <span className="kc-image-field__label" id={`${id}-label`}>
+      <span className={visibleLabel ? "kc-label" : "kc-image-field__label"} id={`${id}-label`}>
         {label}
+        {optional && <span className="kc-field__marker"> (optional)</span>}
       </span>
       {value && (
         <img

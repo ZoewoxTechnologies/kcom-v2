@@ -6,6 +6,7 @@ import { RequireAuth, RequirePermission } from "./auth/guards";
 import { navItems } from "./shell/nav";
 import { Shell } from "./shell/Shell";
 import { DashboardPage } from "./pages/DashboardPage";
+import { BooksPage } from "./books/BooksPage";
 import { EventsPage } from "./events/EventsPage";
 import { SubscribersPage } from "./subscribers/SubscribersPage";
 import { InboxPage } from "./inbox/InboxPage";
@@ -27,6 +28,7 @@ const sections = navItems.filter((item) => !BUILT.has(item.path));
 
 /** Pages built so far, by nav path. Sections not listed show the placeholder. */
 const pages: Partial<Record<string, ReactElement>> = {
+  "/books": <BooksPage />,
   "/events": <EventsPage />,
   "/inbox": <InboxPage />,
   "/users": <UsersPage />,
