@@ -54,7 +54,7 @@ export function createApp(
   // Admin endpoints take credentialed cross-origin writes from the admin UI only.
   const adminCors = cors({
     origin: corsOrigins,
-    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type"],
     credentials: true,
   });

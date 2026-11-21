@@ -1,0 +1,148 @@
+/* Admin Books: the same list-beside-editor layout as Events. */
+@layer components {
+  .kc-books {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    --kc-books-above-panel: 11rem;
+  }
+  .kc-books__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .kc-books__head h1 {
+    margin: 0;
+  }
+  .kc-books__body {
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+  .kc-books__list {
+    flex: 1;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .kc-books__list .kc-table {
+    min-inline-size: 0;
+  }
+  .kc-books__loading {
+    color: var(--color-muted);
+  }
+  .kc-books__cover {
+    inline-size: 2rem;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    display: block;
+    border-radius: 2px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+  .kc-books__move {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+  }
+  .kc-books__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    padding: 0;
+  }
+  .kc-books__side {
+    inline-size: 420px;
+    flex: none;
+    position: sticky;
+    inset-block-start: var(--space-4);
+    block-size: calc(100dvh - var(--kc-books-above-panel));
+    display: flex;
+    flex-direction: column;
+  }
+  .kc-books__side > * {
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
+  }
+  /* The "nothing selected" note takes only the height of its text, not the whole panel. */
+  .kc-books__side > .kc-books__empty {
+    flex: none;
+  }
+  .kc-books__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--space-5);
+    text-align: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    color: var(--color-muted);
+  }
+  .kc-books__empty h2 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 1.25rem;
+  }
+  .kc-books__empty p {
+    margin: 0;
+  }
+  .kc-books__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  @media (max-width: 63.99rem) {
+    .kc-books__body {
+      flex-direction: column;
+    }
+    .kc-books__side {
+      inline-size: 100%;
+      position: static;
+      block-size: auto;
+    }
+    .kc-books__side > * {
+      overflow-y: visible;
+    }
+  }
+}
+
+/* The editor shares a narrow side panel, so the description box starts shorter than on a full page. */
+.kc-books__form .kc-rte__body {
+  min-height: 140px;
+  padding: var(--space-3) var(--space-4);
+}
+.kc-books__form .kc-rte__content {
+  min-height: 100px;
+}
+
+/* The trash icon matches the × beside it: same size, border and shape. */
+.kc-books__delete {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  background: var(--color-surface);
+  text-decoration: none;
+  color: inherit;
+}
+.kc-books__delete::after {
+  content: "";
+  position: absolute;
+  inset: -0.375rem;
+}
+.kc-books__delete:hover {
+  color: var(--color-error);
+}
