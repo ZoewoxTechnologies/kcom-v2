@@ -1,4 +1,5 @@
 ---
+import ResponsiveImage from "./ResponsiveImage.astro";
 import { postKicker } from "../lib/blog";
 import type { BlogPostSummary } from "../lib/data/types";
 
@@ -12,7 +13,7 @@ const Heading = `h${level}` as const;
 ---
 <article class="card">
   <a href={`/blog/${post.slug}`}>
-    <div class="cover">{post.heroImageUrl && <img src={post.heroImageUrl} alt="" loading="lazy" />}</div>
+    <div class="cover">{post.heroImageUrl && <ResponsiveImage src={post.heroImageUrl} widths={[320, 480, 640, 800]} ratio={16 / 10} sizes="(min-width: 64rem) 24rem, (min-width: 40rem) 50vw, 100vw" />}</div>
     <div class="text">
       <span class="kicker">{postKicker(post)}</span>
       <Heading class="title">{post.title}</Heading>
@@ -24,7 +25,7 @@ const Heading = `h${level}` as const;
   .card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius); overflow: hidden; }
   a { display: flex; flex-direction: column; block-size: 100%; color: var(--color-text); text-decoration: none; }
   a:hover .title { text-decoration: underline; }
-  .cover { aspect-ratio: 16 / 10; background: linear-gradient(160deg, var(--color-wash), var(--color-sage)); }
+  .cover { aspect-ratio: 16 / 10; overflow: hidden; background: linear-gradient(160deg, var(--color-wash), var(--color-sage)); }
   .cover img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
   .text { padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; line-height: 1.4; }
   .kicker { font-size: 0.8125rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
