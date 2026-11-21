@@ -11,6 +11,8 @@ export interface ImageUploadFieldProps {
   help?: string;
   upload?: (file: File, onProgress: (fraction: number) => void) => Promise<UploadedImage>;
   disabled?: boolean;
+  /** Shape of the preview, width over height. Default 16/9; use 1 for portraits. */
+  aspectRatio?: number;
 }
 
 /** Pick, upload and preview one image. Uploads straight to Cloudinary through the admin API. */
@@ -21,6 +23,7 @@ export function ImageUploadField({
   help,
   upload = defaultUpload,
   disabled,
+  aspectRatio = 16 / 9,
 }: ImageUploadFieldProps) {
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
@@ -49,7 +52,14 @@ export function ImageUploadField({
       <span className="kc-image-field__label" id={`${id}-label`}>
         {label}
       </span>
-      {value && <img className="kc-image-field__preview" src={value} alt="" />}
+      {value && (
+        <img
+          className={`kc-image-field__preview${aspectRatio <= 1 ? " kc-image-field__preview--narrow" : ""}`}
+          style={{ aspectRatio }}
+          src={value}
+          alt=""
+        />
+      )}
       <div className="kc-image-field__actions">
         <Button
           variant="secondary"
