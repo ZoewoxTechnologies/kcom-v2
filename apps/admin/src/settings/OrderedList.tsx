@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   Avatar,
   Button,
@@ -8,7 +8,7 @@ import {
   TextareaField,
   useToast,
 } from "@kcom/ui";
-import { EditorContainer, useDirtyState } from "../editor";
+import { EditorContainer, ImageUploadField, useDirtyState } from "../editor";
 import {
   createItem,
   deleteItem,
@@ -17,7 +17,6 @@ import {
   type ListItem,
   type ListName,
 } from "./api";
-import { uploadImage } from "./upload";
 
 export interface ListConfig {
   list: ListName;
@@ -200,27 +199,8 @@ function ItemEditor({ config, item, onClose, onSaved }: EditorProps) {
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const file = useRef<HTMLInputElement>(null);
   const v = form.value;
   const set = (patch: Record<string, string>) => form.setValue({ ...v, ...patch });
-
-  const pick = async (f: File | undefined) => {
-    if (!f) return;
-    setUploading(true);
-    try {
-      set({ [config.imageKey]: await uploadImage(f) });
-    } catch {
-      toast({
-        variant: "error",
-        title: "Couldn’t upload the image",
-        description: "Use a PNG, JPEG or WebP under 5 MB.",
-      });
-    } finally {
-      setUploading(false);
-      if (file.current) file.current.value = "";
-    }
-  };
 
   const save = async () => {
     const next: Record<string, string> = {};
@@ -261,25 +241,11 @@ function ItemEditor({ config, item, onClose, onSaved }: EditorProps) {
         </Button>
       }
     >
-      <div className="kc-settings__image">
-        <Avatar name={v.name || config.singular} src={v[config.imageKey] || undefined} size="lg" />
-        <Button variant="secondary" loading={uploading} onClick={() => file.current?.click()}>
-          {v[config.imageKey] ? "Replace" : "Upload"} {config.imageLabel}
-        </Button>
-        {v[config.imageKey] && (
-          <Button variant="tertiary" onClick={() => set({ [config.imageKey]: "" })}>
-            Remove
-          </Button>
-        )}
-        <input
-          ref={file}
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          hidden
-          aria-label={config.imageLabel}
-          onChange={(e) => void pick(e.target.files?.[0])}
-        />
-      </div>
+      <ImageUploadField
+        label={config.imageLabel[0]!.toUpperCase() + config.imageLabel.slice(1)}
+        value={v[config.imageKey] || null}
+        onChange={(url) => set({ [config.imageKey]: url ?? "" })}
+      />
       {config.fields.map((f) => {
         const common = {
           label: f.label,

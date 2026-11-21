@@ -91,11 +91,6 @@
     align-items: center;
     justify-content: center;
   }
-  .kc-settings__image {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-  }
   .kc-settings__empty {
     color: var(--color-muted);
     margin: 0;
