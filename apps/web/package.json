@@ -11,7 +11,7 @@
     "typecheck": "astro check",
     "test": "vitest run",
     "audit:a11y": "node audit/a11y.mjs",
-    "audit:perf": "lhci autorun"
+    "audit:perf": "node audit/perf.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.12",

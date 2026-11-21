@@ -18,7 +18,7 @@ Keyboard only: skip link, header menu, theme toggle, search, forms, focus always
 
 ## Run the performance audit
 
-On demand only (CI runs axe, not Lighthouse). Lighthouse, default mobile emulation (slow 4G, 4x CPU throttle), median of 3 runs on 6 pages. Budgets: performance at least 0.90, LCP at most 2.5 s, TBT at most 300 ms, CLS at most 0.1, JavaScript at most 150 KB transferred (compressed). Set in `apps/web/lighthouserc.cjs`.
+Run locally on demand; it never runs in CI or on pull requests (CI runs axe only). `--url` or `BASE_URL` picks the target. Lighthouse, default mobile emulation (slow 4G, 4x CPU throttle), median of 3 runs on 6 pages. Budgets: performance at least 0.90, LCP at most 2.5 s, TBT at most 300 ms, CLS at most 0.1, JavaScript at most 150 KB transferred (compressed). Set in `apps/web/lighthouserc.cjs`.
 
 Local build:
 
@@ -31,7 +31,7 @@ pnpm --filter @kcom/web audit:perf
 Deployed URL (staging or production):
 
 ```bash
-BASE_URL=https://example.org pnpm --filter @kcom/web audit:perf
+pnpm --filter @kcom/web audit:perf -- --url https://example.org
 ```
 
-Use `CHROME_PATH` to point at a local Chrome. The same run is available in GitHub as the manual "Performance audit" workflow (Actions tab, enter the URL).
+Use `CHROME_PATH` to point at a local Chrome.
