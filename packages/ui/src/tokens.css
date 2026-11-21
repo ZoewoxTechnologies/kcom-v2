@@ -5,7 +5,8 @@
 @layer reset, tokens, base, components, utilities;
 
 @layer tokens {
-  :root {
+  :root,
+  [data-theme="light"] {
     color-scheme: light;
 
     /* Surfaces and text */
@@ -191,7 +192,8 @@
     }
   }
 
-  :root[data-theme="dark"] {
+  :root[data-theme="dark"],
+  [data-theme="dark"] {
     color-scheme: dark;
     --color-page: #10191d;
     --color-surface: #17242a;
