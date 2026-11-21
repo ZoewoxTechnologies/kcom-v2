@@ -1,4 +1,10 @@
 /** What the public pages need from a capsule; picked from the API's response. */
+export interface RedirectRule {
+  from: string;
+  to: string;
+  status: number;
+}
+
 export interface CapsuleSummary {
   slug: string;
   title: string;
@@ -176,13 +182,15 @@ export interface DataSource {
   listHomepageSections(): Promise<string[]>;
   /** A published page from the pages API; null when it does not exist. */
   pageBySlug(slug: string): Promise<StaticPage | null>;
+  /** Old-site paths and where they now live. Empty when unknown. */
+  listRedirects(): Promise<RedirectRule[]>;
 }
 
 /**
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listAllCapsules", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug", "listEvents", "listHomepageSections", "pageBySlug"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listAllCapsules", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug", "listEvents", "listHomepageSections", "pageBySlug", "listRedirects"] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */
