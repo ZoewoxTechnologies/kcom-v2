@@ -1,0 +1,14 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SignupState from "../../components/SignupState.astro";
+import SignupForm from "../../components/SignupForm.astro";
+---
+<BaseLayout title="This link has expired" current="/subscribe" hideSignup>
+  <meta slot="head" name="robots" content="noindex" />
+  <SignupState tone="warning" icon="!" title="This link has expired">
+    Confirmation links last 48 hours. Enter your email and we’ll send a fresh one.
+    <Fragment slot="extra">
+      <SignupForm id="expired-email" placeholder="Your email" button="Resend" buttonClass="kc-btn--primary kc-btn--md" />
+    </Fragment>
+  </SignupState>
+</BaseLayout>

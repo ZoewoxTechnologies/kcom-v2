@@ -1,0 +1,72 @@
+---
+/**
+ * The email signup form used by the footer, homepage band, capsule page and /subscribe.
+ * Posts to /subscribe, which signs the reader up and shows the check-inbox page. When
+ * PUBLIC_TURNSTILE_SITE_KEY is set, a Cloudflare Turnstile widget rides along and shows only
+ * if it needs the reader's help.
+ */
+interface Props {
+  id: string;
+  label?: string;
+  placeholder?: string;
+  button?: string;
+  /** Classes for the submit button, e.g. "kc-btn--primary kc-btn--md". */
+  buttonClass?: string;
+  /** Show the label to everyone; otherwise it is for screen readers only. */
+  visibleLabel?: boolean;
+  value?: string;
+  error?: string;
+  class?: string;
+}
+const {
+  id,
+  label = "Your email address",
+  placeholder = "Your email address",
+  button = "Subscribe",
+  buttonClass = "kc-btn--primary kc-btn--md",
+  visibleLabel = false,
+  value = "",
+  error,
+  class: className,
+} = Astro.props;
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+---
+<form class:list={["signup-form", className]} action="/subscribe" method="post" novalidate data-signup>
+  <label class={visibleLabel ? "kc-label" : "sr-only"} for={id}>{label}</label>
+  <div class="row">
+    <input
+      id={id}
+      class="kc-input"
+      name="email"
+      type="email"
+      placeholder={placeholder}
+      autocomplete="email"
+      required
+      value={value}
+      aria-invalid={error ? "true" : undefined}
+      aria-describedby={error ? `${id}-error` : undefined}
+    />
+    <button type="submit" class:list={["kc-btn", buttonClass]}>{button}</button>
+  </div>
+  <div class="hp" aria-hidden="true"><label>Leave this field empty<input type="text" name="hp_url" tabindex="-1" autocomplete="off" /></label></div>
+  {siteKey && <div class="cf-turnstile" data-sitekey={siteKey} data-appearance="interaction-only"></div>}
+  <p class="kc-field__error" id={`${id}-error`} role="alert" hidden={!error}>{error}</p>
+</form>
+<script>
+  // One Turnstile script per page, however many signup forms it holds.
+  if (document.querySelector(".cf-turnstile") && !document.querySelector("script[data-turnstile]")) {
+    const s = document.createElement("script");
+    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    s.async = true;
+    s.dataset.turnstile = "";
+    document.head.append(s);
+  }
+</script>
+<style>
+  .signup-form { display: flex; flex-direction: column; gap: 6px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .row .kc-input { flex: 1 1 15rem; min-inline-size: 0; }
+  .hp { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
+  .kc-field__error { margin: 0; font-size: 14px; color: var(--color-error); }
+  .kc-field__error[hidden] { display: none; }
+</style>

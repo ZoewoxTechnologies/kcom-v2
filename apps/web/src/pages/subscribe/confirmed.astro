@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SignupState from "../../components/SignupState.astro";
+---
+<BaseLayout title="You’re subscribed" current="/subscribe" hideSignup>
+  <meta slot="head" name="robots" content="noindex" />
+  <SignupState tone="success" icon="✓" title="You’re subscribed">
+    Welcome. A Capstone Capsule will reach you every day just after midnight (Lagos time).
+    <Fragment slot="extra">
+      <blockquote>“O taste and see that the Lord is good.”<cite>Psalm 34:8</cite></blockquote>
+      <a class="kc-btn kc-btn--primary kc-btn--md" href="/capsules/today">Read today’s Capsule</a>
+    </Fragment>
+  </SignupState>
+</BaseLayout>
+<style>
+  a.kc-btn { color: var(--color-on-primary); }
+</style>

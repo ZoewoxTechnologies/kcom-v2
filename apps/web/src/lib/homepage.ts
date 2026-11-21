@@ -25,6 +25,26 @@ export function visibleSections(list: readonly { key: string; hidden?: boolean }
   return ["today", ...rest.filter((s) => !s.hidden).map((s) => s.key)];
 }
 
+const API_KEYS: Record<string, HomeSectionKey> = {
+  todays_capsule: "today",
+  current_series: "current-series",
+  past_series: "past-series",
+  blog: "blog",
+  events_books: "events-books",
+  email_signup: "signup",
+};
+
+/**
+ * The API lists only the visible sections, in order. Turns that into a full arrangement in which
+ * every section left out is hidden. An empty or unusable list means "unknown" and gives null.
+ */
+export function sectionsFromApi(visibleKeys: readonly string[]): HomeSection[] | null {
+  const shown = visibleKeys.flatMap((k) => (API_KEYS[k] ? [API_KEYS[k]] : []));
+  if (shown.length === 0) return null;
+  const hidden = HOME_SECTION_KEYS.filter((k) => !shown.includes(k));
+  return [...shown.map((key) => ({ key, hidden: false })), ...hidden.map((key) => ({ key, hidden: true }))];
+}
+
 /** Dev-only preview of an arrangement: `?sections=blog,-signup` orders sections and hides those with a leading dash. */
 export function sectionsFromQuery(raw: string | null): HomeSection[] | null {
   if (!raw) return null;
