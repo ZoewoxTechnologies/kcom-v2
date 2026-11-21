@@ -1,0 +1,35 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "http://127.0.0.1:4650/",
+        "http://127.0.0.1:4650/blog",
+        "http://127.0.0.1:4650/blog/2026-year-of-divine-acceleration",
+        "http://127.0.0.1:4650/capsules/today",
+        "http://127.0.0.1:4650/events",
+        "http://127.0.0.1:4650/books"
+      ],
+      "numberOfRuns": 3,
+      "settings": { "onlyCategories": ["performance"] }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["error", { "minScore": 0.9, "aggregationMethod": "median-run" }],
+        "largest-contentful-paint": [
+          "error",
+          { "maxNumericValue": 2500, "aggregationMethod": "median-run" }
+        ],
+        "cumulative-layout-shift": [
+          "error",
+          { "maxNumericValue": 0.1, "aggregationMethod": "median-run" }
+        ],
+        "total-blocking-time": [
+          "error",
+          { "maxNumericValue": 300, "aggregationMethod": "median-run" }
+        ],
+        "resource-summary:script:size": ["error", { "maxNumericValue": 150000 }]
+      }
+    },
+    "upload": { "target": "filesystem", "outputDir": ".lighthouse" }
+  }
+}
