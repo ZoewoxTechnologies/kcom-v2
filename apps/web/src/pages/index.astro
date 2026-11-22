@@ -71,7 +71,11 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   {order.map((key) => {
     if (key === "today")
       return (
-        <section class="band backdrop" aria-label="Today’s Capsule">
+        <section
+          class="band backdrop"
+          data-card={capsule?.bannerUrl ? "" : undefined}
+          aria-label="Today’s Capsule"
+        >
           <BannerBackdrop section="home" variant="hero" flip />
           <div class:list={["inner", "hero", { bare: !capsule?.bannerUrl }]}>
             {capsule ? (
@@ -275,6 +279,29 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   }
   .band[aria-label="Current series"] {
     padding-top: 4.5rem;
+  }
+  /* how far the hero copy reaches in from the right edge; the photo wash stays strong across it.
+     On phones the copy is full width. From 48rem it sits in the right column, 34rem wide; with
+     the capsule card beside it the row only fits from 62rem (about half each), and wraps to full
+     width below that. */
+  .backdrop {
+    --copy-edge: max(2.5rem, (100vw - 75rem) / 2);
+    --copy-reach: 100%;
+  }
+  @media (min-width: 48rem) {
+    .backdrop {
+      --copy-reach: calc(var(--copy-edge) + 34rem + var(--space-5));
+    }
+  }
+  @media (min-width: 62rem) {
+    .backdrop[data-card] {
+      --copy-reach: calc(var(--copy-edge) + min(75rem, 100vw - 5rem) / 2 + var(--space-5));
+    }
+  }
+  @media (min-width: 48rem) and (max-width: 61.99rem) {
+    .backdrop[data-card] {
+      --copy-reach: 100%;
+    }
   }
   .backdrop {
     position: relative;

@@ -106,77 +106,59 @@ const photo = `/banners/${section}`;
       background: color-mix(in srgb, var(--banner-start) 82%, transparent);
       transform: none;
     }
-    .art.hero::before,
-    :root[data-theme="dark"] .art.hero::before {
-      background: color-mix(in srgb, var(--banner-start) 84%, transparent);
-    }
   }
   .art.flip::before {
     transform: scaleX(-1);
   }
-  /* hero grade: no colour blend or grain; a vignette from the text side, held strong enough
-     under the text for AA, then fading out so the photo reads as a photo */
+  /* Hero grade: no colour blend or grain, just a vignette from the text side. The parent sets
+     --copy-reach, how far the copy extends from the text side; the wash stays strong across all
+     of it (AA for the text) and fades out beyond, so the photo reads as a photo. */
+  .art.hero {
+    --hw-near: color-mix(in srgb, var(--banner-start) var(--hw-strong), transparent);
+    --hw-far: color-mix(in srgb, var(--hw-far-colour) var(--hw-fade), transparent);
+    --hw-end: color-mix(in srgb, var(--hw-far-colour) 0%, transparent);
+    --hw-strong: 86%;
+    --hw-fade: 8%;
+    --hw-far-colour: var(--banner-end);
+    --hw-floor: color-mix(in srgb, var(--banner-start) 18%, transparent);
+    --hw-floor-from: 70%;
+    --hw-filter: saturate(1.05) contrast(1.04);
+  }
   .art.hero::before {
     background:
       linear-gradient(
         90deg,
-        color-mix(in srgb, var(--banner-start) 88%, transparent) 0%,
-        color-mix(in srgb, var(--banner-start) 86%, transparent) 48%,
-        color-mix(in srgb, var(--banner-end) 8%, transparent) 78%,
-        color-mix(in srgb, var(--banner-end) 0%, transparent) 100%
+        var(--hw-near) 0%,
+        var(--hw-near) var(--copy-reach, 48%),
+        var(--hw-far) calc(var(--copy-reach, 48%) + 30%),
+        var(--hw-end) 100%
       ),
-      linear-gradient(
-        180deg,
-        transparent 70%,
-        color-mix(in srgb, var(--banner-start) 18%, transparent)
-      );
+      linear-gradient(180deg, transparent var(--hw-floor-from), var(--hw-floor));
   }
-  /* a faint warm tint, light mode only */
-  .art.hero::after {
-    background: var(--banner-gold);
-    mix-blend-mode: soft-light;
-    opacity: 0.1;
-  }
+  .art.hero::after,
   .art.hero .grain {
     display: none;
   }
   .art.hero img {
-    filter: saturate(1.05) contrast(1.04);
+    filter: var(--hw-filter);
   }
-  :root[data-theme="dark"] .art.hero img {
-    filter: brightness(0.95) saturate(1.1) contrast(1.08);
-  }
-  :root[data-theme="dark"] .art.hero::after {
-    opacity: 0;
-  }
-  :root[data-theme="dark"] .art.hero::before {
-    background:
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--banner-start) 94%, transparent) 0%,
-        color-mix(in srgb, var(--banner-start) 90%, transparent) 48%,
-        color-mix(in srgb, var(--banner-start) 30%, transparent) 78%,
-        color-mix(in srgb, var(--banner-start) 8%, transparent) 100%
-      ),
-      linear-gradient(180deg, transparent 60%, var(--banner-start));
+  /* a deeper, richer grade in dark mode */
+  :root[data-theme="dark"] .art.hero {
+    --hw-strong: 92%;
+    --hw-fade: 30%;
+    --hw-far-colour: var(--banner-start);
+    --hw-floor: var(--banner-start);
+    --hw-floor-from: 60%;
+    --hw-filter: brightness(0.95) saturate(1.1) contrast(1.08);
   }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .art.hero img {
-      filter: brightness(0.95) saturate(1.1) contrast(1.08);
-    }
-    :root:not([data-theme="light"]) .art.hero::after {
-      opacity: 0;
-    }
-    :root:not([data-theme="light"]) .art.hero::before {
-      background:
-        linear-gradient(
-          90deg,
-          color-mix(in srgb, var(--banner-start) 94%, transparent) 0%,
-          color-mix(in srgb, var(--banner-start) 90%, transparent) 48%,
-          color-mix(in srgb, var(--banner-start) 30%, transparent) 78%,
-          color-mix(in srgb, var(--banner-start) 8%, transparent) 100%
-        ),
-        linear-gradient(180deg, transparent 60%, var(--banner-start));
+    :root:not([data-theme="light"]) .art.hero {
+      --hw-strong: 92%;
+      --hw-fade: 30%;
+      --hw-far-colour: var(--banner-start);
+      --hw-floor: var(--banner-start);
+      --hw-floor-from: 60%;
+      --hw-filter: brightness(0.95) saturate(1.1) contrast(1.08);
     }
   }
   .art.flip img {
