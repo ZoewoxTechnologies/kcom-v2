@@ -372,7 +372,8 @@ const quote = capsule?.scriptureText
   .verse-bar .verse {
     font-size: var(--text-base);
   }
-  @media (min-width: 64rem) {
+  /* the full nav needs about 76rem; below that the menu button keeps the header on one row */
+  @media (min-width: 76rem) {
     .site-header {
       padding-block: var(--space-4);
     }
@@ -395,6 +396,8 @@ const quote = capsule?.scriptureText
     .search {
       display: flex;
     }
+  }
+  @media (min-width: 64rem) {
     .verse-bar .date {
       display: inline;
     }
