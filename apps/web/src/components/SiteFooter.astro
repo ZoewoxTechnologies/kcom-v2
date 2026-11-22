@@ -1,5 +1,5 @@
 ---
-import { footerColumns, socialLinks, siteName } from "../lib/site";
+import { footerColumns, siteName } from "../lib/site";
 import { footerContact } from "../lib/footer-contact";
 import { formatPhone, phoneHref } from "../lib/phone";
 // The footer never fails a page: without contact details it shows only the form link.
@@ -49,7 +49,7 @@ const year = new Date().getFullYear();
     </span>
     <span class="social">
       <span class="links">
-        {socialLinks.map((l) => (
+        {(contact?.social ?? []).map((l) => (
           <a href={l.href}>{l.label}</a>
         ))}
       </span>

@@ -1,10 +1,13 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/design.css";
-import { contactRows, contactSettings, topics } from "../lib/contact";
+import { contactRows, topics } from "../lib/contact";
+import { footerContact } from "../lib/footer-contact";
 
-const rows = contactRows(contactSettings);
-const social = contactSettings.social;
+// Same cached lookup as the footer; a failed lookup leaves the card out rather than the page broken.
+const details = await footerContact.get();
+const rows = contactRows(details);
+const social = details?.social ?? [];
 ---
 
 <BaseLayout
@@ -87,23 +90,25 @@ const social = contactSettings.social;
         </div>
       </form>
       <aside>
-        <div class="card">
-          <h2>Other ways to reach us</h2>
-          {rows.map((r) => (
-            <span>
-              <strong>{r.label}</strong>
-              <br />
-              {r.value}
-            </span>
-          ))}
-          {social.length > 0 && (
-            <span class="social">
-              {social.map((s) => (
-                <a href={s.href}>{s.label}</a>
-              ))}
-            </span>
-          )}
-        </div>
+        {(rows.length > 0 || social.length > 0) && (
+          <div class="card">
+            <h2>Other ways to reach us</h2>
+            {rows.map((r) => (
+              <span>
+                <strong>{r.label}</strong>
+                <br />
+                {r.href ? <a href={r.href}>{r.value}</a> : r.value}
+              </span>
+            ))}
+            {social.length > 0 && (
+              <span class="social">
+                {social.map((s) => (
+                  <a href={s.href}>{s.label}</a>
+                ))}
+              </span>
+            )}
+          </div>
+        )}
         <div class="success" role="status" id="contact-success" hidden>
           <span class="thanks">
             Thank you, <span id="success-name"></span>.

@@ -1,40 +1,27 @@
-import { formatPhone } from "./phone";
+import type { ContactDetails } from "./data/types";
+import { formatPhone, phoneHref } from "./phone";
 import { contactTopicLabels, contactTopics, type ContactTopic } from "@kcom/db/contact-topics";
-
-/** Shaped like the future settings API; replace `contactSettings` with that fetch when it lands. */
-export interface ContactSettings {
-  email: string | null;
-  phone: string | null;
-  address: string | null;
-  social: { label: string; href: string }[];
-}
-
-export const contactSettings: ContactSettings = {
-  email: "hello@example.org",
-  phone: "+00 000 000 0000",
-  address: "Sample Street, Sample City",
-  social: [
-    { label: "Facebook", href: "https://facebook.com" },
-    { label: "YouTube", href: "https://youtube.com" },
-  ],
-};
 
 export interface Row {
   label: string;
   value: string;
+  /** mailto: or tel: target; absent for plain text. */
+  href?: string;
 }
 
-/** Contact rows with a value; empty list hides the block. */
-export const contactRows = (s: ContactSettings): Row[] =>
-  (
-    [
-      ["Email", s.email],
-      ["Phone / WhatsApp", s.phone],
-      ["Address", s.address],
-    ] as [string, string | null][]
-  ).flatMap(([label, v]) =>
-    v?.trim() ? [{ label, value: label.startsWith("Phone") ? formatPhone(v) : v.trim() }] : [],
-  );
+/** Contact rows with a value, in display order; an empty list hides the card. */
+export function contactRows(d: ContactDetails | null): Row[] {
+  const email = d?.email?.trim();
+  const phone = d?.phone?.trim();
+  const address = d?.address?.trim();
+  return [
+    ...(email ? [{ label: "Email", value: email, href: `mailto:${email}` }] : []),
+    ...(phone
+      ? [{ label: "Phone / WhatsApp", value: formatPhone(phone), href: phoneHref(phone) }]
+      : []),
+    ...(address ? [{ label: "Address", value: address }] : []),
+  ];
+}
 
 const topicMessage: Record<ContactTopic, string> = {
   question: "Your question",

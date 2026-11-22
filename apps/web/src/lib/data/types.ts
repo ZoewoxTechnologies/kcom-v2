@@ -160,6 +160,8 @@ export interface ContactDetails {
   email: string | null;
   phone: string | null;
   address: string | null;
+  /** Social profiles the admin has filled in, in display order. */
+  social: { label: string; href: string }[];
 }
 
 export interface DataSource {
