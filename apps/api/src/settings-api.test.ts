@@ -110,6 +110,44 @@ describe("settings", () => {
     expect(await bad({ site: { siteName: "" } })).toBe(400);
   });
 
+  it("saves real URLs and an email that contain the letter s", async () => {
+    const social = {
+      facebook: "https://www.facebook.com/kingdomcapstone",
+      youtube: "https://www.youtube.com/@kingdomcapstone/videos?sub_confirmation=1",
+      instagram: "https://www.instagram.com/kingdomcapstone/",
+      x: "https://x.com/kingdomcapstone",
+      whatsappChannel: "https://whatsapp.com/channel/0029VaAbCdEfGh",
+      telegram: "https://t.me/kingdomcapstone",
+    };
+    const res = await call("/admin/settings", admin, "PATCH", {
+      social,
+      contact: { email: "info@kingdomcapstone.org" },
+    });
+    expect(res.status).toBe(200);
+    const saved = await json(await call("/admin/settings", admin));
+    expect(saved.social).toEqual(social);
+    expect(saved.contact?.email).toBe("info@kingdomcapstone.org");
+  });
+
+  it("a bad URL is a 400 field error naming the field, never a 500", async () => {
+    const tooLong = `https://example.com/${"a".repeat(2048)}`;
+    for (const bad of [
+      tooLong,
+      "not a url",
+      "https://example.com/a b",
+      "ftp://files.example.com",
+      "javascript:alert(1)",
+    ]) {
+      const res = await call("/admin/settings", admin, "PATCH", { social: { facebook: bad } });
+      expect(res.status, bad).toBe(400);
+      const body = await json<{ error: { details: { path: string }[] } }>(res);
+      expect(
+        body.error.details.map((d) => d.path),
+        bad,
+      ).toEqual(["social.facebook"]);
+    }
+  });
+
   it("team: portraits must be Cloudinary URLs; order persists across moves", async () => {
     const add = (name: string, extra: object = {}) =>
       call("/admin/settings/team", admin, "POST", { name, role: "Elder", ...extra });

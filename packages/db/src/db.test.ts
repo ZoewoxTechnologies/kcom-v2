@@ -188,6 +188,29 @@ describe("constraints", () => {
       .set({ facebookUrl: "https://facebook.com/x", contactEmail: "a@b.org" });
   });
 
+  it("accepts real URLs and emails that contain the letter s, rejects whitespace", async () => {
+    const urls = {
+      facebookUrl: "https://www.facebook.com/kingdomcapstone",
+      youtubeUrl: "https://www.youtube.com/@kingdomcapstone/videos",
+      instagramUrl: "https://www.instagram.com/kingdomcapstone/",
+      xUrl: "https://x.com/kingdomcapstone",
+      whatsappChannelUrl: "https://whatsapp.com/channel/0029VaAbCdEfGh",
+      telegramUrl: "https://t.me/kingdomcapstone",
+    };
+    await db.update(siteSettings).set({ ...urls, contactEmail: "info@kingdomcapstone.org" });
+    const [row] = await db.select().from(siteSettings);
+    expect(row).toMatchObject({ ...urls, contactEmail: "info@kingdomcapstone.org" });
+    for (const column of Object.keys(urls)) {
+      await expect(
+        db.update(siteSettings).set({ [column]: "https://example.com/a b" }),
+        column,
+      ).rejects.toThrow();
+    }
+    await expect(
+      db.update(siteSettings).set({ contactEmail: "a b@example.org" }),
+    ).rejects.toThrow();
+  });
+
   it("keeps site settings a singleton", async () => {
     await expect(db.insert(siteSettings).values({ id: 2, siteName: "x" })).rejects.toThrow();
   });
