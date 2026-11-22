@@ -325,6 +325,8 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .backdrop .muted {
     color: color-mix(in srgb, var(--banner-text) 88%, transparent);
   }
+  /* The hero's --copy-reach and --copy-edge maths (above) assumes this 75rem container and the
+     2.5rem side padding on .band; change either and update those values too. */
   .inner {
     max-inline-size: 75rem;
     margin-inline: auto;
