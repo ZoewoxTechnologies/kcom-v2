@@ -18,12 +18,18 @@ import { eventRoutes } from "./routes/events.js";
 import { seriesRoutes } from "./routes/series.js";
 import { searchRoutes } from "./routes/search.js";
 import type { CloudinaryConfig } from "./uploads/cloudinary.js";
+import { corsOriginPolicy, trustedOriginList } from "./origins.js";
 import { userRoutes } from "./routes/users.js";
 import { internalRoutes } from "./routes/internal.js";
 import { createCapsuleEvents, type CapsuleEvents } from "./capsule-publishing.js";
 
 export type AppOptions = {
   corsOrigins?: string[];
+  /**
+   * Also accept any http://localhost:<port> and http://127.0.0.1:<port> origin, for CORS and auth.
+   * Development only, so several checkouts' sites and admins can share one API. Never set in production.
+   */
+  allowLocalhostOrigins?: boolean;
   auth?: AuthOptions;
   /** Subscribe to "capsule published" here; defaults to a fresh, unsubscribed bus. */
   capsuleEvents?: CapsuleEvents;
@@ -40,6 +46,7 @@ export function createApp(
   db: CapsuleDb,
   {
     corsOrigins = [],
+    allowLocalhostOrigins = false,
     auth = {},
     capsuleEvents = createCapsuleEvents(),
     internalToken,
@@ -48,28 +55,32 @@ export function createApp(
     contactBotCheck,
   }: AppOptions = {},
 ) {
-  const publicCors = cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] });
+  const origin = corsOriginPolicy(corsOrigins, allowLocalhostOrigins);
+  const publicCors = cors({ origin, allowMethods: ["GET", "HEAD", "OPTIONS"] });
   // Auth endpoints take credentialed cross-origin calls from the admin UI only.
   const authCors = cors({
-    origin: corsOrigins,
+    origin,
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type"],
     credentials: true,
   });
   // Admin endpoints take credentialed cross-origin writes from the admin UI only.
   const adminCors = cors({
-    origin: corsOrigins,
+    origin,
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type"],
     credentials: true,
   });
   // The public contact form posts cross-origin from the web site.
   const contactCors = cors({
-    origin: corsOrigins,
+    origin,
     allowMethods: ["POST", "OPTIONS"],
     allowHeaders: ["Content-Type"],
   });
-  const authInstance = createAuth(db, { trustedOrigins: corsOrigins, ...auth });
+  const authInstance = createAuth(db, {
+    trustedOrigins: trustedOriginList(corsOrigins, allowLocalhostOrigins),
+    ...auth,
+  });
   return new Hono()
     .use((c, next) =>
       c.req.path.startsWith("/api/auth/")
