@@ -10,7 +10,9 @@ export const CLIENT_IP_HEADER = "x-kcom-client-ip";
 export function parseTrustedProxyHops(raw: string | undefined): number {
   if (raw === undefined || raw.trim() === "") return DEFAULT_TRUSTED_PROXY_HOPS;
   if (/^[1-9]\d*$/.test(raw.trim())) return Number(raw.trim());
-  console.warn(`[client-ip] invalid TRUSTED_PROXY_HOPS "${raw}"; using ${DEFAULT_TRUSTED_PROXY_HOPS}`);
+  console.warn(
+    `[client-ip] invalid TRUSTED_PROXY_HOPS "${raw}"; using ${DEFAULT_TRUSTED_PROXY_HOPS}`,
+  );
   return DEFAULT_TRUSTED_PROXY_HOPS;
 }
 
@@ -19,7 +21,11 @@ export function parseTrustedProxyHops(raw: string | undefined): number {
  * `hops` from the end is the one our own proxy recorded; anything to its left is client-supplied and ignored.
  * Falls back to the socket address, and is undefined when neither is usable (never a shared bucket).
  */
-export function clientIp(header: string | undefined, hops: number, socketAddress?: string): string | undefined {
+export function clientIp(
+  header: string | undefined,
+  hops: number,
+  socketAddress?: string,
+): string | undefined {
   const parts = (header ?? "").split(",").map((p) => p.trim());
   const fromHeader = hops >= 1 ? parts[parts.length - hops] : undefined;
   return fromHeader || socketAddress || undefined;

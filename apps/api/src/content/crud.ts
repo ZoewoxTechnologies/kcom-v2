@@ -4,6 +4,7 @@ import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import type { ZodType } from "zod";
 import { z } from "zod";
 import { isLive, type CapsuleDb } from "@kcom/db";
+import { actionForUpdate, logActivity } from "../activity.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 import { assertCanChange, findById, notFound, publicCache } from "./access.js";
@@ -26,6 +27,8 @@ export type AdminCrudOptions<
   table: T;
   /** Singular name used in 404 messages, e.g. "post". */
   label: string;
+  /** Kind recorded in the activity log, e.g. "blog". Defaults to `label`. */
+  entity?: string;
   /** Full body for create (defaults applied). Must be a strict object. */
   createBody: C;
   /** Partial body for update. Must be a strict object. */
@@ -51,6 +54,8 @@ export function adminCrudRoutes<
   Out = Row<T>,
 >(opts: AdminCrudOptions<T, C, U, Out>) {
   const { db, table, label, createBody, updateBody, orderBy, errors } = opts;
+  const entity = opts.entity ?? label;
+  const titleOf = (row: unknown) => String((row as { title?: string }).title ?? label);
   const present = (opts.present ?? ((row: Row<T>) => row)) as (row: Row<T>) => Out;
   const write = requireCan("content:write");
   const listQuery = z.object({ status: publishStatus.optional(), ...pagination() });
@@ -89,7 +94,15 @@ export function adminCrudRoutes<
           .insert(table)
           .values(body as unknown as T["$inferInsert"])
           .returning()) as Row<T>[];
-        return c.json(present(rows[0]!), 201);
+        const row = rows[0]!;
+        const status = (row as { status?: Status }).status;
+        await logActivity(db, c, {
+          action: status && status !== "draft" ? "publish" : "create",
+          entityType: entity,
+          entityId: (row as { id: string }).id,
+          title: titleOf(row),
+        });
+        return c.json(present(row), 201);
       } catch (err) {
         rethrowWriteError(err, writeErrors);
       }
@@ -106,16 +119,30 @@ export function adminCrudRoutes<
           .set(patch as unknown as Partial<T["$inferInsert"]>)
           .where(eq(table.id, id))
           .returning()) as Row<T>[];
-        return c.json(present(rows[0]!));
+        const row = rows[0]!;
+        await logActivity(db, c, {
+          action: actionForUpdate(existing.status, fields.status as Status | undefined),
+          entityType: entity,
+          entityId: id,
+          title: titleOf(row),
+        });
+        return c.json(present(row));
       } catch (err) {
         rethrowWriteError(err, writeErrors);
       }
     })
     .delete("/:id", write, validate("param", idParam), async (c) => {
       const { id } = c.req.valid("param");
-      assertCanChange(c, ((await byId(id)) as { status: Status }).status);
+      const existing = (await byId(id)) as { status: Status };
+      assertCanChange(c, existing.status);
       const rows = await db.delete(table).where(eq(table.id, id)).returning({ id: table.id });
       if (rows.length === 0) throw notFound(label);
+      await logActivity(db, c, {
+        action: "delete",
+        entityType: entity,
+        entityId: id,
+        title: titleOf(existing),
+      });
       return c.body(null, 204);
     });
 }

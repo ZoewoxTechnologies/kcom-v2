@@ -85,7 +85,12 @@ const setup = (initial: string) => {
 describe("SitePagesPage", () => {
   it("lists the four editable pages", () => {
     setup("/pages");
-    for (const name of ["About: Who We Are", "About: Team and Arms", "Partnership", "Privacy policy"])
+    for (const name of [
+      "About: Who We Are",
+      "About: Team and Arms",
+      "Partnership",
+      "Privacy policy",
+    ])
       expect(screen.getByRole("link", { name: new RegExp(name) })).toBeInTheDocument();
   });
 

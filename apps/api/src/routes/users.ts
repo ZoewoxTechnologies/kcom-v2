@@ -3,7 +3,9 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { accounts, userRoles, users, sessions, type CapsuleDb, type UserRole } from "@kcom/db";
 import type { Auth } from "../auth.js";
+import { logActivity } from "../activity.js";
 import { HttpError } from "../errors.js";
+import { shortName } from "./admin-activity.js";
 import { requirePermission, type AuthEnv } from "../require-permission.js";
 import { rethrowWriteError } from "../content/write-errors.js";
 import { validate } from "../validate.js";
@@ -100,6 +102,13 @@ export function userRoutes(db: CapsuleDb, auth: Auth) {
       } catch (err) {
         console.error("invite link could not be sent:", err);
       }
+      await logActivity(db, c, {
+        action: "create",
+        sameLabel: true,
+        entityType: "user",
+        entityId: created.id,
+        title: `User invited: ${shortName(created.name)} (${created.role})`,
+      });
       return c.json(created, 201);
     })
     .post("/:id/resend-invite", validate("param", idParam), async (c) => {
@@ -127,6 +136,13 @@ export function userRoutes(db: CapsuleDb, auth: Auth) {
           .returning(columns);
         return row!;
       });
+      await logActivity(db, c, {
+        action: "update",
+        sameLabel: true,
+        entityType: "user",
+        entityId: id,
+        title: `User role changed: ${shortName(updated.name)} (${updated.role})`,
+      });
       return c.json(updated);
     })
     .post("/:id/deactivate", validate("param", idParam), async (c) => {
@@ -141,6 +157,12 @@ export function userRoutes(db: CapsuleDb, auth: Auth) {
           .returning(columns);
         return row!;
       });
+      await logActivity(db, c, {
+        action: "delete",
+        entityType: "user",
+        entityId: id,
+        title: `User removed: ${shortName(updated.name)}`,
+      });
       return c.json(updated);
     })
     .post("/:id/reactivate", validate("param", idParam), async (c) => {
@@ -151,6 +173,13 @@ export function userRoutes(db: CapsuleDb, auth: Auth) {
         .where(eq(users.id, id))
         .returning(columns);
       if (!row) throw new HttpError(404, "not_found", "user not found");
+      await logActivity(db, c, {
+        action: "update",
+        sameLabel: true,
+        entityType: "user",
+        entityId: id,
+        title: `User restored: ${shortName(row.name)}`,
+      });
       return c.json(row);
     });
 }

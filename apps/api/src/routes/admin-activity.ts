@@ -3,13 +3,10 @@ import { and, desc, eq, isNotNull } from "drizzle-orm";
 import type { UserRole } from "@kcom/permissions";
 import { contactTopicLabels } from "@kcom/db/contact-topics";
 import {
-  blogPosts,
-  books,
-  capsules,
+  activityLog,
   contactMessages,
-  events,
-  pages,
   subscribers,
+  type ActivityAction,
   type CapsuleDb,
 } from "@kcom/db";
 import { can } from "../permissions.js";
@@ -26,14 +23,29 @@ export interface ActivityItem {
   badge: "New" | null;
 }
 
-/** Content tables that report "<kind> created/updated: <title>" from their timestamps. */
-const content = [
-  { kind: "Capsule", table: capsules, href: (id: string) => `/capsules/${id}` },
-  { kind: "Blog post", table: blogPosts, href: (id: string) => `/blog/${id}` },
-  { kind: "Event", table: events, href: () => "/events" },
-  { kind: "Page", table: pages, href: () => null },
-  { kind: "Book", table: books, href: () => null },
-] as const;
+/** How the feed names each kind of change and where it links; deleted items never link. */
+const kinds: Record<
+  string,
+  { label: string; href: (id: string) => string | null; whole?: boolean }
+> = {
+  capsule: { label: "Capsule", href: (id) => `/capsules/${id}` },
+  blog: { label: "Blog post", href: (id) => `/blog/${id}` },
+  event: { label: "Event", href: () => "/events" },
+  page: { label: "Page", href: () => null },
+  book: { label: "Book", href: () => null },
+  series: { label: "Series", href: () => null },
+  // These carry their whole description in the title ("User role changed: G. A.").
+  user: { label: "User", href: () => null, whole: true },
+  settings: { label: "Settings", href: () => null, whole: true },
+  homepage: { label: "Homepage", href: () => "/homepage", whole: true },
+};
+const verbs: Record<ActivityAction, string> = {
+  create: "created",
+  update: "updated",
+  publish: "published",
+  unpublish: "unpublished",
+  delete: "deleted",
+};
 
 /** First name and last initial, e.g. "Grace A."; "Someone" when no name was given. */
 export function shortName(name: string | null): string {
@@ -48,33 +60,14 @@ export const contactHref = (role: UserRole): string | null =>
   can(role, "inbox:read") ? "/inbox" : null;
 
 /**
- * Recent changes across the site, newest first: content edits (from each
- * table's timestamps), confirmed subscribers and contact messages.
+ * Recent changes, newest first: the newest admin changes from the activity log (with who made
+ * them), confirmed subscribers and contact messages.
  */
 export function adminActivityRoutes(db: CapsuleDb) {
   return new Hono<AuthEnv>().get("/", async (c) => {
     const { role } = c.var.user;
-    const fromContent = await Promise.all(
-      content.map(async ({ kind, table, href }) => {
-        const rows = await db
-          .select({
-            id: table.id,
-            title: table.title,
-            createdAt: table.createdAt,
-            updatedAt: table.updatedAt,
-          })
-          .from(table)
-          .orderBy(desc(table.updatedAt))
-          .limit(LIMIT);
-        return rows.map((r): ActivityItem => ({
-          at: r.updatedAt.toISOString(),
-          text: `${kind} ${r.updatedAt.getTime() - r.createdAt.getTime() < 1000 ? "created" : "updated"}: ${r.title}`,
-          href: href(r.id),
-          badge: null,
-        }));
-      }),
-    );
-    const [subs, messages] = await Promise.all([
+    const [logged, subs, messages] = await Promise.all([
+      db.select().from(activityLog).orderBy(desc(activityLog.at)).limit(LIMIT),
       db
         .select({ name: subscribers.name, at: subscribers.confirmedAt })
         .from(subscribers)
@@ -94,7 +87,17 @@ export function adminActivityRoutes(db: CapsuleDb) {
     ]);
 
     const items: ActivityItem[] = [
-      ...fromContent.flat(),
+      ...logged.map((r): ActivityItem => {
+        const kind = kinds[r.entityType];
+        return {
+          at: r.at.toISOString(),
+          text: kind?.whole
+            ? `${shortName(r.userName)}: ${r.title}`
+            : `${shortName(r.userName)} ${verbs[r.action]} ${(kind?.label ?? r.entityType).toLowerCase()}: ${r.title}`,
+          href: r.action === "delete" ? null : (kind?.href(r.entityId) ?? null),
+          badge: null,
+        };
+      }),
       ...subs.map((s): ActivityItem => ({
         at: s.at!.toISOString(),
         text: `${shortName(s.name)} subscribed`,

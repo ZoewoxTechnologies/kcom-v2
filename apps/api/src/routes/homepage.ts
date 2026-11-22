@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { asc, eq, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { homepageSectionKeys, homepageSections, type CapsuleDb } from "@kcom/db";
+import { logActivity } from "../activity.js";
 import { publicCache } from "../content/index.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
@@ -76,6 +77,12 @@ export function adminHomepageRoutes(db: CapsuleDb) {
             .set({ position, visible: s.visible })
             .where(eq(homepageSections.key, s.key));
         }
+      });
+      await logActivity(db, c, {
+        action: "update",
+        entityType: "homepage",
+        entityId: "layout",
+        title: "Homepage layout updated",
       });
       return c.json({ sections: await list(db) });
     });
