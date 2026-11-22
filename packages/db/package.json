@@ -24,7 +24,7 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.16",
+    "@electric-sql/pglite": "^0.5.17",
     "@kcom/config": "workspace:*",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.11.10",
