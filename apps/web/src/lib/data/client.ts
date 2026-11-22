@@ -247,13 +247,18 @@ export function createApiSource(
       const res = await client.settings.$get(undefined, signal());
       if (!res.ok) throw new Error(`API /settings responded ${res.status}`);
       // The route's inferred type drops the grouped settings, so the shape is stated here.
-      const { contact } = (await res.json()) as {
+      const { contact, social } = (await res.json()) as {
         contact?: { email?: string | null; phone?: string | null; address?: string | null };
+        social?: { facebook?: string | null; youtube?: string | null };
       };
       return {
         email: contact?.email ?? null,
         phone: contact?.phone ?? null,
         address: contact?.address ?? null,
+        social: [
+          { label: "Facebook", href: social?.facebook },
+          { label: "YouTube", href: social?.youtube },
+        ].flatMap((l) => (l.href ? [{ label: l.label, href: l.href }] : [])),
       };
     },
     async listBooks() {

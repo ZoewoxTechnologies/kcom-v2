@@ -4,7 +4,7 @@ import { dayParts, lagosDate } from "@kcom/content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HomeSection from "../components/HomeSection.astro";
 import SeriesCard from "../components/SeriesCard.astro";
-import SignupForm from "../components/SignupForm.astro";
+import SignupBand from "../components/SignupBand.astro";
 import { data } from "../lib/data";
 import { richTextToPlain } from "../lib/data/client";
 import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
@@ -251,13 +251,14 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
       );
     return (
       <section class="band signup" aria-label="Email signup">
-        <div class="inner narrow">
-          <h2>Begin each day in the Word</h2>
-          <p>
-            The daily Capstone Capsule in your inbox every day at midnight. Free, and you can leave
-            any time.
-          </p>
-          <SignupForm id="home-email" placeholder="you@example.com" />
+        <div class="inner">
+          <SignupBand
+            bleed
+            id="home-email"
+            title="Begin each day in the Word"
+            text="The daily Capstone Capsule in your inbox every day at midnight. Free, and you can leave any time."
+            placeholder="you@example.com"
+          />
         </div>
       </section>
     );
@@ -354,10 +355,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   }
   .more {
     font-weight: 600;
-    color: var(--color-primary);
-    text-decoration: underline;
-    text-decoration-color: var(--color-gold);
-    text-decoration-thickness: 2px;
     text-underline-offset: 5px;
   }
   .muted {
@@ -567,40 +564,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     background: var(--color-footer);
     color: var(--color-on-footer);
   }
-  .narrow {
-    max-inline-size: 47rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-3);
-  }
-  .narrow h2 {
-    margin: 0;
-    font: 500 clamp(1.75rem, 5vw, 2.75rem) / 1.65 var(--font-title);
-  }
-  .narrow p {
-    margin: 0;
-    opacity: 0.9;
-    max-inline-size: 40rem;
-  }
-  .narrow :global(.signup-form) {
-    inline-size: 100%;
-    max-inline-size: 32rem;
-  }
-  .narrow :global(.kc-input) {
-    border-color: rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-  }
-  .narrow :global(.kc-input::placeholder) {
-    color: rgba(255, 255, 255, 0.8);
-  }
-  .narrow :global(.kc-btn) {
-    --kc-btn-bg: var(--color-footer-button);
-    --kc-btn-fg: var(--color-on-footer-button);
-    --kc-btn-border: var(--color-footer-button);
-  }
   @media (max-width: 47.999rem) {
     .band {
       padding-inline: var(--gutter);
@@ -621,10 +584,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     }
     .grid4 > :nth-child(n + 3) {
       display: none;
-    }
-    .narrow {
-      align-items: flex-start;
-      text-align: start;
     }
   }
 </style>

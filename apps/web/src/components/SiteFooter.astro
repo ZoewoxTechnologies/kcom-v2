@@ -1,6 +1,7 @@
 ---
-import { footerColumns, socialLinks, siteName } from "../lib/site";
+import { footerColumns, siteName } from "../lib/site";
 import { footerContact } from "../lib/footer-contact";
+import { formatPhone, phoneHref } from "../lib/phone";
 // The footer never fails a page: without contact details it shows only the form link.
 const contact = await footerContact.get();
 const year = new Date().getFullYear();
@@ -31,9 +32,7 @@ const year = new Date().getFullYear();
     <div class="col contact">
       <strong>Contact</strong>
       {contact?.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
-      {contact?.phone && (
-        <a href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}>{contact.phone}</a>
-      )}
+      {contact?.phone && <a href={phoneHref(contact.phone)}>{formatPhone(contact.phone)}</a>}
       {contact?.address && <address>{contact.address}</address>}
       <a href="/contact">Contact form</a>
     </div>
@@ -50,7 +49,7 @@ const year = new Date().getFullYear();
     </span>
     <span class="social">
       <span class="links">
-        {socialLinks.map((l) => (
+        {(contact?.social ?? []).map((l) => (
           <a href={l.href}>{l.label}</a>
         ))}
       </span>
@@ -139,14 +138,15 @@ const year = new Date().getFullYear();
     color: var(--color-footer-gold);
     margin-top: var(--space-1);
   }
+  /* On phone each link keeps its full 44px tap target, so the links sit edge to edge. */
   .col {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: 0;
   }
-  /* Thin dividers between the brand and the sections, in the same line colour as the rule above the bottom row: horizontal when stacked. */
+  /* Thin gold dividers between the brand and the sections (the same gold as the rule under the logo): horizontal when stacked. */
   .cols > * + * {
-    border-block-start: 1px solid rgba(255, 255, 255, 0.15);
+    border-block-start: 1px solid var(--color-gold);
     padding-block-start: var(--space-6);
   }
   .col strong {
@@ -209,11 +209,18 @@ const year = new Date().getFullYear();
     .cols {
       grid-template-columns: 1.4fr 1fr 1fr 1.6fr;
     }
+    /* Pointer screens do not need the 44px target: tighter rows (pitch 36px, about half the old gap). */
+    .col {
+      gap: var(--space-3);
+    }
+    .col a {
+      min-block-size: var(--space-5);
+    }
     /* Side by side: vertical dividers instead. */
     .cols > * + * {
       border-block-start: 0;
       padding-block-start: 0;
-      border-inline-start: 1px solid rgba(255, 255, 255, 0.15);
+      border-inline-start: 1px solid var(--color-gold);
       padding-inline-start: var(--space-5);
     }
     .legal {
