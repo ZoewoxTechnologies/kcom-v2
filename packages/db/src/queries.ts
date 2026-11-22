@@ -1,4 +1,20 @@
-import { and, asc, count, desc, eq, getTableColumns, gt, gte, isNull, lt, lte, max, min, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  gt,
+  gte,
+  isNull,
+  lt,
+  lte,
+  max,
+  min,
+  or,
+  sql,
+} from "drizzle-orm";
 import type { AnyPgColumn, PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import * as schema from "./schema.js";
 
@@ -100,8 +116,14 @@ export async function capsuleNeighbours(db: CapsuleDb, capsule: { id: string; pu
         and(
           isLive(c),
           before
-            ? or(lt(c.publishAt, capsule.publishAt), and(eq(c.publishAt, capsule.publishAt), lt(c.id, capsule.id)))
-            : or(gt(c.publishAt, capsule.publishAt), and(eq(c.publishAt, capsule.publishAt), gt(c.id, capsule.id))),
+            ? or(
+                lt(c.publishAt, capsule.publishAt),
+                and(eq(c.publishAt, capsule.publishAt), lt(c.id, capsule.id)),
+              )
+            : or(
+                gt(c.publishAt, capsule.publishAt),
+                and(eq(c.publishAt, capsule.publishAt), gt(c.id, capsule.id)),
+              ),
         ),
       )
       .orderBy(...(before ? [desc(c.publishAt), desc(c.id)] : [asc(c.publishAt), asc(c.id)]))
@@ -126,7 +148,10 @@ function liveSeriesWithStats(db: CapsuleDb) {
       latestPart: max(schema.capsules.partNumber),
     })
     .from(schema.series)
-    .innerJoin(schema.capsules, and(eq(schema.capsules.seriesId, schema.series.id), isLive(schema.capsules)))
+    .innerJoin(
+      schema.capsules,
+      and(eq(schema.capsules.seriesId, schema.series.id), isLive(schema.capsules)),
+    )
     .groupBy(schema.series.id);
 }
 
