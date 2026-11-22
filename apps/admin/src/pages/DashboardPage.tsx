@@ -175,7 +175,7 @@ function DraftsPanel() {
 
 function ActivityPanel({ now }: { now: Date }) {
   return (
-    <AsyncPanel title="Recent activity" what="recent activity" load={loadActivity}>
+    <AsyncPanel title="Recent activity" load={loadActivity}>
       {(items) => (
         <Panel title="Recent activity" empty="Nothing yet.">
           {items.map((a, i) => (

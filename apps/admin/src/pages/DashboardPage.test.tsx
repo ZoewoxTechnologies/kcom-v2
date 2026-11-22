@@ -139,7 +139,7 @@ describe("dashboard", () => {
     });
     renderPage();
     const alert = await screen.findByRole("alert");
-    expect(alert.textContent).toContain("recent activity could not be loaded");
+    expect(alert.textContent).toContain("Recent activity could not be loaded");
     expect(screen.getAllByRole("alert")).toHaveLength(1);
     expect(screen.getByRole("heading", { name: "Recent activity" })).toBeTruthy();
     expect(await screen.findByText("1,284")).toBeTruthy();

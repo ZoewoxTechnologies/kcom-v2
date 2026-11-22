@@ -46,13 +46,10 @@ export function Async<T>({
 /** A titled card that loads its own data: shows "Loading…" or an error with Try again in place. */
 export function AsyncPanel<T>({
   title,
-  what = title.toLowerCase(),
   load,
   children,
 }: {
   title: string;
-  /** Names the thing in the error message: "<what> could not be loaded." */
-  what?: string;
   load: () => Promise<T>;
   /** Renders the loaded card (typically a `Panel`). */
   children: (data: T) => ReactNode;
@@ -77,7 +74,7 @@ export function AsyncPanel<T>({
               </Button>
             }
           >
-            The {what} could not be loaded.
+            {title} could not be loaded.
           </Banner>,
         )
       }
