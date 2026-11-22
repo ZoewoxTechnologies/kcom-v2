@@ -1,8 +1,8 @@
 ---
 import { footerColumns, socialLinks, siteName } from "../lib/site";
-import { data } from "../lib/data";
+import { footerContact } from "../lib/footer-contact";
 // The footer never fails a page: without contact details it shows only the form link.
-const contact = await data.contactDetails().catch(() => null);
+const contact = await footerContact.get();
 const year = new Date().getFullYear();
 ---
 
@@ -23,7 +23,6 @@ const year = new Date().getFullYear();
     {footerColumns.map((c) => (
       <div class="col">
         <strong>{c.heading}</strong>
-        <div class="rule"></div>
         {c.links.map((l) => (
           <a href={l.href}>{l.label}</a>
         ))}
@@ -31,7 +30,6 @@ const year = new Date().getFullYear();
     ))}
     <div class="col contact">
       <strong>Contact</strong>
-      <div class="rule"></div>
       {contact?.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
       {contact?.phone && (
         <a href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}>{contact.phone}</a>
@@ -146,6 +144,11 @@ const year = new Date().getFullYear();
     flex-direction: column;
     gap: var(--space-2);
   }
+  /* Thin dividers between the brand and the sections, in the same line colour as the rule above the bottom row: horizontal when stacked. */
+  .cols > * + * {
+    border-block-start: 1px solid rgba(255, 255, 255, 0.15);
+    padding-block-start: var(--space-6);
+  }
   .col strong {
     font-size: var(--text-xs);
     letter-spacing: 0.12em;
@@ -205,6 +208,13 @@ const year = new Date().getFullYear();
   @media (min-width: 64rem) {
     .cols {
       grid-template-columns: 1.4fr 1fr 1fr 1.6fr;
+    }
+    /* Side by side: vertical dividers instead. */
+    .cols > * + * {
+      border-block-start: 0;
+      padding-block-start: 0;
+      border-inline-start: 1px solid rgba(255, 255, 255, 0.15);
+      padding-inline-start: var(--space-5);
     }
     .legal {
       flex-direction: row;

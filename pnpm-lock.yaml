@@ -242,13 +242,12 @@ importers:
       globals:
         specifier: ^15.14.0
         version: 15.15.0
-      typescript-eslint:
-        specifier: ^8.18.0
-        version: 8.72.2(eslint@10.14.0)(typescript@5.9.3)
-    devDependencies:
       prettier-plugin-astro:
         specifier: ^1.1.2
         version: 1.1.2(prettier@3.10.1)
+      typescript-eslint:
+        specifier: ^8.18.0
+        version: 8.72.2(eslint@10.14.0)(typescript@5.9.3)
 
   packages/content:
     dependencies:
