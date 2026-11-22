@@ -116,7 +116,12 @@ describe("auth", () => {
     const bad = { email: EMAIL, password: "wrong password!!" };
     // One trusted hop: the proxy appended 203.0.113.5; everything to its left is client-supplied.
     for (let i = 0; i < 5; i++) await post("/sign-in/email", bad, "", `spoof-${i}, 203.0.113.5`);
-    const res = await post("/sign-in/email", { email: EMAIL, password: PASSWORD }, "", "spoof-new, 203.0.113.5");
+    const res = await post(
+      "/sign-in/email",
+      { email: EMAIL, password: PASSWORD },
+      "",
+      "spoof-new, 203.0.113.5",
+    );
     expect(res.status).toBe(429);
     // A different real client is unaffected.
     expect((await post("/sign-in/email", bad, "", "spoof-new, 203.0.113.6")).status).toBe(401);

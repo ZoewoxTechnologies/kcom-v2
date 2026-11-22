@@ -4,9 +4,12 @@ import type { PgTable } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { ministryArms, siteSettings, teamMembers, type CapsuleDb } from "@kcom/db";
 import { cloudinaryImageUrl, httpUrl, idParam, notFound, publicCache } from "../content/index.js";
+import { logActivity } from "../activity.js";
 import { HttpError } from "../errors.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const DEFAULT_SITE_NAME = "Kingdom Capstone Outreach Ministries";
 
@@ -18,12 +21,25 @@ const text = (max: number) =>
     .max(max)
     .nullable()
     .transform((v) => (v ? v : null));
-const url = z.union([z.literal(""), httpUrl]).nullable().transform((v) => (v ? v : null));
-const email = z
-  .union([z.literal(""), z.string().trim().max(320).regex(/^[^@\s]+@[^@\s]+\.[^@\s]+$/, "must be an email address")])
+const url = z
+  .union([z.literal(""), httpUrl])
   .nullable()
   .transform((v) => (v ? v : null));
-const image = z.union([z.literal(""), cloudinaryImageUrl]).nullable().transform((v) => (v ? v : null));
+const email = z
+  .union([
+    z.literal(""),
+    z
+      .string()
+      .trim()
+      .max(320)
+      .regex(/^[^@\s]+@[^@\s]+\.[^@\s]+$/, "must be an email address"),
+  ])
+  .nullable()
+  .transform((v) => (v ? v : null));
+const image = z
+  .union([z.literal(""), cloudinaryImageUrl])
+  .nullable()
+  .transform((v) => (v ? v : null));
 
 /**
  * Grouped settings, mapped to flat `site_settings` columns. A group is public
@@ -57,7 +73,12 @@ const groups = {
 
 /** group -> field -> `site_settings` column. */
 const columns = {
-  site: { siteName: "siteName", tagline: "tagline", copyrightText: "copyrightText", footerTagline: "footerTagline" },
+  site: {
+    siteName: "siteName",
+    tagline: "tagline",
+    copyrightText: "copyrightText",
+    footerTagline: "footerTagline",
+  },
   contact: { email: "contactEmail", phone: "contactPhone", address: "postalAddress" },
   social: {
     facebook: "facebookUrl",
@@ -74,7 +95,10 @@ const columns = {
     sortOrSwift: "bankSortOrSwift",
   },
   giving: { note: "givingNote" },
-} as const satisfies Record<keyof typeof groups, Record<string, keyof typeof siteSettings.$inferSelect>>;
+} as const satisfies Record<
+  keyof typeof groups,
+  Record<string, keyof typeof siteSettings.$inferSelect>
+>;
 
 /** Groups left out of the public response. None yet; the admin and public shapes are otherwise identical. */
 const adminOnlyGroups: ReadonlySet<string> = new Set<string>();
@@ -88,7 +112,10 @@ const settingsPatch = z
     bank: part(groups.bank),
     giving: part(groups.giving),
   })
-  .refine((b) => Object.values(b).some((g) => g && Object.keys(g).length > 0), "no fields to update");
+  .refine(
+    (b) => Object.values(b).some((g) => g && Object.keys(g).length > 0),
+    "no fields to update",
+  );
 
 type Row = typeof siteSettings.$inferSelect;
 
@@ -148,59 +175,101 @@ function orderedListRoutes(db: CapsuleDb, spec: ListSpec) {
   // Defaults apply on create only: zod still applies `.default()` inside `.partial()`.
   const create = z.strictObject({
     ...spec.required,
-    ...Object.fromEntries(Object.entries(spec.optional).map(([k, f]) => [k, (f as z.ZodNullable).default(null)])),
+    ...Object.fromEntries(
+      Object.entries(spec.optional).map(([k, f]) => [k, (f as z.ZodNullable).default(null)]),
+    ),
   });
   const update = z
     .strictObject({ ...spec.required, ...spec.optional })
     .partial()
     .refine((b) => Object.keys(b).length > 0, "no fields to update");
   const byId = (id: string) => eq(t.id, id);
-  return new Hono<AuthEnv>()
-    .get("/", async (c) => c.json({ items: await list(db, spec) }))
-    .post("/", requireCan("settings:manage"), validate("json", create), async (c) => {
-      const values = c.req.valid("json") as Record<string, unknown>;
-      // The advisory lock serialises creates so two cannot take the same position.
-      const row = await db.transaction(async (tx) => {
-        await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${spec.label}))`);
-        const [{ next }] = (await tx
-          .select({ next: sql<number>`coalesce(max(${t.position}) + 1, 0)` })
-          .from(t)) as [{ next: number }];
-        const [created] = await tx
-          .insert(t as PgTable)
-          .values({ ...values, position: next } as never)
-          .returning();
-        return created;
-      });
-      return c.json(project(spec, row as Record<string, unknown>), 201);
-    })
-    // Declared before "/:id" so "order" is not read as an id.
-    .put("/order", requireCan("settings:manage"), validate("json", orderBody), async (c) => {
-      const { ids } = c.req.valid("json");
-      await db.transaction(async (tx) => {
-        const existing = (await tx.select({ id: t.id }).from(t)).map((r) => r.id);
-        if (ids.length !== existing.length || new Set(ids).size !== ids.length || !ids.every((i) => existing.includes(i))) {
-          throw new HttpError(422, "invalid_order", `ids must list every ${spec.label} exactly once`);
-        }
-        for (const [position, id] of ids.entries()) {
-          await tx.update(t as PgTable).set({ position } as never).where(byId(id));
-        }
-      });
-      return c.json({ items: await list(db, spec) });
-    })
-    .patch("/:id", requireCan("settings:manage"), validate("param", idParam), validate("json", update), async (c) => {
-      const [row] = await db
-        .update(t as PgTable)
-        .set(c.req.valid("json") as never)
-        .where(byId(c.req.valid("param").id))
-        .returning();
-      if (!row) throw notFound(spec.label);
-      return c.json(project(spec, row as Record<string, unknown>));
-    })
-    .delete("/:id", requireCan("settings:manage"), validate("param", idParam), async (c) => {
-      const rows = await db.delete(t).where(byId(c.req.valid("param").id)).returning({ id: t.id });
-      if (rows.length === 0) throw notFound(spec.label);
-      return c.body(null, 204);
-    });
+  return (
+    new Hono<AuthEnv>()
+      .get("/", async (c) => c.json({ items: await list(db, spec) }))
+      .post("/", requireCan("settings:manage"), validate("json", create), async (c) => {
+        const values = c.req.valid("json") as Record<string, unknown>;
+        // The advisory lock serialises creates so two cannot take the same position.
+        const row = await db.transaction(async (tx) => {
+          await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${spec.label}))`);
+          const [{ next }] = (await tx
+            .select({ next: sql<number>`coalesce(max(${t.position}) + 1, 0)` })
+            .from(t)) as [{ next: number }];
+          const [created] = await tx
+            .insert(t as PgTable)
+            .values({ ...values, position: next } as never)
+            .returning();
+          return created;
+        });
+        await logActivity(db, c, {
+          action: "create",
+          entityType: "settings",
+          entityId: (row as { id: string }).id,
+          title: `${cap(spec.label)} added: ${String((row as { name: string }).name)}`,
+        });
+        return c.json(project(spec, row as Record<string, unknown>), 201);
+      })
+      // Declared before "/:id" so "order" is not read as an id.
+      .put("/order", requireCan("settings:manage"), validate("json", orderBody), async (c) => {
+        const { ids } = c.req.valid("json");
+        await db.transaction(async (tx) => {
+          const existing = (await tx.select({ id: t.id }).from(t)).map((r) => r.id);
+          if (
+            ids.length !== existing.length ||
+            new Set(ids).size !== ids.length ||
+            !ids.every((i) => existing.includes(i))
+          ) {
+            throw new HttpError(
+              422,
+              "invalid_order",
+              `ids must list every ${spec.label} exactly once`,
+            );
+          }
+          for (const [position, id] of ids.entries()) {
+            await tx
+              .update(t as PgTable)
+              .set({ position } as never)
+              .where(byId(id));
+          }
+        });
+        return c.json({ items: await list(db, spec) });
+      })
+      .patch(
+        "/:id",
+        requireCan("settings:manage"),
+        validate("param", idParam),
+        validate("json", update),
+        async (c) => {
+          const [row] = await db
+            .update(t as PgTable)
+            .set(c.req.valid("json") as never)
+            .where(byId(c.req.valid("param").id))
+            .returning();
+          if (!row) throw notFound(spec.label);
+          await logActivity(db, c, {
+            action: "update",
+            entityType: "settings",
+            entityId: (row as { id: string }).id,
+            title: `${cap(spec.label)} updated: ${String((row as { name: string }).name)}`,
+          });
+          return c.json(project(spec, row as Record<string, unknown>));
+        },
+      )
+      .delete("/:id", requireCan("settings:manage"), validate("param", idParam), async (c) => {
+        const rows = await db
+          .delete(t)
+          .where(byId(c.req.valid("param").id))
+          .returning({ id: t.id, name: t.name });
+        if (rows.length === 0) throw notFound(spec.label);
+        await logActivity(db, c, {
+          action: "delete",
+          entityType: "settings",
+          entityId: rows[0]!.id,
+          title: `${cap(spec.label)} removed: ${rows[0]!.name}`,
+        });
+        return c.body(null, 204);
+      })
+  );
 }
 
 /** Public, read-only: the non-sensitive settings plus team and arms in saved order. */
@@ -220,7 +289,11 @@ export function adminSettingsRoutes(db: CapsuleDb) {
   return new Hono<AuthEnv>()
     .get("/", async (c) => {
       const [row] = await db.select().from(siteSettings).where(eq(siteSettings.id, 1));
-      return c.json({ ...shape(row, true), team: await list(db, teamSpec), arms: await list(db, armsSpec) });
+      return c.json({
+        ...shape(row, true),
+        team: await list(db, teamSpec),
+        arms: await list(db, armsSpec),
+      });
     })
     .patch("/", requireCan("settings:manage"), validate("json", settingsPatch), async (c) => {
       const patch = c.req.valid("json") as Record<string, Record<string, unknown> | undefined>;
@@ -235,6 +308,20 @@ export function adminSettingsRoutes(db: CapsuleDb) {
         .values({ id: 1, siteName: DEFAULT_SITE_NAME, ...set })
         .onConflictDoUpdate({ target: siteSettings.id, set });
       const [row] = await db.select().from(siteSettings).where(eq(siteSettings.id, 1));
+      // Which groups changed, never the values.
+      const groups = Object.keys(patch).filter((g) => patch[g] !== undefined);
+      await logActivity(db, c, {
+        action: "update",
+        entityType: "settings",
+        entityId: "site",
+        title: `Settings updated: ${groups.join(", ")}`,
+        sameLabel: true,
+        // Saves of different groups inside the window share one row listing every group.
+        mergeTitle: (previous) => {
+          const seen = previous.slice(previous.indexOf(": ") + 2).split(", ");
+          return `Settings updated: ${[...new Set([...seen, ...groups])].join(", ")}`;
+        },
+      });
       return c.json(shape(row, true));
     })
     .route("/team", orderedListRoutes(db, teamSpec))

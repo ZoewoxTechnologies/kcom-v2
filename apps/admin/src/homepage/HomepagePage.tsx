@@ -15,13 +15,7 @@ import {
 } from "./layout";
 
 const GRIP = (
-  <svg
-    viewBox="0 0 24 24"
-    width="20"
-    height="20"
-    fill="currentColor"
-    aria-hidden="true"
-  >
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
     <circle cx="9" cy="6" r="1.6" />
     <circle cx="15" cy="6" r="1.6" />
     <circle cx="9" cy="12" r="1.6" />

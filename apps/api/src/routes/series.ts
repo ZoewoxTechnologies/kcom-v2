@@ -12,6 +12,7 @@ import {
   rethrowWriteError,
   slugParam,
 } from "../content/index.js";
+import { logActivity } from "../activity.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
 
@@ -34,7 +35,13 @@ const listQuery = z.object(pagination());
 type LiveSeries = NonNullable<Awaited<ReturnType<typeof liveSeriesBySlug>>>;
 
 /** Series fields plus its live-capsule summary; days are Africa/Lagos calendar days. */
-const present = ({ capsuleCount, firstPublishAt, lastPublishAt, latestPart, ...row }: LiveSeries) => ({
+const present = ({
+  capsuleCount,
+  firstPublishAt,
+  lastPublishAt,
+  latestPart,
+  ...row
+}: LiveSeries) => ({
   ...row,
   capsuleCount,
   firstDate: lagosDate(firstPublishAt!),
@@ -71,6 +78,12 @@ export function adminSeriesRoutes(db: CapsuleDb) {
     .post("/", write, validate("json", createBody), async (c) => {
       try {
         const [row] = await db.insert(series).values(c.req.valid("json")).returning();
+        await logActivity(db, c, {
+          action: "create",
+          entityType: "series",
+          entityId: row!.id,
+          title: row!.title,
+        });
         return c.json(row!, 201);
       } catch (err) {
         rethrowWriteError(err, { label: "series slug" });
@@ -85,6 +98,12 @@ export function adminSeriesRoutes(db: CapsuleDb) {
           .set(c.req.valid("json"))
           .where(eq(series.id, id))
           .returning();
+        await logActivity(db, c, {
+          action: "update",
+          entityType: "series",
+          entityId: id,
+          title: row!.title,
+        });
         return c.json(row!);
       } catch (err) {
         rethrowWriteError(err, { label: "series slug" });
@@ -92,12 +111,19 @@ export function adminSeriesRoutes(db: CapsuleDb) {
     })
     .delete("/:id", write, validate("param", idParam), async (c) => {
       const { id } = c.req.valid("param");
+      const existing = await findById(db, series, id, "series");
       // Capsules keep existing but leave the series; part numbers only make sense inside one.
       const deleted = await db.transaction(async (tx) => {
         await tx.update(capsules).set({ partNumber: null }).where(eq(capsules.seriesId, id));
         return tx.delete(series).where(eq(series.id, id)).returning({ id: series.id });
       });
       if (deleted.length === 0) throw notFound("series");
+      await logActivity(db, c, {
+        action: "delete",
+        entityType: "series",
+        entityId: id,
+        title: existing.title,
+      });
       return c.body(null, 204);
     });
 }
