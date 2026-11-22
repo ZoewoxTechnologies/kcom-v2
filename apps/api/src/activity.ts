@@ -30,6 +30,8 @@ export interface ActivityEntry {
    * different things done to one item ("User invited", "User restored") keep their own rows.
    */
   sameLabel?: boolean;
+  /** When merging into a recent row, build the new title from that row's title (default: replace). */
+  mergeTitle?: (previous: string) => string;
 }
 
 /**
@@ -49,7 +51,7 @@ export async function logActivity(
   try {
     if (entry.action !== "delete") {
       const [recent] = await db
-        .select({ id: activityLog.id })
+        .select({ id: activityLog.id, title: activityLog.title })
         .from(activityLog)
         .where(
           and(
@@ -66,7 +68,11 @@ export async function logActivity(
       if (recent) {
         await db
           .update(activityLog)
-          .set({ at: now, title, userName: name })
+          .set({
+            at: now,
+            title: entry.mergeTitle ? entry.mergeTitle(recent.title).slice(0, 200) : title,
+            userName: name,
+          })
           .where(eq(activityLog.id, recent.id));
         return;
       }

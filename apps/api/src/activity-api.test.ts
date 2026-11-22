@@ -271,6 +271,15 @@ describe("activity log: users, settings and homepage", () => {
     expect(await logRows()).toHaveLength(1);
   });
 
+  it("merges the group lists of different settings saves in the window", async () => {
+    await send(admin, "PATCH", "/settings", { contact: { email: "a@example.test" } });
+    // No letter "s" in the URL: the stored check constraint is written `[^s]` rather than `[^\\s]`.
+    await send(admin, "PATCH", "/settings", { social: { facebook: "http://a.co/1" } });
+    await send(admin, "PATCH", "/settings", { contact: { phone: "123" } });
+    const rows = await logRows();
+    expect(rows.map((r) => r.title)).toEqual(["Settings updated: contact, social"]);
+  });
+
   it("logs team members and the homepage layout", async () => {
     const member = (await (
       await send(admin, "POST", "/settings/team", { name: "Pastor Joe", role: "Pastor" })

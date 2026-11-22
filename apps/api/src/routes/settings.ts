@@ -315,6 +315,12 @@ export function adminSettingsRoutes(db: CapsuleDb) {
         entityType: "settings",
         entityId: "site",
         title: `Settings updated: ${groups.join(", ")}`,
+        sameLabel: true,
+        // Saves of different groups inside the window share one row listing every group.
+        mergeTitle: (previous) => {
+          const seen = previous.slice(previous.indexOf(": ") + 2).split(", ");
+          return `Settings updated: ${[...new Set([...seen, ...groups])].join(", ")}`;
+        },
       });
       return c.json(shape(row, true));
     })
