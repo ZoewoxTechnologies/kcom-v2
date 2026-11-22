@@ -528,7 +528,7 @@ function CapsuleForm({
               onChange={(d) => set({ publishAt: d?.toISOString() ?? null })}
             />
             <p className="kc-capsule-editor__hint">
-              {publishAt ? `${whenFormat.format(publishAt)} Lagos time. ` : ""}Defaults to the next
+              {publishAt ? `${whenFormat.format(publishAt)} WAT. ` : ""}Defaults to the next
               midnight, Nigerian time. Pick a later date to write a few days ahead.
             </p>
             <p className="kc-capsule-editor__note">

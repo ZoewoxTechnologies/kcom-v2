@@ -31,8 +31,17 @@ const {
 } = Astro.props;
 const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
-<form class:list={["signup-form", className]} action="/subscribe" method="post" novalidate data-signup>
-  <label class={visibleLabel ? "kc-label" : "sr-only"} for={id}>{label}</label>
+
+<form
+  class:list={["signup-form", className]}
+  action="/subscribe"
+  method="post"
+  novalidate
+  data-signup
+>
+  <label class={visibleLabel ? "kc-label" : "sr-only"} for={id}>
+    {label}
+  </label>
   <div class="row">
     <input
       id={id}
@@ -46,15 +55,29 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       aria-invalid={error ? "true" : undefined}
       aria-describedby={error ? `${id}-error` : undefined}
     />
-    <button type="submit" class:list={["kc-btn", buttonClass]}>{button}</button>
+    <button type="submit" class:list={["kc-btn", buttonClass]}>
+      {button}
+    </button>
   </div>
-  <div class="hp" aria-hidden="true"><label>Leave this field empty<input type="text" name="hp_url" tabindex="-1" autocomplete="off" /></label></div>
-  {siteKey && <div class="cf-turnstile" data-sitekey={siteKey} data-appearance="interaction-only"></div>}
-  <p class="kc-field__error" id={`${id}-error`} role="alert" hidden={!error}>{error}</p>
+  <div class="hp" aria-hidden="true">
+    <label>
+      Leave this field empty
+      <input type="text" name="hp_url" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+  {siteKey && (
+    <div class="cf-turnstile" data-sitekey={siteKey} data-appearance="interaction-only"></div>
+  )}
+  <p class="kc-field__error" id={`${id}-error`} role="alert" hidden={!error}>
+    {error}
+  </p>
 </form>
 <script>
   // One Turnstile script per page, however many signup forms it holds.
-  if (document.querySelector(".cf-turnstile") && !document.querySelector("script[data-turnstile]")) {
+  if (
+    document.querySelector(".cf-turnstile") &&
+    !document.querySelector("script[data-turnstile]")
+  ) {
     const s = document.createElement("script");
     s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
     s.async = true;
@@ -63,10 +86,35 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   }
 </script>
 <style>
-  .signup-form { display: flex; flex-direction: column; gap: 6px; }
-  .row { display: flex; flex-wrap: wrap; gap: 10px; }
-  .row .kc-input { flex: 1 1 15rem; min-inline-size: 0; }
-  .hp { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
-  .kc-field__error { margin: 0; font-size: 14px; color: var(--color-error); }
-  .kc-field__error[hidden] { display: none; }
+  .signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  /* Input and button both use the shared md control height; align-items centres them on one line. */
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  .row .kc-input {
+    flex: 1 1 15rem;
+    min-inline-size: 0;
+  }
+  .hp {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .kc-field__error {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-error);
+  }
+  .kc-field__error[hidden] {
+    display: none;
+  }
 </style>

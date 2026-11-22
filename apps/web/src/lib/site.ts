@@ -19,7 +19,6 @@ export const footerColumns = [
     links: [
       { label: "About", href: "/about" },
       { label: "Partner With Us", href: "/partner" },
-      { label: "Contact", href: "/contact" },
     ],
   },
 ] as const;

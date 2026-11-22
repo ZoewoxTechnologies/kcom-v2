@@ -33,7 +33,15 @@ Git hooks (lint-staged, gitleaks) are installed by `pnpm install`: run it in eve
 
 ## Database
 
-PostgreSQL via Drizzle (`packages/db`). Copy each app's `.env.example` to `.env.local` in that app's folder (the API's `pnpm dev` loads `apps/api/.env.local`). The database scripts read `DATABASE_URL` from your shell environment; the root `.env.example` lists it and the legacy import variables. Then:
+PostgreSQL via Drizzle (`packages/db`). Copy each app's `.env.example` to `.env.local` in that app's folder (the API's `pnpm dev` loads `apps/api/.env.local`):
+
+```bash
+cp apps/api/.env.example apps/api/.env.local
+cp apps/web/.env.example apps/web/.env.local
+cp apps/admin/.env.example apps/admin/.env.local
+```
+
+The database scripts read `DATABASE_URL` from your shell environment; the root `.env.example` lists it and the legacy import variables. Then:
 
 ```bash
 pnpm --filter @kcom/db db:migrate   # apply migrations

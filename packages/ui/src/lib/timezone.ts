@@ -80,7 +80,10 @@ export function formatInZone(date: Date, timeZone: string): string {
   }).format(date);
 }
 
-/** Readable zone name for labels: "Africa/Lagos" becomes "Lagos". */
+/** Zones whose everyday abbreviation reads better than the city name. */
+const ZONE_ABBREVIATIONS: Record<string, string> = { "Africa/Lagos": "WAT" };
+
+/** Readable zone name for labels: "Africa/Lagos" becomes "WAT"; other zones use their city. */
 export function zoneLabel(timeZone: string): string {
-  return (timeZone.split("/").pop() ?? timeZone).replace(/_/g, " ");
+  return ZONE_ABBREVIATIONS[timeZone] ?? (timeZone.split("/").pop() ?? timeZone).replace(/_/g, " ");
 }
