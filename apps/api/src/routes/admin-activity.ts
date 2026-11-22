@@ -24,13 +24,20 @@ export interface ActivityItem {
 }
 
 /** How the feed names each kind of change and where it links; deleted items never link. */
-const kinds: Record<string, { label: string; href: (id: string) => string | null }> = {
+const kinds: Record<
+  string,
+  { label: string; href: (id: string) => string | null; whole?: boolean }
+> = {
   capsule: { label: "Capsule", href: (id) => `/capsules/${id}` },
   blog: { label: "Blog post", href: (id) => `/blog/${id}` },
   event: { label: "Event", href: () => "/events" },
   page: { label: "Page", href: () => null },
   book: { label: "Book", href: () => null },
   series: { label: "Series", href: () => null },
+  // These carry their whole description in the title ("User role changed: G. A.").
+  user: { label: "User", href: () => null, whole: true },
+  settings: { label: "Settings", href: () => null, whole: true },
+  homepage: { label: "Homepage", href: () => "/homepage", whole: true },
 };
 const verbs: Record<ActivityAction, string> = {
   create: "created",
@@ -84,7 +91,9 @@ export function adminActivityRoutes(db: CapsuleDb) {
         const kind = kinds[r.entityType];
         return {
           at: r.at.toISOString(),
-          text: `${shortName(r.userName)} ${verbs[r.action]} ${(kind?.label ?? r.entityType).toLowerCase()}: ${r.title}`,
+          text: kind?.whole
+            ? `${shortName(r.userName)}: ${r.title}`
+            : `${shortName(r.userName)} ${verbs[r.action]} ${(kind?.label ?? r.entityType).toLowerCase()}: ${r.title}`,
           href: r.action === "delete" ? null : (kind?.href(r.entityId) ?? null),
           badge: null,
         };

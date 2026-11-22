@@ -200,6 +200,96 @@ describe("activity log writes", () => {
   });
 });
 
+describe("activity log: users, settings and homepage", () => {
+  let admin: string;
+  beforeEach(async () => {
+    await seedUser(db, {
+      email: "admin@example.test",
+      password: PASSWORD,
+      role: "admin",
+      name: "Ada Admin",
+    });
+    const res = await app.request("/api/auth/sign-in/email", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: ORIGIN,
+        "x-forwarded-for": "10.0.0.3",
+      },
+      body: JSON.stringify({ email: "admin@example.test", password: PASSWORD }),
+    });
+    admin = res.headers
+      .getSetCookie()
+      .map((c) => c.split(";")[0])
+      .join("; ");
+  });
+  const users = (cookie: string, method: string, path: string, body?: unknown) =>
+    app.request(`/users${path}`, {
+      method,
+      headers: { origin: ORIGIN, cookie, "content-type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  const feed = async () =>
+    ((await (await get(admin)).json()) as { items: { text: string }[] }).items.map((i) => i.text);
+
+  it("logs invite, role change, remove and restore with who did it and no email or secrets", async () => {
+    const made = (await (
+      await users(admin, "POST", "", {
+        email: "grace@example.test",
+        name: "Grace Adeyemi",
+        role: "editor",
+      })
+    ).json()) as { id: string };
+    await users(admin, "PATCH", `/${made.id}`, { role: "admin" });
+    await users(admin, "POST", `/${made.id}/deactivate`);
+    await users(admin, "POST", `/${made.id}/reactivate`);
+    const rows = await logRows();
+    expect(rows.map((r) => r.title)).toEqual([
+      "User invited: Grace A. (editor)",
+      "User role changed: Grace A. (admin)",
+      "User removed: Grace A.",
+      "User restored: Grace A.",
+    ]);
+    expect(JSON.stringify(rows)).not.toContain("grace@example.test");
+    expect((await feed())[0]).toBe("Ada A.: User restored: Grace A.");
+  });
+
+  it("logs settings by group name only, never values", async () => {
+    const res = await send(admin, "PATCH", "/settings", {
+      site: { siteName: "Secret Name Ministries" },
+    });
+    expect(res.status).toBe(200);
+    const [row] = await logRows();
+    expect(row!.title).toBe("Settings updated: site");
+    expect(JSON.stringify(row)).not.toContain("Secret Name");
+    expect((await feed())[0]).toBe("Ada A.: Settings updated: site");
+  });
+
+  it("merges repeat settings edits within 10 minutes", async () => {
+    await send(admin, "PATCH", "/settings", { site: { siteName: "A" } });
+    await send(admin, "PATCH", "/settings", { site: { siteName: "B" } });
+    expect(await logRows()).toHaveLength(1);
+  });
+
+  it("logs team members and the homepage layout", async () => {
+    const member = (await (
+      await send(admin, "POST", "/settings/team", { name: "Pastor Joe", role: "Pastor" })
+    ).json()) as { id: string };
+    await send(admin, "DELETE", `/settings/team/${member.id}`);
+    const layout = (await (await send(admin, "GET", "/homepage")).json()) as {
+      sections: { key: string; visible: boolean }[];
+    };
+    await send(admin, "PUT", "/homepage", {
+      sections: layout.sections.map(({ key, visible }) => ({ key, visible })),
+    });
+    expect((await logRows()).map((r) => r.title)).toEqual([
+      "Team member added: Pastor Joe",
+      "Team member removed: Pastor Joe",
+      "Homepage layout updated",
+    ]);
+  });
+});
+
 describe("contactHref", () => {
   it("links the inbox only for roles that can read it", () => {
     expect(contactHref("editor")).toBe("/inbox");

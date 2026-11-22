@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { and, desc, eq, gte } from "drizzle-orm";
+import { and, desc, eq, gte, like } from "drizzle-orm";
 import { activityLog, type ActivityAction, type CapsuleDb } from "@kcom/db";
 import type { AuthEnv } from "./require-permission.js";
 
@@ -15,12 +15,21 @@ export function actionForUpdate(before: Status, after: Status | undefined): Acti
   return after === "draft" ? "unpublish" : "update";
 }
 
+/** The text before the first ": ", escaped for LIKE. */
+const labelOf = (title: string) =>
+  title.split(": ")[0]!.replace(/[\\%_]/g, (ch) => `\\${ch}`) + ": ";
+
 export interface ActivityEntry {
   action: ActivityAction;
   /** Short kind such as "capsule" or "blog"; the feed turns it into a label. */
   entityType: string;
   entityId: string;
   title: string;
+  /**
+   * Only merge into a row whose title starts with the same label (the text before ": "), so
+   * different things done to one item ("User invited", "User restored") keep their own rows.
+   */
+  sameLabel?: boolean;
 }
 
 /**
@@ -49,6 +58,7 @@ export async function logActivity(
             eq(activityLog.entityId, entry.entityId),
             eq(activityLog.action, entry.action),
             gte(activityLog.at, new Date(now.getTime() - COALESCE_MS)),
+            entry.sameLabel ? like(activityLog.title, `${labelOf(title)}%`) : undefined,
           ),
         )
         .orderBy(desc(activityLog.at))
@@ -61,7 +71,15 @@ export async function logActivity(
         return;
       }
     }
-    await db.insert(activityLog).values({ userId, userName: name, ...entry, title, at: now });
+    await db.insert(activityLog).values({
+      userId,
+      userName: name,
+      action: entry.action,
+      entityType: entry.entityType,
+      entityId: entry.entityId,
+      title,
+      at: now,
+    });
   } catch (err) {
     console.error("activity log write failed", err);
   }

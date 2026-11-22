@@ -4,9 +4,12 @@ import type { PgTable } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { ministryArms, siteSettings, teamMembers, type CapsuleDb } from "@kcom/db";
 import { cloudinaryImageUrl, httpUrl, idParam, notFound, publicCache } from "../content/index.js";
+import { logActivity } from "../activity.js";
 import { HttpError } from "../errors.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
 import { validate } from "../validate.js";
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const DEFAULT_SITE_NAME = "Kingdom Capstone Outreach Ministries";
 
@@ -198,6 +201,12 @@ function orderedListRoutes(db: CapsuleDb, spec: ListSpec) {
             .returning();
           return created;
         });
+        await logActivity(db, c, {
+          action: "create",
+          entityType: "settings",
+          entityId: (row as { id: string }).id,
+          title: `${cap(spec.label)} added: ${String((row as { name: string }).name)}`,
+        });
         return c.json(project(spec, row as Record<string, unknown>), 201);
       })
       // Declared before "/:id" so "order" is not read as an id.
@@ -237,6 +246,12 @@ function orderedListRoutes(db: CapsuleDb, spec: ListSpec) {
             .where(byId(c.req.valid("param").id))
             .returning();
           if (!row) throw notFound(spec.label);
+          await logActivity(db, c, {
+            action: "update",
+            entityType: "settings",
+            entityId: (row as { id: string }).id,
+            title: `${cap(spec.label)} updated: ${String((row as { name: string }).name)}`,
+          });
           return c.json(project(spec, row as Record<string, unknown>));
         },
       )
@@ -244,8 +259,14 @@ function orderedListRoutes(db: CapsuleDb, spec: ListSpec) {
         const rows = await db
           .delete(t)
           .where(byId(c.req.valid("param").id))
-          .returning({ id: t.id });
+          .returning({ id: t.id, name: t.name });
         if (rows.length === 0) throw notFound(spec.label);
+        await logActivity(db, c, {
+          action: "delete",
+          entityType: "settings",
+          entityId: rows[0]!.id,
+          title: `${cap(spec.label)} removed: ${rows[0]!.name}`,
+        });
         return c.body(null, 204);
       })
   );
@@ -287,6 +308,14 @@ export function adminSettingsRoutes(db: CapsuleDb) {
         .values({ id: 1, siteName: DEFAULT_SITE_NAME, ...set })
         .onConflictDoUpdate({ target: siteSettings.id, set });
       const [row] = await db.select().from(siteSettings).where(eq(siteSettings.id, 1));
+      // Which groups changed, never the values.
+      const groups = Object.keys(patch).filter((g) => patch[g] !== undefined);
+      await logActivity(db, c, {
+        action: "update",
+        entityType: "settings",
+        entityId: "site",
+        title: `Settings updated: ${groups.join(", ")}`,
+      });
       return c.json(shape(row, true));
     })
     .route("/team", orderedListRoutes(db, teamSpec))
