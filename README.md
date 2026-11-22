@@ -31,20 +31,26 @@ Git hooks (lint-staged, gitleaks) are installed by `pnpm install`: run it in eve
 
 ## Running several checkouts at once
 
-The main checkout uses 3000 (API), 4321 (site) and 5173 (admin). In a git worktree, run this once to give it its own free port set (3010 / 4331 / 5183, then 3020 and so on):
+The main checkout uses 3000 (API), 4321 (site) and 5173 (admin). In a git worktree, run this once:
 
 ```bash
-pnpm dev:ports            # keep this worktree's ports if it already has a set
-pnpm dev:ports --reassign # pick a new set
+pnpm dev:ports             # site and admin on free ports (4331 / 5183, then +10 steps)
+pnpm dev:ports --own-api   # also run this worktree's own API (3010, ...)
+pnpm dev:ports --reassign  # pick a new port set
 ```
 
-It updates `apps/{api,web,admin}/.env.local` and `.claude/launch.json` (git-ignored). If a file is missing it starts from the main checkout's copy, then `.env.example`; every other value is kept. It sets:
+It updates `apps/{api,web,admin}/.env.local` and `.claude/launch.json` (git-ignored) and keeps every other value. A missing env file starts from the main checkout's copy, then `.env.example`. Ports in use right now, or claimed by another worktree's `.env.local`, are skipped.
 
-- API: `PORT`, `CORS_ORIGINS`, `BETTER_AUTH_URL`
-- site: `PUBLIC_API_URL`, `DEV_PORT` (and `PUBLIC_SITE_URL` when already set)
-- admin: `VITE_API_URL`, `VITE_SITE_URL`, `DEV_PORT`
+**Shared API (default).** The worktree's site and admin call the main checkout's API on port 3000, so the main checkout's API must be running. Start only the site and admin with `pnpm dev:front`. The API accepts any `http://localhost:<port>` origin outside production (CORS and auth; production only accepts `CORS_ORIGINS`). Shared mode reads and writes whichever database the main checkout's `apps/api/.env.local` points at: content you create in a worktree appears in the main checkout.
 
-Then `pnpm dev` as usual. Ports already claimed by another worktree's `.env.local`, or in use right now, are skipped. Auth cookies are per host, not per port: worktrees that share `BETTER_AUTH_SECRET` and `DATABASE_URL` (the default when seeded from the main checkout) share one login on `localhost`.
+**Own API.** The script gives the worktree its own API and port when you pass `--own-api`, when the branch changes `apps/api` or `packages/db`, or when nothing is listening on 3000. Run everything with `pnpm dev`. It sets `PORT`, `CORS_ORIGINS` and `BETTER_AUTH_URL` for the API and points the site and admin at it.
+
+- Database: an own API copies `DATABASE_URL` from the main checkout's `apps/api/.env.local` (never printed), so it still uses the shared database.
+- Exception: when the branch adds a file under `packages/db/migrations`, it must not migrate the shared database. The script then creates a local Postgres database `kcom_<worktree folder>` (Postgres must be running on localhost:5432), migrates and seeds it, and writes its URL to the API's `.env.local`. Drop it when the worktree is gone: `dropdb kcom_<name>`.
+
+Env vars it sets: API `PORT`, `CORS_ORIGINS`, `BETTER_AUTH_URL`, `DATABASE_URL`; site `PUBLIC_API_URL`, `DEV_PORT` (and `PUBLIC_SITE_URL` when already set); admin `VITE_API_URL`, `VITE_SITE_URL`, `DEV_PORT`.
+
+Auth cookies are per host, not per port, so checkouts that share a database and `BETTER_AUTH_SECRET` share one `localhost` login.
 
 `data/legacy/` holds the Drupal export with personal data. It is gitignored: never commit it.
 
