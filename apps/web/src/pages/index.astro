@@ -1,6 +1,5 @@
 ---
 import ResponsiveImage from "../components/ResponsiveImage.astro";
-import BannerBackdrop from "../components/BannerBackdrop.astro";
 import { dayParts, lagosDate } from "@kcom/content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HomeSection from "../components/HomeSection.astro";
@@ -71,17 +70,12 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   {order.map((key) => {
     if (key === "today")
       return (
-        <section
-          class="band backdrop"
-          data-card={capsule?.bannerUrl ? "" : undefined}
-          aria-label="Today’s Capsule"
-        >
-          <BannerBackdrop section="home" variant="hero" flip />
-          <div class:list={["inner", "hero", { bare: !capsule?.bannerUrl }]}>
+        <section class="band wash" aria-label="Today’s Capsule">
+          <div class="inner hero">
             {capsule ? (
               <>
-                {capsule.bannerUrl && (
-                  <div class="photo" aria-hidden="true">
+                <div class="photo" aria-hidden="true">
+                  {capsule.bannerUrl && (
                     <ResponsiveImage
                       src={capsule.bannerUrl}
                       widths={[480, 640, 800, 1200]}
@@ -89,8 +83,8 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
                       sizes="(min-width: 60rem) 36rem, 100vw"
                       eager
                     />
-                  </div>
-                )}
+                  )}
+                </div>
                 <div class="copy">
                   <span class="eyebrow">Today’s Capsule · {heroDay!.rest}</span>
                   <h1>{capsule.title}</h1>
@@ -280,53 +274,9 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .band[aria-label="Current series"] {
     padding-top: 4.5rem;
   }
-  /* how far the hero copy reaches in from the right edge; the photo wash stays strong across it.
-     On phones the copy is full width. From 48rem it sits in the right column, 34rem wide; with
-     the capsule card beside it the row only fits from 62rem (about half each), and wraps to full
-     width below that. */
-  .backdrop {
-    --copy-edge: max(2.5rem, (100vw - 75rem) / 2);
-    --copy-reach: 100%;
+  .wash {
+    background: var(--color-wash);
   }
-  @media (min-width: 48rem) {
-    .backdrop {
-      --copy-reach: calc(var(--copy-edge) + 34rem + var(--space-5));
-    }
-  }
-  @media (min-width: 62rem) {
-    .backdrop[data-card] {
-      --copy-reach: calc(var(--copy-edge) + min(75rem, 100vw - 5rem) / 2 + var(--space-5));
-    }
-  }
-  @media (min-width: 48rem) and (max-width: 61.99rem) {
-    .backdrop[data-card] {
-      --copy-reach: 100%;
-    }
-  }
-  .backdrop {
-    position: relative;
-    isolation: isolate;
-    overflow-x: clip;
-    color: var(--banner-text);
-    background: var(--banner-start);
-  }
-  .backdrop .eyebrow,
-  .backdrop .ref {
-    color: var(--banner-gold);
-  }
-  .backdrop :global(.kc-btn--primary) {
-    background: var(--banner-text);
-    border-color: var(--banner-text);
-    color: var(--banner-start);
-  }
-  .backdrop .more {
-    color: inherit;
-  }
-  .backdrop .muted {
-    color: color-mix(in srgb, var(--banner-text) 88%, transparent);
-  }
-  /* The hero's --copy-reach and --copy-edge maths (above) assumes this 75rem container and the
-     2.5rem side padding on .band; change either and update those values too. */
   .inner {
     max-inline-size: 75rem;
     margin-inline: auto;
@@ -336,13 +286,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     flex-wrap: wrap;
     gap: var(--space-6);
     align-items: center;
-  }
-  /* without a capsule image the photo behind shows through and the text keeps its side */
-  .hero.bare {
-    justify-content: flex-end;
-  }
-  .hero.bare .copy {
-    flex: 0 1 34rem;
   }
   .photo {
     flex: 1 1 26rem;
