@@ -4,12 +4,13 @@ import { navItems, isCurrent } from "../lib/nav";
 import { siteName } from "../lib/site";
 import { formatLagosDate, formatLagosShortDate } from "@kcom/content";
 import { data } from "../lib/data";
+import { quoteVerse } from "../lib/verse";
 const { current = "" } = Astro.props;
 const capsule = await data.latestCapsule();
 const today = capsule ? formatLagosDate(capsule.displayDate) : "";
 const shortDate = capsule ? formatLagosShortDate(capsule.displayDate) : "";
 const quote = capsule?.scriptureText
-  ? `“${capsule.scriptureText}” ${capsule.scriptureRef ?? ""}`
+  ? `${quoteVerse(capsule.scriptureText)} ${capsule.scriptureRef ?? ""}`
   : (capsule?.scriptureRef ?? "");
 ---
 

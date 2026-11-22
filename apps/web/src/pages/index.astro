@@ -10,6 +10,7 @@ import { data } from "../lib/data";
 import { richTextToPlain } from "../lib/data/client";
 import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
 import { postKicker } from "../lib/blog";
+import { stripQuotes } from "../lib/verse";
 import {
   defaultSections,
   featuredQuote,
@@ -58,7 +59,9 @@ const rowTag = (c: { displayDate: string; partNumber: number | null }) =>
   c.displayDate === today ? "Today" : c.partNumber ? `Day ${c.partNumber}` : "";
 
 const heroDay = capsule ? dayParts(capsule.displayDate) : null;
-const verse = capsule ? richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation : null;
+const verse = capsule
+  ? stripQuotes(richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation || "")
+  : null;
 const events = sampleEvents;
 const books = sampleBooks;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
