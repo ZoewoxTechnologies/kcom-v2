@@ -139,10 +139,11 @@ const year = new Date().getFullYear();
     color: var(--color-footer-gold);
     margin-top: var(--space-1);
   }
+  /* On phone each link keeps its full 44px tap target, so the links sit edge to edge. */
   .col {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: 0;
   }
   /* Thin gold dividers between the brand and the sections (the same gold as the rule under the logo): horizontal when stacked. */
   .cols > * + * {
@@ -208,6 +209,13 @@ const year = new Date().getFullYear();
   @media (min-width: 64rem) {
     .cols {
       grid-template-columns: 1.4fr 1fr 1fr 1.6fr;
+    }
+    /* Pointer screens do not need the 44px target: tighter rows (pitch 36px, about half the old gap). */
+    .col {
+      gap: var(--space-3);
+    }
+    .col a {
+      min-block-size: var(--space-5);
     }
     /* Side by side: vertical dividers instead. */
     .cols > * + * {
