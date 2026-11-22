@@ -48,6 +48,10 @@ It updates `apps/{api,web,admin}/.env.local` and `.claude/launch.json` (git-igno
 - Database: an own API copies `DATABASE_URL` from the main checkout's `apps/api/.env.local` (never printed), so it still uses the shared database.
 - Exception: when the branch adds a file under `packages/db/migrations`, it must not migrate the shared database. The script then creates a local Postgres database `kcom_<worktree folder>` (Postgres must be running on localhost:5432), migrates and seeds it, and writes its URL to the API's `.env.local`. Drop it when the worktree is gone: `dropdb kcom_<name>`.
 
+Running `dev:ports` in the main checkout resets its API `CORS_ORIGINS` and `BETTER_AUTH_URL` to the localhost defaults (3000 / 4321 / 5173) and leaves everything else alone.
+
+A schema change without a migration file (for example editing `packages/db/src/schema.ts` and pushing it by hand) does not count: the worktree still uses the shared database, so apply such changes there with care.
+
 Env vars it sets: API `PORT`, `CORS_ORIGINS`, `BETTER_AUTH_URL`, `DATABASE_URL`; site `PUBLIC_API_URL`, `DEV_PORT` (and `PUBLIC_SITE_URL` when already set); admin `VITE_API_URL`, `VITE_SITE_URL`, `DEV_PORT`.
 
 Auth cookies are per host, not per port, so checkouts that share a database and `BETTER_AUTH_SECRET` share one `localhost` login.

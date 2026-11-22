@@ -1,4 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// better-auth skips its origin check when NODE_ENV is "test" or TEST is set, read once at import. Run this file
+// as a real server would, so the 403 for an untrusted origin is what is being tested.
+vi.hoisted(() => {
+  process.env.NODE_ENV = "development";
+  delete process.env.TEST;
+  delete process.env.TEST;
+});
+
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
 import { corsOriginPolicy, trustedOriginList } from "./origins.js";
@@ -66,6 +75,8 @@ describe("createApp with an unlisted localhost origin", () => {
       headers: {
         "content-type": "application/json",
         origin: WORKTREE,
+        // better-auth only checks the origin of requests that carry cookies.
+        cookie: "better-auth.session_token=stale",
         "x-forwarded-for": "10.0.0.2",
       },
       body: JSON.stringify({ email: "a@example.test", password: "correct horse battery" }),
@@ -80,6 +91,7 @@ describe("createApp with an unlisted localhost origin", () => {
 
   it("sends no CORS headers for the same origin in production mode", async () => {
     const res = await signIn(false);
+    expect(res.status).toBe(403);
     expect(res.headers.get("access-control-allow-origin")).toBeNull();
   });
 });

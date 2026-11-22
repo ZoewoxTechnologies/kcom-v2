@@ -27,13 +27,21 @@ const SHARED_API_PORT = Number(process.env.KCOM_SHARED_API_PORT) || BASE.api;
 
 const args = new Set(process.argv.slice(2));
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const run = (cmd, argv, opts = {}) =>
-  execFileSync(cmd, argv, {
-    cwd: root,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
-    ...opts,
-  }).trim();
+const run = (cmd, argv, opts = {}) => {
+  try {
+    return execFileSync(cmd, argv, {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      ...opts,
+    }).trim();
+  } catch (error) {
+    // Never echo stderr: a failed db command can print the connection string.
+    throw new Error(
+      `\`${cmd} ${argv.join(" ")}\` failed${error.status ? ` (exit ${error.status})` : ""}.`,
+    );
+  }
+};
 const git = (...argv) => run("git", argv);
 
 const gitDir = resolve(root, git("rev-parse", "--git-dir"));
