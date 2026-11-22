@@ -1,5 +1,6 @@
 ---
 import ResponsiveImage from "../components/ResponsiveImage.astro";
+import BannerBackdrop from "../components/BannerBackdrop.astro";
 import { dayParts, lagosDate } from "@kcom/content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HomeSection from "../components/HomeSection.astro";
@@ -61,7 +62,6 @@ const verse = capsule ? richTextToPlain(capsule.scriptureText) || capsule.bibleM
 const events = sampleEvents;
 const books = sampleBooks;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
-import BannerBackdrop from "../components/BannerBackdrop.astro";
 ---
 
 <BaseLayout title="Home" current="/" bleed hideSignup={order.includes("signup")}>
@@ -276,6 +276,7 @@ import BannerBackdrop from "../components/BannerBackdrop.astro";
   .backdrop {
     position: relative;
     isolation: isolate;
+    overflow-x: clip;
     color: var(--banner-text);
     background: var(--banner-start);
   }

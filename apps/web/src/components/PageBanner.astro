@@ -100,14 +100,15 @@ const { title, intro, kicker, section, image, size = "default", contain } = Astr
   }
   .compact {
     min-block-size: 150px;
-    padding-block: var(--space-5);
+    /* the band tucks up under the header by one space-6, so add it back to the top */
+    padding-block: calc(var(--space-5) + var(--space-6)) var(--space-5);
   }
   .compact h1 {
     font-size: clamp(1.75rem, 5vw, 2.75rem);
   }
   @media (min-width: 48rem) {
     .compact {
-      min-block-size: 210px;
+      min-block-size: 242px;
     }
   }
   @media (prefers-reduced-motion: no-preference) {
