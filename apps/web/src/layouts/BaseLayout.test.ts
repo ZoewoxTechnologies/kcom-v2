@@ -1,5 +1,5 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import BaseLayout from "./BaseLayout.astro";
 import { navItems } from "../lib/nav";
 import { footerColumns } from "../lib/site";
@@ -69,6 +69,8 @@ describe("BaseLayout", () => {
   });
 
   it("emits canonical, Open Graph and Twitter tags once each", async () => {
+    // Without a configured origin the request origin is used, whatever the local .env.local says.
+    vi.stubEnv("PUBLIC_SITE_URL", "");
     const container = await AstroContainer.create();
     const html = await container.renderToString(BaseLayout, {
       props: {
