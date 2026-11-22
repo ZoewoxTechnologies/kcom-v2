@@ -256,3 +256,16 @@ describe("series order", () => {
     expect(inOrder([1, 2, 3], "newest")).toEqual([3, 2, 1]);
   });
 });
+
+describe("sample events", () => {
+  it("has a detail page for every listed event", async () => {
+    const listed = [
+      ...(await sampleSource.listEvents("upcoming")),
+      ...(await sampleSource.listEvents("past")),
+    ];
+    expect(listed.length).toBeGreaterThan(2);
+    for (const e of listed) {
+      expect((await sampleSource.eventBySlug(e.slug))?.title, e.slug).toBe(e.title);
+    }
+  });
+});

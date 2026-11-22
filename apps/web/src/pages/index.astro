@@ -61,13 +61,15 @@ const verse = capsule ? richTextToPlain(capsule.scriptureText) || capsule.bibleM
 const events = sampleEvents;
 const books = sampleBooks;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
+import BannerBackdrop from "../components/BannerBackdrop.astro";
 ---
 
 <BaseLayout title="Home" current="/" bleed hideSignup={order.includes("signup")}>
   {order.map((key) => {
     if (key === "today")
       return (
-        <section class="band wash" aria-label="Today’s Capsule">
+        <section class="band backdrop" aria-label="Today’s Capsule">
+          <BannerBackdrop section="capsules" flip />
           <div class="inner hero">
             {capsule ? (
               <>
@@ -271,8 +273,26 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .band[aria-label="Current series"] {
     padding-top: 4.5rem;
   }
-  .wash {
-    background: var(--color-wash);
+  .backdrop {
+    position: relative;
+    isolation: isolate;
+    color: var(--banner-text);
+    background: var(--banner-start);
+  }
+  .backdrop .eyebrow,
+  .backdrop .ref {
+    color: var(--banner-gold);
+  }
+  .backdrop :global(.kc-btn--primary) {
+    background: var(--banner-text);
+    border-color: var(--banner-text);
+    color: var(--banner-start);
+  }
+  .backdrop .more {
+    color: inherit;
+  }
+  .backdrop .muted {
+    color: color-mix(in srgb, var(--banner-text) 88%, transparent);
   }
   .inner {
     max-inline-size: 75rem;

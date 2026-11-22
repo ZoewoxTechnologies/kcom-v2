@@ -1,5 +1,5 @@
 ---
-import ResponsiveImage from "./ResponsiveImage.astro";
+import PageBanner from "./PageBanner.astro";
 import { richTextToPlain } from "../lib/data/client";
 import { richTextToHtml } from "../lib/rich-text";
 import { dayParts, formatLagosShortDate } from "@kcom/content";
@@ -36,16 +36,21 @@ const bodyHtml = richTextToHtml(capsule.body);
 const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
 ---
 
-{capsule.bannerUrl && (
-  <div class="banner">
-    <ResponsiveImage
-      src={capsule.bannerUrl}
-      widths={[480, 640, 800, 1200]}
-      sizes="(min-width: 48rem) 48rem, 100vw"
-      eager
-    />
-  </div>
-)}
+<PageBanner
+  size="compact"
+  contain="narrow"
+  section="capsules"
+  image={capsule.bannerUrl}
+  kicker={mode === "past" ? `${day.weekday} · ${day.rest}` : "Today’s Capsule"}
+  title={capsule.title}
+>
+  {mode === "today" && series && (
+    <a class="pill" href={`/series/${series.slug}`}>
+      <span class="pre">Series · </span>
+      {seriesLabel}
+    </a>
+  )}
+</PageBanner>
 <article class:list={["capsule", mode]}>
   {mode === "today" ? (
     <DateNav
@@ -65,22 +70,6 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
       )}
     </nav>
   )}
-
-  <header class="head">
-    {mode === "past" && (
-      <span class="date">
-        <span class="wd-long">{day.weekday}</span>
-        <span class="wd-short">{day.weekday.slice(0, 3)}</span> · {day.rest}
-      </span>
-    )}
-    {mode === "today" && series && (
-      <a class="pill" href={`/series/${series.slug}`}>
-        <span class="pre">Series · </span>
-        {seriesLabel}
-      </a>
-    )}
-    <h1>{capsule.title}</h1>
-  </header>
 
   {hasMeditation && (
     <section
@@ -219,17 +208,6 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
 )}
 
 <style>
-  .banner {
-    block-size: 220px;
-    background: var(--color-wash);
-    overflow: hidden;
-  }
-  .banner img {
-    inline-size: 100%;
-    block-size: 100%;
-    object-fit: cover;
-    display: block;
-  }
   .capsule {
     max-inline-size: calc(45rem + 2 * var(--space-5));
     margin-inline: auto;
@@ -239,13 +217,6 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
     display: flex;
     flex-direction: column;
     gap: 1.4rem;
-  }
-  h1 {
-    margin: 0;
-    font-family: var(--font-title);
-    font-weight: 500;
-    font-size: clamp(2.5rem, 8vw, 3.5rem);
-    line-height: 1.05;
   }
   h2 {
     margin: 0;
@@ -258,38 +229,16 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
     line-height: 1.4;
     color: var(--color-muted);
   }
-  .head {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-  .today .head {
-    align-items: center;
-    text-align: center;
-    gap: var(--space-2);
-  }
-  .date {
-    font-size: var(--text-xs);
-    letter-spacing: 0.1em;
-    font-variant: small-caps;
-    font-weight: 700;
-    color: var(--color-gold-text);
-  }
-  .wd-short {
-    display: inline;
-  }
-  .wd-long {
-    display: none;
-  }
   .pill {
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.04em;
-    color: var(--color-muted);
-    background: var(--color-wash);
+    color: var(--banner-text);
+    background: color-mix(in srgb, var(--banner-text) 16%, transparent);
     border-radius: var(--radius-pill);
     padding: 3px 12px;
     text-decoration: none;
+    align-self: flex-start;
   }
   .pre {
     display: none;
@@ -517,15 +466,6 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
     .capsule {
       padding-block: 2.5rem 3.5rem;
       gap: 1.75rem;
-    }
-    .wd-short {
-      display: none;
-    }
-    .wd-long {
-      display: inline;
-    }
-    .date {
-      font-size: var(--text-sm);
     }
     .pill {
       font-size: 0.8125rem;
