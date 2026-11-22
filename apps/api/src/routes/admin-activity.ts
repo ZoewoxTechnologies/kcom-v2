@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { and, desc, eq, isNotNull } from "drizzle-orm";
+import type { UserRole } from "@kcom/permissions";
 import { contactTopicLabels } from "@kcom/db/contact-topics";
 import {
   blogPosts,
@@ -11,6 +12,7 @@ import {
   subscribers,
   type CapsuleDb,
 } from "@kcom/db";
+import { can } from "../permissions.js";
 import type { AuthEnv } from "../require-permission.js";
 
 const LIMIT = 6;
@@ -41,12 +43,17 @@ export function shortName(name: string | null): string {
   return rest.length ? `${first} ${rest[rest.length - 1]![0]!.toUpperCase()}.` : first!;
 }
 
+/** Contact rows open the inbox only for roles that may read it. */
+export const contactHref = (role: UserRole): string | null =>
+  can(role, "inbox:read") ? "/inbox" : null;
+
 /**
  * Recent changes across the site, newest first: content edits (from each
  * table's timestamps), confirmed subscribers and contact messages.
  */
 export function adminActivityRoutes(db: CapsuleDb) {
   return new Hono<AuthEnv>().get("/", async (c) => {
+    const { role } = c.var.user;
     const fromContent = await Promise.all(
       content.map(async ({ kind, table, href }) => {
         const rows = await db
@@ -81,6 +88,7 @@ export function adminActivityRoutes(db: CapsuleDb) {
           at: contactMessages.createdAt,
         })
         .from(contactMessages)
+        .where(can(role, "prayer:read") ? undefined : eq(contactMessages.keepPrivate, false))
         .orderBy(desc(contactMessages.createdAt))
         .limit(LIMIT),
     ]);
@@ -96,7 +104,7 @@ export function adminActivityRoutes(db: CapsuleDb) {
       ...messages.map((m): ActivityItem => ({
         at: m.at.toISOString(),
         text: `Contact: ${contactTopicLabels[m.topic].toLowerCase()}`,
-        href: "/inbox",
+        href: contactHref(role),
         badge: m.status === "new" ? "New" : null,
       })),
     ];

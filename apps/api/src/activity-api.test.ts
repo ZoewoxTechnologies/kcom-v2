@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { blogPosts, contactMessages, subscribers } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
-import { shortName } from "./routes/admin-activity.js";
+import { contactHref, shortName } from "./routes/admin-activity.js";
 import { seedUser } from "./seed-users.js";
 
 const PASSWORD = "correct horse battery";
@@ -73,7 +73,15 @@ describe("GET /admin/activity", () => {
       "Blog post updated: Hello",
     ]);
     expect(items[0]!.badge).toBe("New");
+    expect(items[0]!.href).toBe("/inbox");
     expect(items[2]!.href).toMatch(/^\/blog\//);
+  });
+});
+
+describe("contactHref", () => {
+  it("links the inbox only for roles that can read it", () => {
+    expect(contactHref("editor")).toBe("/inbox");
+    expect(contactHref("nobody" as never)).toBeNull();
   });
 });
 
