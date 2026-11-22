@@ -29,6 +29,23 @@ pnpm typecheck
 
 Git hooks (lint-staged, gitleaks) are installed by `pnpm install`: run it in every new clone or worktree. Install gitleaks locally (`brew install gitleaks`).
 
+## Running several checkouts at once
+
+The main checkout uses 3000 (API), 4321 (site) and 5173 (admin). In a git worktree, run this once to give it its own free port set (3010 / 4331 / 5183, then 3020 and so on):
+
+```bash
+pnpm dev:ports            # keep this worktree's ports if it already has a set
+pnpm dev:ports --reassign # pick a new set
+```
+
+It updates `apps/{api,web,admin}/.env.local` and `.claude/launch.json` (git-ignored). If a file is missing it starts from the main checkout's copy, then `.env.example`; every other value is kept. It sets:
+
+- API: `PORT`, `CORS_ORIGINS`, `BETTER_AUTH_URL`
+- site: `PUBLIC_API_URL`, `DEV_PORT` (and `PUBLIC_SITE_URL` when already set)
+- admin: `VITE_API_URL`, `VITE_SITE_URL`, `DEV_PORT`
+
+Then `pnpm dev` as usual. Ports already claimed by another worktree's `.env.local`, or in use right now, are skipped. Auth cookies are per host, not per port: worktrees that share `BETTER_AUTH_SECRET` and `DATABASE_URL` (the default when seeded from the main checkout) share one login on `localhost`.
+
 `data/legacy/` holds the Drupal export with personal data. It is gitignored: never commit it.
 
 ## Database
