@@ -60,7 +60,9 @@ describe("settings", () => {
 
   it("requires sign-in for admin reads and writes", async () => {
     expect((await call("/admin/settings", null)).status).toBe(401);
-    expect((await call("/admin/settings", null, "PATCH", { contact: { phone: "1" } })).status).toBe(401);
+    expect((await call("/admin/settings", null, "PATCH", { contact: { phone: "1" } })).status).toBe(
+      401,
+    );
   });
 
   it("admin writes grouped settings, partial updates keep the rest", async () => {
@@ -76,11 +78,15 @@ describe("settings", () => {
     expect(pub.bank).toMatchObject({ bankName: "Bank", sortOrSwift: "ABC" });
     expect(pub.social?.facebook).toBe("https://facebook.com/kcom");
     expect(pub.social?.youtube).toBeNull();
-    expect((await json(await call("/admin/settings", editor))).contact?.email).toBe("hello@example.test");
+    expect((await json(await call("/admin/settings", editor))).contact?.email).toBe(
+      "hello@example.test",
+    );
   });
 
   it("editors get 403 on every write", async () => {
-    const t = await json<Item>(await call("/admin/settings/team", admin, "POST", { name: "A", role: "Pastor" }));
+    const t = await json<Item>(
+      await call("/admin/settings/team", admin, "POST", { name: "A", role: "Pastor" }),
+    );
     for (const [path, method, body] of [
       ["/admin/settings", "PATCH", { contact: { phone: "1" } }],
       ["/admin/settings/team", "POST", { name: "B", role: "R" }],
@@ -95,7 +101,8 @@ describe("settings", () => {
   });
 
   it("validates input", async () => {
-    const bad = async (body: unknown) => (await call("/admin/settings", admin, "PATCH", body)).status;
+    const bad = async (body: unknown) =>
+      (await call("/admin/settings", admin, "PATCH", body)).status;
     expect(await bad({})).toBe(400);
     expect(await bad({ contact: { email: "nope" } })).toBe(400);
     expect(await bad({ social: { x: "javascript:alert(1)" } })).toBe(400);
@@ -113,32 +120,63 @@ describe("settings", () => {
       await json<Item>(await add("C")),
     ];
     expect(a.portraitUrl).toBe(PORTRAIT);
-    expect((await json(await call("/settings", null))).team.map((m) => m.name)).toEqual(["A", "B", "C"]);
+    expect((await json(await call("/settings", null))).team.map((m) => m.name)).toEqual([
+      "A",
+      "B",
+      "C",
+    ]);
 
-    const reordered = await call("/admin/settings/team/order", admin, "PUT", { ids: [c!.id, a!.id, b!.id] });
+    const reordered = await call("/admin/settings/team/order", admin, "PUT", {
+      ids: [c!.id, a!.id, b!.id],
+    });
     expect(reordered.status).toBe(200);
-    expect((await json(await call("/settings", null))).team.map((m) => m.name)).toEqual(["C", "A", "B"]);
+    expect((await json(await call("/settings", null))).team.map((m) => m.name)).toEqual([
+      "C",
+      "A",
+      "B",
+    ]);
 
     await call(`/admin/settings/team/${a!.id}`, admin, "DELETE");
     await add("D");
-    expect((await json(await call("/settings", null))).team.map((m) => m.name)).toEqual(["C", "B", "D"]);
+    expect((await json(await call("/settings", null))).team.map((m) => m.name)).toEqual([
+      "C",
+      "B",
+      "D",
+    ]);
 
-    const patched = await json<Item>(await call(`/admin/settings/team/${b!.id}`, admin, "PATCH", { role: "Deacon" }));
+    const patched = await json<Item>(
+      await call(`/admin/settings/team/${b!.id}`, admin, "PATCH", { role: "Deacon" }),
+    );
     expect(patched.role).toBe("Deacon");
   });
 
   it("PATCH leaves unspecified optional fields alone", async () => {
     const m = await json<Item>(
-      await call("/admin/settings/team", admin, "POST", { name: "A", role: "R", bio: "Hi", portraitUrl: PORTRAIT }),
+      await call("/admin/settings/team", admin, "POST", {
+        name: "A",
+        role: "R",
+        bio: "Hi",
+        portraitUrl: PORTRAIT,
+      }),
     );
-    const patched = await json<Item>(await call(`/admin/settings/team/${m.id}`, admin, "PATCH", { role: "Elder" }));
+    const patched = await json<Item>(
+      await call(`/admin/settings/team/${m.id}`, admin, "PATCH", { role: "Elder" }),
+    );
     expect(patched).toMatchObject({ role: "Elder", bio: "Hi", portraitUrl: PORTRAIT });
     const arm = await json<Item>(
-      await call("/admin/settings/arms", admin, "POST", { name: "X", description: "D", imageUrl: PORTRAIT }),
+      await call("/admin/settings/arms", admin, "POST", {
+        name: "X",
+        description: "D",
+        imageUrl: PORTRAIT,
+      }),
     );
-    const armPatched = await json<Item>(await call(`/admin/settings/arms/${arm.id}`, admin, "PATCH", { name: "Y" }));
+    const armPatched = await json<Item>(
+      await call(`/admin/settings/arms/${arm.id}`, admin, "PATCH", { name: "Y" }),
+    );
     expect(armPatched).toMatchObject({ name: "Y", description: "D", imageUrl: PORTRAIT });
-    const cleared = await json<Item>(await call(`/admin/settings/arms/${arm.id}`, admin, "PATCH", { description: null }));
+    const cleared = await json<Item>(
+      await call(`/admin/settings/arms/${arm.id}`, admin, "PATCH", { description: null }),
+    );
     expect(cleared).toMatchObject({ description: null, imageUrl: PORTRAIT });
   });
 
@@ -148,7 +186,9 @@ describe("settings", () => {
     );
     const items = (await json(await call("/settings", null))).arms;
     expect(items).toHaveLength(4);
-    const order = await call("/admin/settings/arms/order", admin, "PUT", { ids: items.map((i) => i.id).reverse() });
+    const order = await call("/admin/settings/arms/order", admin, "PUT", {
+      ids: items.map((i) => i.id).reverse(),
+    });
     expect(order.status).toBe(200);
   });
 
@@ -159,7 +199,9 @@ describe("settings", () => {
     expect((await order([a.id])).status).toBe(422);
     expect((await order([a.id, a.id])).status).toBe(422);
     const missing = "00000000-0000-4000-8000-000000000000";
-    expect((await call(`/admin/settings/arms/${missing}`, admin, "PATCH", { name: "x" })).status).toBe(404);
+    expect(
+      (await call(`/admin/settings/arms/${missing}`, admin, "PATCH", { name: "x" })).status,
+    ).toBe(404);
     expect((await call(`/admin/settings/arms/${missing}`, admin, "DELETE")).status).toBe(404);
   });
 });

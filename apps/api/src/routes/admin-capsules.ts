@@ -20,6 +20,7 @@ import {
   rethrowWriteError,
   richTextSchema,
 } from "../content/index.js";
+import { actionForUpdate, logActivity } from "../activity.js";
 import { HttpError } from "../errors.js";
 import type { CapsuleEvents } from "../capsule-publishing.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
@@ -195,6 +196,12 @@ export function adminCapsuleRoutes(db: CapsuleDb, events: CapsuleEvents) {
           .values({ ...body, publishAt })
           .returning();
         if (body.status === "published") await events.emitPublished(row!);
+        await logActivity(db, c, {
+          action: body.status === "draft" ? "create" : "publish",
+          entityType: "capsule",
+          entityId: row!.id,
+          title: row!.title,
+        });
         return c.json(present(row!), 201);
       } catch (err) {
         rethrowWriteError(err, CAPSULE_ERRORS);
@@ -224,6 +231,12 @@ export function adminCapsuleRoutes(db: CapsuleDb, events: CapsuleEvents) {
         const [row] = await db.update(capsules).set(set).where(where).returning();
         if (!row) return c.json(present(await byId(id)));
         if (publishing) await events.emitPublished(row);
+        await logActivity(db, c, {
+          action: actionForUpdate(existing.status, patch.status),
+          entityType: "capsule",
+          entityId: id,
+          title: row.title,
+        });
         return c.json(present(row));
       } catch (err) {
         rethrowWriteError(err, CAPSULE_ERRORS);
@@ -231,12 +244,19 @@ export function adminCapsuleRoutes(db: CapsuleDb, events: CapsuleEvents) {
     })
     .delete("/:id", write, validate("param", idParam), async (c) => {
       const { id } = c.req.valid("param");
-      assertCanChange(c, (await byId(id)).status);
+      const existing = await byId(id);
+      assertCanChange(c, existing.status);
       const rows = await db
         .delete(capsules)
         .where(eq(capsules.id, id))
         .returning({ id: capsules.id });
       if (rows.length === 0) throw notFound("capsule");
+      await logActivity(db, c, {
+        action: "delete",
+        entityType: "capsule",
+        entityId: id,
+        title: existing.title,
+      });
       return c.body(null, 204);
     });
 }

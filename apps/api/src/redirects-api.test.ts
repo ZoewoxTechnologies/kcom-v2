@@ -10,7 +10,10 @@ describe("GET /redirects", () => {
       { fromPath: "/node/2", toPath: "/blog/b", status: 301 },
       { fromPath: "/content/a", toPath: "/capsules/a" },
     ]);
-    const app = createApp(db, { corsOrigins: [], auth: { secret: "x".repeat(40), baseURL: "http://api.test" } });
+    const app = createApp(db, {
+      corsOrigins: [],
+      auth: { secret: "x".repeat(40), baseURL: "http://api.test" },
+    });
     const res = await app.request("/redirects");
     expect(res.status).toBe(200);
     expect(res.headers.get("cache-control")).toContain("max-age=60");
