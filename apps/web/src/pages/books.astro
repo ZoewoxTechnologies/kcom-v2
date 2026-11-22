@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BookCover from "../components/BookCover.astro";
+import SegmentedLinks from "@kcom/ui/astro/SegmentedLinks.astro";
 import "@kcom/ui/segmented-control.css";
 import "../styles/design.css";
 import { data } from "../lib/data";
@@ -60,17 +61,16 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
           </span>
         )}
         {filterable && (
-          <nav class="kc-segmented filter" aria-label="Filter by kind">
-            {kindFilters.map((f) => (
-              <a
-                class="kc-segmented__option"
-                href={f.value ? `/books?kind=${encodeURIComponent(f.value)}` : "/books"}
-                aria-current={(kind ?? "") === f.value ? "true" : undefined}
-              >
-                {f.label}
-              </a>
-            ))}
-          </nav>
+          <div class="filter">
+            <SegmentedLinks
+              label="Filter by kind"
+              current={kind ?? ""}
+              options={kindFilters.map((f) => ({
+                ...f,
+                href: f.value ? `/books?kind=${encodeURIComponent(f.value)}` : "/books",
+              }))}
+            />
+          </div>
         )}
       </header>
       {books.length === 0 && <p class="empty">No books yet. Please check back soon.</p>}
@@ -179,20 +179,10 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     flex-wrap: wrap;
     margin-block-end: 28px;
   }
-  .filter {
+  header .filter {
     margin-inline-start: auto;
     max-inline-size: 100%;
-    overflow-x: auto;
-  }
-  .filter a {
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-    text-decoration: none;
-  }
-  .filter a[aria-current] {
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    min-inline-size: 0;
   }
   .empty {
     color: var(--color-muted);

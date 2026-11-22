@@ -24,7 +24,7 @@ export function adminSearchRoutes(db: CapsuleDb) {
         .select({ id: capsules.id, title: capsules.title, status: capsules.status })
         .from(capsules)
         .where(ilike(capsules.title, pattern))
-        .orderBy(desc(capsules.createdAt))
+        .orderBy(desc(capsules.publishAt), desc(capsules.createdAt))
         .limit(PER_KIND),
       db
         .select({ id: blogPosts.id, title: blogPosts.title, status: blogPosts.status })

@@ -21,6 +21,10 @@
     color: var(--color-muted);
     font: 600 var(--text-sm) / 1 var(--font-body);
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    text-decoration: none;
     transition:
       background-color var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out);
@@ -36,7 +40,8 @@
       color: var(--color-text);
     }
 
-    &[aria-checked="true"] {
+    &[aria-checked="true"],
+    &[aria-current="true"] {
       background: var(--color-primary);
       color: var(--color-on-primary);
     }
@@ -45,5 +50,67 @@
       outline: 2px solid var(--color-focus);
       outline-offset: 2px;
     }
+  }
+}
+
+/* Registered so the scroll-driven animation below can animate the fade widths. */
+@property --kc-seg-fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --kc-seg-fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@layer components {
+  /* Scroll box for a long row of options (SegmentedLinks). The block padding keeps each option's 44px
+     touch area inside the box, which would otherwise clip it; the negative margin cancels it out. */
+  .kc-segmented-scroll {
+    max-inline-size: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block: 0.375rem;
+    margin-block: -0.375rem;
+    inline-size: max-content;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--kc-seg-fade-start),
+      #000 calc(100% - var(--kc-seg-fade-end)),
+      transparent
+    );
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  /* Fade an edge only while there is more to scroll to. Where scroll-driven animations are not
+     supported the row just scrolls without a fade; with nothing to scroll the timeline is inactive,
+     so no fade shows. */
+  @supports (animation-timeline: scroll()) {
+    .kc-segmented-scroll {
+      animation: kc-seg-fade linear both;
+      animation-timeline: scroll(self inline);
+    }
+  }
+}
+
+@keyframes kc-seg-fade {
+  0% {
+    --kc-seg-fade-start: 0rem;
+    --kc-seg-fade-end: 2rem;
+  }
+  10%,
+  90% {
+    --kc-seg-fade-start: 2rem;
+    --kc-seg-fade-end: 2rem;
+  }
+  100% {
+    --kc-seg-fade-start: 2rem;
+    --kc-seg-fade-end: 0rem;
   }
 }
