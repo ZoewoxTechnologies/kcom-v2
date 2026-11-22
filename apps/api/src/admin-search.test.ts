@@ -71,4 +71,30 @@ describe("GET /admin/search", () => {
     expect((await search("  ")).status).toBe(400);
     expect((await search("x", {})).status).toBe(401);
   });
+
+  it("lists capsules by publish time, newest first, not by when they were created", async () => {
+    const body = { type: "doc", content: [] };
+    // Created in the opposite order to publishing, as an import would.
+    await db
+      .insert(capsules)
+      .values({
+        title: "Faith newest",
+        slug: "faith-newest",
+        publishAt: new Date("2026-03-01T00:00:00Z"),
+        createdAt: new Date("2020-01-01T00:00:00Z"),
+        body,
+      });
+    await db
+      .insert(capsules)
+      .values({
+        title: "Faith oldest",
+        slug: "faith-oldest",
+        publishAt: new Date("2024-03-01T00:00:00Z"),
+        createdAt: new Date("2025-01-01T00:00:00Z"),
+        body,
+      });
+    const res = await search("faith");
+    const items = ((await res.json()) as { items: { title: string }[] }).items;
+    expect(items.map((i) => i.title)).toEqual(["Faith newest", "Faith oldest"]);
+  });
 });
