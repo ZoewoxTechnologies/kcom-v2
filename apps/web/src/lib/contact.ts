@@ -1,3 +1,4 @@
+import { formatPhone } from "./phone";
 import { contactTopicLabels, contactTopics, type ContactTopic } from "@kcom/db/contact-topics";
 
 /** Shaped like the future settings API; replace `contactSettings` with that fetch when it lands. */
@@ -18,12 +19,22 @@ export const contactSettings: ContactSettings = {
   ],
 };
 
-export interface Row { label: string; value: string }
+export interface Row {
+  label: string;
+  value: string;
+}
 
 /** Contact rows with a value; empty list hides the block. */
 export const contactRows = (s: ContactSettings): Row[] =>
-  ([["Email", s.email], ["Phone / WhatsApp", s.phone], ["Address", s.address]] as [string, string | null][])
-    .flatMap(([label, v]) => (v?.trim() ? [{ label, value: v.trim() }] : []));
+  (
+    [
+      ["Email", s.email],
+      ["Phone / WhatsApp", s.phone],
+      ["Address", s.address],
+    ] as [string, string | null][]
+  ).flatMap(([label, v]) =>
+    v?.trim() ? [{ label, value: label.startsWith("Phone") ? formatPhone(v) : v.trim() }] : [],
+  );
 
 const topicMessage: Record<ContactTopic, string> = {
   question: "Your question",
@@ -42,7 +53,12 @@ export const topics = contactTopics.map((value) => ({
 
 export type Topic = ContactTopic;
 
-export interface ContactInput { topic: string; name: string; email: string; message: string }
+export interface ContactInput {
+  topic: string;
+  name: string;
+  email: string;
+  message: string;
+}
 export type ContactErrors = Partial<Record<"topic" | "name" | "email" | "message", string>>;
 
 export function validateContact(i: ContactInput): ContactErrors {
@@ -50,18 +66,20 @@ export function validateContact(i: ContactInput): ContactErrors {
   if (!topics.some((t) => t.value === i.topic)) e.topic = "Choose what you are writing about.";
   if (!i.name.trim()) e.name = "Please enter your name.";
   if (!i.email.trim()) e.email = "Please enter your email address.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(i.email.trim())) e.email = "Please enter a full email address.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(i.email.trim()))
+    e.email = "Please enter a full email address.";
   if (!i.message.trim()) e.message = "Please write a message.";
   return e;
 }
 
 export type ContactResult =
-  | { ok: true }
-  | { ok: false; fieldErrors: ContactErrors; message: string };
+  { ok: true } | { ok: false; fieldErrors: ContactErrors; message: string };
 
 export const RATE_LIMITED = "You have sent several messages recently. Please try again later.";
 /** Spam-protection field sent with the message: the hidden honeypot. */
-export interface SpamFields { hp_url?: string }
+export interface SpamFields {
+  hp_url?: string;
+}
 
 export const SEND_FAILED = "Sorry, your message could not be sent. Please try again in a moment.";
 
@@ -73,7 +91,11 @@ export async function submitContact(
   spam: SpamFields = {},
   fetcher: typeof fetch = fetch,
 ): Promise<ContactResult> {
-  const fail = (fieldErrors: ContactErrors = {}, message = SEND_FAILED): ContactResult => ({ ok: false, fieldErrors, message });
+  const fail = (fieldErrors: ContactErrors = {}, message = SEND_FAILED): ContactResult => ({
+    ok: false,
+    fieldErrors,
+    message,
+  });
   if (!apiUrl) return fail();
   try {
     const res = await fetcher(`${apiUrl.replace(/\/+$/, "")}/contact`, {
@@ -90,10 +112,13 @@ export async function submitContact(
     });
     if (res.ok) return { ok: true };
     if (res.status === 400) {
-      const data = (await res.json().catch(() => null)) as { error?: { details?: { path: string; message: string }[] } } | null;
+      const data = (await res.json().catch(() => null)) as {
+        error?: { details?: { path: string; message: string }[] };
+      } | null;
       const fieldErrors: ContactErrors = {};
       for (const d of data?.error?.details ?? []) {
-        if (d.path === "topic" || d.path === "name" || d.path === "email" || d.path === "message") fieldErrors[d.path] ??= d.message;
+        if (d.path === "topic" || d.path === "name" || d.path === "email" || d.path === "message")
+          fieldErrors[d.path] ??= d.message;
       }
       return fail(fieldErrors);
     }

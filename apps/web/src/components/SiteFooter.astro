@@ -1,6 +1,7 @@
 ---
 import { footerColumns, socialLinks, siteName } from "../lib/site";
 import { footerContact } from "../lib/footer-contact";
+import { formatPhone, phoneHref } from "../lib/phone";
 // The footer never fails a page: without contact details it shows only the form link.
 const contact = await footerContact.get();
 const year = new Date().getFullYear();
@@ -31,9 +32,7 @@ const year = new Date().getFullYear();
     <div class="col contact">
       <strong>Contact</strong>
       {contact?.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
-      {contact?.phone && (
-        <a href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}>{contact.phone}</a>
-      )}
+      {contact?.phone && <a href={phoneHref(contact.phone)}>{formatPhone(contact.phone)}</a>}
       {contact?.address && <address>{contact.address}</address>}
       <a href="/contact">Contact form</a>
     </div>
