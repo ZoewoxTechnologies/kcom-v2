@@ -1,6 +1,6 @@
 # Banner photo credits
 
-Free-licensed stock from Unsplash (Unsplash License). Recompressed to WebP at 1600px and 800px wide.
+Free-licensed stock from Unsplash (Unsplash License). Recompressed to AVIF and WebP at 1600px and 800px wide, each under 150 KB.
 
 | File            | Photo                                                                                        | Photographer       |
 | --------------- | -------------------------------------------------------------------------------------------- | ------------------ |

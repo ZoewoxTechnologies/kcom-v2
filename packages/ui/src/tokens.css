@@ -34,6 +34,11 @@
     --color-gold: #c4a15a; /* rules, underlines, focus ring: never body text */
     --color-gold-text: #7a5c1c; /* gold used as text on the page and white surfaces */
     --color-gold-text-tint: #775a1c; /* gold text on sandstone, wash and hover surfaces: 4.5:1 on all of them */
+    /* Page header banners: photo grade and text on it, the same white and gold in both themes */
+    --banner-start: #1d4558;
+    --banner-end: #2b6178;
+    --banner-text: #ffffff;
+    --banner-gold: #d4b46e;
     --color-sandstone: #f6eedd;
     --color-sandstone-hover: #efe2c6;
     --color-sandstone-active: #e8d7b2;
@@ -162,6 +167,8 @@
       --color-focus: #d4b46e;
       --color-gold-text: #d9bc7a;
       --color-gold-text-tint: #d9bc7a;
+      --banner-start: #0b1316;
+      --banner-end: #16303a;
       --color-sandstone: #2a2519;
       --color-sandstone-hover: #342d1e;
       --color-sandstone-active: #3d3523;
@@ -214,6 +221,8 @@
     --color-focus: #d4b46e;
     --color-gold-text: #d9bc7a;
     --color-gold-text-tint: #d9bc7a;
+    --banner-start: #0b1316;
+    --banner-end: #16303a;
     --color-sandstone: #2a2519;
     --color-sandstone-hover: #342d1e;
     --color-sandstone-active: #3d3523;

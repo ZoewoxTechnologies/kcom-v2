@@ -49,13 +49,13 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
   }
   .band-quote :global(blockquote) {
     margin: var(--space-3) 0 0;
-    border-block-start: 2px solid #d4b46e;
+    border-block-start: 2px solid var(--banner-gold);
     padding-block-start: 14px;
     font-family: var(--font-scripture);
     font-style: italic;
     font-size: 1.25rem;
     line-height: 1.5;
-    color: #fff;
+    color: var(--banner-text);
   }
   .band-quote :global(cite) {
     display: block;
@@ -64,7 +64,7 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
     font-style: normal;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #d4b46e;
+    color: var(--banner-gold);
   }
   .body {
     padding-block: var(--space-6) var(--space-7);
