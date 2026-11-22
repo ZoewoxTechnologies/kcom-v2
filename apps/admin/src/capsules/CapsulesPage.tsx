@@ -68,7 +68,7 @@ export function CapsulesPage() {
       sortable: true,
       render: (r) => <Badge variant={r.status}>{cap(r.status)}</Badge>,
     },
-    { key: "day", header: "Date (Lagos)", sortable: true },
+    { key: "day", header: "Date (WAT)", sortable: true },
   ];
 
   return (
@@ -114,7 +114,7 @@ export function CapsulesPage() {
         </SelectField>
         <TextField
           size="sm"
-          label="Date (Lagos)"
+          label="Date (WAT)"
           type="date"
           value={date}
           onChange={(e) => filter(setDate)(e.target.value)}

@@ -156,6 +156,12 @@ export interface StaticPage {
   body: RichTextDoc;
 }
 
+export interface ContactDetails {
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+}
+
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
   capsuleBySlug(slug: string): Promise<Capsule | null>;
@@ -180,6 +186,8 @@ export interface DataSource {
   listEvents(when: "upcoming" | "past"): Promise<EventSummary[]>;
   /** Visible homepage sections as the API names them, in display order. Empty when unknown. */
   listHomepageSections(): Promise<string[]>;
+  /** Public contact details from site settings; null when unknown. Fields the admin left blank are null. */
+  contactDetails(): Promise<ContactDetails | null>;
   /** A published page from the pages API; null when it does not exist. */
   pageBySlug(slug: string): Promise<StaticPage | null>;
   /** Old-site paths and where they now live. Empty when unknown. */
@@ -190,7 +198,25 @@ export interface DataSource {
  * Every DataSource method name; wrappers are built from this. Listing a name that does not exist
  * or leaving one out is a compile error, so adding a method is a one-line change here.
  */
-export const dataMethods = ["latestCapsule", "capsuleBySlug", "capsuleByDate", "capsuleNeighbours", "listCapsulesInMonth", "listAllCapsules", "listSeries", "seriesBySlug", "listBlogPosts", "blogPostBySlug", "listBooks", "eventBySlug", "listEvents", "listHomepageSections", "pageBySlug", "listRedirects"] as const satisfies readonly (keyof DataSource)[];
+export const dataMethods = [
+  "latestCapsule",
+  "capsuleBySlug",
+  "capsuleByDate",
+  "capsuleNeighbours",
+  "listCapsulesInMonth",
+  "listAllCapsules",
+  "listSeries",
+  "seriesBySlug",
+  "listBlogPosts",
+  "blogPostBySlug",
+  "listBooks",
+  "eventBySlug",
+  "listEvents",
+  "listHomepageSections",
+  "contactDetails",
+  "pageBySlug",
+  "listRedirects",
+] as const satisfies readonly (keyof DataSource)[];
 
 type MissingMethods = Exclude<keyof DataSource, (typeof dataMethods)[number]>;
 /** Fails to compile (type `never` is not `true`) when a DataSource method is missing from `dataMethods`. */

@@ -184,10 +184,10 @@ describe("calendar", () => {
     await userEvent
       .setup({ advanceTimers: () => {} })
       .click(await screen.findByRole("button", { name: /Move Late night to date/ }));
-    fireEvent.change(screen.getByLabelText("Day (Lagos)"), { target: { value: "2026-11-30" } });
+    fireEvent.change(screen.getByLabelText("Day (WAT)"), { target: { value: "2026-11-30" } });
     fireEvent.click(screen.getByRole("button", { name: "Move" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("2026-11-30 already has “Other”");
-    expect(screen.getByLabelText("Day (Lagos)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Day (WAT)")).toBeInTheDocument();
   });
 
   it("only drags scheduled capsules", async () => {
@@ -227,7 +227,7 @@ describe("Move to date", () => {
     const { patches } = mockApi();
     renderPage(<CalendarPage />);
     const { user, dialog } = await open();
-    const input = within(dialog).getByLabelText("Day (Lagos)");
+    const input = within(dialog).getByLabelText("Day (WAT)");
     expect(input).toHaveAttribute("min", "2026-11-20");
     fireEvent.change(input, { target: { value: "2026-11-24" } });
     await user.click(within(dialog).getByRole("button", { name: "Move" }));
@@ -244,10 +244,10 @@ describe("Move to date", () => {
     const { dialog } = await open();
     const move = within(dialog).getByRole("button", { name: "Move" });
     for (const day of ["2026-11-19", "2026-11-01"]) {
-      fireEvent.change(within(dialog).getByLabelText("Day (Lagos)"), { target: { value: day } });
+      fireEvent.change(within(dialog).getByLabelText("Day (WAT)"), { target: { value: day } });
       expect(move).toBeDisabled();
     }
-    fireEvent.change(within(dialog).getByLabelText("Day (Lagos)"), {
+    fireEvent.change(within(dialog).getByLabelText("Day (WAT)"), {
       target: { value: "2026-11-20" },
     });
     expect(move).toBeEnabled();
@@ -258,7 +258,7 @@ describe("Move to date", () => {
     const { patches } = mockApi(200, [takenDay]);
     renderPage(<CalendarPage />);
     const { user, dialog } = await open();
-    fireEvent.change(within(dialog).getByLabelText("Day (Lagos)"), {
+    fireEvent.change(within(dialog).getByLabelText("Day (WAT)"), {
       target: { value: "2026-11-26" },
     });
     await user.click(within(dialog).getByRole("button", { name: "Move" }));
@@ -272,7 +272,7 @@ describe("Move to date", () => {
     const { patches } = mockApi();
     renderPage(<CalendarPage />);
     const { user, dialog } = await open();
-    fireEvent.change(within(dialog).getByLabelText("Day (Lagos)"), {
+    fireEvent.change(within(dialog).getByLabelText("Day (WAT)"), {
       target: { value: "2026-11-24" },
     });
     await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
@@ -307,7 +307,7 @@ describe("capsule list", () => {
     await user.selectOptions(screen.getByLabelText("Series"), "");
 
     // 23:30 UTC on the 20th is the 21st in Lagos.
-    fireEvent.change(screen.getByLabelText("Date (Lagos)"), { target: { value: "2026-11-21" } });
+    fireEvent.change(screen.getByLabelText("Date (WAT)"), { target: { value: "2026-11-21" } });
     expect(screen.getByText("Late night")).toBeInTheDocument();
     expect(screen.queryByText("Published one")).not.toBeInTheDocument();
   });

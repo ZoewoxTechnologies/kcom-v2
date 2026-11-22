@@ -1,32 +1,67 @@
 ---
-import SignupForm from "./SignupForm.astro";
 import { footerColumns, socialLinks, siteName } from "../lib/site";
-const { hideSignup = false } = Astro.props;
+import { data } from "../lib/data";
+// The footer never fails a page: without contact details it shows only the form link.
+const contact = await data.contactDetails().catch(() => null);
 const year = new Date().getFullYear();
 ---
+
 <footer class="site-footer">
-  <div class:list={["cols", { "no-signup": hideSignup }]}>
+  <div class="cols">
     <div class="about">
       <div class="brand">
         <img src="/logo.png" alt="" width="44" height="44" />
-        <span>Kingdom Capstone<span class="line2">Outreach Ministries</span></span>
+        <span>
+          Kingdom Capstone<span class="line2">Outreach Ministries</span>
+        </span>
       </div>
       <div class="rule"></div>
-      <p>He leadeth me beside the still waters.<span class="ref">Psalm 23:2</span></p>
+      <p>
+        He leadeth me beside the still waters.<span class="ref">Psalm 23:2</span>
+      </p>
     </div>
     {footerColumns.map((c) => (
       <div class="col">
         <strong>{c.heading}</strong>
-        {c.links.map((l) => <a href={l.href}>{l.label}</a>)}
+        <div class="rule"></div>
+        {c.links.map((l) => (
+          <a href={l.href}>{l.label}</a>
+        ))}
       </div>
     ))}
-    {!hideSignup && <div class="signup"><SignupForm id="footer-email" label="The daily capsule, by email" visibleLabel placeholder="you@example.com" /></div>}
+    <div class="col contact">
+      <strong>Contact</strong>
+      <div class="rule"></div>
+      {contact?.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
+      {contact?.phone && (
+        <a href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}>{contact.phone}</a>
+      )}
+      {contact?.address && <address>{contact.address}</address>}
+      <a href="/contact">Contact form</a>
+    </div>
   </div>
   <div class="base">
-    <span class="legal">© {year} {siteName}<a href="/privacy">Privacy policy</a></span>
+    <span class="legal">
+      <span>
+        © {year} {siteName}
+      </span>
+      <span class="dot" aria-hidden="true">
+        ·
+      </span>
+      <a href="/privacy">Privacy policy</a>
+    </span>
     <span class="social">
-      <span class="links">{socialLinks.map((l) => <a href={l.href}>{l.label}</a>)}</span>
-      <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary"><span class="icon" aria-hidden="true">☾</span> <span class="label">Dark</span></button>
+      <span class="links">
+        {socialLinks.map((l) => (
+          <a href={l.href}>{l.label}</a>
+        ))}
+      </span>
+      <button type="button" id="theme-toggle" class="kc-btn kc-btn--secondary">
+        <span class="icon" aria-hidden="true">
+          ☾
+        </span>{" "}
+        <span class="label">Dark</span>
+      </button>
     </span>
   </div>
 </footer>
@@ -35,7 +70,10 @@ const year = new Date().getFullYear();
     const btn = document.getElementById("theme-toggle");
     if (!btn) return;
     const root = document.documentElement;
-    const isDark = () => root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = () =>
+      root.dataset.theme
+        ? root.dataset.theme === "dark"
+        : matchMedia("(prefers-color-scheme: dark)").matches;
     // The button offers the opposite theme: moon and "Dark" in light mode, sun and "Light" in dark mode.
     const paint = () => {
       btn.querySelector(".icon").textContent = isDark() ? "☀" : "☾";
@@ -45,45 +83,140 @@ const year = new Date().getFullYear();
     btn.addEventListener("click", () => {
       const next = isDark() ? "light" : "dark";
       root.dataset.theme = next;
-      try { localStorage.setItem("theme", next); } catch {}
+      try {
+        localStorage.setItem("theme", next);
+      } catch {}
       paint();
     });
   })();
 </script>
 <style>
-  .site-footer {background: var(--color-footer); color: var(--color-on-footer); padding-block: var(--space-7) var(--space-5); padding-inline: max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter))); display: flex; flex-direction: column; gap: var(--space-6); }
-  .cols { display: grid; gap: var(--space-6); font-size: 0.9375rem; grid-template-columns: 1fr; }
-  .brand { display: flex; align-items: center; gap: var(--space-3); font-family: var(--font-title); font-weight: 600; font-size: 1.375rem; line-height: 1.05; }
-  .brand :global(img) { width: 44px; height: 44px; object-fit: contain; }
-  .line2 { display: block; }
-  .rule { width: 40px; height: 2px; background: var(--color-gold); margin-block: var(--space-3); }
-  .about p { margin: 0; }
-  .ref { display: block; font-size: var(--text-xs); letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-footer-gold); margin-top: var(--space-1); }
-  .col { display: flex; flex-direction: column; gap: var(--space-2); }
-  .col strong, .signup :global(label) { font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-footer-gold); font-weight: 700; }
-  .col a, .base a { color: inherit; text-decoration: none; }
-  .base a { text-decoration: underline; }
-  .signup { display: flex; flex-direction: column; gap: var(--space-2); order: -1; }
-  .signup :global(.row) { flex-direction: column; gap: var(--space-2); }
-  .signup :global(.row .kc-btn) { width: 100%; }
-  .signup :global(.row .kc-input) { flex: none; min-width: 0; border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.08); color: inherit; }
-  .signup :global(.row .kc-input::placeholder) { color: inherit; opacity: 0.7; }
-  .signup :global(.row .kc-btn) { --kc-btn-bg: var(--color-footer-button); --kc-btn-fg: var(--color-on-footer-button); --kc-btn-border: var(--color-footer-button); }
-  .base { display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--text-sm); border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: var(--space-4); }
-  .social { display: flex; gap: var(--space-5); align-items: center; flex-wrap: wrap; }
-  .links { display: contents; }
-  .legal { display: flex; flex-direction: column; gap: var(--space-1) var(--space-4); }
-  #theme-toggle .icon { font-size: 1em; }
-  #theme-toggle { --kc-btn-fg: var(--color-on-footer); --kc-btn-border: rgba(255, 255, 255, 0.3); }
+  .site-footer {
+    background: var(--color-footer);
+    color: var(--color-on-footer);
+    padding-block: var(--space-7) var(--space-5);
+    padding-inline: max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter)));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+  .cols {
+    display: grid;
+    gap: var(--space-6);
+    font-size: 0.9375rem;
+    grid-template-columns: 1fr;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: 1.375rem;
+    line-height: 1.05;
+  }
+  .brand :global(img) {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+  .line2 {
+    display: block;
+  }
+  .rule {
+    width: 40px;
+    height: 2px;
+    background: var(--color-gold);
+    margin-block: var(--space-3);
+  }
+  .about p {
+    margin: 0;
+  }
+  .ref {
+    display: block;
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    font-variant: small-caps;
+    font-weight: 700;
+    color: var(--color-footer-gold);
+    margin-top: var(--space-1);
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .col strong {
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-footer-gold);
+    font-weight: 700;
+  }
+  /* Links keep the shared link style (gold underline, which changes on hover); the primary colour is unreadable on the dark footer, so hover shows the text colour. */
+  .col a,
+  .base a {
+    color: inherit;
+  }
+  .col a:hover,
+  .base a:hover {
+    text-decoration-color: currentColor;
+  }
+  address {
+    font-style: normal;
+    overflow-wrap: anywhere;
+  }
+  .base {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: var(--space-4);
+  }
+  .social {
+    display: flex;
+    gap: var(--space-5);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .links {
+    display: contents;
+  }
+  .legal {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1) var(--space-2);
+  }
+  .dot {
+    display: none;
+  }
+  #theme-toggle .icon {
+    font-size: 1em;
+  }
+  /* Outline button on the dark footer: a light tint on hover, so the white text and icon stay readable. */
+  #theme-toggle {
+    --kc-btn-fg: var(--color-on-footer);
+    --kc-btn-border: rgba(255, 255, 255, 0.3);
+    --color-secondary-hover: rgba(255, 255, 255, 0.12);
+    --color-secondary-active: rgba(255, 255, 255, 0.2);
+  }
   @media (min-width: 64rem) {
-    /* Design proportions at 1440: about 167 / 119 / 119 / 319. */
-    .cols { grid-template-columns: 1.4fr 1fr 1fr 2.68fr; }
-    .cols.no-signup { grid-template-columns: 1.4fr 1fr 1fr; }
-    .signup { order: 0; }
-    .signup :global(.row) { flex-direction: row; }
-    .signup :global(.row .kc-input) { flex: 1; }
-    .signup :global(.row .kc-btn) { width: auto; }
-    .legal { flex-direction: row; }
-    .base { flex-direction: row; justify-content: space-between; align-items: center; }
+    .cols {
+      grid-template-columns: 1.4fr 1fr 1fr 1.6fr;
+    }
+    .legal {
+      flex-direction: row;
+      align-items: baseline;
+    }
+    .dot {
+      display: inline;
+    }
+    .base {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
   }
 </style>
