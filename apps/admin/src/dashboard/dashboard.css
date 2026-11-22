@@ -25,6 +25,11 @@
     grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
     gap: var(--space-4);
   }
+  /* The heads-up sits under the tiles, across the whole row. */
+  .kc-dash__notice {
+    grid-column: 1 / -1;
+    order: 1;
+  }
   .kc-dash__panels {
     display: grid;
     grid-template-columns: 3fr 2fr;
@@ -54,6 +59,14 @@
   .kc-stat__note {
     font-size: 0.8125rem;
     color: var(--kc-status-ok-fg);
+  }
+
+  .kc-stat__error {
+    font-size: 0.875rem;
+    color: var(--color-banner-danger-icon);
+  }
+  .kc-stat .kc-btn {
+    align-self: flex-start;
   }
 
   .kc-panel {

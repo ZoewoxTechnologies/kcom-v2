@@ -168,6 +168,10 @@ export function BlockForm({ type, id, props, errors, disabled, onChange }: FormP
     case "bankDetails":
       return <p className="kc-site-page__note">Shows the bank details saved under Settings.</p>;
     default:
-      return <p className="kc-site-page__note">This block can&rsquo;t be edited here. It is kept as it is.</p>;
+      return (
+        <p className="kc-site-page__note">
+          This block can&rsquo;t be edited here. It is kept as it is.
+        </p>
+      );
   }
 }

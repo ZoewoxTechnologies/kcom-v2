@@ -144,7 +144,11 @@ function Editor({
     setErrors(found);
     setTitleError(v.title.trim() ? undefined : "Enter a title.");
     if (!v.title.trim() || Object.keys(found).length) return;
-    const status = !v.published ? "draft" : saved?.status === "scheduled" ? "scheduled" : "published";
+    const status = !v.published
+      ? "draft"
+      : saved?.status === "scheduled"
+        ? "scheduled"
+        : "published";
     const fields = {
       title: v.title.trim(),
       seoTitle: v.seoTitle.trim() || null,
@@ -153,7 +157,9 @@ function Editor({
     };
     setSaving(true);
     try {
-      const page = saved ? await updatePage(saved.id, fields) : await createPage(config.slug, fields);
+      const page = saved
+        ? await updatePage(saved.id, fields)
+        : await createPage(config.slug, fields);
       setSaved(page);
       const stored = await saveSections(
         page.id,
@@ -244,7 +250,9 @@ function Editor({
                 <Button
                   variant="secondary"
                   onClick={() =>
-                    set({ blocks: [...v.blocks, withId({ type: adding, props: blankProps(adding) })] })
+                    set({
+                      blocks: [...v.blocks, withId({ type: adding, props: blankProps(adding) })],
+                    })
                   }
                 >
                   Add block

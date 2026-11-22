@@ -156,7 +156,10 @@ export const redirects = pgTable(
   (t) => [
     uniqueIndex("redirects_from_path_idx").on(t.fromPath),
     check("redirects_from_path_format", sql`${t.fromPath} LIKE '/%'`),
-    check("redirects_to_path_format", sql`${t.toPath} LIKE '/%' AND left(${t.toPath}, 2) NOT IN ('//', '/\\')`),
+    check(
+      "redirects_to_path_format",
+      sql`${t.toPath} LIKE '/%' AND left(${t.toPath}, 2) NOT IN ('//', '/\\')`,
+    ),
     check("redirects_status", sql`${t.status} IN (301, 302, 307, 308)`),
   ],
 );
@@ -439,3 +442,34 @@ export const ministryArms = pgTable("ministry_arms", {
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
+
+export const activityActions = ["create", "update", "publish", "unpublish", "delete"] as const;
+export type ActivityAction = (typeof activityActions)[number];
+
+/**
+ * One row per change a person made in the admin. Ids and labels only: no content snapshots.
+ * The user's name is kept as a label so the row (and its monthly archive) still reads after the
+ * account changes. `entity_id` is text because it can point at a row that has since been deleted.
+ */
+export const activityLog = pgTable(
+  "activity_log",
+  {
+    id: id(),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    userName: text("user_name").notNull(),
+    action: text("action").$type<ActivityAction>().notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    title: text("title").notNull(),
+    at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("activity_log_at_idx").on(t.at),
+    // Finds the same person's latest row for an item, to merge repeat edits.
+    index("activity_log_item_idx").on(t.userId, t.entityType, t.entityId, t.at),
+    check(
+      "activity_log_action_valid",
+      sql`${t.action} IN ('create', 'update', 'publish', 'unpublish', 'delete')`,
+    ),
+  ],
+);

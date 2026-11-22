@@ -1,10 +1,5 @@
 export type SectionKey =
-  | "todays_capsule"
-  | "current_series"
-  | "past_series"
-  | "blog"
-  | "events_books"
-  | "email_signup";
+  "todays_capsule" | "current_series" | "past_series" | "blog" | "events_books" | "email_signup";
 
 export interface SectionRow {
   key: SectionKey;

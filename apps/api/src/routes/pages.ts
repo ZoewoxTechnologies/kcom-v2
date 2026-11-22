@@ -17,6 +17,7 @@ import {
   richTextSchema,
   slugParam,
 } from "../content/index.js";
+import { logActivity } from "../activity.js";
 import { requireCan } from "../require-permission.js";
 import { validate } from "../validate.js";
 
@@ -166,7 +167,8 @@ export function adminPageRoutes(db: CapsuleDb) {
       async (c) => {
         const { id } = c.req.valid("param");
         const { sections } = c.req.valid("json");
-        assertCanChange(c, (await findById(db, pages, id, "page")).status);
+        const page = await findById(db, pages, id, "page");
+        assertCanChange(c, page.status);
         await db.transaction(async (tx) => {
           await tx.delete(pageSections).where(eq(pageSections.pageId, id));
           if (sections.length) {
@@ -175,6 +177,12 @@ export function adminPageRoutes(db: CapsuleDb) {
               .values(sections.map((s, position) => ({ pageId: id, position, ...s })));
           }
           await tx.update(pages).set({ updatedAt: new Date() }).where(eq(pages.id, id));
+        });
+        await logActivity(db, c, {
+          action: "update",
+          entityType: "page",
+          entityId: id,
+          title: page.title,
         });
         return c.json({ sections: await sectionsOf(db, id) });
       },

@@ -3,7 +3,14 @@ import { createTestDb } from "./test-db.js";
 import { latestCapsule } from "./queries.js";
 import { seed } from "./seed-data.js";
 import { eq } from "drizzle-orm";
-import { capsules, homepageSections, redirects, series, siteSettings, subscribers } from "./schema.js";
+import {
+  capsules,
+  homepageSections,
+  redirects,
+  series,
+  siteSettings,
+  subscribers,
+} from "./schema.js";
 
 let db: Awaited<ReturnType<typeof createTestDb>>;
 beforeAll(async () => {

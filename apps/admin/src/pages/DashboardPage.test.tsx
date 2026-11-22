@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { DashboardPage } from "./DashboardPage";
 
@@ -20,22 +20,31 @@ function mockApi(data: {
   events?: { total: number; next: string | null };
   activity?: unknown[];
   fail?: boolean;
+  /** Request paths (substrings) that answer 500, the rest working. */
+  failing?: string[];
 }) {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
       const json = (b: unknown) =>
         new Response(JSON.stringify(b), { headers: { "content-type": "application/json" } });
-      if (data.fail) return new Response("{}", { status: 500 });
+      if (data.fail || data.failing?.some((p) => url.includes(p))) {
+        return new Response("{}", { status: 500 });
+      }
       if (url.includes("/admin/activity")) return json({ items: data.activity ?? [] });
       if (url.includes("/admin/subscribers/count"))
         return json({ confirmed: 1284, addedThisMonth: 36 });
       if (url.includes("/admin/events/upcoming"))
         return json(data.events ?? { total: 0, next: null });
       const all = data.capsules ?? [];
-      const items = url.includes("status=draft")
-        ? all.filter((c) => (c as { status: string }).status === "draft")
-        : all;
+      const q = new URL(url, "http://x").searchParams;
+      const from = q.get("from");
+      const to = q.get("to");
+      const items = all.filter((c) => {
+        const { status, publishAt } = c as { status: string; publishAt: string };
+        if (url.includes("status=draft")) return status === "draft";
+        return (!from || publishAt >= from) && (!to || publishAt < to);
+      });
       return json({ items, total: items.length });
     }),
   );
@@ -115,9 +124,54 @@ describe("dashboard", () => {
     expect(screen.queryByText(/isn’t written yet/)).toBeNull();
   });
 
-  it("says so when loading fails", async () => {
+  it("shows an error in every panel when everything fails, without crashing the page", async () => {
     mockApi({ fail: true });
     renderPage();
-    expect((await screen.findByRole("alert")).textContent).toContain("could not be loaded");
+    expect(await screen.findAllByRole("alert")).toHaveLength(6);
+    expect(screen.getByRole("heading", { name: /Good (morning|afternoon|evening)/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "New capsule" })).toBeTruthy();
+  });
+
+  it("keeps the rest of the dashboard working when /admin/activity returns 500", async () => {
+    mockApi({
+      capsules: [cap("d", "A Sound Mind", "draft", "2026-11-25T23:00:00Z")],
+      failing: ["/admin/activity"],
+    });
+    renderPage();
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain("Recent activity could not be loaded");
+    expect(screen.getAllByRole("alert")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "Recent activity" })).toBeTruthy();
+    expect(await screen.findByText("1,284")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "A Sound Mind" })).toBeTruthy();
+    expect(screen.getByText("None planned")).toBeTruthy();
+  });
+
+  it("breaks only the numbers tile when the subscriber count fails", async () => {
+    mockApi({ failing: ["/admin/subscribers/count"] });
+    renderPage();
+    expect((await screen.findByRole("alert")).textContent).toContain("Could not be loaded");
+    expect(await screen.findByText(/No drafts/)).toBeTruthy();
+    expect(screen.getByText("Nothing yet.")).toBeTruthy();
+  });
+
+  it("retries just the failed panel", async () => {
+    mockApi({ failing: ["/admin/activity"] });
+    renderPage();
+    await screen.findByRole("alert");
+    // The endpoint recovers.
+    mockApi({
+      activity: [
+        {
+          at: "2026-11-19T08:12:00Z",
+          text: "Grace A. updated blog post: Hi",
+          href: null,
+          badge: null,
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Grace A. updated blog post: Hi")).toBeTruthy();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });
