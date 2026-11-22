@@ -1,6 +1,8 @@
 /* Buttons: .kc-btn plus a variant (primary, secondary, tertiary, give).
    Works on <button> and <a>. Default size is small; add .kc-btn--md or .kc-btn--lg. Loading is aria-busy="true"; disabled is :disabled
    or aria-disabled="true". Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-btn {
     --kc-btn-bg: transparent;

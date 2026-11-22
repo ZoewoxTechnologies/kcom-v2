@@ -1,0 +1,98 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SignupForm from "../../components/SignupForm.astro";
+import {
+  SIGNUP_COOKIE_MAX_AGE,
+  SIGNUP_EMAIL_COOKIE,
+  signupStates,
+  submitSignup,
+  visitorIp,
+} from "../../lib/signup";
+
+let email = "";
+let error: string | undefined;
+
+// The footer, band and capsule forms all post here, so the signup works without JavaScript.
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData().catch(() => null);
+  const field = (name: string) => {
+    const v = form?.get(name);
+    return typeof v === "string" ? v : "";
+  };
+  email = field("email").trim();
+  let socketAddress: string | undefined;
+  try {
+    socketAddress = Astro.clientAddress;
+  } catch {
+    /* no socket address available */
+  }
+  const result = await submitSignup(import.meta.env.PUBLIC_API_URL ?? process.env.PUBLIC_API_URL, {
+    email,
+    turnstileToken: field("cf-turnstile-response"),
+    hp_url: field("hp_url"),
+    clientIp: visitorIp(Astro.request.headers.get("x-forwarded-for"), socketAddress),
+  });
+  if (result.ok) {
+    Astro.cookies.set(SIGNUP_EMAIL_COOKIE, email, {
+      path: "/subscribe",
+      maxAge: SIGNUP_COOKIE_MAX_AGE,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: Astro.url.protocol === "https:",
+    });
+    return Astro.redirect(signupStates.checkInbox, 303);
+  }
+  error = result.message;
+  Astro.response.status = result.status;
+}
+---
+
+<BaseLayout
+  title="Get the Capsule by email"
+  description="A short word from Scripture, every day at midnight."
+  current="/subscribe"
+  hideSignup
+>
+  <meta slot="head" name="robots" content="noindex" />
+  <section class="subscribe">
+    <h1>Get Capstone Capsules by email</h1>
+    <p>
+      A short word from Scripture, every day at midnight. Free, and you can unsubscribe in one
+      click.
+    </p>
+    <SignupForm
+      id="subscribe-email"
+      label="Your email address"
+      visibleLabel
+      value={email}
+      error={error}
+    />
+    <p class="note">
+      We use your address only to send the Capsule. <a href="/privacy">Privacy policy</a>
+    </p>
+  </section>
+</BaseLayout>
+<style>
+  .subscribe {
+    max-inline-size: 36rem;
+    margin-inline: auto;
+    padding: var(--space-6) 0 var(--space-7);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 500;
+    font-size: clamp(2.25rem, 7vw, 3rem);
+    line-height: 1.1;
+  }
+  p {
+    margin: 0;
+  }
+  .note {
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+  }
+</style>

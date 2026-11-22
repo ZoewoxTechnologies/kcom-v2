@@ -270,7 +270,7 @@ function PostEditor({ initial }: { initial: PostRecord | null }) {
               timeStyle: "short",
               timeZone: DEFAULT_TIME_ZONE,
             }).format(new Date(saved.publishAt))}{" "}
-            (Lagos time). Saving keeps the schedule.
+            (WAT). Saving keeps the schedule.
           </Banner>
         )}
         <div className="kc-blog-editor__grid">

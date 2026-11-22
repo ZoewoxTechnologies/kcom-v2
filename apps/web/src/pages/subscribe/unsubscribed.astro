@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SignupState from "../../components/SignupState.astro";
+---
+<BaseLayout title="You’ve been unsubscribed" current="/subscribe" hideSignup>
+  <meta slot="head" name="robots" content="noindex" />
+  <SignupState tone="neutral" icon="—" title="You’ve been unsubscribed">
+    You won’t receive more emails. We’re grateful you read with us.
+    <Fragment slot="extra"><a href="/subscribe">Changed your mind? Subscribe again</a></Fragment>
+  </SignupState>
+</BaseLayout>

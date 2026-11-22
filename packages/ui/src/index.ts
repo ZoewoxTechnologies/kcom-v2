@@ -52,6 +52,8 @@ export type {
 } from "./react/DataTable";
 export { Pagination } from "./react/Pagination";
 export type { PaginationProps } from "./react/Pagination";
+export { Switch } from "./react/Switch";
+export type { SwitchProps } from "./react/Switch";
 export { Tooltip } from "./react/Tooltip";
 export type { TooltipProps } from "./react/Tooltip";
 export { SegmentedControl } from "./react/SegmentedControl";

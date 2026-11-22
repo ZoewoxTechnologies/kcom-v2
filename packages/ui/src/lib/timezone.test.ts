@@ -59,7 +59,8 @@ describe("other zones", () => {
   });
 
   it("labels zones by city", () => {
-    expect(zoneLabel("Africa/Lagos")).toBe("Lagos");
+    expect(zoneLabel("Africa/Lagos")).toBe("WAT");
+    expect(zoneLabel("America/New_York")).toBe("New York");
     expect(zoneLabel("America/New_York")).toBe("New York");
     expect(zoneLabel("UTC")).toBe("UTC");
   });

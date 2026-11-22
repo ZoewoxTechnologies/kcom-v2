@@ -14,6 +14,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { can } from "@kcom/permissions";
 import { useIsPhone } from "./useIsPhone";
 import { useUnreadCount } from "../inbox/unread";
+import { AdminSearch } from "../search/AdminSearch";
 import { navFor, navItemFor } from "./nav";
 
 const capitalise = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
@@ -111,6 +112,7 @@ export function Shell() {
             ☰
           </Button>
           <span className="kc-admin__title">{title}</span>
+          {can(user.role, "content:read") && <AdminSearch />}
           <Menu
             className="kc-admin__user"
             align="end"

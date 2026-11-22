@@ -2,6 +2,8 @@
    .kc-table-wrap (scrolls sideways on narrow screens). Sortable headers are
    <th aria-sort> holding a .kc-table__sort button. Selected rows use
    data-selected="true" (announced by a hidden label in the first cell). The footer is .kc-table__foot (pair with pagination.css). Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-table-wrap {
     overflow-x: auto;

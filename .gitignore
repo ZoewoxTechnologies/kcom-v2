@@ -13,3 +13,5 @@ data/legacy/
 .DS_Store
 *.log
 .neon
+.lighthouse/
+.lighthouseci/

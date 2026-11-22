@@ -20,7 +20,8 @@ The scripts read these from the shell (no `.env` file is loaded):
 | `LEGACY_SQL`    | extract            | none (required)         | Path to the Drupal MySQL dump.                                   |
 | `EXTRACT_DIR`   | extract, transform | `data/legacy/extract`   | Where extract writes, and transform reads, node JSON.            |
 | `LEGACY_FILES`  | transform          | `data/legacy/files`     | Folder with the legacy public files, used to check images exist. |
-| `TRANSFORM_DIR` | transform          | `data/legacy/transform` | Where transform writes `capsules`, `series` and `report` JSON.   |
+| `TRANSFORM_DIR` | transform, import  | `data/legacy/transform` | Where transform writes `capsules`, `series` and `report` JSON; import writes `redirects.json` and `import-state.json`. |
+| `DATABASE_URL`  | import             | none (required)         | Postgres connection string (the Neon dev branch).                |
 
 ## Transform
 
@@ -45,3 +46,25 @@ Reads the extract output and maps every `daily_digest` node onto the capsule mod
   parts), dropped images and unsafe links, and files that are not on disk (the private files folder).
 
 Capsule authorship (the Editor account) is assigned when loading, not here.
+
+## Import
+
+```bash
+DATABASE_URL=postgres://... pnpm --filter @kcom/migrate import
+```
+
+Run `extract` first. Imports series, capsules and blog posts into the database and builds the
+301 redirect map, all in one transaction.
+
+- Rows are matched on the legacy node id (series on slug, redirects on old path) and written only
+  when a field differs, so a second run reports everything `unchanged`. Every record keeps its
+  legacy node id and old path.
+- `--dry-run` runs everything and rolls back.
+- `--final` imports only capsules and posts changed since the last run (read from
+  `import-state.json`); `--since=2026-01-31T00:00:00Z` sets the date by hand. Redirects always run in full.
+- A full run exits non-zero if the database counts differ from the extracted counts. Only legacy rows are counted (series and redirects by the imported slugs and paths), so editors' own rows never fail it.
+- A slug already held by another row (an editor's, or two legacy nodes) stops the run before anything is written, and the error names the slug.
+- Redirects cover every alias, `/node/<nid>`, `/archive/YYYYMM`, `/daily-digest` and the page
+  mappings. Nodes that are not imported (pages, events, books, gallery, skipped capsules) redirect to
+  the closest listing. `/rss.xml` is already served at the same path, so it needs no redirect.
+  The map is also written to `redirects.json`.

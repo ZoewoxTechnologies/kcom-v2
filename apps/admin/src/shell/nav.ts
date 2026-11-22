@@ -13,6 +13,7 @@ export const navItems: readonly NavItem[] = [
   { label: "Capsules", path: "/capsules", permission: "content:read" },
   { label: "Calendar", path: "/calendar", permission: "content:read" },
   { label: "Homepage", path: "/homepage", permission: "content:read" },
+  { label: "Pages", path: "/pages", permission: "content:read" },
   { label: "Blog", path: "/blog", permission: "content:read" },
   { label: "Events", path: "/events", permission: "content:read" },
   { label: "Books", path: "/books", permission: "content:read" },

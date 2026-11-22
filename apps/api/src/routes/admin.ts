@@ -10,6 +10,7 @@ import { adminHomepageRoutes } from "./homepage.js";
 import { adminPageRoutes } from "./pages.js";
 import type { CapsuleEvents } from "../capsule-publishing.js";
 import { adminEventRoutes } from "./events.js";
+import { adminSearchRoutes } from "./admin-search.js";
 import { adminSeriesRoutes } from "./series.js";
 import { adminSubscriberRoutes } from "./admin-subscribers.js";
 import { adminContactRoutes } from "./admin-contact.js";
@@ -35,6 +36,7 @@ export function adminRoutes(
     .route("/books", adminBookRoutes(db))
     .route("/capsules", adminCapsuleRoutes(db, events))
     .route("/events", adminEventRoutes(db))
+    .route("/search", adminSearchRoutes(db))
     .route("/series", adminSeriesRoutes(db))
     .route("/subscribers", adminSubscriberRoutes(db))
     .route("/pages", adminPageRoutes(db))

@@ -14,7 +14,7 @@
     --color-surface: #ffffff;
     --color-wash: #dde9ec; /* hero and header washes */
     --color-text: #1d2b2d;
-    --color-muted: #5f6f70;
+    --color-muted: #566667;
     --color-line: #d9e3e1;
     --color-field: #7d9090; /* form field borders */
     --color-hover: #e7f0f2; /* menu item hover */
@@ -32,7 +32,7 @@
     --color-focus: #7f6020; /* focus ring: 3:1 against page */
     --color-sage: #7d9f86;
     --color-gold: #c4a15a; /* rules, underlines, focus ring: never body text */
-    --color-gold-text: #8a6a24; /* gold used as text on the page and white surfaces */
+    --color-gold-text: #7a5c1c; /* gold used as text on the page and white surfaces */
     --color-gold-text-tint: #775a1c; /* gold text on sandstone, wash and hover surfaces: 4.5:1 on all of them */
     --color-sandstone: #f6eedd;
     --color-sandstone-hover: #efe2c6;

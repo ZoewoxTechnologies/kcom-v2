@@ -3,7 +3,7 @@ import { createTestDb } from "./test-db.js";
 import { latestCapsule } from "./queries.js";
 import { seed } from "./seed-data.js";
 import { eq } from "drizzle-orm";
-import { capsules, homepageSections, series, siteSettings, subscribers } from "./schema.js";
+import { capsules, homepageSections, redirects, series, siteSettings, subscribers } from "./schema.js";
 
 let db: Awaited<ReturnType<typeof createTestDb>>;
 beforeAll(async () => {
@@ -228,5 +228,16 @@ describe("homepage_sections constraints", () => {
     await expect(
       d.update(homepageSections).set({ position: 1 }).where(eq(homepageSections.key, "blog")),
     ).rejects.toThrow();
+  });
+});
+
+describe("redirects constraints", () => {
+  it("only accepts same-site target paths", async () => {
+    const d = await createTestDb();
+    for (const to of ["//evil.com", "/\\evil.com", "https://evil.com", "evil.com"]) {
+      await expect(d.insert(redirects).values({ fromPath: "/old", toPath: to })).rejects.toThrow();
+    }
+    await d.insert(redirects).values({ fromPath: "/old", toPath: "/capsules/a/b" });
+    expect(await d.select().from(redirects)).toHaveLength(1);
   });
 });

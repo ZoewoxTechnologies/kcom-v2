@@ -1,5 +1,7 @@
 /* Form fields. Import "@kcom/ui/forms.css" once per app, after the tokens.
    Works with plain HTML (Astro) or the React components: the classes are the API. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-field {
     display: flex;
@@ -141,6 +143,11 @@
   .kc-input--lg,
   .kc-select__control--lg {
     --kc-control-height: var(--control-height-lg);
+  }
+
+  .kc-input--pill {
+    border-radius: var(--radius-pill);
+    padding-inline: 1.125rem;
   }
 
   /* Checkbox and radio stay native; the label supplies the hit area. */

@@ -1,0 +1,35 @@
+---
+/** A centred message card for one step of the email signup: icon, heading, text and an optional action. */
+interface Props {
+  title: string;
+  tone?: "info" | "success" | "warning" | "neutral";
+  icon: string;
+  description?: string;
+}
+const { title, tone = "info", icon, description } = Astro.props;
+---
+<section class="state">
+  <div class={`card ${tone}`}>
+    <span class="icon" aria-hidden="true">{icon}</span>
+    <h1>{title}</h1>
+    <p class="text"><slot />{description}</p>
+    <slot name="extra" />
+  </div>
+</section>
+<style>
+  .state { display: flex; justify-content: center; padding: var(--space-6) 0 var(--space-7); }
+  .card { --tone-bg: var(--color-wash); --tone-fg: var(--color-primary); flex: 0 1 27.5rem; box-sizing: border-box; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 18px; padding: 2.5rem var(--space-5); display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+  .success { --tone-bg: var(--color-banner-success-bg); --tone-fg: var(--color-banner-success-icon); }
+  .warning { --tone-bg: var(--color-sandstone); --tone-fg: var(--color-gold-text-tint); }
+  .neutral { --tone-bg: var(--color-banner-info-bg); --tone-fg: var(--color-muted); }
+  .icon { inline-size: 64px; block-size: 64px; border-radius: 999px; background: var(--tone-bg); color: var(--tone-fg); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: 2.25rem; line-height: 1.1; }
+  .text { margin: 0; color: var(--color-text); }
+  .text:empty { display: none; }
+  .card :global(.sub) { font-size: var(--text-sm); color: var(--color-muted); }
+  .card :global(a) { color: var(--color-primary); }
+  .card :global(.signup-form) { inline-size: 100%; }
+  .card :global(blockquote) { margin: 6px 0; font-family: var(--font-scripture); font-style: italic; font-size: 1.125rem; }
+  .card :global(cite) { display: block; font-family: var(--font-body); font-style: normal; font-size: 13px; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-muted); }
+  @media (min-width: 48rem) { .card { padding: 2.5rem; } h1 { font-size: 2.5rem; } }
+</style>

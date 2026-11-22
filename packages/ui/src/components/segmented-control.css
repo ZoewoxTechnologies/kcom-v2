@@ -1,4 +1,6 @@
 /* Segmented control: one pill track, the active segment filled. Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-segmented {
     display: inline-flex;

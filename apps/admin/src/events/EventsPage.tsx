@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 import {
   Badge,
   Button,
@@ -17,7 +18,7 @@ import {
   Banner,
 } from "@kcom/ui";
 import type { DataTableColumn } from "@kcom/ui";
-import { EditorContainer, useDirtyState } from "../editor";
+import { EditorContainer, PanelSwap, useDirtyState } from "../editor";
 import { can } from "@kcom/permissions";
 import { ApiError } from "../api/client";
 import { slugify } from "@kcom/content";
@@ -131,6 +132,19 @@ export function EventsPage() {
     void load();
   }, [load]);
 
+  // A search result links here with ?open=<id>; open that event once the list is in.
+  const [params, setParams] = useSearchParams();
+  const openId = params.get("open");
+  useEffect(() => {
+    if (!openId || !events) return;
+    if (events.some((e) => e.id === openId)) {
+      const e = events.find((x) => x.id === openId)!;
+      setWhen(isUpcoming(e, Date.now()) ? "upcoming" : "past");
+      setSelected(openId);
+    }
+    setParams({}, { replace: true });
+  }, [openId, events, setParams]);
+
   const now = Date.now();
   const shown = (events ?? [])
     .filter((e) => isUpcoming(e, now) === (when === "upcoming"))
@@ -214,23 +228,25 @@ export function EventsPage() {
           )}
         </div>
         <div className="kc-events__side">
-          {selected && (selected === "new" || editing) ? (
-            <EventEditor
-              key={selected}
-              event={editing ?? null}
-              guard={guard}
-              onClose={() => setSelected(null)}
-              onSaved={async () => {
-                await load();
-              }}
-              onDelete={editing ? () => setDeleting(editing) : undefined}
-            />
-          ) : (
-            <aside className="kc-events__empty">
-              <h2>No event selected</h2>
-              <p>Pick an event on the left to edit it, or click New event.</p>
-            </aside>
-          )}
+          <PanelSwap id={selected && (selected === "new" || editing) ? selected : "none"}>
+            {selected && (selected === "new" || editing) ? (
+              <EventEditor
+                key={selected}
+                event={editing ?? null}
+                guard={guard}
+                onClose={() => setSelected(null)}
+                onSaved={async () => {
+                  await load();
+                }}
+                onDelete={editing ? () => setDeleting(editing) : undefined}
+              />
+            ) : (
+              <aside className="kc-events__empty">
+                <h2>No event selected</h2>
+                <p>Pick an event on the left to edit it, or click New event.</p>
+              </aside>
+            )}
+          </PanelSwap>
         </div>
       </div>
       <UnsavedChangesPrompt
@@ -462,7 +478,7 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
           onChange={(e) => set({ allDay: e.target.checked })}
         />
         <p className="kc-events__hint">
-          Times are in Lagos time.{v.allDay && " Times are hidden on the public page."}
+          Times are in WAT.{v.allDay && " Times are hidden on the public page."}
         </p>
         <TextField
           label="Venue"

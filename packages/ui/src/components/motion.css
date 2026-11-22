@@ -1,0 +1,63 @@
+/* Motion: quiet and short. Motion confirms what happened or shows where something came from.
+   Nothing re-animates on scroll, nothing delays content (animations start at once, opacity only
+   ever starts at 0 for the length of the fade), and reduced motion keeps opacity fades only. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
+@layer components {
+  /* Content arriving: fade in and rise 8px, once, on first paint. */
+  .kc-arrive {
+    animation: kc-arrive var(--dur-slow) var(--ease-out) backwards;
+  }
+
+  /* Cards that link somewhere: lift 2px with a shadow. Colour-only for buttons lives in button.css. */
+  .kc-lift {
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
+    }
+  }
+
+  /* A panel that slides in from the right (the phone menu). */
+  .kc-slide-in {
+    animation: kc-slide-in var(--dur-slow) var(--ease-out);
+  }
+
+  @keyframes kc-arrive {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  @keyframes kc-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+  }
+
+  @keyframes kc-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kc-arrive,
+    .kc-slide-in {
+      animation: kc-fade-in var(--dur-base) linear backwards !important;
+    }
+    .kc-lift {
+      transition: box-shadow var(--dur-fast) linear;
+
+      &:hover {
+        transform: none;
+      }
+    }
+  }
+}

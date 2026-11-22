@@ -1,5 +1,7 @@
 /* Banner: .kc-banner plus a variant (warning, info, success, danger). An icon, a message and
    optional link-style actions. Needs a11y.css for the hidden variant name. Import after tokens.css. */
+/* Declared in every file so the layer order holds whichever stylesheet loads first. */
+@layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-banner {
     --kc-banner-bg: var(--color-sandstone);

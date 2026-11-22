@@ -15,7 +15,7 @@ interface Props {
 const { label, title, href, end = false, dir, large = false, capsule = false } = Astro.props;
 const Tag = href ? "a" : "div";
 ---
-<Tag class:list={["link-card", { large, capsule, end, empty: !href }]} href={href}>
+<Tag class:list={["link-card", { large, capsule, end, empty: !href, "kc-lift": Boolean(href) }]} href={href}>
   <span class="label">{label}</span>
   {(title || dir) && (
     <span class="title">
@@ -33,8 +33,8 @@ const Tag = href ? "a" : "div";
   .capsule { padding: 18px 20px; }
   .capsule .label { font-size: 0.8125rem; }
   .capsule .title { font-size: 1.375rem; }
-  a.link-card { cursor: pointer; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
-  a.link-card:hover { border-color: var(--color-primary); transform: translateY(-2px); box-shadow: 0 6px 16px var(--color-ring); }
+  a.link-card { cursor: pointer; }
+  a.link-card:hover { border-color: var(--color-primary); }
   a.link-card:hover .title { color: var(--color-primary); }
   a.link-card:focus-visible { outline: none; border-color: var(--color-primary); box-shadow: var(--focus-ring); }
   .link-card.empty { background: transparent; border-style: dashed; }
@@ -42,10 +42,10 @@ const Tag = href ? "a" : "div";
   .label { font-size: var(--text-sm); color: var(--color-muted); }
   .title { font-family: var(--font-title); font-weight: 600; font-size: 1.3rem; }
   .empty .title { color: var(--color-muted); }
-  .arrow { display: inline-block; color: var(--color-primary); transition: transform 0.15s; }
+  .arrow { display: inline-block; color: var(--color-primary); transition: transform var(--dur-fast) var(--ease-out); }
   .arrow.next { margin-inline-start: 0.35em; }
   .arrow.prev { margin-inline-end: 0.35em; }
   a.link-card:hover .arrow.next { transform: translateX(4px); }
   a.link-card:hover .arrow.prev { transform: translateX(-4px); }
-  @media (prefers-reduced-motion: reduce) { a.link-card, .arrow { transition: none; } a.link-card:hover, a.link-card:hover .arrow { transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .arrow { transition: none; } a.link-card:hover .arrow { transform: none; } }
 </style>
