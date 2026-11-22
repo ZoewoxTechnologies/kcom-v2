@@ -1,54 +1,135 @@
 ---
+import PageBanner from "./PageBanner.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { aboutLinks } from "../lib/about";
 
-interface Props { title: string; description: string; intro?: string; /** Cap the content column at a 720px reading width. */ reading?: boolean }
+interface Props {
+  title: string;
+  description: string;
+  intro?: string;
+  /** Cap the content column at a 720px reading width. */ reading?: boolean;
+}
 const { title, description, intro, reading = false } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 ---
+
 <BaseLayout title={title} description={description} current="/about">
-  <section class="band">
-    <div class:list={["inner", { quoted: Astro.slots.has("band") }]}>
-      <div class="head">
-        <span class="eyebrow">About Kingdom Capstone Outreach Ministries</span>
-        <h1>{title}</h1>
-        {intro && <p class="intro">{intro}</p>}
-      </div>
+  <PageBanner
+    section="about"
+    kicker="About Kingdom Capstone Outreach Ministries"
+    title={title}
+    intro={intro}
+  >
+    <div class="band-quote">
       <slot name="band" />
     </div>
-  </section>
+  </PageBanner>
   <div class="body">
     <nav class="side" aria-label="About">
       <span class="side-label">About</span>
-      {aboutLinks.map((l) => <a href={l.href} aria-current={l.href === path ? "page" : undefined}>{l.label}</a>)}
+      {aboutLinks.map((l) => (
+        <a href={l.href} aria-current={l.href === path ? "page" : undefined}>
+          {l.label}
+        </a>
+      ))}
     </nav>
-    <div class:list={["content", { reading }]}><slot /></div>
+    <div class:list={["content", { reading }]}>
+      <slot />
+    </div>
   </div>
 </BaseLayout>
 <style>
-  .band { background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); margin-block-start: calc(var(--space-6) * -1); padding: var(--space-6) 0; }
-  .inner { display: flex; flex-direction: column; gap: var(--space-5); }
-  .head { display: flex; flex-direction: column; gap: var(--space-4); }
-  .eyebrow { font-size: 0.875rem; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--color-gold-text); }
-  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: clamp(2.25rem, 8vw, 3.75rem); line-height: 1.05; }
-  .intro { margin: 0; font-size: 1.25rem; line-height: 1.6; }
-  .inner :global(blockquote) { margin: 0; border-block-start: 2px solid var(--color-gold); padding-block-start: 18px; font-family: var(--font-scripture); font-style: italic; font-size: 1.375rem; line-height: 1.55; }
-  .inner :global(blockquote cite) { display: block; margin-block-start: 10px; font: 700 0.8125rem var(--font-body); font-style: normal; font-variant: small-caps; letter-spacing: 0.1em; color: var(--color-muted); }
-  .body { padding-block: var(--space-6) var(--space-7); display: flex; flex-direction: column; gap: var(--space-5); font-size: 1.125rem; line-height: 1.7; }
-  .side { display: flex; gap: 2px; flex-wrap: wrap; font-size: 1rem; font-weight: 600; line-height: 1.4; }
-  .side-label { display: none; font-size: 0.75rem; letter-spacing: 0.12em; font-weight: 700; color: var(--color-muted); text-transform: uppercase; margin-block-end: var(--space-2); }
-  .side a { color: var(--color-primary); text-decoration: none; padding: 12px 14px; border-radius: 10px; }
-  .side a[aria-current] { color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-line); border-inline-start: 0; box-shadow: inset 3px 0 0 var(--color-gold); }
-  .content.reading { max-inline-size: 720px; }
-  .content { min-inline-size: 0; display: flex; flex-direction: column; gap: 22px; }
-  @media (min-width: 48rem) { .band { padding-block: 64px; } }
+  .band-quote {
+    display: none;
+  }
+  @media (min-width: 48rem) {
+    .band-quote {
+      display: block;
+    }
+  }
+  .band-quote :global(blockquote) {
+    margin: var(--space-3) 0 0;
+    border-block-start: 2px solid var(--banner-gold);
+    padding-block-start: 14px;
+    font-family: var(--font-scripture);
+    font-style: italic;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    color: var(--banner-text);
+  }
+  .band-quote :global(cite) {
+    display: block;
+    margin-block-start: 8px;
+    font: 700 0.8125rem var(--font-body);
+    font-style: normal;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--banner-gold);
+  }
+  .body {
+    padding-block: var(--space-6) var(--space-7);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    font-size: 1.125rem;
+    line-height: 1.7;
+  }
+  .side {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .side-label {
+    display: none;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    margin-block-end: var(--space-2);
+  }
+  .side a {
+    color: var(--color-primary);
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+  .side a[aria-current] {
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-inline-start: 0;
+    box-shadow: inset 3px 0 0 var(--color-gold);
+  }
+  .content.reading {
+    max-inline-size: 720px;
+  }
+  .content {
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
   @media (min-width: 64rem) {
-    .inner.quoted { flex-direction: row; align-items: center; gap: 48px; }
-    .inner.quoted .head { flex: 1 1 480px; min-inline-size: 0; }
-    .inner.quoted :global(blockquote) { flex: 1 1 360px; }
-    .body { flex-direction: row; align-items: flex-start; gap: 56px; padding-block-start: 56px; }
-    .side { flex-direction: column; flex: 0 0 260px; flex-wrap: nowrap; }
-    .side-label { display: block; }
-    .content { flex: 1; }
+    .body {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 56px;
+      padding-block-start: 56px;
+    }
+    .side {
+      flex-direction: column;
+      flex: 0 0 260px;
+      flex-wrap: nowrap;
+    }
+    .side-label {
+      display: block;
+    }
+    .content {
+      flex: 1;
+    }
   }
 </style>
