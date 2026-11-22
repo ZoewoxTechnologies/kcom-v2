@@ -29,8 +29,22 @@ export function toSeriesSummary(s: ApiSeries, now: Date = new Date()): SeriesSum
 }
 
 /** Day 1 first: by part number when present, else by date. */
-export function inSeriesOrder<T extends Pick<CapsuleListItem, "displayDate" | "partNumber">>(capsules: readonly T[]): T[] {
+export function inSeriesOrder<T extends Pick<CapsuleListItem, "displayDate" | "partNumber">>(
+  capsules: readonly T[],
+): T[] {
   return [...capsules].sort(
-    (a, b) => (a.partNumber ?? Infinity) - (b.partNumber ?? Infinity) || a.displayDate.localeCompare(b.displayDate),
+    (a, b) =>
+      (a.partNumber ?? Infinity) - (b.partNumber ?? Infinity) ||
+      a.displayDate.localeCompare(b.displayDate),
   );
 }
+
+export type SeriesOrder = "oldest" | "newest";
+
+/** `?order=newest` shows the latest day first; anything else (or nothing) is Day 1 first. */
+export const parseOrder = (raw: string | null | undefined): SeriesOrder =>
+  raw === "newest" ? "newest" : "oldest";
+
+/** The capsules in the chosen order; `capsules` must already be in series order (Day 1 first). */
+export const inOrder = <T>(capsules: readonly T[], order: SeriesOrder): T[] =>
+  order === "newest" ? [...capsules].reverse() : [...capsules];

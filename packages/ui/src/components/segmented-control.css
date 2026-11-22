@@ -21,6 +21,10 @@
     color: var(--color-muted);
     font: 600 var(--text-sm) / 1 var(--font-body);
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    text-decoration: none;
     transition:
       background-color var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out);
@@ -36,7 +40,8 @@
       color: var(--color-text);
     }
 
-    &[aria-checked="true"] {
+    &[aria-checked="true"],
+    &[aria-current="true"] {
       background: var(--color-primary);
       color: var(--color-on-primary);
     }

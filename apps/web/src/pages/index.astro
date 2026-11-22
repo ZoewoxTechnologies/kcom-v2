@@ -12,6 +12,7 @@ import { postKicker } from "../lib/blog";
 import {
   defaultSections,
   featuredQuote,
+  recentSeriesRows,
   sampleBooks,
   sampleEvents,
   sectionsFromApi,
@@ -39,7 +40,6 @@ const current = allSeries.find((s) => s.inProgress) ?? allSeries[0] ?? null;
 const currentDetail = current ? await data.seriesBySlug(current.slug) : null;
 const pastSeries = allSeries.filter((s) => s.slug !== current?.slug).slice(0, 4);
 const [post] = await data.listBlogPosts({ limit: 1 });
-const tomorrow = new Date(Date.parse(`${today}T12:00:00Z`) + 86400000).toISOString().slice(0, 10);
 const shortDate = (day: string) =>
   new Date(`${day}T12:00:00Z`).toLocaleDateString("en-GB", {
     day: "numeric",
@@ -52,17 +52,9 @@ const monthDay = (day: string) => ({
     .toUpperCase(),
   n: day.slice(8),
 });
-const seriesRows = (currentDetail?.capsules ?? [])
-  .filter((c) => c.displayDate <= tomorrow)
-  .slice(-4);
+const seriesRows = recentSeriesRows(currentDetail?.capsules ?? [], today);
 const rowTag = (c: { displayDate: string; partNumber: number | null }) =>
-  c.displayDate === today
-    ? "Today"
-    : c.displayDate === tomorrow
-      ? "Tomorrow"
-      : c.partNumber
-        ? `Day ${c.partNumber}`
-        : "";
+  c.displayDate === today ? "Today" : c.partNumber ? `Day ${c.partNumber}` : "";
 
 const heroDay = capsule ? dayParts(capsule.displayDate) : null;
 const verse = capsule ? richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation : null;

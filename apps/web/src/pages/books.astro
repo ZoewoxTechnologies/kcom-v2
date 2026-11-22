@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BookCover from "../components/BookCover.astro";
+import SegmentedLinks from "@kcom/ui/astro/SegmentedLinks.astro";
 import "@kcom/ui/segmented-control.css";
 import "../styles/design.css";
 import { data } from "../lib/data";
@@ -13,11 +14,18 @@ const featured = featuredBook(all);
 const filterable = hasKinds(all);
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title="Books" description="Books and mini-books from Kingdom Capstone Outreach Ministries." current="/books">
+
+<BaseLayout
+  title="Books"
+  description="Books and mini-books from Kingdom Capstone Outreach Ministries."
+  current="/books"
+>
   <div class="books">
     {featured && (
       <section class="hero" aria-labelledby="featured">
-        <div class="hero-cover"><BookCover title={featured.title} coverUrl={featured.coverUrl} /></div>
+        <div class="hero-cover">
+          <BookCover title={featured.title} coverUrl={featured.coverUrl} />
+        </div>
         <div class="hero-text">
           <span class="kicker">Featured book</span>
           <h1 id="featured">{featured.title}</h1>
@@ -25,8 +33,20 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
           {featured.description && <p>{featured.description}</p>}
           {(featured.purchaseUrl || featured.sampleUrl) && (
             <div class="actions">
-              {featured.purchaseUrl && <a class="kc-btn kc-btn--primary kc-btn--sm" href={featured.purchaseUrl} rel="noopener">How to get a copy</a>}
-              {featured.sampleUrl && <a class="link" href={featured.sampleUrl} rel="noopener">Read a sample →</a>}
+              {featured.purchaseUrl && (
+                <a
+                  class="kc-btn kc-btn--primary kc-btn--sm"
+                  href={featured.purchaseUrl}
+                  rel="noopener"
+                >
+                  How to get a copy
+                </a>
+              )}
+              {featured.sampleUrl && (
+                <a class="link" href={featured.sampleUrl} rel="noopener">
+                  Read a sample →
+                </a>
+              )}
             </div>
           )}
         </div>
@@ -35,22 +55,38 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     <section aria-labelledby="all">
       <header>
         <h2 id="all">All books</h2>
-        {books.length > 0 && <span class="meta">{books.length} {books.length === 1 ? "title" : "titles"}</span>}
+        {books.length > 0 && (
+          <span class="meta">
+            {books.length} {books.length === 1 ? "title" : "titles"}
+          </span>
+        )}
         {filterable && (
-          <nav class="kc-segmented filter" aria-label="Filter by kind">
-            {kindFilters.map((f) => (
-              <a class="kc-segmented__option" href={f.value ? `/books?kind=${encodeURIComponent(f.value)}` : "/books"} aria-current={(kind ?? "") === f.value ? "true" : undefined}>{f.label}</a>
-            ))}
-          </nav>
+          <SegmentedLinks
+            class="filter"
+            label="Filter by kind"
+            current={kind ?? ""}
+            options={kindFilters.map((f) => ({
+              ...f,
+              href: f.value ? `/books?kind=${encodeURIComponent(f.value)}` : "/books",
+            }))}
+          />
         )}
       </header>
       {books.length === 0 && <p class="empty">No books yet. Please check back soon.</p>}
       <ul class="grid">
         {books.map((b, i) => (
           <li>
-            {b.purchaseUrl ? <a href={b.purchaseUrl} rel="noopener" aria-label={`Get ${b.title}`}><BookCover title={b.title} coverUrl={b.coverUrl} tone={i % 3} /></a> : <BookCover title={b.title} coverUrl={b.coverUrl} tone={i % 3} />}
+            {b.purchaseUrl ? (
+              <a href={b.purchaseUrl} rel="noopener" aria-label={`Get ${b.title}`}>
+                <BookCover title={b.title} coverUrl={b.coverUrl} tone={i % 3} />
+              </a>
+            ) : (
+              <BookCover title={b.title} coverUrl={b.coverUrl} tone={i % 3} />
+            )}
             <h3>{b.title}</h3>
-            {(b.kind || b.publishedYear) && <span class="meta">{[b.kind, b.publishedYear].filter(Boolean).join(" · ")}</span>}
+            {(b.kind || b.publishedYear) && (
+              <span class="meta">{[b.kind, b.publishedYear].filter(Boolean).join(" · ")}</span>
+            )}
           </li>
         ))}
       </ul>
@@ -58,30 +94,157 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   </div>
 </BaseLayout>
 <style>
-  .books { font-size: 17px; line-height: 1.65; display: flex; flex-direction: column; gap: var(--space-6); padding-block: 0 56px; margin-block-start: calc(var(--space-6) * -1); }
-  .hero { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-5) 56px; background: var(--color-wash); box-shadow: 0 0 0 100vmax var(--color-wash); clip-path: inset(0 -100vmax); padding-block: 56px; }
-  .hero-cover { flex: 0 0 9rem; box-sizing: border-box; box-shadow: 0 18px 40px rgba(20, 50, 62, 0.25); border-radius: 10px; }
-  .hero-text { flex: 1 1 26rem; min-inline-size: 0; display: flex; flex-direction: column; gap: 14px; }
-  .kicker { font-size: 14px; letter-spacing: 0.1em; font-variant: small-caps; font-weight: 700; color: var(--d-kicker); }
-  h1 { margin: 0; font-family: var(--font-title); font-weight: 500; font-size: 56px; line-height: 1.05; }
-  h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 40px; line-height: 1.65; }
-  h3 { margin: 0; font: 600 21px / 1.15 var(--font-title); }
-  p { margin: 0; max-inline-size: 560px; }
-  .meta { color: var(--color-muted); font-size: 15px; }
-  .actions { min-block-size: 48px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-block-start: 6px; }
-  .link { font-weight: 600; text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 5px; }
-  header { display: flex; align-items: baseline; gap: var(--space-3) 16px; flex-wrap: wrap; margin-block-end: 28px; }
-  .filter { margin-inline-start: auto; max-inline-size: 100%; overflow-x: auto; }
-  .filter a { display: inline-flex; align-items: center; white-space: nowrap; text-decoration: none; }
-  .filter a[aria-current] { background: var(--color-primary); color: var(--color-on-primary); }
-  .empty { color: var(--color-muted); }
-  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 24px; }
-  li { display: flex; flex-direction: column; gap: 10px; }
-  li .meta { font-size: 13px; margin-block-start: -6px; }
-  li > a { display: block; color: inherit; text-decoration: none; }
-  @media (min-width: 48rem) { .hero-cover { flex-basis: 292px; } h1 { font-size: 56px; } .hero-cover :global(.cover) { aspect-ratio: auto; block-size: 422px; box-sizing: border-box; } }
-  @media (max-width: 47.99rem) { h1 { font-size: 40px; } h2 { font-size: 32px; } }
-  @media (max-width: 21.99rem) { .grid { grid-template-columns: minmax(0, 1fr); } }
-  @media (min-width: 64rem) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  @media (min-width: 80rem) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .books {
+    font-size: 17px;
+    line-height: 1.65;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    padding-block: 0 56px;
+    margin-block-start: calc(var(--space-6) * -1);
+  }
+  .hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-5) 56px;
+    background: var(--color-wash);
+    box-shadow: 0 0 0 100vmax var(--color-wash);
+    clip-path: inset(0 -100vmax);
+    padding-block: 56px;
+  }
+  .hero-cover {
+    flex: 0 0 9rem;
+    box-sizing: border-box;
+    box-shadow: 0 18px 40px rgba(20, 50, 62, 0.25);
+    border-radius: 10px;
+  }
+  .hero-text {
+    flex: 1 1 26rem;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .kicker {
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    font-variant: small-caps;
+    font-weight: 700;
+    color: var(--d-kicker);
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 500;
+    font-size: 56px;
+    line-height: 1.05;
+  }
+  h2 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 1.65;
+  }
+  h3 {
+    margin: 0;
+    font: 600 21px / 1.15 var(--font-title);
+  }
+  p {
+    margin: 0;
+    max-inline-size: 560px;
+  }
+  .meta {
+    color: var(--color-muted);
+    font-size: 15px;
+  }
+  .actions {
+    min-block-size: 48px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-block-start: 6px;
+  }
+  .link {
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+  }
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3) 16px;
+    flex-wrap: wrap;
+    margin-block-end: 28px;
+  }
+  :global(.filter) {
+    margin-inline-start: auto;
+    max-inline-size: 100%;
+    overflow-x: auto;
+  }
+  .empty {
+    color: var(--color-muted);
+  }
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 24px;
+  }
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  li .meta {
+    font-size: 13px;
+    margin-block-start: -6px;
+  }
+  li > a {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+  @media (min-width: 48rem) {
+    .hero-cover {
+      flex-basis: 292px;
+    }
+    h1 {
+      font-size: 56px;
+    }
+    .hero-cover :global(.cover) {
+      aspect-ratio: auto;
+      block-size: 422px;
+      box-sizing: border-box;
+    }
+  }
+  @media (max-width: 47.99rem) {
+    h1 {
+      font-size: 40px;
+    }
+    h2 {
+      font-size: 32px;
+    }
+  }
+  @media (max-width: 21.99rem) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (min-width: 64rem) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 80rem) {
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
 </style>
