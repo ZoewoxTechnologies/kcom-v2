@@ -94,13 +94,14 @@ export function SettingsPage() {
   return (
     <section className="kc-settings">
       <h1>Settings</h1>
-      <SegmentedControl
-        label="Section"
-        className="kc-settings__tabs"
-        options={SECTIONS}
-        value={section}
-        onChange={setSection}
-      />
+      <div className="kc-segmented-scroll kc-settings__tabs">
+        <SegmentedControl
+          label="Section"
+          options={SECTIONS}
+          value={section}
+          onChange={setSection}
+        />
+      </div>
       {failed ? (
         <Banner
           variant="danger"

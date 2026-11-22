@@ -3,7 +3,7 @@ import { asc, eq, sql } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { ministryArms, siteSettings, teamMembers, type CapsuleDb } from "@kcom/db";
-import { cloudinaryImageUrl, httpUrl, idParam, notFound, publicCache } from "../content/index.js";
+import { cloudinaryImageUrl, idParam, notFound, publicCache } from "../content/index.js";
 import { logActivity } from "../activity.js";
 import { HttpError } from "../errors.js";
 import { requireCan, type AuthEnv } from "../require-permission.js";
@@ -21,8 +21,16 @@ const text = (max: number) =>
     .max(max)
     .nullable()
     .transform((v) => (v ? v : null));
+// One rule, one message. No whitespace: a URL with a space passes z.url() but the database check
+// rejects it, which would be a 500.
 const url = z
-  .union([z.literal(""), httpUrl])
+  .string()
+  .trim()
+  .max(2048)
+  .refine(
+    (u) => u === "" || (/^https?:\/\/\S+$/i.test(u) && URL.canParse(u)),
+    "must be an http(s) URL without spaces",
+  )
   .nullable()
   .transform((v) => (v ? v : null));
 const email = z

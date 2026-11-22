@@ -260,12 +260,13 @@ export const siteSettings = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => {
-    const url = (c: typeof t.facebookUrl) => sql`${c} IS NULL OR ${c} ~ '^https?://[^\s]+$'`;
+    // Backslashes are doubled below: in a template literal a bare `\s` becomes a plain "s".
+    const url = (c: typeof t.facebookUrl) => sql`${c} IS NULL OR ${c} ~ '^https?://[^\\s]+$'`;
     return [
       check("site_settings_singleton", sql`${t.id} = 1`),
       check(
         "site_settings_email_format",
-        sql`${t.contactEmail} IS NULL OR ${t.contactEmail} ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'`,
+        sql`${t.contactEmail} IS NULL OR ${t.contactEmail} ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'`,
       ),
       check("site_settings_facebook_url", url(t.facebookUrl)),
       check("site_settings_youtube_url", url(t.youtubeUrl)),
