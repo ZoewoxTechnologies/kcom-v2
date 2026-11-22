@@ -1,19 +1,31 @@
+import { useCallback, useState } from "react";
 import { Link } from "react-router";
-import { Badge, Banner, Button } from "@kcom/ui";
-import { capsuleEditPath } from "../capsules/api";
+import { Badge, Banner } from "@kcom/ui";
+import { capsuleEditPath, listDrafts } from "../capsules/api";
+import type { CapsuleSummary } from "../capsules/api";
 import { addDays, lagosDay, shortDayLabel } from "../capsules/days";
-import { useDashboard } from "../dashboard/api";
+import { AsyncPanel, AsyncTile } from "../dashboard/Async";
+import {
+  loadActivity,
+  loadCapsulesOn,
+  loadSubscribers,
+  loadUpcomingCapsules,
+} from "../dashboard/api";
 import { activityWhen, comingUp, draftsOf, greeting } from "../dashboard/summary";
-import { Panel, PanelRow, StatTile } from "../dashboard/widgets";
+import { Panel, PanelRow } from "../dashboard/widgets";
+import { upcomingEventsSummary } from "../events/api";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const newCapsulePath = (day: string) => `/capsules/new?day=${day}`;
 const DRAFTS_SHOWN = 5;
 
-/** Landing page: today's capsule, what is coming up, drafts and the key numbers. */
+/**
+ * Landing page: today's capsule, what is coming up, drafts and the key numbers. Every tile and
+ * panel loads its own data, so a failing request only breaks the one place that asked for it.
+ */
 export function DashboardPage() {
-  const { data, state, reload } = useDashboard();
-  const now = new Date();
+  // Fixed for this visit, so the loaders below stay stable and nothing refetches on re-render.
+  const [now] = useState(() => new Date());
   const today = lagosDay(now);
   const tomorrow = addDays(today, 1);
 
@@ -26,81 +38,94 @@ export function DashboardPage() {
         </Link>
       </header>
 
-      {state === "loading" && <p className="kc-admin-loading">Loading…</p>}
-      {state === "error" && (
-        <Banner
-          variant="danger"
-          action={
-            <Button variant="tertiary" onClick={reload}>
-              Try again
-            </Button>
-          }
-        >
-          The dashboard could not be loaded.
-        </Banner>
-      )}
-      {data && <Loaded data={data} now={now} today={today} tomorrow={tomorrow} />}
+      <div className="kc-dash__stats">
+        <SubscribersTile />
+        <TomorrowTile tomorrow={tomorrow} />
+        <EventsTile />
+      </div>
+      <div className="kc-dash__panels">
+        <ComingUpPanel today={today} />
+        <DraftsPanel />
+      </div>
+      <ActivityPanel now={now} />
     </section>
   );
 }
 
-function Loaded({
-  data,
-  now,
-  today,
-  tomorrow,
-}: {
-  data: NonNullable<ReturnType<typeof useDashboard>["data"]>;
-  now: Date;
-  today: string;
-  tomorrow: string;
-}) {
-  const days = comingUp(data.capsules, now);
-  const tomorrowCapsule = days.find((d) => d.day === tomorrow)?.capsule ?? null;
-  const drafts = draftsOf(data.drafts);
+function SubscribersTile() {
+  return (
+    <AsyncTile label="Subscribers" load={loadSubscribers}>
+      {(s) => (
+        <>
+          <span className="kc-stat__value">{s.confirmed.toLocaleString("en")}</span>
+          <span className="kc-stat__note">{`+${s.addedThisMonth.toLocaleString("en")} this month`}</span>
+        </>
+      )}
+    </AsyncTile>
+  );
+}
+
+/** The tile, plus a heads-up spanning the stats row when tomorrow's capsule is not written. */
+function TomorrowTile({ tomorrow }: { tomorrow: string }) {
+  const load = useCallback(() => loadCapsulesOn(tomorrow), [tomorrow]);
+  return (
+    <AsyncTile
+      label="Tomorrow’s Capsule"
+      load={load}
+      after={(capsules) =>
+        capsules.length === 0 && (
+          <Banner
+            className="kc-dash__notice"
+            action={
+              <Link className="kc-btn kc-btn--tertiary" to={newCapsulePath(tomorrow)}>
+                Write it now
+              </Link>
+            }
+          >
+            Tomorrow’s Capsule ({shortDayLabel(tomorrow)}) isn’t written yet. It goes live at
+            midnight (WAT).
+          </Banner>
+        )
+      }
+    >
+      {(capsules) => (
+        <>
+          <span className="kc-stat__value">
+            {capsules[0] ? cap(capsules[0].status) : "Not yet"}
+          </span>
+          <span className="kc-stat__note">Due by midnight WAT</span>
+        </>
+      )}
+    </AsyncTile>
+  );
+}
+
+function EventsTile() {
+  return (
+    <AsyncTile label="Upcoming events" load={upcomingEventsSummary}>
+      {(events) => (
+        <>
+          <span className="kc-stat__value">{events.total}</span>
+          <span className="kc-stat__note">
+            {events.next
+              ? `Next: ${shortDayLabel(lagosDay(events.next)).slice(4)}`
+              : "None planned"}
+          </span>
+        </>
+      )}
+    </AsyncTile>
+  );
+}
+
+function ComingUpPanel({ today }: { today: string }) {
+  const load = useCallback(() => loadUpcomingCapsules(today), [today]);
   const dayName = (day: string) =>
     day === today ? "Today" : shortDayLabel(day).split(" ").slice(0, 2).join(" ");
-
   return (
-    <>
-      <div className="kc-dash__stats">
-        <StatTile
-          label="Subscribers"
-          value={data.subscribers.confirmed.toLocaleString("en")}
-          note={`+${data.subscribers.addedThisMonth.toLocaleString("en")} this month`}
-        />
-        <StatTile
-          label="Tomorrow’s Capsule"
-          value={tomorrowCapsule ? cap(tomorrowCapsule.status) : "Not yet"}
-          note="Due by midnight WAT"
-        />
-        <StatTile
-          label="Upcoming events"
-          value={data.events.total}
-          note={
-            data.events.next
-              ? `Next: ${shortDayLabel(lagosDay(data.events.next)).slice(4)}`
-              : "None planned"
-          }
-        />
-      </div>
-
-      {!tomorrowCapsule && (
-        <Banner
-          action={
-            <Link className="kc-btn kc-btn--tertiary" to={newCapsulePath(tomorrow)}>
-              Write it now
-            </Link>
-          }
-        >
-          Tomorrow’s Capsule ({shortDayLabel(tomorrow)}) isn’t written yet. It goes live at midnight
-          (WAT).
-        </Banner>
-      )}
-
-      <div className="kc-dash__panels">
+    <AsyncPanel title="Coming up" load={load}>
+      {(capsules: CapsuleSummary[]) => (
         <Panel title="Coming up">
-          {days.map(({ day, capsule }) => (
+          {comingUp(capsules, new Date()).map(({ day, capsule }) => (
             <PanelRow
               key={day}
               lead={dayName(day)}
@@ -118,32 +143,52 @@ function Loaded({
             </PanelRow>
           ))}
         </Panel>
-        <Panel title="Drafts" empty="No drafts. Everything is scheduled or published.">
-          {drafts.length > 0 &&
-            drafts.slice(0, DRAFTS_SHOWN).map((c) => (
-              <PanelRow key={c.id} lead={shortDayLabel(lagosDay(c.publishAt)).slice(4)}>
-                <Link to={capsuleEditPath(c.id)}>{c.title}</Link>
-              </PanelRow>
-            ))}
-          {drafts.length > DRAFTS_SHOWN && (
-            <p className="kc-panel__more">
-              <Link to="/capsules">All {drafts.length} drafts</Link>
-            </p>
-          )}
-        </Panel>
-      </div>
+      )}
+    </AsyncPanel>
+  );
+}
 
-      <Panel title="Recent activity" empty="Nothing yet.">
-        {data.activity.map((a, i) => (
-          <PanelRow
-            key={`${a.at}-${i}`}
-            lead={activityWhen(a.at, now)}
-            trail={a.badge && <Badge variant="scheduled">{a.badge}</Badge>}
-          >
-            {a.href ? <Link to={a.href}>{a.text}</Link> : a.text}
-          </PanelRow>
-        ))}
-      </Panel>
-    </>
+function DraftsPanel() {
+  return (
+    <AsyncPanel title="Drafts" load={listDrafts}>
+      {(all) => {
+        const drafts = draftsOf(all);
+        return (
+          <Panel title="Drafts" empty="No drafts. Everything is scheduled or published.">
+            {drafts.length > 0 &&
+              drafts.slice(0, DRAFTS_SHOWN).map((c) => (
+                <PanelRow key={c.id} lead={shortDayLabel(lagosDay(c.publishAt)).slice(4)}>
+                  <Link to={capsuleEditPath(c.id)}>{c.title}</Link>
+                </PanelRow>
+              ))}
+            {drafts.length > DRAFTS_SHOWN && (
+              <p className="kc-panel__more">
+                <Link to="/capsules">All {drafts.length} drafts</Link>
+              </p>
+            )}
+          </Panel>
+        );
+      }}
+    </AsyncPanel>
+  );
+}
+
+function ActivityPanel({ now }: { now: Date }) {
+  return (
+    <AsyncPanel title="Recent activity" what="recent activity" load={loadActivity}>
+      {(items) => (
+        <Panel title="Recent activity" empty="Nothing yet.">
+          {items.map((a, i) => (
+            <PanelRow
+              key={`${a.at}-${i}`}
+              lead={activityWhen(a.at, now)}
+              trail={a.badge && <Badge variant="scheduled">{a.badge}</Badge>}
+            >
+              {a.href ? <Link to={a.href}>{a.text}</Link> : a.text}
+            </PanelRow>
+          ))}
+        </Panel>
+      )}
+    </AsyncPanel>
   );
 }
