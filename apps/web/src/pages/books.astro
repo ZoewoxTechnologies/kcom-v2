@@ -1,4 +1,5 @@
 ---
+import PageBanner from "../components/PageBanner.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BookCover from "../components/BookCover.astro";
 import SegmentedLinks from "@kcom/ui/astro/SegmentedLinks.astro";
@@ -20,6 +21,11 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   description="Books and mini-books from Kingdom Capstone Outreach Ministries."
   current="/books"
 >
+  <PageBanner
+    section="books"
+    title="Books"
+    intro="Books and mini-books from Kingdom Capstone Outreach Ministries."
+  />
   <div class="books">
     {featured && (
       <section class="hero" aria-labelledby="featured">
@@ -28,7 +34,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
         </div>
         <div class="hero-text">
           <span class="kicker">Featured book</span>
-          <h1 id="featured">{featured.title}</h1>
+          <h2 id="featured">{featured.title}</h2>
           {featured.author && <span class="meta">{featured.author}</span>}
           {featured.description && <p>{featured.description}</p>}
           {(featured.purchaseUrl || featured.sampleUrl) && (
@@ -101,18 +107,14 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
-    padding-block: 0 56px;
-    margin-block-start: calc(var(--space-6) * -1);
+    padding-block: var(--space-6) 56px;
   }
   .hero {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-5) 56px;
-    background: var(--color-wash);
-    box-shadow: 0 0 0 100vmax var(--color-wash);
-    clip-path: inset(0 -100vmax);
-    padding-block: 56px;
+    padding-block: 0;
   }
   .hero-cover {
     flex: 0 0 9rem;
@@ -134,7 +136,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     font-weight: 700;
     color: var(--d-kicker);
   }
-  h1 {
+  .hero-text h2 {
     margin: 0;
     font-family: var(--font-title);
     font-weight: 500;
@@ -213,7 +215,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     .hero-cover {
       flex-basis: 292px;
     }
-    h1 {
+    .hero-text h2 {
       font-size: 56px;
     }
     .hero-cover :global(.cover) {
@@ -223,7 +225,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     }
   }
   @media (max-width: 47.99rem) {
-    h1 {
+    .hero-text h2 {
       font-size: 40px;
     }
     h2 {

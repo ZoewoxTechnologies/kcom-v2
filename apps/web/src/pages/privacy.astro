@@ -1,4 +1,5 @@
 ---
+import PageBanner from "../components/PageBanner.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { data } from "../lib/data";
 import { richTextToHtml } from "../lib/rich-text";
@@ -8,15 +9,32 @@ const page = await data.pageBySlug("privacy-policy");
 if (!page) return Astro.rewrite("/404");
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
-<BaseLayout title={page.title} description="How Kingdom Capstone Outreach Ministries handles your information." current="/privacy">
+
+<BaseLayout
+  title={page.title}
+  description="How Kingdom Capstone Outreach Ministries handles your information."
+  current="/privacy"
+>
+  <PageBanner section="contact" title={page.title} />
   <article class="policy">
-    <h1>{page.title}</h1>
     <div class="prose" set:html={richTextToHtml(page.body)} />
   </article>
 </BaseLayout>
 <style>
-  .policy { max-inline-size: 45rem; margin-inline: auto; padding: var(--space-6) 0 var(--space-7); font-size: var(--text-reading); line-height: var(--leading-reading); }
-  h1 { margin: 0 0 var(--space-4); font-family: var(--font-title); font-weight: 500; font-size: clamp(2.25rem, 7vw, 3.5rem); line-height: 1.05; }
-  .prose :global(h2) { margin: var(--space-5) 0 var(--space-2); font-family: var(--font-title); font-weight: 600; font-size: 1.75rem; }
-  .prose :global(p) { margin: 0 0 var(--space-3); }
+  .policy {
+    max-inline-size: 45rem;
+    margin-inline: auto;
+    padding: var(--space-6) 0 var(--space-7);
+    font-size: var(--text-reading);
+    line-height: var(--leading-reading);
+  }
+  .prose :global(h2) {
+    margin: var(--space-5) 0 var(--space-2);
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: 1.75rem;
+  }
+  .prose :global(p) {
+    margin: 0 0 var(--space-3);
+  }
 </style>

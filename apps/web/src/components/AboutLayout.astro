@@ -39,6 +39,14 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
   </div>
 </BaseLayout>
 <style>
+  .band-quote {
+    display: none;
+  }
+  @media (min-width: 48rem) {
+    .band-quote {
+      display: block;
+    }
+  }
   .band-quote :global(blockquote) {
     margin: var(--space-3) 0 0;
     border-block-start: 2px solid #d4b46e;

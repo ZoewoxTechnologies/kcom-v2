@@ -1,46 +1,32 @@
 ---
 /**
- * Page header band: title, intro and an optional kicker over a banner.
- * `variant` "a" is a photo with a shared teal grade, "b" is an abstract gradient and shape system.
- * `section` picks the photo (a) or the arrangement (b). The default variant comes from the
- * `banner` query parameter so both directions can be previewed on the real pages.
+ * Page header band: title, intro and an optional kicker over a photo with a shared teal grade.
+ * `section` picks the photo from /banners (credits in /banners/CREDITS.md).
  */
-export type BannerSection = "capsules" | "events" | "blog" | "about";
+export type BannerSection =
+  "capsules" | "events" | "blog" | "about" | "books" | "partner" | "contact";
 interface Props {
   title: string;
   intro?: string;
   kicker?: string;
   section: BannerSection;
-  variant?: "a" | "b";
 }
 const { title, intro, kicker, section } = Astro.props;
-const q = Astro.url.searchParams.get("banner")?.toLowerCase();
-const variant = q === "a" || q === "b" ? q : (Astro.props.variant ?? "b");
 const photo = `/banners/${section}`;
 ---
 
-<section class={`banner v-${variant} s-${section}`} data-variant={variant}>
+<section class={`banner s-${section}`}>
   <div class="art" aria-hidden="true">
-    {variant === "a" ? (
-      <img
-        src={`${photo}-1600.webp`}
-        srcset={`${photo}-800.webp 800w, ${photo}-1600.webp 1600w`}
-        sizes="100vw"
-        width="1600"
-        height="450"
-        alt=""
-        fetchpriority="high"
-        decoding="async"
-      />
-    ) : (
-      <svg viewBox="0 0 1600 360" preserveAspectRatio="xMaxYMid slice" focusable="false">
-        <circle class="o1" cx="1320" cy="120" r="260" />
-        <circle class="o2" cx="1100" cy="330" r="200" />
-        <path class="w1" d="M600 360 C 900 220 1200 380 1600 180 L1600 360Z" />
-        <path class="w2" d="M800 360 C 1100 280 1350 340 1600 260 L1600 360Z" />
-        <circle class="g" cx="1490" cy="70" r="46" />
-      </svg>
-    )}
+    <img
+      src={`${photo}-1600.webp`}
+      srcset={`${photo}-800.webp 800w, ${photo}-1600.webp 1600w`}
+      sizes="100vw"
+      width="1600"
+      height="450"
+      alt=""
+      fetchpriority="high"
+      decoding="async"
+    />
     <span class="grain"></span>
   </div>
   <div class="inner">
@@ -98,7 +84,7 @@ const photo = `/banners/${section}`;
     object-position: 85% 50%;
   }
   /* shared photo grade: a strong teal wash on the text side, easing out to the right */
-  .v-a .art::before {
+  .art::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -110,7 +96,7 @@ const photo = `/banners/${section}`;
       color-mix(in srgb, var(--b-1) 30%, transparent) 100%
     );
   }
-  .v-a .art::after {
+  .art::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -119,80 +105,13 @@ const photo = `/banners/${section}`;
     mix-blend-mode: color;
     opacity: 0.55;
   }
-  :root[data-theme="dark"] .v-a .art img {
+  :root[data-theme="dark"] .art img {
     filter: brightness(0.7);
   }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .v-a .art img {
+    :root:not([data-theme="light"]) .art img {
       filter: brightness(0.7);
     }
-  }
-  .art svg {
-    position: absolute;
-    inset: 0;
-    inline-size: 100%;
-    block-size: 100%;
-  }
-  .art svg .o1 {
-    fill: var(--b-3);
-    opacity: 0.28;
-  }
-  .art svg .o2 {
-    fill: var(--b-1);
-    opacity: 0.55;
-  }
-  .art svg .w1 {
-    fill: var(--b-3);
-    opacity: 0.16;
-  }
-  .art svg .w2 {
-    fill: var(--b-gold);
-    opacity: 0.14;
-  }
-  .art svg .g {
-    fill: var(--b-gold);
-    opacity: 0.5;
-  }
-  /* per-section arrangement for the abstract set */
-  .s-events .art svg .o1 {
-    cx: 1450px;
-    cy: 200px;
-    r: 300px;
-  }
-  .s-events .art svg .g {
-    cx: 1020px;
-    cy: 90px;
-    r: 34px;
-    opacity: 0.4;
-  }
-  .s-blog .art svg .o1 {
-    cx: 1180px;
-    cy: 60px;
-    r: 180px;
-  }
-  .s-blog .art svg .w1 {
-    opacity: 0.22;
-  }
-  .s-about .art svg .o2 {
-    cx: 1400px;
-    cy: 300px;
-    r: 260px;
-  }
-  .s-about .art svg .g {
-    cx: 1300px;
-    cy: 90px;
-    r: 70px;
-    opacity: 0.3;
-  }
-  .v-b .art::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-      60% 120% at 12% 20%,
-      color-mix(in srgb, var(--b-3) 22%, transparent),
-      transparent 70%
-    );
   }
   .grain {
     position: absolute;
