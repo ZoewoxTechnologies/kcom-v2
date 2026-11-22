@@ -130,7 +130,9 @@ describe("settings", () => {
   });
 
   it("a bad URL is a 400 field error naming the field, never a 500", async () => {
+    const tooLong = `https://example.com/${"a".repeat(2048)}`;
     for (const bad of [
+      tooLong,
       "not a url",
       "https://example.com/a b",
       "ftp://files.example.com",

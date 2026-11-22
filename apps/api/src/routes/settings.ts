@@ -23,6 +23,7 @@ const text = (max: number) =>
 const url = z
   .string()
   .trim()
+  .max(2048)
   .refine(
     (u) => u === "" || (/^https?:\/\/\S+$/i.test(u) && URL.canParse(u)),
     "must be an http(s) URL without spaces",
