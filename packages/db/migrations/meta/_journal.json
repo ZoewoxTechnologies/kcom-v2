@@ -106,13 +106,6 @@
       "when": 1795269401217,
       "tag": "0014_search_indexes",
       "breakpoints": true
-    },
-    {
-      "idx": 15,
-      "version": "7",
-      "when": 1795376719089,
-      "tag": "0015_settings_url_checks",
-      "breakpoints": true
     }
   ]
 }
