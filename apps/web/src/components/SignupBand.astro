@@ -1,21 +1,31 @@
 ---
+/**
+ * The email signup band: centred heading and text over one short, centred input + button row.
+ * Used on every page, in the layout and in the homepage's own section, so both look the same.
+ * `bleed` drops the card shell (background, radius, padding) for a host that supplies its own
+ * full-width coloured section.
+ */
 import SignupForm from "./SignupForm.astro";
 interface Props {
   title?: string;
   text?: string;
   id?: string;
+  placeholder?: string;
+  bleed?: boolean;
 }
 const {
   title = "Get Capstone Capsules by email",
   text = "A short word from Scripture, every day at midnight.",
   id = "band-email",
+  placeholder,
+  bleed = false,
 } = Astro.props;
 ---
 
-<section class="band" aria-labelledby={`${id}-title`}>
+<section class:list={["band", { bleed }]} aria-labelledby={`${id}-title`}>
   <h2 id={`${id}-title`}>{title}</h2>
   <p>{text}</p>
-  <SignupForm {id} buttonClass="kc-btn--md" />
+  <SignupForm {id} placeholder={placeholder} buttonClass="kc-btn--md" />
 </section>
 <style>
   .band {
@@ -25,7 +35,14 @@ const {
     padding: var(--space-5);
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
     gap: var(--space-3);
+  }
+  .band.bleed {
+    background: none;
+    border-radius: 0;
+    padding: 0;
   }
   h2 {
     margin: 0;
@@ -36,14 +53,45 @@ const {
   p {
     margin: 0;
     opacity: 0.9;
+    max-inline-size: 40rem;
+  }
+  /* One short row, about 480px at most, centred; it stacks on phone. */
+  .band :global(.signup-form) {
+    inline-size: 100%;
+    max-inline-size: 30rem;
+  }
+  .band :global(.row) {
+    flex-wrap: nowrap;
+  }
+  .band :global(.kc-input) {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+  .band :global(.kc-input::placeholder) {
+    color: rgba(255, 255, 255, 0.8);
   }
   .band :global(.kc-btn) {
-    background: var(--color-footer-button);
-    color: var(--color-on-footer-button);
+    --kc-btn-bg: var(--color-footer-button);
+    --kc-btn-fg: var(--color-on-footer-button);
+    --kc-btn-border: var(--color-footer-button);
+    flex: none;
+  }
+  @media (max-width: 47.999rem) {
+    .band :global(.row) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .band :global(.row .kc-input) {
+      flex: none;
+    }
   }
   @media (min-width: 48rem) {
     .band {
       padding: var(--space-6);
+    }
+    .band.bleed {
+      padding: 0;
     }
     h2 {
       font-size: 1.875rem;
