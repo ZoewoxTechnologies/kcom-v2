@@ -12,12 +12,14 @@ interface Props {
   /** An item's own image; the section photo is the fallback. */
   image?: string | null;
   flip?: boolean;
+  /** "hero" is the lighter, more natural grade for the home page: the photo is only darkened behind the text. */
+  variant?: "section" | "hero";
 }
-const { section, image, flip = false } = Astro.props;
+const { section, image, flip = false, variant = "section" } = Astro.props;
 const photo = `/banners/${section}`;
 ---
 
-<div class:list={["art", { flip }]} aria-hidden="true">
+<div class:list={["art", { flip, hero: variant === "hero" }]} aria-hidden="true">
   {image ? (
     <ResponsiveImage
       src={image}
@@ -104,9 +106,78 @@ const photo = `/banners/${section}`;
       background: color-mix(in srgb, var(--banner-start) 82%, transparent);
       transform: none;
     }
+    .art.hero::before,
+    :root[data-theme="dark"] .art.hero::before {
+      background: color-mix(in srgb, var(--banner-start) 84%, transparent);
+    }
   }
   .art.flip::before {
     transform: scaleX(-1);
+  }
+  /* hero grade: no colour blend or grain; a vignette from the text side, held strong enough
+     under the text for AA, then fading out so the photo reads as a photo */
+  .art.hero::before {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--banner-start) 88%, transparent) 0%,
+        color-mix(in srgb, var(--banner-start) 86%, transparent) 48%,
+        color-mix(in srgb, var(--banner-end) 30%, transparent) 78%,
+        color-mix(in srgb, var(--banner-end) 6%, transparent) 100%
+      ),
+      linear-gradient(
+        180deg,
+        transparent 70%,
+        color-mix(in srgb, var(--banner-start) 35%, transparent)
+      );
+  }
+  /* a faint warm tint, light mode only */
+  .art.hero::after {
+    background: var(--banner-gold);
+    mix-blend-mode: soft-light;
+    opacity: 0.22;
+  }
+  .art.hero .grain {
+    display: none;
+  }
+  .art.hero img {
+    filter: saturate(1.05) contrast(1.04);
+  }
+  :root[data-theme="dark"] .art.hero img {
+    filter: brightness(0.95) saturate(1.1) contrast(1.08);
+  }
+  :root[data-theme="dark"] .art.hero::after {
+    opacity: 0;
+  }
+  :root[data-theme="dark"] .art.hero::before {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--banner-start) 94%, transparent) 0%,
+        color-mix(in srgb, var(--banner-start) 90%, transparent) 48%,
+        color-mix(in srgb, var(--banner-start) 30%, transparent) 78%,
+        color-mix(in srgb, var(--banner-start) 8%, transparent) 100%
+      ),
+      linear-gradient(180deg, transparent 60%, var(--banner-start));
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .art.hero img {
+      filter: brightness(0.95) saturate(1.1) contrast(1.08);
+    }
+    :root:not([data-theme="light"]) .art.hero::after {
+      opacity: 0;
+    }
+    :root:not([data-theme="light"]) .art.hero::before {
+      background:
+        linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--banner-start) 94%, transparent) 0%,
+          color-mix(in srgb, var(--banner-start) 90%, transparent) 48%,
+          color-mix(in srgb, var(--banner-start) 30%, transparent) 78%,
+          color-mix(in srgb, var(--banner-start) 8%, transparent) 100%
+        ),
+        linear-gradient(180deg, transparent 60%, var(--banner-start));
+    }
   }
   .art.flip img {
     object-position: 15% 50%;

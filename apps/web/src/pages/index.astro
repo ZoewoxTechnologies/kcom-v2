@@ -69,7 +69,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     if (key === "today")
       return (
         <section class="band backdrop" aria-label="Today’s Capsule">
-          <BannerBackdrop section="capsules" flip />
+          <BannerBackdrop section="capsules" variant="hero" flip />
           <div class="inner hero">
             {capsule ? (
               <>
