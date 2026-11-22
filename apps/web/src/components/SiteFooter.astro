@@ -144,9 +144,9 @@ const year = new Date().getFullYear();
     flex-direction: column;
     gap: var(--space-2);
   }
-  /* Thin dividers between the brand and the sections, in the same line colour as the rule above the bottom row: horizontal when stacked. */
+  /* Thin gold dividers between the brand and the sections (the same gold as the rule under the logo): horizontal when stacked. */
   .cols > * + * {
-    border-block-start: 1px solid rgba(255, 255, 255, 0.15);
+    border-block-start: 1px solid var(--color-gold);
     padding-block-start: var(--space-6);
   }
   .col strong {
@@ -213,7 +213,7 @@ const year = new Date().getFullYear();
     .cols > * + * {
       border-block-start: 0;
       padding-block-start: 0;
-      border-inline-start: 1px solid rgba(255, 255, 255, 0.15);
+      border-inline-start: 1px solid var(--color-gold);
       padding-inline-start: var(--space-5);
     }
     .legal {
