@@ -75,7 +75,9 @@ variables as the nightly backup:
 - The run logs the row counts per month and fails if anything goes wrong. Unlike the nightly backup it
   fails (rather than skips) when the bucket or database is not configured.
 - The files hold ids and labels only (who, what, when), not the content. They are plain JSON, not
-  encrypted.
+  encrypted by us, but the upload requests server-side encryption (`AES256`) so they are encrypted at
+  rest. If a bucket rejects that header the run fails; set the repository variable `BACKUP_S3_SSE` to
+  `none` to skip it (R2 already encrypts every object at rest).
 
 To run it by hand: `DATABASE_URL=... S3_ENDPOINT=... S3_BUCKET=... pnpm --filter @kcom/db db:archive-activity`
 (needs the AWS CLI and its credentials in the environment).

@@ -13,7 +13,12 @@ const run = promisify(execFile);
 
 /** Object storage through the AWS CLI, which the backup workflow already relies on. */
 export function awsStore(
-  { bucket, endpoint, prefix }: { bucket: string; endpoint: string; prefix: string },
+  {
+    bucket,
+    endpoint,
+    prefix,
+    encryption = "AES256",
+  }: { bucket: string; endpoint: string; prefix: string; encryption?: string },
   exec: (args: string[]) => Promise<{ stdout: string }> = (args) =>
     run("aws", ["--endpoint-url", endpoint, ...args]),
 ): ArchiveStore {
@@ -56,6 +61,8 @@ export function awsStore(
           file,
           "--content-type",
           "application/json",
+          // Server-side encryption at rest; "none" skips it for a bucket that rejects the header.
+          ...(encryption === "none" ? [] : ["--server-side-encryption", encryption]),
         ]);
       } finally {
         await rm(dir, { recursive: true, force: true });
@@ -76,6 +83,7 @@ async function main() {
         bucket,
         endpoint,
         prefix: "activity",
+        encryption: process.env.S3_SERVER_SIDE_ENCRYPTION || undefined,
       }),
     );
   } finally {

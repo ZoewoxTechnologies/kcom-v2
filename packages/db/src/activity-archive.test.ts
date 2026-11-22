@@ -202,9 +202,20 @@ describe("awsStore", () => {
     expect(await make(async () => ({ stdout: "{}" })).exists("a.json")).toBe(true);
   });
 
-  it("puts under the prefix", async () => {
+  it("puts under the prefix with server-side encryption", async () => {
     const calls: string[][] = [];
     await make(async (a) => (calls.push(a), { stdout: "" })).put("a.json", "{}");
     expect(calls[0]).toContain("activity/a.json");
+    expect(calls[0]!.join(" ")).toContain("--server-side-encryption AES256");
+  });
+
+  it("can skip encryption for a bucket that rejects it", async () => {
+    const calls: string[][] = [];
+    const store = awsStore(
+      { bucket: "b", endpoint: "https://s3.test", prefix: "activity", encryption: "none" },
+      async (a) => (calls.push(a), { stdout: "" }),
+    );
+    await store.put("a.json", "{}");
+    expect(calls[0]!.join(" ")).not.toContain("server-side-encryption");
   });
 });

@@ -69,7 +69,7 @@ export function AsyncPanel<T>({
           <Banner
             variant="danger"
             action={
-              <Button variant="tertiary" onClick={retry}>
+              <Button variant="tertiary" size="sm" onClick={retry}>
                 Try again
               </Button>
             }
@@ -114,7 +114,7 @@ export function AsyncTile<T>({
             <span role="alert" className="kc-stat__error">
               Could not be loaded.
             </span>
-            <Button variant="tertiary" onClick={retry}>
+            <Button variant="tertiary" size="sm" onClick={retry}>
               Try again
             </Button>
           </>,
