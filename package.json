@@ -8,6 +8,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:ports": "node scripts/dev-ports.mjs",
+    "dev:front": "turbo run dev --filter=@kcom/web --filter=@kcom/admin",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",

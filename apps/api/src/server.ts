@@ -13,6 +13,8 @@ const app = createApp(createDb(), {
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean),
+  // Production stays strict: only CORS_ORIGINS. Anywhere else, any localhost port is allowed.
+  allowLocalhostOrigins: process.env.NODE_ENV !== "production",
   cloudinary: cloudinaryFromEnv(),
   trustedProxyHops: parseTrustedProxyHops(process.env.TRUSTED_PROXY_HOPS),
   internalToken: process.env.INTERNAL_JOB_TOKEN || undefined,

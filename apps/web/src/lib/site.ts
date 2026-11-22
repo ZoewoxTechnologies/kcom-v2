@@ -22,9 +22,3 @@ export const footerColumns = [
     ],
   },
 ] as const;
-
-/** Placeholders until the real social links are supplied. */
-export const socialLinks = [
-  { label: "Facebook", href: "#facebook-placeholder" },
-  { label: "YouTube", href: "#youtube-placeholder" },
-] as const;

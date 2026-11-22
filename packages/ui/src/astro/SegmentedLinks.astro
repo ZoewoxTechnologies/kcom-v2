@@ -1,6 +1,7 @@
 ---
 /* Segmented control made of links, for choices kept in the URL (a filter or an order). Works without
    JS: each option is a plain link, and the current one is marked with aria-current.
+   On a narrow screen a long row scrolls sideways, with a fade at each edge that still has more to scroll to.
    Import "@kcom/ui/segmented-control.css" once per page. */
 interface Props {
   options: { value: string; label: string; href: string }[];
@@ -13,14 +14,16 @@ interface Props {
 const { options, current, label, class: className } = Astro.props;
 ---
 
-<nav class:list={["kc-segmented", className]} aria-label={label}>
-  {options.map((o) => (
-    <a
-      class="kc-segmented__option"
-      href={o.href}
-      aria-current={o.value === current ? "true" : undefined}
-    >
-      {o.label}
-    </a>
-  ))}
-</nav>
+<div class:list={["kc-segmented-scroll", className]}>
+  <nav class="kc-segmented" aria-label={label}>
+    {options.map((o) => (
+      <a
+        class="kc-segmented__option"
+        href={o.href}
+        aria-current={o.value === current ? "true" : undefined}
+      >
+        {o.label}
+      </a>
+    ))}
+  </nav>
+</div>
