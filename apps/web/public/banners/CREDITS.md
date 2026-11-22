@@ -4,6 +4,7 @@ Free-licensed stock from Unsplash (Unsplash License). Recompressed to AVIF and W
 
 | File                  | Photo                                                                                        | Photographer       |
 | --------------------- | -------------------------------------------------------------------------------------------- | ------------------ |
+| home-*.webp, .avif    | https://unsplash.com/photos/silhouette-of-mountains-under-orange-sky-0x6RTts1jRU             | Andrey Grinkevich  |
 | capsules-*.webp       | https://unsplash.com/photos/an-open-bible-with-sunlight-streaming-through-blinds-MszZIWTVOi8 | Christopher Stites |
 | blog-*.webp           | https://unsplash.com/photos/fountain-pen-on-spiral-book-xG8IQMqMITM                          | Aaron Burden       |
 | events-*.webp         | https://unsplash.com/photos/people-raising-their-hands-up-bUd6kWoVfII                        | Fallon Michael     |

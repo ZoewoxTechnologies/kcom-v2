@@ -6,7 +6,7 @@ import ResponsiveImage from "./ResponsiveImage.astro";
  * overflow. `flip` puts the strong wash on the right, for content that sits on that side.
  */
 export type BannerSection =
-  "capsules" | "events" | "blog" | "about" | "books" | "partner" | "contact" | "privacy";
+  "home" | "capsules" | "events" | "blog" | "about" | "books" | "partner" | "contact" | "privacy";
 interface Props {
   section: BannerSection;
   /** An item's own image; the section photo is the fallback. */
@@ -122,20 +122,20 @@ const photo = `/banners/${section}`;
         90deg,
         color-mix(in srgb, var(--banner-start) 88%, transparent) 0%,
         color-mix(in srgb, var(--banner-start) 86%, transparent) 48%,
-        color-mix(in srgb, var(--banner-end) 30%, transparent) 78%,
-        color-mix(in srgb, var(--banner-end) 6%, transparent) 100%
+        color-mix(in srgb, var(--banner-end) 8%, transparent) 78%,
+        color-mix(in srgb, var(--banner-end) 0%, transparent) 100%
       ),
       linear-gradient(
         180deg,
         transparent 70%,
-        color-mix(in srgb, var(--banner-start) 35%, transparent)
+        color-mix(in srgb, var(--banner-start) 18%, transparent)
       );
   }
   /* a faint warm tint, light mode only */
   .art.hero::after {
     background: var(--banner-gold);
     mix-blend-mode: soft-light;
-    opacity: 0.22;
+    opacity: 0.1;
   }
   .art.hero .grain {
     display: none;

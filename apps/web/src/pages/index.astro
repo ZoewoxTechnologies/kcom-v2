@@ -72,12 +72,12 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     if (key === "today")
       return (
         <section class="band backdrop" aria-label="Today’s Capsule">
-          <BannerBackdrop section="capsules" variant="hero" flip />
-          <div class="inner hero">
+          <BannerBackdrop section="home" variant="hero" flip />
+          <div class:list={["inner", "hero", { bare: !capsule?.bannerUrl }]}>
             {capsule ? (
               <>
-                <div class="photo" aria-hidden="true">
-                  {capsule.bannerUrl && (
+                {capsule.bannerUrl && (
+                  <div class="photo" aria-hidden="true">
                     <ResponsiveImage
                       src={capsule.bannerUrl}
                       widths={[480, 640, 800, 1200]}
@@ -85,8 +85,8 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
                       sizes="(min-width: 60rem) 36rem, 100vw"
                       eager
                     />
-                  )}
-                </div>
+                  </div>
+                )}
                 <div class="copy">
                   <span class="eyebrow">Today’s Capsule · {heroDay!.rest}</span>
                   <h1>{capsule.title}</h1>
@@ -307,6 +307,13 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     flex-wrap: wrap;
     gap: var(--space-6);
     align-items: center;
+  }
+  /* without a capsule image the photo behind shows through and the text keeps its side */
+  .hero.bare {
+    justify-content: flex-end;
+  }
+  .hero.bare .copy {
+    flex: 0 1 34rem;
   }
   .photo {
     flex: 1 1 26rem;
