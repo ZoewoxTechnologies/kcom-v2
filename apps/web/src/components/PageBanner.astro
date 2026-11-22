@@ -1,0 +1,253 @@
+---
+/**
+ * Page header band: title, intro and an optional kicker over a banner.
+ * `variant` "a" is a photo with a shared teal grade, "b" is an abstract gradient and shape system.
+ * `section` picks the photo (a) or the arrangement (b). The default variant comes from the
+ * `banner` query parameter so both directions can be previewed on the real pages.
+ */
+export type BannerSection = "capsules" | "events" | "blog" | "about";
+interface Props {
+  title: string;
+  intro?: string;
+  kicker?: string;
+  section: BannerSection;
+  variant?: "a" | "b";
+}
+const { title, intro, kicker, section } = Astro.props;
+const q = Astro.url.searchParams.get("banner")?.toLowerCase();
+const variant = q === "a" || q === "b" ? q : (Astro.props.variant ?? "b");
+const photo = `/banners/${section}`;
+---
+
+<section class={`banner v-${variant} s-${section}`} data-variant={variant}>
+  <div class="art" aria-hidden="true">
+    {variant === "a" ? (
+      <img
+        src={`${photo}-1600.webp`}
+        srcset={`${photo}-800.webp 800w, ${photo}-1600.webp 1600w`}
+        sizes="100vw"
+        width="1600"
+        height="450"
+        alt=""
+        fetchpriority="high"
+        decoding="async"
+      />
+    ) : (
+      <svg viewBox="0 0 1600 360" preserveAspectRatio="xMaxYMid slice" focusable="false">
+        <circle class="o1" cx="1320" cy="120" r="260" />
+        <circle class="o2" cx="1100" cy="330" r="200" />
+        <path class="w1" d="M600 360 C 900 220 1200 380 1600 180 L1600 360Z" />
+        <path class="w2" d="M800 360 C 1100 280 1350 340 1600 260 L1600 360Z" />
+        <circle class="g" cx="1490" cy="70" r="46" />
+      </svg>
+    )}
+    <span class="grain"></span>
+  </div>
+  <div class="inner">
+    {kicker && <span class="kicker">{kicker}</span>}
+    <h1>{title}</h1>
+    {intro && <p class="intro">{intro}</p>}
+    <slot />
+  </div>
+</section>
+<style>
+  .banner {
+    --b-1: #2b6178;
+    --b-2: #1d4558;
+    --b-3: #7fb3c8;
+    --b-gold: #d4b46e;
+    --b-text: #fff;
+    position: relative;
+    isolation: isolate;
+    color: var(--b-text);
+    margin-block-start: calc(var(--space-6) * -1);
+    box-shadow: 0 0 0 100vmax var(--b-2);
+    clip-path: inset(0 -100vmax);
+    min-block-size: 200px;
+    display: flex;
+    align-items: center;
+    padding-block: var(--space-6);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .banner {
+      --b-1: #16303a;
+      --b-2: #0b1316;
+      --b-3: #2b6178;
+      --b-gold: #d4b46e;
+    }
+  }
+  :root[data-theme="dark"] .banner {
+    --b-1: #16303a;
+    --b-2: #0b1316;
+    --b-3: #2b6178;
+    --b-gold: #d4b46e;
+  }
+  .art {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: calc(50% - 50vw);
+    z-index: -1;
+    background: linear-gradient(100deg, var(--b-2), var(--b-1));
+  }
+  .art img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    object-position: 85% 50%;
+  }
+  /* shared photo grade: a strong teal wash on the text side, easing out to the right */
+  .v-a .art::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--b-2) 94%, transparent) 0%,
+      color-mix(in srgb, var(--b-1) 78%, transparent) 48%,
+      color-mix(in srgb, var(--b-1) 30%, transparent) 100%
+    );
+  }
+  .v-a .art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: var(--b-1);
+    mix-blend-mode: color;
+    opacity: 0.55;
+  }
+  :root[data-theme="dark"] .v-a .art img {
+    filter: brightness(0.7);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .v-a .art img {
+      filter: brightness(0.7);
+    }
+  }
+  .art svg {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+  .art svg .o1 {
+    fill: var(--b-3);
+    opacity: 0.28;
+  }
+  .art svg .o2 {
+    fill: var(--b-1);
+    opacity: 0.55;
+  }
+  .art svg .w1 {
+    fill: var(--b-3);
+    opacity: 0.16;
+  }
+  .art svg .w2 {
+    fill: var(--b-gold);
+    opacity: 0.14;
+  }
+  .art svg .g {
+    fill: var(--b-gold);
+    opacity: 0.5;
+  }
+  /* per-section arrangement for the abstract set */
+  .s-events .art svg .o1 {
+    cx: 1450px;
+    cy: 200px;
+    r: 300px;
+  }
+  .s-events .art svg .g {
+    cx: 1020px;
+    cy: 90px;
+    r: 34px;
+    opacity: 0.4;
+  }
+  .s-blog .art svg .o1 {
+    cx: 1180px;
+    cy: 60px;
+    r: 180px;
+  }
+  .s-blog .art svg .w1 {
+    opacity: 0.22;
+  }
+  .s-about .art svg .o2 {
+    cx: 1400px;
+    cy: 300px;
+    r: 260px;
+  }
+  .s-about .art svg .g {
+    cx: 1300px;
+    cy: 90px;
+    r: 70px;
+    opacity: 0.3;
+  }
+  .v-b .art::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      60% 120% at 12% 20%,
+      color-mix(in srgb, var(--b-3) 22%, transparent),
+      transparent 70%
+    );
+  }
+  .grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mix-blend-mode: overlay;
+    z-index: 2;
+  }
+  .inner {
+    position: relative;
+    max-inline-size: 38rem;
+    margin-inline-end: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .kicker {
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--b-gold);
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 500;
+    font-size: clamp(2.25rem, 7vw, 3.75rem);
+    line-height: 1.05;
+    color: inherit;
+  }
+  .intro {
+    margin: 0;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--b-text) 92%, transparent);
+  }
+  @media (min-width: 48rem) {
+    .banner {
+      min-block-size: 320px;
+    }
+    .intro {
+      font-size: 1.1875rem;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .inner {
+      animation: banner-in 500ms var(--ease-out, ease-out) both;
+    }
+  }
+  @keyframes banner-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+</style>
