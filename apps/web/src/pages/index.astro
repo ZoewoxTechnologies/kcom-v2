@@ -8,6 +8,7 @@ import SignupBand from "../components/SignupBand.astro";
 import { data } from "../lib/data";
 import { richTextToPlain } from "../lib/data/client";
 import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
+import { eventWhen } from "../lib/event-page";
 import { postKicker } from "../lib/blog";
 import { stripQuotes } from "../lib/verse";
 import {
@@ -15,7 +16,6 @@ import {
   featuredQuote,
   recentSeriesRows,
   sampleBooks,
-  sampleEvents,
   sectionsFromApi,
   sectionsFromQuery,
   visibleSections,
@@ -61,7 +61,7 @@ const heroDay = capsule ? dayParts(capsule.displayDate) : null;
 const verse = capsule
   ? stripQuotes(richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation || "")
   : null;
-const events = sampleEvents;
+const events = (await data.listEvents("upcoming")).slice(0, 2);
 const books = sampleBooks;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
@@ -187,16 +187,16 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
             >
               <ul class="events">
                 {events.map((e) => {
-                  const d = monthDay(e.date);
+                  const d = monthDay(lagosDate(new Date(e.startsAt)));
                   return (
                     <li>
-                      <a href="/events">
+                      <a href={`/events/${e.slug}`}>
                         <span class="tile">
                           <span class="mon">{d.mon}</span>
                           <span class="dn">{d.n}</span>
                         </span>
                         <span class="et">{e.title}</span>
-                        <span class="em">{e.meta}</span>
+                        <span class="em">{eventWhen(e)}</span>
                       </a>
                     </li>
                   );
@@ -404,6 +404,10 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     text-decoration: none;
     flex-wrap: wrap;
   }
+  .events a:hover .et,
+  .events a:focus-visible .et {
+    color: var(--color-primary);
+  }
   .tile {
     inline-size: 3.5rem;
     block-size: 3.5rem;
@@ -470,6 +474,14 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   }
   .bt {
     font: 600 1.25rem / 1.2 var(--font-title);
+  }
+  .books a:hover .cover,
+  .books a:focus-visible .cover {
+    border-color: var(--color-primary);
+  }
+  .books a:hover .bt,
+  .books a:focus-visible .bt {
+    color: var(--color-primary);
   }
   .signup {
     background: var(--color-footer);
