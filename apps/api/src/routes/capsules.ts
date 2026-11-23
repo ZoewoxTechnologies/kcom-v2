@@ -5,6 +5,7 @@ import {
   capsuleByRange,
   capsuleNeighbours,
   capsuleBySlug,
+  earliestCapsule,
   latestCapsule,
   listPublishedCapsules,
   type CapsuleDb,
@@ -54,6 +55,11 @@ export function capsuleRoutes(db: CapsuleDb) {
     })
     .get("/latest", async (c) => {
       const capsule = await latestCapsule(db);
+      if (!capsule) throw notFound("capsule");
+      return c.json(present(capsule));
+    })
+    .get("/earliest", async (c) => {
+      const capsule = await earliestCapsule(db);
       if (!capsule) throw notFound("capsule");
       return c.json(present(capsule));
     })

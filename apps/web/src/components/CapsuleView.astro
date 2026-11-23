@@ -41,7 +41,13 @@ const prayerHtml = capsule.prayer ? richTextToHtml(capsule.prayer) : "";
   contain="narrow"
   section="capsules"
   image={capsule.bannerUrl}
-  kicker={mode === "past" ? `${day.weekday} · ${day.rest}` : "Today’s Capsule"}
+  kicker={
+    mode === "past"
+      ? `${day.weekday} · ${day.rest}`
+      : capsule.displayDate === today
+        ? "Today’s Capsule"
+        : "Latest Capsule"
+  }
   title={capsule.title}
 >
   {mode === "today" && series && (

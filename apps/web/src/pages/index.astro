@@ -10,6 +10,7 @@ import { richTextToPlain } from "../lib/data/client";
 import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
 import { eventDayTime } from "../lib/event-page";
 import { postKicker } from "../lib/blog";
+import { todaysCapsule } from "../lib/today";
 import { stripQuotes } from "../lib/verse";
 import {
   defaultSections,
@@ -22,11 +23,7 @@ import {
 } from "../lib/homepage";
 
 const today = lagosDate(new Date());
-let capsule = await data.capsuleByDate(today);
-if (!capsule) {
-  const latest = await data.latestCapsule();
-  capsule = latest ? await data.capsuleBySlug(latest.slug) : null;
-}
+const capsule = await todaysCapsule(data, today);
 const neighbours = capsule ? await data.capsuleNeighbours(capsule.slug) : null;
 
 // The section list comes from the homepage API; `?sections=` previews an arrangement outside production.
@@ -71,14 +68,21 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     if (key === "today")
       return capsule ? (
         <HomeHero
-          kicker={`Today’s Capsule · ${heroDay!.rest}`}
+          kicker={`${capsule.displayDate === today ? "Today’s Capsule" : "Latest Capsule"} · ${heroDay!.rest}`}
           title={capsule.title}
           verse={verse}
           reference={capsule.scriptureRef}
-          primary={{ href: "/capsules/today", label: "Read today’s capsule" }}
+          primary={{
+            href: "/capsules/today",
+            label:
+              capsule.displayDate === today ? "Read today’s capsule" : "Read the latest capsule",
+          }}
           secondary={
             neighbours?.prev
-              ? { href: capsulePath(neighbours.prev.slug), label: "Yesterday’s capsule" }
+              ? {
+                  href: capsulePath(neighbours.prev.slug),
+                  label: capsule.displayDate === today ? "Yesterday’s capsule" : "Previous capsule",
+                }
               : null
           }
           image={capsule.bannerUrl}

@@ -209,6 +209,12 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
       )[0];
       return newest ? { ...link(newest), scriptureText: SCRIPTURE } : null;
     },
+    async earliestCapsuleDate() {
+      const days = build(now())
+        .items.map((c) => c.displayDate)
+        .sort();
+      return days[0] ?? null;
+    },
     async capsuleBySlug(slug) {
       const { items, series } = build(now());
       const found = items.find((c) => c.slug === slug);
