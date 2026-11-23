@@ -38,7 +38,7 @@
     --banner-start: #1d4558;
     --banner-end: #2b6178;
     --banner-text: #ffffff;
-    --banner-gold: #d4b46e;
+    --banner-gold: #f5e6bd;
     /* Home hero: its own ground with a faint arch lattice; text uses the site colours. */
     /* The kicker on this ground and lattice measures 4.65:1, just above AA: re-check contrast after any change to the background, pattern or opacity. */
     --color-hero-bg: #dfe6ec;

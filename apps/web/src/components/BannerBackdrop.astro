@@ -1,0 +1,105 @@
+---
+import ResponsiveImage from "./ResponsiveImage.astro";
+/**
+ * The photographic layer behind a banner: a section photo (or an item's own image) under the
+ * shared teal wash. The parent must be `position: relative; isolation: isolate` and clip the
+ * overflow.
+ */
+export type BannerSection =
+  "capsules" | "events" | "blog" | "about" | "books" | "partner" | "contact" | "privacy";
+interface Props {
+  section: BannerSection;
+  /** An item's own image; the section photo is the fallback. */
+  image?: string | null;
+}
+const { section, image } = Astro.props;
+const photo = `/banners/${section}`;
+---
+
+<div class="art" aria-hidden="true">
+  {image ? (
+    <ResponsiveImage
+      src={image}
+      widths={[640, 1024, 1600]}
+      ratio={1600 / 450}
+      sizes="100vw"
+      eager
+    />
+  ) : (
+    <picture>
+      <source
+        type="image/avif"
+        srcset={`${photo}-800.avif 800w, ${photo}-1600.avif 1600w`}
+        sizes="100vw"
+      />
+      <source
+        type="image/webp"
+        srcset={`${photo}-800.webp 800w, ${photo}-1600.webp 1600w`}
+        sizes="100vw"
+      />
+      <img src={`${photo}-1600.webp`} width="1600" height="450" alt="" fetchpriority="high" />
+    </picture>
+  )}
+  <span class="grain"></span>
+</div>
+<style>
+  .art {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: calc(50% - 50vw);
+    z-index: -1;
+    background: linear-gradient(100deg, var(--banner-start), var(--banner-end));
+  }
+  .art img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    object-position: 85% 50%;
+  }
+  /* shared photo grade: a strong teal wash on the text side, easing out to the right */
+  .art::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--banner-start) 94%, transparent) 0%,
+      color-mix(in srgb, var(--banner-end) 78%, transparent) 48%,
+      color-mix(in srgb, var(--banner-end) 30%, transparent) 100%
+    );
+  }
+  .art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: var(--banner-end);
+    mix-blend-mode: color;
+    opacity: 0.55;
+  }
+  :root[data-theme="dark"] .art img {
+    filter: brightness(0.7);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .art img {
+      filter: brightness(0.7);
+    }
+  }
+  .grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mix-blend-mode: overlay;
+    z-index: 2;
+  }
+  /* on phones the text spans the whole width, so the wash is even rather than a left-to-right fade */
+  @media (max-width: 47.99rem) {
+    .art::before {
+      background: color-mix(in srgb, var(--banner-start) 82%, transparent);
+    }
+  }
+</style>

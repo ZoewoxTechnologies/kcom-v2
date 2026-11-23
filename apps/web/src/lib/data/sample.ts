@@ -260,16 +260,14 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
       return sampleBooks;
     },
     async listBlogPosts({ limit = 20, offset = 0 } = {}) {
-      return sampleBlogPosts
-        .slice(offset, offset + limit)
-        .map((b) => ({
-          slug: b.slug,
-          title: b.title,
-          date: b.date,
-          excerpt: b.excerpt,
-          heroImageUrl: b.heroImageUrl,
-          tags: b.tags,
-        }));
+      return sampleBlogPosts.slice(offset, offset + limit).map((b) => ({
+        slug: b.slug,
+        title: b.title,
+        date: b.date,
+        excerpt: b.excerpt,
+        heroImageUrl: b.heroImageUrl,
+        tags: b.tags,
+      }));
     },
     async pageBySlug(slug) {
       return slug === "privacy-policy" ? samplePrivacyPolicy : null;
@@ -284,7 +282,10 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
       return rows.sort((a, b) => (when === "past" ? -1 : 1) * a.startsAt.localeCompare(b.startsAt));
     },
     async eventBySlug(slug) {
-      return sampleEvents.find((e) => e.slug === slug) ?? null;
+      const full = sampleEvents.find((e) => e.slug === slug);
+      if (full) return full;
+      const listedEvent = sampleEventList.find((e) => e.slug === slug);
+      return listedEvent ? eventDetailFromSummary(listedEvent) : null;
     },
   };
 }
@@ -324,6 +325,26 @@ const bareEvent: EventDetail = {
   programme: null,
 };
 const sampleEvents = [sampleEvent, bareEvent];
+
+/** Every event in the sample list gets a detail page: the summary becomes the description. */
+const eventDetailFromSummary = (e: EventSummary): EventDetail => ({
+  slug: e.slug,
+  title: e.title,
+  startsAt: e.startsAt,
+  endsAt: e.endsAt,
+  allDay: e.allDay,
+  place: e.place,
+  description: e.summary
+    ? {
+        type: "doc",
+        content: [{ type: "paragraph", content: [{ type: "text", text: e.summary }] }],
+      }
+    : null,
+  imageUrl: null,
+  onlineUrl: e.online ? "https://example.org/live" : null,
+  programme: null,
+  relatedPost: null,
+});
 
 const listed = (
   slug: string,
