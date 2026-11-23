@@ -427,7 +427,7 @@ const h2 = (text: string) => ({
 /** Stand-in for the privacy policy until the admin has published the real one. */
 const samplePrivacyPolicy: StaticPage = {
   slug: "privacy",
-  title: "Privacy Policy",
+  title: "Privacy policy",
   body: {
     type: "doc",
     content: [

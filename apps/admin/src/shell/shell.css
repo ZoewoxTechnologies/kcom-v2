@@ -1,4 +1,11 @@
 /* Admin layout: sign-in card, side menu, top bar. Primitives come from @kcom/ui. */
+@layer base {
+  /* No default body margin, so the sign-in background reaches the edges. */
+  body {
+    margin: 0;
+  }
+}
+
 @layer components {
   /* Plain text links (no class) use the brand link style in every state, so a visited
      link never falls back to the browser's purple. Classed links (menu, side nav) style themselves. */
@@ -24,10 +31,6 @@
   .kc-admin-loading {
     padding: var(--space-6);
     color: var(--color-muted);
-  }
-
-  body {
-    margin: 0;
   }
 
   .kc-admin-signin {
