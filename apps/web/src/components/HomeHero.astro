@@ -1,0 +1,453 @@
+---
+/**
+ * Home page hero for today's capsule, in one of three treatments:
+ * - `photo`: full-bleed editorial photograph with the text on its dark side.
+ * - `type`: no photo; a large serif title and verse on a paper ground with gold hairlines.
+ * - `split`: text beside an arched, framed image; falls back to a curated photo when the capsule has none.
+ * Photos live in /hero (credits in /hero/CREDITS.md).
+ */
+import ResponsiveImage from "./ResponsiveImage.astro";
+
+export type HeroVariant = "photo" | "type" | "split";
+interface Link {
+  href: string;
+  label: string;
+}
+interface Props {
+  variant: HeroVariant;
+  kicker?: string;
+  title: string;
+  verse?: string | null;
+  reference?: string | null;
+  /** Shown instead of the verse when there is no capsule. */
+  message?: string;
+  primary?: Link;
+  secondary?: Link | null;
+  /** The capsule's own image, used by the split layout when present. */
+  image?: string | null;
+}
+const { variant, kicker, title, verse, reference, message, primary, secondary, image } =
+  Astro.props;
+---
+
+<section class={`hero v-${variant}`} aria-label="Today’s Capsule">
+  {variant === "photo" && (
+    <div class="art" aria-hidden="true">
+      <picture>
+        <source
+          type="image/avif"
+          media="(min-width: 64rem)"
+          srcset="/hero/light-1600.avif 1600w, /hero/light-2400.avif 2400w"
+          sizes="70vw"
+        />
+        <source
+          type="image/webp"
+          media="(min-width: 64rem)"
+          srcset="/hero/light-1600.webp 1600w, /hero/light-2400.webp 2400w"
+          sizes="70vw"
+        />
+        <source type="image/avif" media="(min-width: 36rem)" srcset="/hero/light-1600.avif" />
+        <source type="image/webp" media="(min-width: 36rem)" srcset="/hero/light-1600.webp" />
+        <source type="image/avif" srcset="/hero/light-900.avif" />
+        <img src="/hero/light-900.webp" width="900" height="1200" alt="" fetchpriority="high" />
+      </picture>
+    </div>
+  )}
+
+  <div class="inner">
+    <div class="copy">
+      {kicker && <span class="kicker">{kicker}</span>}
+      <h1>{title}</h1>
+      <span class="rule" aria-hidden="true"></span>
+      {verse && <p class="verse">{verse}</p>}
+      {message && <p class="message">{message}</p>}
+      {reference && <span class="ref">{reference}</span>}
+      {(primary || secondary) && (
+        <div class="actions">
+          {primary && (
+            <a class="kc-btn kc-btn--primary kc-btn--sm" href={primary.href}>
+              {primary.label}
+            </a>
+          )}
+          {secondary && (
+            <a class="more" href={secondary.href}>
+              {secondary.label} →
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+
+    {variant === "split" && (
+      <figure class="frame" aria-hidden="true">
+        <div class="arch">
+          {image ? (
+            <ResponsiveImage
+              src={image}
+              widths={[480, 720, 960]}
+              ratio={4 / 5}
+              sizes="(min-width: 64rem) 30rem, 90vw"
+              eager
+            />
+          ) : (
+            <picture>
+              <source
+                type="image/avif"
+                srcset="/hero/page-720.avif 720w, /hero/page-1200.avif 1200w"
+                sizes="(min-width: 64rem) 30rem, 90vw"
+              />
+              <source
+                type="image/webp"
+                srcset="/hero/page-720.webp 720w, /hero/page-1200.webp 1200w"
+                sizes="(min-width: 64rem) 30rem, 90vw"
+              />
+              <img
+                src="/hero/page-1200.webp"
+                width="1200"
+                height="1500"
+                alt=""
+                fetchpriority="high"
+              />
+            </picture>
+          )}
+        </div>
+      </figure>
+    )}
+  </div>
+</section>
+
+<style>
+  .hero {
+    /* Colours this hero owns; dark overrides below. */
+    --h-bg: var(--color-page);
+    --h-text: var(--color-text);
+    --h-muted: var(--color-muted);
+    --h-kicker: var(--color-gold-text);
+    --h-gold: var(--color-gold);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--h-bg);
+    color: var(--h-text);
+    margin-block-start: calc(var(--space-6) * -1);
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+  .inner {
+    max-inline-size: 75rem;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2.5rem);
+  }
+  .copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  .kicker,
+  .ref {
+    font-size: 0.8125rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .kicker {
+    color: var(--h-kicker);
+  }
+  .ref {
+    color: var(--h-muted);
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .rule {
+    inline-size: 3rem;
+    block-size: 1px;
+    background: var(--h-gold);
+  }
+  .verse {
+    margin: 0;
+    font-family: var(--font-title);
+    font-style: italic;
+    font-weight: 400;
+    text-wrap: pretty;
+  }
+  .message {
+    margin: 0;
+    color: var(--h-muted);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    margin-block-start: var(--space-2);
+  }
+  .more {
+    color: inherit;
+    font-weight: 600;
+    text-decoration-color: var(--h-gold);
+    text-underline-offset: 5px;
+  }
+
+  /* ---------- A: editorial photograph ---------- */
+  .v-photo {
+    --h-bg: #0c0f10;
+    --h-text: #f4f1ea;
+    --h-muted: #c9c3b6;
+    --h-kicker: #d4b46e;
+    --h-gold: #d4b46e;
+    /* A light button reads best on the dark photograph, in both themes. */
+    --color-primary: #f4efe4;
+    --color-primary-hover: #ffffff;
+    --color-primary-active: #e6dfd0;
+    --color-on-primary: #0b1316;
+    --color-focus: #d4b46e;
+    min-block-size: clamp(34rem, 82vh, 46rem);
+    display: flex;
+    align-items: center;
+  }
+  .v-photo .art {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    inline-size: 64%;
+    z-index: -1;
+    mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 0.5) 30%, #000 55%);
+  }
+  .v-photo picture,
+  .arch picture {
+    display: block;
+    block-size: 100%;
+  }
+  .v-photo .art img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    object-position: 55% 50%;
+    display: block;
+  }
+  .v-photo .art::after {
+    /* Even, quiet vignette so the light keeps its depth without glare. */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 90% at 62% 50%, transparent 40%, rgb(12 15 16 / 0.6));
+  }
+  .v-photo .inner {
+    inline-size: 100%;
+    padding-block: var(--space-6);
+  }
+  .v-photo .copy {
+    max-inline-size: 30rem;
+  }
+  .v-photo h1 {
+    font-size: clamp(2.75rem, 6vw, 4.75rem);
+    line-height: 1;
+  }
+  .v-photo .verse {
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+    line-height: 1.5;
+    color: #e9e4d8;
+  }
+  @media (max-width: 63.99rem) {
+    .v-photo {
+      flex-direction: column;
+      align-items: stretch;
+      min-block-size: 0;
+    }
+    .v-photo .art {
+      position: relative;
+      inline-size: 100%;
+      aspect-ratio: 4 / 3;
+      max-block-size: 34rem;
+      mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+    }
+    .v-photo .art img {
+      object-position: 50% 45%;
+    }
+    .v-photo .inner {
+      margin-block-start: -3rem;
+      padding-block: 0 var(--space-6);
+    }
+  }
+
+  /* ---------- B: typographic page ---------- */
+  .v-type {
+    --h-bg: #f5f1e8;
+    --h-text: #1d2b2d;
+    --h-muted: #5a5a52;
+    --h-kicker: #765816;
+    --h-gold: #c4a15a;
+    background:
+      radial-gradient(80% 70% at 50% 0%, rgb(255 255 255 / 0.7), transparent 70%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .25 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      var(--h-bg);
+    padding-block: clamp(4rem, 9vw, 7.5rem);
+    text-align: center;
+  }
+  .v-type .inner {
+    position: relative;
+  }
+  .v-type .inner::before,
+  .v-type .inner::after {
+    /* Double gold hairlines, like a printed page's border rules. */
+    content: "";
+    position: absolute;
+    inset-inline: clamp(1rem, 4vw, 2.5rem);
+    block-size: 4px;
+    border-block: 1px solid var(--h-gold);
+    opacity: 0.75;
+  }
+  .v-type .inner::before {
+    inset-block-start: calc(clamp(4rem, 9vw, 7.5rem) * -0.5);
+  }
+  .v-type .inner::after {
+    inset-block-end: calc(clamp(4rem, 9vw, 7.5rem) * -0.5);
+  }
+  .v-type .copy {
+    align-items: center;
+    max-inline-size: 52rem;
+    margin-inline: auto;
+    gap: var(--space-4);
+  }
+  .v-type .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .v-type .kicker::before,
+  .v-type .kicker::after {
+    content: "";
+    inline-size: 2.5rem;
+    block-size: 1px;
+    background: var(--h-gold);
+  }
+  .v-type h1 {
+    font-size: clamp(3rem, 9vw, 6.75rem);
+    line-height: 0.95;
+    font-weight: 500;
+  }
+  .v-type .rule {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    background: none;
+    border: 1px solid var(--h-gold);
+    transform: rotate(45deg);
+    margin-block: var(--space-2);
+  }
+  .v-type .verse {
+    font-size: clamp(1.375rem, 2.6vw, 2rem);
+    line-height: 1.45;
+    max-inline-size: 36ch;
+  }
+  .v-type .actions {
+    justify-content: center;
+  }
+
+  /* ---------- C: split with arched frame ---------- */
+  .v-split {
+    --h-bg: #dfe6ec;
+    --h-kicker: #6e5216;
+    --h-muted: #4b5a5c;
+    padding-block: clamp(3rem, 7vw, 6rem);
+  }
+  .v-split .inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
+  }
+  .v-split h1 {
+    font-size: clamp(2.75rem, 5.5vw, 4.5rem);
+    line-height: 1.02;
+  }
+  .v-split .verse {
+    font-size: clamp(1.25rem, 2vw, 1.625rem);
+    line-height: 1.5;
+    max-inline-size: 32ch;
+    padding-inline-start: 1.25rem;
+    border-inline-start: 1px solid var(--h-gold);
+  }
+  .frame {
+    margin: 0;
+    position: relative;
+    justify-self: center;
+    inline-size: min(100%, 26rem);
+  }
+  .frame::before {
+    /* Gold hairline echo of the arch, offset behind the image. */
+    content: "";
+    position: absolute;
+    inset: -0.875rem 0.875rem 0.875rem -0.875rem;
+    border: 1px solid var(--h-gold);
+    border-radius: 999px 999px 4px 4px;
+  }
+  .arch {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    border-radius: 999px 999px 4px 4px;
+    overflow: hidden;
+    background: var(--color-primary);
+    box-shadow: 0 30px 60px -30px rgb(11 19 22 / 0.45);
+  }
+  .arch :global(img) {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  @media (max-width: 49.99rem) {
+    .v-split .inner {
+      grid-template-columns: 1fr;
+    }
+    .frame {
+      order: -1;
+      inline-size: min(64%, 16rem);
+      margin-block-start: var(--space-3);
+    }
+  }
+
+  /* ---------- Dark mode ---------- */
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .v-type {
+      --h-bg: #0b1316;
+      --h-text: #ece7dc;
+      --h-muted: #a9b4b3;
+      --h-kicker: #d4b46e;
+      --h-gold: #d4b46e;
+      background:
+        radial-gradient(80% 70% at 50% 0%, rgb(43 97 120 / 0.22), transparent 70%), var(--h-bg);
+    }
+    :global(:root:not([data-theme="light"])) .v-split {
+      --h-bg: #0b1316;
+      --h-text: #e6eeec;
+      --h-muted: #a9b4b3;
+      --h-kicker: #d4b46e;
+      --h-gold: #d4b46e;
+    }
+    :global(:root:not([data-theme="light"])) .arch {
+      box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.8);
+    }
+  }
+  :global([data-theme="dark"]) .v-type {
+    --h-bg: #0b1316;
+    --h-text: #ece7dc;
+    --h-muted: #a9b4b3;
+    --h-kicker: #d4b46e;
+    --h-gold: #d4b46e;
+    background:
+      radial-gradient(80% 70% at 50% 0%, rgb(43 97 120 / 0.22), transparent 70%), var(--h-bg);
+  }
+  :global([data-theme="dark"]) .v-split {
+    --h-bg: #0b1316;
+    --h-text: #e6eeec;
+    --h-muted: #a9b4b3;
+    --h-kicker: #d4b46e;
+    --h-gold: #d4b46e;
+  }
+</style>

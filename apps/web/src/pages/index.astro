@@ -3,6 +3,7 @@ import ResponsiveImage from "../components/ResponsiveImage.astro";
 import { dayParts, lagosDate } from "@kcom/content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HomeSection from "../components/HomeSection.astro";
+import HomeHero, { type HeroVariant } from "../components/HomeHero.astro";
 import SeriesCard from "../components/SeriesCard.astro";
 import SignupBand from "../components/SignupBand.astro";
 import { data } from "../lib/data";
@@ -58,6 +59,11 @@ const rowTag = (c: { displayDate: string; partNumber: number | null }) =>
 
 const heroDay = capsule ? dayParts(capsule.displayDate) : null;
 const verse = capsule ? richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation : null;
+// `?hero=a|b|c` previews the hero mock-ups outside production.
+const heroVariants: Record<string, HeroVariant> = { a: "photo", b: "type", c: "split" };
+const heroVariant = import.meta.env.PROD
+  ? undefined
+  : heroVariants[Astro.url.searchParams.get("hero") ?? ""];
 const events = sampleEvents;
 const books = sampleBooks;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
@@ -65,6 +71,29 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 
 <BaseLayout title="Home" current="/" bleed hideSignup={order.includes("signup")}>
   {order.map((key) => {
+    if (key === "today" && heroVariant)
+      return capsule ? (
+        <HomeHero
+          variant={heroVariant}
+          kicker={`Today’s Capsule · ${heroDay!.rest}`}
+          title={capsule.title}
+          verse={verse}
+          reference={capsule.scriptureRef}
+          primary={{ href: "/capsules/today", label: "Read today’s capsule" }}
+          secondary={
+            neighbours?.prev
+              ? { href: capsulePath(neighbours.prev.slug), label: "Yesterday’s capsule" }
+              : null
+          }
+          image={capsule.bannerUrl}
+        />
+      ) : (
+        <HomeHero
+          variant={heroVariant}
+          title="Kingdom Capstone Outreach Ministries"
+          message="Today’s capsule isn’t available yet. Please check back soon."
+        />
+      );
     if (key === "today")
       return (
         <section class="band wash" aria-label="Today’s Capsule">
