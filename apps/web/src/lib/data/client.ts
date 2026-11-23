@@ -286,9 +286,9 @@ export function createApiSource(
         sampleUrl: null,
       }));
     },
-    async listEvents(when) {
+    async listEvents(when, limit = 100) {
       const res = await client.events.$get(
-        { query: { when, limit: "100", offset: "0" } },
+        { query: { when, limit: String(limit), offset: "0" } },
         signal(),
       );
       if (!res.ok) throw new Error(`API /events responded ${res.status}`);

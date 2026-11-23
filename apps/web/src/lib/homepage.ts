@@ -70,32 +70,12 @@ export function sectionsFromQuery(raw: string | null): HomeSection[] | null {
     .map((t) => ({ key: t.replace(/^-/, "") as HomeSectionKey, hidden: t.startsWith("-") }));
 }
 
-export interface HomeEvent {
-  slug: string;
-  title: string;
-  date: string;
-  meta: string;
-}
 export interface HomeBook {
   slug: string;
   title: string;
 }
 
-/** Sample events and books until their data sources exist. */
-export const sampleEvents: HomeEvent[] = [
-  {
-    slug: "thanksgiving",
-    title: "End-of-Year Thanksgiving Service",
-    date: "2026-12-06",
-    meta: "Saturday · 10:00 a.m.",
-  },
-  {
-    slug: "new-year",
-    title: "New Year Prophetic Message 2027",
-    date: "2027-01-01",
-    meta: "Friday · 9:00 a.m. · online and in person",
-  },
-];
+/** Sample books until their data source exists. */
 export const sampleBooks: HomeBook[] = [
   { slug: "war-words", title: "War Words" },
   { slug: "vision", title: "Vision for Your Mission" },

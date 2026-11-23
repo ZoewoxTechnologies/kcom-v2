@@ -84,13 +84,16 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
         {books.map((b, i) => (
           <li>
             {b.purchaseUrl ? (
-              <a href={b.purchaseUrl} rel="noopener" aria-label={`Get ${b.title}`}>
+              <a class="book-link" href={b.purchaseUrl} rel="noopener">
                 <BookCover title={b.title} coverUrl={b.coverUrl} tone={i % 3} />
+                <h3 class="book-title">{b.title}</h3>
               </a>
             ) : (
-              <BookCover title={b.title} coverUrl={b.coverUrl} tone={i % 3} />
+              <>
+                <BookCover title={b.title} coverUrl={b.coverUrl} tone={i % 3} />
+                <h3>{b.title}</h3>
+              </>
             )}
-            <h3>{b.title}</h3>
             {(b.kind || b.publishedYear) && (
               <span class="meta">{[b.kind, b.publishedYear].filter(Boolean).join(" · ")}</span>
             )}
@@ -205,11 +208,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   li .meta {
     font-size: 13px;
     margin-block-start: -6px;
-  }
-  li > a {
-    display: block;
-    color: inherit;
-    text-decoration: none;
   }
   @media (min-width: 48rem) {
     .hero-cover {
