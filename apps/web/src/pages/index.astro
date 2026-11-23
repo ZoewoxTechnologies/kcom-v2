@@ -211,9 +211,9 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
               <ul class="books">
                 {books.map((b) => (
                   <li>
-                    <a href="/books">
+                    <a class="book-link" href="/books">
                       <span class="cover" aria-hidden="true"></span>
-                      <span class="bt">{b.title}</span>
+                      <span class="bt book-title">{b.title}</span>
                     </a>
                   </li>
                 ))}
@@ -459,13 +459,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-4);
   }
-  .books a {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    color: var(--color-text);
-    text-decoration: none;
-  }
   .cover {
     aspect-ratio: 2 / 3;
     border-radius: 8px;
@@ -474,14 +467,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   }
   .bt {
     font: 600 1.25rem / 1.2 var(--font-title);
-  }
-  .books a:hover .cover,
-  .books a:focus-visible .cover {
-    border-color: var(--color-primary);
-  }
-  .books a:hover .bt,
-  .books a:focus-visible .bt {
-    color: var(--color-primary);
   }
   .signup {
     background: var(--color-footer);
