@@ -207,7 +207,7 @@ const quote = capsule?.scriptureText
     font-weight: 600;
     font-size: 0.9375rem;
   }
-  .main-nav a,
+  .main-nav a:not(.kc-menu__item),
   .menu nav a {
     color: var(--color-text);
     text-decoration: none;
@@ -329,7 +329,11 @@ const quote = capsule?.scriptureText
   }
   .menu .sub a {
     color: inherit;
-    padding: var(--space-2) 0;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-field);
+  }
+  .menu .sub a:is(:hover, :focus-visible) {
+    background: var(--color-hover);
   }
   .verse-bar .verse {
     display: inline-flex;
@@ -354,6 +358,7 @@ const quote = capsule?.scriptureText
     display: flex;
     align-items: center;
     padding-block: 0;
+    padding-inline: var(--space-3);
   }
   .verse .short {
     display: inline;
