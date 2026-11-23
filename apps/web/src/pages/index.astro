@@ -1,8 +1,8 @@
 ---
-import ResponsiveImage from "../components/ResponsiveImage.astro";
 import { dayParts, lagosDate } from "@kcom/content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HomeSection from "../components/HomeSection.astro";
+import HomeHero from "../components/HomeHero.astro";
 import SeriesCard from "../components/SeriesCard.astro";
 import SignupBand from "../components/SignupBand.astro";
 import { data } from "../lib/data";
@@ -69,48 +69,26 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 <BaseLayout title="Home" current="/" bleed hideSignup={order.includes("signup")}>
   {order.map((key) => {
     if (key === "today")
-      return (
-        <section class="band wash" aria-label="Today’s Capsule">
-          <div class="inner hero">
-            {capsule ? (
-              <>
-                <div class="photo" aria-hidden="true">
-                  {capsule.bannerUrl && (
-                    <ResponsiveImage
-                      src={capsule.bannerUrl}
-                      widths={[480, 640, 800, 1200]}
-                      ratio={4 / 3}
-                      sizes="(min-width: 60rem) 36rem, 100vw"
-                      eager
-                    />
-                  )}
-                </div>
-                <div class="copy">
-                  <span class="eyebrow">Today’s Capsule · {heroDay!.rest}</span>
-                  <h1>{capsule.title}</h1>
-                  <span class="rule" aria-hidden="true"></span>
-                  {verse && <p class="verse">{verse}</p>}
-                  {capsule.scriptureRef && <span class="ref">{capsule.scriptureRef}</span>}
-                  <div class="actions">
-                    <a class="kc-btn kc-btn--primary kc-btn--sm" href="/capsules/today">
-                      Read today’s capsule
-                    </a>
-                    {neighbours?.prev && (
-                      <a class="more yday" href={capsulePath(neighbours.prev.slug)}>
-                        Yesterday’s capsule →
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div class="copy">
-                <h1>Kingdom Capstone Outreach Ministries</h1>
-                <p class="muted">Today’s capsule isn’t available yet. Please check back soon.</p>
-              </div>
-            )}
-          </div>
-        </section>
+      return capsule ? (
+        <HomeHero
+          kicker={`Today’s Capsule · ${heroDay!.rest}`}
+          title={capsule.title}
+          verse={verse}
+          reference={capsule.scriptureRef}
+          primary={{ href: "/capsules/today", label: "Read today’s capsule" }}
+          secondary={
+            neighbours?.prev
+              ? { href: capsulePath(neighbours.prev.slug), label: "Yesterday’s capsule" }
+              : null
+          }
+          image={capsule.bannerUrl}
+          hideSecondaryOnPhone
+        />
+      ) : (
+        <HomeHero
+          title="Kingdom Capstone Outreach Ministries"
+          message="Today’s capsule isn’t available yet. Please check back soon."
+        />
       );
     if (key === "current-series")
       return (
@@ -274,52 +252,9 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
   .band[aria-label="Current series"] {
     padding-top: 4.5rem;
   }
-  .wash {
-    background: var(--color-wash);
-  }
   .inner {
     max-inline-size: 75rem;
     margin-inline: auto;
-  }
-  .hero {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-6);
-    align-items: center;
-  }
-  .photo {
-    flex: 1 1 26rem;
-    min-inline-size: 0;
-    aspect-ratio: 4 / 3;
-    border-radius: var(--radius);
-    background: linear-gradient(160deg, #9fbcc6, var(--color-primary));
-    overflow: hidden;
-  }
-  .photo img {
-    inline-size: 100%;
-    block-size: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .copy {
-    flex: 1 1 24rem;
-    min-inline-size: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    align-items: flex-start;
-  }
-  .copy h1 {
-    margin: 0;
-    font: 500 clamp(2.25rem, 7vw, 4rem) / 1.02 var(--font-title);
-  }
-  .copy .eyebrow {
-    font-size: 0.875rem;
-  }
-  .rule {
-    inline-size: 3rem;
-    block-size: 2px;
-    background: var(--color-gold);
   }
   .eyebrow {
     font-size: 0.8125rem;
@@ -328,25 +263,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     font-variant: small-caps;
     font-weight: 700;
     color: var(--color-gold-text);
-  }
-  .verse {
-    margin: 0;
-    font: italic 400 1.3125rem / 1.6 var(--font-scripture);
-  }
-  .ref {
-    font-size: 0.8125rem;
-    line-height: 1.65;
-    letter-spacing: 0.1em;
-    font-variant: small-caps;
-    font-weight: 700;
-    color: var(--color-muted);
-  }
-  .actions {
-    display: flex;
-    gap: var(--space-4);
-    align-items: center;
-    flex-wrap: wrap;
-    margin-top: var(--space-2);
   }
   .more {
     font-weight: 600;
@@ -573,7 +489,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     blockquote {
       font-size: 1.5rem;
     }
-    .yday,
     blockquote {
       display: none;
     }
