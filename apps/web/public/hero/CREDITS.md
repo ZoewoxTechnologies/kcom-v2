@@ -1,6 +1,6 @@
 # Home hero photo credits
 
-Free-licensed stock from Unsplash (Unsplash License). Encoded to AVIF and WebP.
+Free-licensed stock from Unsplash under the free Unsplash License (not Unsplash+). Encoded to AVIF and WebP at 720 and 1200px wide.
 
 | File               | Photo                                                                                  | Photographer       |
 | ------------------ | -------------------------------------------------------------------------------------- | ------------------ |

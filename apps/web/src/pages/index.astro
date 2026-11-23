@@ -79,6 +79,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
               : null
           }
           image={capsule.bannerUrl}
+          hideSecondaryOnPhone
         />
       ) : (
         <HomeHero
@@ -485,7 +486,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     blockquote {
       font-size: 1.5rem;
     }
-    .yday,
     blockquote {
       display: none;
     }

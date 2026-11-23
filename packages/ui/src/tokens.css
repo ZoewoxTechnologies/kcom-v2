@@ -39,6 +39,14 @@
     --banner-end: #2b6178;
     --banner-text: #ffffff;
     --banner-gold: #d4b46e;
+    /* Home hero: its own ground with a faint arch lattice; text uses the site colours. */
+    --color-hero-bg: #dfe6ec;
+    --color-hero-text: var(--color-text);
+    --color-hero-muted: var(--color-muted);
+    --color-hero-kicker: var(--color-gold-text);
+    --color-hero-pattern: #2b6178;
+    --hero-pattern-opacity: 0.11;
+    --hero-frame-shadow: 0 30px 60px -30px rgb(11 19 22 / 0.45);
     --color-sandstone: #f6eedd;
     --color-sandstone-hover: #efe2c6;
     --color-sandstone-active: #e8d7b2;
@@ -169,6 +177,10 @@
       --color-gold-text-tint: #d9bc7a;
       --banner-start: #0b1316;
       --banner-end: #16303a;
+      --color-hero-bg: #0b1316;
+      --color-hero-pattern: #8cc0d4;
+      --hero-pattern-opacity: 0.08;
+      --hero-frame-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.8);
       --color-sandstone: #2a2519;
       --color-sandstone-hover: #342d1e;
       --color-sandstone-active: #3d3523;
@@ -223,6 +235,10 @@
     --color-gold-text-tint: #d9bc7a;
     --banner-start: #0b1316;
     --banner-end: #16303a;
+    --color-hero-bg: #0b1316;
+    --color-hero-pattern: #8cc0d4;
+    --hero-pattern-opacity: 0.08;
+    --hero-frame-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.8);
     --color-sandstone: #2a2519;
     --color-sandstone-hover: #342d1e;
     --color-sandstone-active: #3d3523;

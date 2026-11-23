@@ -20,9 +20,21 @@ interface Props {
   primary?: Link;
   secondary?: Link | null;
   image?: string | null;
+  /** Hide the secondary link on phones, where the primary action is enough. */
+  hideSecondaryOnPhone?: boolean;
 }
-const { kicker, title, verse, reference, message, primary, secondary, image } = Astro.props;
-const sizes = "(min-width: 64rem) 26rem, 64vw";
+const {
+  kicker,
+  title,
+  verse,
+  reference,
+  message,
+  primary,
+  secondary,
+  image,
+  hideSecondaryOnPhone = false,
+} = Astro.props;
+const sizes = "(min-width: 50rem) 26rem, min(64vw, 16rem)";
 ---
 
 <section class="hero" aria-label="Today’s Capsule">
@@ -42,7 +54,10 @@ const sizes = "(min-width: 64rem) 26rem, 64vw";
             </a>
           )}
           {secondary && (
-            <a class="more" href={secondary.href}>
+            <a
+              class:list={["more", { "phone-hidden": hideSecondaryOnPhone }]}
+              href={secondary.href}
+            >
               {secondary.label} →
             </a>
           )}
@@ -82,21 +97,14 @@ const sizes = "(min-width: 64rem) 26rem, 64vw";
 
 <style>
   .hero {
-    --h-bg: #dfe6ec;
-    --h-text: var(--color-text);
-    --h-muted: #4b5a5c;
-    --h-kicker: #6e5216;
-    --h-gold: var(--color-gold);
-    --h-pattern: #2b6178;
-    --h-pattern-alpha: 0.11;
     /* Arch lattice tile: one arch per 44 x 56 cell. */
     --h-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='56'%3E%3Cpath d='M2 56V22a20 20 0 0 1 40 0v34M24 0v2M0 22h2M42 22h2' fill='none' stroke='%23000' stroke-width='1'/%3E%3C/svg%3E");
     --h-fade: linear-gradient(90deg, transparent 22%, #000 62%);
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    background: var(--h-bg);
-    color: var(--h-text);
+    background: var(--color-hero-bg);
+    color: var(--color-hero-text);
     margin-block-start: calc(var(--space-6) * -1);
     padding-block: clamp(3rem, 7vw, 6rem);
     font-size: 1rem;
@@ -108,8 +116,8 @@ const sizes = "(min-width: 64rem) 26rem, 64vw";
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background: var(--h-pattern);
-    opacity: var(--h-pattern-alpha);
+    background: var(--color-hero-pattern);
+    opacity: var(--hero-pattern-opacity);
     mask:
       var(--h-tile) 0 0 / 44px 56px,
       var(--h-fade);
@@ -133,15 +141,17 @@ const sizes = "(min-width: 64rem) 26rem, 64vw";
   .kicker,
   .ref {
     font-size: 0.8125rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    font-weight: 600;
+    line-height: 1.65;
+    letter-spacing: 0.1em;
+    font-variant: small-caps;
+    font-weight: 700;
   }
   .kicker {
-    color: var(--h-kicker);
+    font-size: 0.875rem;
+    color: var(--color-hero-kicker);
   }
   .ref {
-    color: var(--h-muted);
+    color: var(--color-hero-muted);
   }
   h1 {
     margin: 0;
@@ -151,20 +161,20 @@ const sizes = "(min-width: 64rem) 26rem, 64vw";
   }
   .rule {
     inline-size: 3rem;
-    block-size: 1px;
-    background: var(--h-gold);
+    block-size: 2px;
+    background: var(--color-gold);
   }
   .verse {
     margin: 0;
-    font: italic 400 clamp(1.25rem, 2vw, 1.625rem) / 1.5 var(--font-title);
+    font: italic 400 1.3125rem / 1.6 var(--font-scripture);
     text-wrap: pretty;
     max-inline-size: 32ch;
     padding-inline-start: 1.25rem;
-    border-inline-start: 1px solid var(--h-gold);
+    border-inline-start: 1px solid var(--color-gold);
   }
   .message {
     margin: 0;
-    color: var(--h-muted);
+    color: var(--color-hero-muted);
   }
   .actions {
     display: flex;
@@ -176,7 +186,7 @@ const sizes = "(min-width: 64rem) 26rem, 64vw";
   .more {
     color: inherit;
     font-weight: 600;
-    text-decoration-color: var(--h-gold);
+    text-decoration-color: var(--color-gold);
     text-underline-offset: 5px;
   }
   .frame {
@@ -190,7 +200,7 @@ const sizes = "(min-width: 64rem) 26rem, 64vw";
     content: "";
     position: absolute;
     inset: -0.875rem 0.875rem 0.875rem -0.875rem;
-    border: 1px solid var(--h-gold);
+    border: 1px solid var(--color-gold);
     border-radius: 999px 999px 4px 4px;
   }
   .arch {
@@ -199,7 +209,7 @@ const sizes = "(min-width: 64rem) 26rem, 64vw";
     border-radius: 999px 999px 4px 4px;
     overflow: hidden;
     background: var(--color-primary);
-    box-shadow: 0 30px 60px -30px rgb(11 19 22 / 0.45);
+    box-shadow: var(--hero-frame-shadow);
   }
   .arch picture {
     display: block;
@@ -213,42 +223,20 @@ const sizes = "(min-width: 64rem) 26rem, 64vw";
   }
   @media (max-width: 49.99rem) {
     .hero {
-      --h-fade: linear-gradient(180deg, #000 10%, transparent 48%);
+      --h-fade: linear-gradient(180deg, #000 10%, transparent 40%);
     }
     .inner {
       grid-template-columns: 1fr;
+      /* Clears the frame's shadow so the kicker keeps its contrast. */
+      gap: 3.5rem;
     }
     .frame {
       order: -1;
       inline-size: min(64%, 16rem);
       margin-block-start: var(--space-3);
     }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme="light"])) .hero {
-      --h-bg: #0b1316;
-      --h-text: #e6eeec;
-      --h-muted: #a9b4b3;
-      --h-kicker: #d4b46e;
-      --h-gold: #d4b46e;
-      --h-pattern: #8cc0d4;
-      --h-pattern-alpha: 0.08;
+    .phone-hidden {
+      display: none;
     }
-    :global(:root:not([data-theme="light"])) .arch {
-      box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.8);
-    }
-  }
-  :global([data-theme="dark"]) .hero {
-    --h-bg: #0b1316;
-    --h-text: #e6eeec;
-    --h-muted: #a9b4b3;
-    --h-kicker: #d4b46e;
-    --h-gold: #d4b46e;
-    --h-pattern: #8cc0d4;
-    --h-pattern-alpha: 0.08;
-  }
-  :global([data-theme="dark"]) .arch {
-    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.8);
   }
 </style>
