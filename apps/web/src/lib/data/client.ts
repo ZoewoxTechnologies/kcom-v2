@@ -192,6 +192,16 @@ export function createApiSource(
         scriptureText: richTextToPlain(c.scriptureText) || null,
       };
     },
+    async earliestCapsuleDate() {
+      const res = await client.capsules.earliest.$get(undefined, {
+        init: { signal: AbortSignal.timeout(3000) },
+      });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /capsules/earliest responded ${res.status}`);
+      const c = await res.json();
+      const day = c && String(c.displayDate);
+      return day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
+    },
     async listCapsulesInMonth(month) {
       const [rows, series] = await Promise.all([allCapsules({ month }), allSeries()]);
       const titleOf = new Map(series.map((s) => [s.id, s.title]));

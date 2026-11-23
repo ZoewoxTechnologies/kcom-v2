@@ -5,12 +5,16 @@ import { siteName } from "../lib/site";
 import { formatLagosDate, formatLagosShortDate } from "@kcom/content";
 import { data } from "../lib/data";
 import { quoteVerse } from "../lib/verse";
+import { todaysCapsule } from "../lib/today";
+import { richTextToPlain } from "../lib/data/client";
+import { lagosDate } from "@kcom/content";
 const { current = "" } = Astro.props;
-const capsule = await data.latestCapsule();
+const capsule = await todaysCapsule(data, lagosDate(new Date()));
 const today = capsule ? formatLagosDate(capsule.displayDate) : "";
 const shortDate = capsule ? formatLagosShortDate(capsule.displayDate) : "";
-const quote = capsule?.scriptureText
-  ? `${quoteVerse(capsule.scriptureText)} ${capsule.scriptureRef ?? ""}`
+const scriptureText = capsule ? richTextToPlain(capsule.scriptureText) : "";
+const quote = scriptureText
+  ? `${quoteVerse(scriptureText)} ${capsule?.scriptureRef ?? ""}`
   : (capsule?.scriptureRef ?? "");
 ---
 

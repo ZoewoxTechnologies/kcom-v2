@@ -11,15 +11,17 @@ import {
   monthPath,
   parseMonth,
   plural,
-  ARCHIVE_START_YEAR,
+  archiveIntro,
 } from "../../../lib/archive";
+import { getArchiveStartYear } from "../../../lib/archive-start";
 
 const current = lagosMonth();
-const month = parseMonth(Astro.params.month, current);
+const startYear = await getArchiveStartYear();
+const month = parseMonth(Astro.params.month, current, startYear);
 if (!month) return Astro.rewrite("/404");
 const capsules = await data.listCapsulesInMonth(month.key);
 const label = monthLabel(month.key);
-const prev = month.key > monthKey(ARCHIVE_START_YEAR, 1) ? shiftMonth(month.key, -1) : null;
+const prev = month.key > monthKey(startYear, 1) ? shiftMonth(month.key, -1) : null;
 const next = month.key < current ? shiftMonth(month.key, 1) : null;
 const months = Array.from({ length: 12 }, (_, i) => ({
   n: i + 1,
@@ -32,7 +34,7 @@ const months = Array.from({ length: 12 }, (_, i) => ({
   description={`Every Capstone Capsule published in ${label}.`}
   current="/capsules"
 >
-  <ArchiveHeader tab="month" intro="Every daily capsule since 2012, to read and share." />
+  <ArchiveHeader tab="month" intro={archiveIntro(startYear)} />
   <div class="layout">
     <nav class="months" aria-label="Months">
       <SelectForm
@@ -40,7 +42,7 @@ const months = Array.from({ length: 12 }, (_, i) => ({
         label="Year"
         inline="phone"
         action="/capsules"
-        options={archiveYears(current).map((y) => ({ value: y, label: y }))}
+        options={archiveYears(current, startYear).map((y) => ({ value: y, label: y }))}
         value={month.year}
       />
       <ul class="grid">

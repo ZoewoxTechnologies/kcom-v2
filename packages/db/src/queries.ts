@@ -31,6 +31,17 @@ export async function latestCapsule(db: CapsuleDb) {
   return row ?? null;
 }
 
+/** The oldest published capsule that is already live; null when there is none. */
+export async function earliestCapsule(db: CapsuleDb) {
+  const [row] = await db
+    .select()
+    .from(schema.capsules)
+    .where(and(eq(schema.capsules.status, "published"), lte(schema.capsules.publishAt, sql`now()`)))
+    .orderBy(asc(schema.capsules.publishAt), asc(schema.capsules.createdAt))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function capsuleBySlug(db: CapsuleDb, slug: string) {
   const [row] = await db
     .select()

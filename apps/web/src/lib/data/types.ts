@@ -166,6 +166,8 @@ export interface ContactDetails {
 
 export interface DataSource {
   latestCapsule(): Promise<CapsuleSummary | null>;
+  /** Lagos day (YYYY-MM-DD) of the oldest published capsule; null when there are none. */
+  earliestCapsuleDate(): Promise<string | null>;
   capsuleBySlug(slug: string): Promise<Capsule | null>;
   /** The capsule published on a Lagos day (YYYY-MM-DD). */
   capsuleByDate(date: string): Promise<Capsule | null>;
@@ -202,6 +204,7 @@ export interface DataSource {
  */
 export const dataMethods = [
   "latestCapsule",
+  "earliestCapsuleDate",
   "capsuleBySlug",
   "capsuleByDate",
   "capsuleNeighbours",

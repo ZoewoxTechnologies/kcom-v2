@@ -9,6 +9,7 @@ import { data } from "../lib/data";
 import { richTextToPlain } from "../lib/data/client";
 import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
 import { postKicker } from "../lib/blog";
+import { todaysCapsule } from "../lib/today";
 import { stripQuotes } from "../lib/verse";
 import {
   defaultSections,
@@ -22,11 +23,7 @@ import {
 } from "../lib/homepage";
 
 const today = lagosDate(new Date());
-let capsule = await data.capsuleByDate(today);
-if (!capsule) {
-  const latest = await data.latestCapsule();
-  capsule = latest ? await data.capsuleBySlug(latest.slug) : null;
-}
+const capsule = await todaysCapsule(data, today);
 const neighbours = capsule ? await data.capsuleNeighbours(capsule.slug) : null;
 
 // The section list comes from the homepage API; `?sections=` previews an arrangement outside production.
