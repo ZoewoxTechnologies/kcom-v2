@@ -8,7 +8,7 @@ import SignupBand from "../components/SignupBand.astro";
 import { data } from "../lib/data";
 import { richTextToPlain } from "../lib/data/client";
 import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
-import { eventWhen } from "../lib/event-page";
+import { eventDayTime } from "../lib/event-page";
 import { postKicker } from "../lib/blog";
 import { stripQuotes } from "../lib/verse";
 import {
@@ -61,7 +61,7 @@ const heroDay = capsule ? dayParts(capsule.displayDate) : null;
 const verse = capsule
   ? stripQuotes(richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation || "")
   : null;
-const events = (await data.listEvents("upcoming")).slice(0, 2);
+const events = await data.listEvents("upcoming", 2);
 const books = sampleBooks;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
@@ -196,7 +196,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
                           <span class="dn">{d.n}</span>
                         </span>
                         <span class="et">{e.title}</span>
-                        <span class="em">{eventWhen(e)}</span>
+                        <span class="em">{eventDayTime(e)}</span>
                       </a>
                     </li>
                   );

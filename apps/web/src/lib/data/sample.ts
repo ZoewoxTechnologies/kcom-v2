@@ -275,11 +275,13 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
     async blogPostBySlug(slug) {
       return sampleBlogPosts.find((b) => b.slug === slug) ?? null;
     },
-    async listEvents(when) {
+    async listEvents(when, limit) {
       const t = now().getTime();
       const over = (e: EventSummary) => new Date(e.endsAt ?? e.startsAt).getTime() < t;
       const rows = [...sampleEventList].filter((e) => over(e) === (when === "past"));
-      return rows.sort((a, b) => (when === "past" ? -1 : 1) * a.startsAt.localeCompare(b.startsAt));
+      return rows
+        .sort((a, b) => (when === "past" ? -1 : 1) * a.startsAt.localeCompare(b.startsAt))
+        .slice(0, limit);
     },
     async eventBySlug(slug) {
       const full = sampleEvents.find((e) => e.slug === slug);
