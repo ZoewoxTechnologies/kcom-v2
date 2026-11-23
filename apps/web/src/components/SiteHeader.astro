@@ -4,12 +4,13 @@ import { navItems, isCurrent } from "../lib/nav";
 import { siteName } from "../lib/site";
 import { formatLagosDate, formatLagosShortDate } from "@kcom/content";
 import { data } from "../lib/data";
+import { quoteVerse } from "../lib/verse";
 const { current = "" } = Astro.props;
 const capsule = await data.latestCapsule();
 const today = capsule ? formatLagosDate(capsule.displayDate) : "";
 const shortDate = capsule ? formatLagosShortDate(capsule.displayDate) : "";
 const quote = capsule?.scriptureText
-  ? `“${capsule.scriptureText}” ${capsule.scriptureRef ?? ""}`
+  ? `${quoteVerse(capsule.scriptureText)} ${capsule.scriptureRef ?? ""}`
   : (capsule?.scriptureRef ?? "");
 ---
 
@@ -371,7 +372,8 @@ const quote = capsule?.scriptureText
   .verse-bar .verse {
     font-size: var(--text-base);
   }
-  @media (min-width: 64rem) {
+  /* the full nav needs about 76rem; below that the menu button keeps the header on one row */
+  @media (min-width: 76rem) {
     .site-header {
       padding-block: var(--space-4);
     }
@@ -394,6 +396,8 @@ const quote = capsule?.scriptureText
     .search {
       display: flex;
     }
+  }
+  @media (min-width: 64rem) {
     .verse-bar .date {
       display: inline;
     }
