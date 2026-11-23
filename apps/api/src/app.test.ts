@@ -21,6 +21,37 @@ describe("GET /health", () => {
   });
 });
 
+describe("GET /capsules/earliest", () => {
+  it("returns the oldest live capsule with its Lagos display day", async () => {
+    const db = await createTestDb();
+    await db.insert(capsules).values([
+      {
+        title: "new",
+        slug: "new",
+        body: {},
+        status: "published",
+        publishAt: new Date("2026-01-01T00:00:00Z"),
+      },
+      {
+        title: "old",
+        slug: "old",
+        body: {},
+        status: "published",
+        publishAt: new Date("2014-12-31T23:00:00Z"),
+      },
+    ]);
+    const body = (await (await createApp(db).request("/capsules/earliest")).json()) as {
+      slug: string;
+      displayDate: string;
+    };
+    expect(body).toMatchObject({ slug: "old", displayDate: "2015-01-01" });
+  });
+
+  it("404s when there are no capsules", async () => {
+    expect((await empty.request("/capsules/earliest")).status).toBe(404);
+  });
+});
+
 describe("GET /capsules/latest", () => {
   it("returns the latest seeded capsule", async () => {
     const res = await app.request("/capsules/latest");

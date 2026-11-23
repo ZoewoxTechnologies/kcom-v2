@@ -102,6 +102,19 @@ describe("fallback and switch", () => {
     );
     expect(onError).toHaveBeenCalledOnce();
   });
+  it("a clean miss on a capsule lookup stays a miss; an unreachable API still falls back", async () => {
+    const miss = { ...emptySource, capsuleByDate: async () => null };
+    expect(await withFallback(miss, sampleSource).capsuleByDate("2026-11-23")).toBeNull();
+    const unreachable = {
+      ...emptySource,
+      capsuleByDate: async () => {
+        throw new Error("down");
+      },
+    };
+    expect(
+      (await withFallback(unreachable, sampleSource).capsuleByDate("2026-11-23"))?.displayDate,
+    ).toBe("2026-11-23");
+  });
   it("is not a thenable: awaiting a wrapped source resolves", async () => {
     const w = withFallback(down, null);
     expect(await Promise.resolve(w)).toBe(w);

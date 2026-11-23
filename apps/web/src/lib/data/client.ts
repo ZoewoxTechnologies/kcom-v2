@@ -346,10 +346,14 @@ function build(make: (method: (typeof dataMethods)[number]) => Fn): DataSource {
  */
 export const emptySource: DataSource = build((m) => async () => (isList(m) ? [] : null));
 
+/** Lookups of one capsule: when the API answers cleanly that none exists, that miss stands. */
+const cleanMissStands = new Set<string>(["capsuleByDate", "capsuleBySlug", "capsuleNeighbours"]);
+
 /**
  * Wraps every method of a source so failures never throw. On failure or an empty result
  * (null or empty list) the same method of `fallback` is used; with no fallback, the empty
- * value from `emptySource`.
+ * value from `emptySource`. The exception is a capsule lookup the API answered with a clean
+ * miss: sample data must not invent a capsule the real source says does not exist.
  */
 export function withFallback(
   primary: DataSource,
@@ -360,7 +364,7 @@ export function withFallback(
   return build((m) => async (...args) => {
     try {
       const v = await (primary[m] as Fn)(...args);
-      if (!isEmpty(v)) return v;
+      if (!isEmpty(v) || cleanMissStands.has(m)) return v;
     } catch (e) {
       onError?.(e);
     }
