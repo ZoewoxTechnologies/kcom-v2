@@ -3,7 +3,7 @@ import ResponsiveImage from "../components/ResponsiveImage.astro";
 import { dayParts, lagosDate } from "@kcom/content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HomeSection from "../components/HomeSection.astro";
-import HomeHero, { type HeroVariant } from "../components/HomeHero.astro";
+import HomeHero, { type HeroPattern, type HeroVariant } from "../components/HomeHero.astro";
 import SeriesCard from "../components/SeriesCard.astro";
 import SignupBand from "../components/SignupBand.astro";
 import { data } from "../lib/data";
@@ -60,10 +60,17 @@ const rowTag = (c: { displayDate: string; partNumber: number | null }) =>
 const heroDay = capsule ? dayParts(capsule.displayDate) : null;
 const verse = capsule ? richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation : null;
 // `?hero=a|b|c` previews the hero mock-ups outside production.
-const heroVariants: Record<string, HeroVariant> = { a: "photo", b: "type", c: "split" };
-const heroVariant = import.meta.env.PROD
-  ? undefined
-  : heroVariants[Astro.url.searchParams.get("hero") ?? ""];
+const heroVariants: Record<string, [HeroVariant, HeroPattern?]> = {
+  a: ["photo"],
+  b: ["type"],
+  c: ["split"],
+  c1: ["split", "lattice"],
+  c2: ["split", "arcs"],
+  c3: ["split", "linen"],
+};
+const [heroVariant, heroPattern] = import.meta.env.PROD
+  ? []
+  : (heroVariants[Astro.url.searchParams.get("hero") ?? ""] ?? []);
 const events = sampleEvents;
 const books = sampleBooks;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
@@ -86,6 +93,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
               : null
           }
           image={capsule.bannerUrl}
+          pattern={heroPattern}
         />
       ) : (
         <HomeHero

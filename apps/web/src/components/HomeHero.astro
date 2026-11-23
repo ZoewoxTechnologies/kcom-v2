@@ -4,11 +4,13 @@
  * - `photo`: full-bleed editorial photograph with the text on its dark side.
  * - `type`: no photo; a large serif title and verse on a paper ground with gold hairlines.
  * - `split`: text beside an arched, framed image; falls back to a curated photo when the capsule has none.
+ * `pattern` adds a quiet background pattern to the split layout: `lattice`, `arcs` or `linen`.
  * Photos live in /hero (credits in /hero/CREDITS.md).
  */
 import ResponsiveImage from "./ResponsiveImage.astro";
 
 export type HeroVariant = "photo" | "type" | "split";
+export type HeroPattern = "lattice" | "arcs" | "linen";
 interface Link {
   href: string;
   label: string;
@@ -25,12 +27,13 @@ interface Props {
   secondary?: Link | null;
   /** The capsule's own image, used by the split layout when present. */
   image?: string | null;
+  pattern?: HeroPattern;
 }
-const { variant, kicker, title, verse, reference, message, primary, secondary, image } =
+const { variant, kicker, title, verse, reference, message, primary, secondary, image, pattern } =
   Astro.props;
 ---
 
-<section class={`hero v-${variant}`} aria-label="Today’s Capsule">
+<section class={`hero v-${variant}${pattern ? ` p-${pattern}` : ""}`} aria-label="Today’s Capsule">
   {variant === "photo" && (
     <div class="art" aria-hidden="true">
       <picture>
@@ -449,5 +452,80 @@ const { variant, kicker, title, verse, reference, message, primary, secondary, i
     --h-muted: #a9b4b3;
     --h-kicker: #d4b46e;
     --h-gold: #d4b46e;
+  }
+  /* ---------- Split background patterns ---------- */
+  [class*=" p-"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  /* Lattice: a tessellation of small arches echoing the frame, fading out behind the text. */
+  .p-lattice::before {
+    background: var(--h-pattern);
+    opacity: var(--h-pattern-alpha);
+    mask:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='56'%3E%3Cpath d='M2 56V22a20 20 0 0 1 40 0v34M24 0v2M0 22h2M42 22h2' fill='none' stroke='%23000' stroke-width='1'/%3E%3C/svg%3E")
+        0 0 / 44px 56px,
+      linear-gradient(90deg, transparent 22%, #000 62%);
+    mask-composite: intersect;
+  }
+  /* Arcs: gold hairline ripples radiating from behind the arch. */
+  .p-arcs::before {
+    background: repeating-radial-gradient(
+      circle at var(--h-focus),
+      transparent 0 37px,
+      var(--h-gold) 37px 38px
+    );
+    opacity: var(--h-arc-alpha);
+    mask: radial-gradient(circle at var(--h-focus), #000 18%, transparent 62%);
+  }
+  /* Linen: a fine engraved weave with a soft glow behind the photo. */
+  .p-linen::before {
+    background:
+      repeating-linear-gradient(0deg, var(--h-pattern) 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(90deg, var(--h-pattern) 0 1px, transparent 1px 5px);
+    opacity: var(--h-linen-alpha);
+  }
+  .p-linen {
+    background:
+      radial-gradient(38rem 30rem at var(--h-focus), var(--h-glow), transparent 70%), var(--h-bg);
+  }
+  .hero[class*=" p-"] {
+    --h-focus: 72% 50%;
+    --h-pattern: #2b6178;
+    --h-pattern-alpha: 0.11;
+    --h-arc-alpha: 0.32;
+    --h-linen-alpha: 0.05;
+    --h-glow: rgb(255 255 255 / 0.55);
+  }
+  @media (max-width: 49.99rem) {
+    .hero[class*=" p-"] {
+      --h-focus: 50% 16rem;
+    }
+    .p-lattice::before {
+      mask:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='56'%3E%3Cpath d='M2 56V22a20 20 0 0 1 40 0v34M24 0v2M0 22h2M42 22h2' fill='none' stroke='%23000' stroke-width='1'/%3E%3C/svg%3E")
+          0 0 / 44px 56px,
+        linear-gradient(180deg, #000 10%, transparent 48%);
+      mask-composite: intersect;
+    }
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .hero[class*=" p-"] {
+      --h-pattern: #8cc0d4;
+      --h-pattern-alpha: 0.08;
+      --h-arc-alpha: 0.22;
+      --h-linen-alpha: 0.035;
+      --h-glow: rgb(43 97 120 / 0.28);
+    }
+  }
+  :global([data-theme="dark"]) .hero[class*=" p-"] {
+    --h-pattern: #8cc0d4;
+    --h-pattern-alpha: 0.08;
+    --h-arc-alpha: 0.22;
+    --h-linen-alpha: 0.035;
+    --h-glow: rgb(43 97 120 / 0.28);
   }
 </style>
