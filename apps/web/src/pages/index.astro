@@ -72,10 +72,17 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
           title={capsule.title}
           verse={verse}
           reference={capsule.scriptureRef}
-          primary={{ href: "/capsules/today", label: "Read today’s capsule" }}
+          primary={{
+            href: "/capsules/today",
+            label:
+              capsule.displayDate === today ? "Read today’s capsule" : "Read the latest capsule",
+          }}
           secondary={
             neighbours?.prev
-              ? { href: capsulePath(neighbours.prev.slug), label: "Yesterday’s capsule" }
+              ? {
+                  href: capsulePath(neighbours.prev.slug),
+                  label: capsule.displayDate === today ? "Yesterday’s capsule" : "Previous capsule",
+                }
               : null
           }
           image={capsule.bannerUrl}
