@@ -8,6 +8,7 @@ import SignupBand from "../components/SignupBand.astro";
 import { data } from "../lib/data";
 import { richTextToPlain } from "../lib/data/client";
 import { capsulePath, seriesPath, sortSeries } from "../lib/archive";
+import { eventDayTime } from "../lib/event-page";
 import { postKicker } from "../lib/blog";
 import { stripQuotes } from "../lib/verse";
 import {
@@ -15,7 +16,6 @@ import {
   featuredQuote,
   recentSeriesRows,
   sampleBooks,
-  sampleEvents,
   sectionsFromApi,
   sectionsFromQuery,
   visibleSections,
@@ -61,7 +61,7 @@ const heroDay = capsule ? dayParts(capsule.displayDate) : null;
 const verse = capsule
   ? stripQuotes(richTextToPlain(capsule.scriptureText) || capsule.bibleMeditation || "")
   : null;
-const events = sampleEvents;
+const events = await data.listEvents("upcoming", 2);
 const books = sampleBooks;
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
@@ -187,16 +187,16 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
             >
               <ul class="events">
                 {events.map((e) => {
-                  const d = monthDay(e.date);
+                  const d = monthDay(lagosDate(new Date(e.startsAt)));
                   return (
                     <li>
-                      <a href="/events">
+                      <a href={`/events/${e.slug}`}>
                         <span class="tile">
                           <span class="mon">{d.mon}</span>
                           <span class="dn">{d.n}</span>
                         </span>
                         <span class="et">{e.title}</span>
-                        <span class="em">{e.meta}</span>
+                        <span class="em">{eventDayTime(e)}</span>
                       </a>
                     </li>
                   );
@@ -211,9 +211,9 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
               <ul class="books">
                 {books.map((b) => (
                   <li>
-                    <a href="/books">
+                    <a class="book-link" href="/books">
                       <span class="cover" aria-hidden="true"></span>
-                      <span class="bt">{b.title}</span>
+                      <span class="bt book-title">{b.title}</span>
                     </a>
                   </li>
                 ))}
@@ -404,6 +404,10 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     text-decoration: none;
     flex-wrap: wrap;
   }
+  .events a:hover .et,
+  .events a:focus-visible .et {
+    color: var(--color-primary);
+  }
   .tile {
     inline-size: 3.5rem;
     block-size: 3.5rem;
@@ -454,13 +458,6 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-4);
-  }
-  .books a {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    color: var(--color-text);
-    text-decoration: none;
   }
   .cover {
     aspect-ratio: 2 / 3;

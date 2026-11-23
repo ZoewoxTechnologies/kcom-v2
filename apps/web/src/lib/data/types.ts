@@ -185,7 +185,7 @@ export interface DataSource {
   listBooks(): Promise<Book[]>;
   eventBySlug(slug: string): Promise<EventDetail | null>;
   /** Published events: upcoming soonest first, past newest first. */
-  listEvents(when: "upcoming" | "past"): Promise<EventSummary[]>;
+  listEvents(when: "upcoming" | "past", limit?: number): Promise<EventSummary[]>;
   /** Visible homepage sections as the API names them, in display order. Empty when unknown. */
   listHomepageSections(): Promise<string[]>;
   /** Public contact details from site settings; null when unknown. Fields the admin left blank are null. */
