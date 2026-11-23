@@ -26,6 +26,10 @@
     color: var(--color-muted);
   }
 
+  body {
+    margin: 0;
+  }
+
   .kc-admin-signin {
     min-block-size: 100dvh;
     display: grid;

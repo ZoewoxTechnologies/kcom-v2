@@ -141,10 +141,18 @@ const quote = scriptureText
 </header>
 <script>
   document.querySelectorAll<HTMLDetailsElement>("details.menu").forEach((d) => {
-    const toggle = d.querySelector("summary.menu-toggle");
+    const toggle = d.querySelector<HTMLElement>("summary.menu-toggle");
     d.addEventListener("toggle", () => {
       toggle?.setAttribute("aria-expanded", String(d.open));
       toggle?.setAttribute("aria-label", d.open ? "Close menu" : "Open menu");
+    });
+    d.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || !d.open) return;
+      d.open = false;
+      toggle?.focus();
+    });
+    d.addEventListener("click", (e) => {
+      if ((e.target as Element).closest("a")) d.open = false;
     });
   });
 </script>

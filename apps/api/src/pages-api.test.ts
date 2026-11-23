@@ -78,7 +78,7 @@ describe("public pages", () => {
     const listRes = await call("/pages", null);
     expect(listRes.headers.get("cache-control")).toContain("public");
     const listed = (await listRes.json()) as { slug: string }[];
-    expect(listed.map((p) => p.slug)).toEqual(["who-we-are"]);
+    expect(listed.map((p) => p.slug)).toEqual(["privacy", "who-we-are"]);
 
     const sections = (await (await call("/pages/who-we-are", null)).json()) as {
       sections: { type: string }[];

@@ -276,7 +276,7 @@ export function createSampleSource(now: () => Date = () => new Date()): DataSour
       }));
     },
     async pageBySlug(slug) {
-      return slug === "privacy-policy" ? samplePrivacyPolicy : null;
+      return slug === "privacy" ? samplePrivacyPolicy : null;
     },
     async blogPostBySlug(slug) {
       return sampleBlogPosts.find((b) => b.slug === slug) ?? null;
@@ -426,7 +426,7 @@ const h2 = (text: string) => ({
 
 /** Stand-in for the privacy policy until the admin has published the real one. */
 const samplePrivacyPolicy: StaticPage = {
-  slug: "privacy-policy",
+  slug: "privacy",
   title: "Privacy Policy",
   body: {
     type: "doc",
