@@ -347,7 +347,12 @@ function build(make: (method: (typeof dataMethods)[number]) => Fn): DataSource {
 export const emptySource: DataSource = build((m) => async () => (isList(m) ? [] : null));
 
 /** Lookups of one capsule: when the API answers cleanly that none exists, that miss stands. */
-const cleanMissStands = new Set<string>(["capsuleByDate", "capsuleBySlug", "capsuleNeighbours"]);
+const cleanMissStands = new Set<string>([
+  "capsuleByDate",
+  "capsuleBySlug",
+  "capsuleNeighbours",
+  "earliestCapsuleDate",
+]);
 
 /**
  * Wraps every method of a source so failures never throw. On failure or an empty result

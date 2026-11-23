@@ -2,14 +2,15 @@
 import Menu from "@kcom/ui/astro/Menu.astro";
 import { navItems, isCurrent } from "../lib/nav";
 import { siteName } from "../lib/site";
-import { formatLagosDate, formatLagosShortDate } from "@kcom/content";
+import { formatLagosDate, formatLagosShortDate, lagosDate } from "@kcom/content";
 import { data } from "../lib/data";
 import { quoteVerse } from "../lib/verse";
 import { todaysCapsule } from "../lib/today";
 import { richTextToPlain } from "../lib/data/client";
-import { lagosDate } from "@kcom/content";
 const { current = "" } = Astro.props;
-const capsule = await todaysCapsule(data, lagosDate(new Date()));
+const todayKey = lagosDate(new Date());
+const capsule = await todaysCapsule(data, todayKey);
+const label = capsule?.displayDate === todayKey ? "Today" : "Latest";
 const today = capsule ? formatLagosDate(capsule.displayDate) : "";
 const shortDate = capsule ? formatLagosShortDate(capsule.displayDate) : "";
 const scriptureText = capsule ? richTextToPlain(capsule.scriptureText) : "";
@@ -22,9 +23,11 @@ const quote = scriptureText
   <div class="verse-bar">
     <span class="date">{today}</span>
     <a class="verse" href="/capsules/today">
-      <span class="long">Today: {quote}</span>
+      <span class="long">
+        {label}: {quote}
+      </span>
       <span class="short">
-        {shortDate} · Today: {capsule?.scriptureRef} →
+        {shortDate} · {label}: {capsule?.scriptureRef} →
       </span>
     </a>
     <a class="email" href="/subscribe">

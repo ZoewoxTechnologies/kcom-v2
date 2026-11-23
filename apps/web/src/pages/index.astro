@@ -68,7 +68,7 @@ Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
     if (key === "today")
       return capsule ? (
         <HomeHero
-          kicker={`Today’s Capsule · ${heroDay!.rest}`}
+          kicker={`${capsule.displayDate === today ? "Today’s Capsule" : "Latest capsule"} · ${heroDay!.rest}`}
           title={capsule.title}
           verse={verse}
           reference={capsule.scriptureRef}
