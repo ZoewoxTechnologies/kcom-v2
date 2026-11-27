@@ -8,7 +8,14 @@ import { buildRedirects } from "./redirects.ts";
 import { transformCapsules } from "./transform.ts";
 
 const at = (iso: string) => Math.floor(new Date(iso).getTime() / 1000);
-const node = (nid: number, type: string, title: string, aliases: string[], fields: RawNode["fields"] = {}, created = "2020-03-05T09:00:00Z"): RawNode => ({
+const node = (
+  nid: number,
+  type: string,
+  title: string,
+  aliases: string[],
+  fields: RawNode["fields"] = {},
+  created = "2020-03-05T09:00:00Z",
+): RawNode => ({
   nid,
   vid: nid,
   language: "und",
@@ -24,14 +31,23 @@ const node = (nid: number, type: string, title: string, aliases: string[], field
   terms: [],
   files: {},
 });
-const body = (html: string) => ({ body: [{ body_value: html, body_summary: null, body_format: "full_html" }] });
+const body = (html: string) => ({
+  body: [{ body_value: html, body_summary: null, body_format: "full_html" }],
+});
 
 const nodes: RawNode[] = [
   node(1, "daily_digest", "Peace", ["capsules/peace"], {
     ...body("<p>You will keep him in perfect peace – Isaiah 26:3</p><p>Rest today.</p>"),
     field_daily_digest_date: [{ field_daily_digest_date_value: "2020-03-05 00:00:00" }],
   }),
-  node(2, "blog", "A Good Post", ["blog/a-good-post"], body("<p>Hello world</p>"), "2019-06-01T10:00:00Z"),
+  node(
+    2,
+    "blog",
+    "A Good Post",
+    ["blog/a-good-post"],
+    body("<p>Hello world</p>"),
+    "2019-06-01T10:00:00Z",
+  ),
   node(3, "blog", "Empty", ["blog/empty"], body("<p>&nbsp;</p>")),
   node(4, "page", "Who we are", ["who-we-are"], body("<p>Us</p>")),
   node(5, "events", "Conference", ["events/conference"]),
@@ -48,7 +64,12 @@ describe("transformBlog", () => {
   it("keeps nid and path, and skips empty bodies", () => {
     const { posts, issues } = transformBlog(nodes);
     expect(posts).toHaveLength(1);
-    expect(posts[0]).toMatchObject({ legacyNid: 2, legacyPath: "blog/a-good-post", slug: "a-good-post", date: "2019-06-01" });
+    expect(posts[0]).toMatchObject({
+      legacyNid: 2,
+      legacyPath: "blog/a-good-post",
+      slug: "a-good-post",
+      date: "2019-06-01",
+    });
     expect(issues.some((i) => i.code === "empty-body")).toBe(true);
   });
 });
@@ -83,10 +104,26 @@ describe("buildRedirects", () => {
     const p = transformBlog(list).posts;
     const m = buildRedirects(list, c, p);
     const find = (from: string) => m.redirects.find((r) => r.from === from);
-    expect(find("/content/grace-abounds")).toMatchObject({ to: "/capsules/grace-abounds", kind: "capsule" });
+    expect(find("/content/grace-abounds")).toMatchObject({
+      to: "/capsules/grace-abounds",
+      kind: "capsule",
+    });
     expect(find("/content/old-post")).toMatchObject({ to: "/blog/old-post", kind: "blog" });
     expect(find("/content/retreat")?.to).toBe("/events");
     expect(find("/content/info")?.to).toBe("/");
+  });
+
+  it("sends draft capsules to the digest index, not a page that is not public", () => {
+    const list = [
+      node(20, "daily_digest", "Dup", ["content/dup"], {
+        ...body("<p>Grace – John 1:1</p><p>Rest.</p>"),
+        field_daily_digest_date: [{ field_daily_digest_date_value: "2020-04-02 00:00:00" }],
+      }),
+    ];
+    const c = transformCapsules(list).capsules.map((x) => ({ ...x, status: "draft" as const }));
+    expect(buildRedirects(list, c, []).redirects.find((r) => r.from === "/content/dup")?.to).toBe(
+      "/capsules",
+    );
   });
 
   it("sends unimported nodes to the closest page or listing", () => {
@@ -109,7 +146,11 @@ describe("importContent", () => {
     const first = await importContent(db, data);
     expect(first.capsules).toEqual({ inserted: 1, updated: 0, unchanged: 0 });
     expect(first.posts.inserted).toBe(1);
-    expect(first.inDatabase).toMatchObject({ capsules: 1, posts: 1, redirects: data.redirects.length });
+    expect(first.inDatabase).toMatchObject({
+      capsules: 1,
+      posts: 1,
+      redirects: data.redirects.length,
+    });
 
     const second = await importContent(db, input());
     for (const k of ["series", "capsules", "posts", "redirects"] as const) {
@@ -127,7 +168,11 @@ describe("importContent", () => {
     const res = await importContent(db, edited);
     expect(res.posts).toEqual({ inserted: 0, updated: 1, unchanged: 0 });
     const [row] = await db.select().from(blogPosts);
-    expect(row).toMatchObject({ title: "A Better Title", legacyNid: 2, legacyPath: "blog/a-good-post" });
+    expect(row).toMatchObject({
+      title: "A Better Title",
+      legacyNid: 2,
+      legacyPath: "blog/a-good-post",
+    });
   });
 
   it("final sync touches only items changed after the cutoff", async () => {
@@ -150,7 +195,15 @@ describe("importContent", () => {
     const db = await createTestDb();
     const data = input();
     const post = data.posts[0]!;
-    await db.insert(blogPosts).values({ slug: post.slug, title: "Editor post", date: "2024-01-01", body: post.body as never, status: "draft" });
+    await db
+      .insert(blogPosts)
+      .values({
+        slug: post.slug,
+        title: "Editor post",
+        date: "2024-01-01",
+        body: post.body as never,
+        status: "draft",
+      });
     await expect(importContent(db, data)).rejects.toThrow(`"${post.slug}"`);
     expect(await db.select().from(capsules)).toHaveLength(0);
   });

@@ -38,7 +38,7 @@ export interface RedirectMap {
   redirects: Redirect[];
   /** Old paths that already are the new path, so they need no redirect. */
   unchanged: string[];
-  /** Nodes sent to a listing page because their content is not imported (skipped capsules, events, books, gallery). */
+  /** Nodes sent to a listing page because their content is not imported (skipped or draft capsules, events, books, gallery). */
   fallbacks: number;
 }
 
@@ -47,9 +47,15 @@ export interface RedirectMap {
  * archive pages, `/daily-digest` and `/rss.xml`. Imported capsules and posts go to their own page;
  * other nodes go to a page or listing that replaces them.
  */
-export function buildRedirects(nodes: RawNode[], capsules: Capsule[], posts: BlogRecord[]): RedirectMap {
+export function buildRedirects(
+  nodes: RawNode[],
+  capsules: Capsule[],
+  posts: BlogRecord[],
+): RedirectMap {
   const targetByNid = new Map<number, { to: string; kind: Redirect["kind"] }>();
-  for (const c of capsules) if (c.legacyNid !== null) targetByNid.set(c.legacyNid, { to: `/capsules/${c.slug}`, kind: "capsule" });
+  for (const c of capsules)
+    if (c.legacyNid !== null && c.status === "published")
+      targetByNid.set(c.legacyNid, { to: `/capsules/${c.slug}`, kind: "capsule" });
   for (const p of posts) targetByNid.set(p.legacyNid, { to: `/blog/${p.slug}`, kind: "blog" });
 
   const byFrom = new Map<string, Redirect>();
@@ -61,7 +67,8 @@ export function buildRedirects(nodes: RawNode[], capsules: Capsule[], posts: Blo
   for (const node of [...nodes].sort((a, b) => a.nid - b.nid)) {
     let target = targetByNid.get(node.nid);
     if (!target) {
-      if (node.type === "page") target = { to: PAGE_TARGETS[node.aliases[0] ?? ""] ?? "/", kind: "page" };
+      if (node.type === "page")
+        target = { to: PAGE_TARGETS[node.aliases[0] ?? ""] ?? "/", kind: "page" };
       else {
         fallbacks++;
         if (node.type === "daily_digest") target = { to: "/capsules", kind: "capsule" };
@@ -74,7 +81,8 @@ export function buildRedirects(nodes: RawNode[], capsules: Capsule[], posts: Blo
   }
 
   const months = new Set(capsules.map((c) => lagosMonth(c.publishAt)));
-  for (const m of [...months].sort()) add({ from: `/archive/${m.replace("-", "")}`, to: `/capsules/month/${m}`, kind: "archive" });
+  for (const m of [...months].sort())
+    add({ from: `/archive/${m.replace("-", "")}`, to: `/capsules/month/${m}`, kind: "archive" });
   add({ from: "/daily-digest", to: "/capsules", kind: "listing" });
 
   const unchanged = ["/rss.xml"];

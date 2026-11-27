@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildMap, createRedirectLookup, isLegacyPath, isSameSitePath, normalisePath } from "./redirects";
+import {
+  buildMap,
+  createRedirectLookup,
+  isLegacyPath,
+  isSameSitePath,
+  normalisePath,
+} from "./redirects";
 
 const rules = [
   { from: "/content/Its-A-Test", to: "/capsules/its-a-test", status: 301 },
@@ -12,6 +18,11 @@ describe("normalisePath", () => {
     expect(normalisePath("/")).toBe("/");
     expect(normalisePath("")).toBe("/");
   });
+
+  it("matches percent-encoded and plain non-ASCII paths alike", () => {
+    expect(normalisePath("/content/god%E2%80%99s-word")).toBe(normalisePath("/content/god’s-word"));
+    expect(normalisePath("/content/100%")).toBe("/content/100%");
+  });
 });
 
 describe("buildMap", () => {
@@ -22,10 +33,13 @@ describe("buildMap", () => {
 });
 
 describe("open redirect protection", () => {
-  it.each(["//evil.com", "/\\evil.com", "https://evil.com", "evil.com", "javascript:alert(1)", ""])("rejects %j", (to) => {
-    expect(isSameSitePath(to)).toBe(false);
-    expect(buildMap([{ from: "/node/1", to, status: 301 }]).size).toBe(0);
-  });
+  it.each(["//evil.com", "/\\evil.com", "https://evil.com", "evil.com", "javascript:alert(1)", ""])(
+    "rejects %j",
+    (to) => {
+      expect(isSameSitePath(to)).toBe(false);
+      expect(buildMap([{ from: "/node/1", to, status: 301 }]).size).toBe(0);
+    },
+  );
 
   it("accepts site paths", () => {
     expect(isSameSitePath("/capsules/a")).toBe(true);
@@ -65,7 +79,10 @@ describe("isLegacyPath", () => {
 describe("createRedirectLookup", () => {
   it("finds old paths regardless of case and trailing slash", async () => {
     const lookup = createRedirectLookup(async () => rules);
-    expect(await lookup.find("/content/its-a-test/")).toEqual({ to: "/capsules/its-a-test", status: 301 });
+    expect(await lookup.find("/content/its-a-test/")).toEqual({
+      to: "/capsules/its-a-test",
+      status: 301,
+    });
     expect(await lookup.find("/nope")).toBeNull();
   });
 
