@@ -120,6 +120,13 @@
       "when": 1795377890975,
       "tag": "0016_settings_url_checks",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1795457612244,
+      "tag": "0017_privacy_page",
+      "breakpoints": true
     }
   ]
 }

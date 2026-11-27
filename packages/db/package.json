@@ -27,7 +27,7 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.17",
     "@kcom/config": "workspace:*",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.6.6",
     "@types/pg": "^8.11.10",
     "drizzle-kit": "^0.31.11",
     "eslint": "^10.15.0",

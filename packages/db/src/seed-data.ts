@@ -22,12 +22,9 @@ export async function seed(db: CapsuleDb) {
     })
     .onConflictDoNothing();
 
-  let [author] = await db.select().from(people).where(eq(people.name, SAMPLE_AUTHOR));
+  const [author] = await db.select().from(people).where(eq(people.name, SAMPLE_AUTHOR));
   if (!author) {
-    [author] = await db
-      .insert(people)
-      .values({ name: SAMPLE_AUTHOR, role: "Sample data" })
-      .returning();
+    await db.insert(people).values({ name: SAMPLE_AUTHOR, role: "Sample data" });
   }
 
   const samples = [1, 2, 3].map((n) => ({
