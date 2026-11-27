@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { contactMessages, rateLimits } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp, type AppOptions } from "./app.js";
+import { turnstileBotCheck } from "./turnstile.js";
 import { noopMailer } from "./mailer.js";
 import { clientIp, parseTrustedProxyHops } from "./client-ip.js";
 
@@ -54,6 +55,21 @@ describe("POST /contact bot check", () => {
       "verification_failed",
     );
     expect(await db.select().from(contactMessages)).toHaveLength(0);
+    warn.mockRestore();
+  });
+
+  it("fails closed with the Turnstile check: a missing or rejected token stores nothing", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const verify = vi.fn(async (_url: unknown, init?: RequestInit) => {
+      const token = new URLSearchParams(init?.body as URLSearchParams).get("response");
+      return Response.json({ success: token === "good" });
+    }) as unknown as typeof fetch;
+    const app = withCheck(turnstileBotCheck("secret", verify));
+    expect((await post(ok, "203.0.113.9", app)).status).toBe(400);
+    expect((await post({ ...ok, botToken: "bad" }, "203.0.113.9", app)).status).toBe(400);
+    expect(await db.select().from(contactMessages)).toHaveLength(0);
+    expect((await post({ ...ok, botToken: "good" }, "203.0.113.9", app)).status).toBe(201);
+    expect(await db.select().from(contactMessages)).toHaveLength(1);
     warn.mockRestore();
   });
 
