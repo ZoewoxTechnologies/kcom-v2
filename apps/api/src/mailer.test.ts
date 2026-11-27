@@ -32,13 +32,17 @@ describe("resend mailer", () => {
   });
 
   it("sends the invite with its own subject", async () => {
-    await createResendMailer({ apiKey: "k" }).sendInvite(to, "http://x/set");
+    await createResendMailer({ apiKey: "k", from: "Site <hi@example.test>" }).sendInvite(
+      to,
+      "http://x/set",
+    );
     expect(send.mock.calls[0]![0].subject).toMatch(/invited/);
   });
 
   it("alerts the notification address and escapes the message", async () => {
     await createResendMailer({
       apiKey: "k",
+      from: "Site <hi@example.test>",
       contactNotificationEmail: "team@example.test",
     }).sendContactAlert({
       topic: "prayer",
@@ -53,7 +57,7 @@ describe("resend mailer", () => {
   });
 
   it("skips the contact alert without a notification address", async () => {
-    await createResendMailer({ apiKey: "k" }).sendContactAlert({
+    await createResendMailer({ apiKey: "k", from: "Site <hi@example.test>" }).sendContactAlert({
       topic: "t",
       name: "n",
       email: "e@example.test",
@@ -64,11 +68,19 @@ describe("resend mailer", () => {
 
   it("throws when Resend reports an error", async () => {
     send.mockResolvedValue({ data: null, error: { message: "bad" } });
-    await expect(createResendMailer({ apiKey: "k" }).sendInvite(to, "u")).rejects.toThrow("bad");
+    await expect(
+      createResendMailer({ apiKey: "k", from: "Site <hi@example.test>" }).sendInvite(to, "u"),
+    ).rejects.toThrow("bad");
   });
 
   it("falls back to the no-op mailer without an API key", () => {
     expect(mailerFromEnv({})).toBe(noopMailer);
-    expect(mailerFromEnv({ RESEND_API_KEY: "k" })).not.toBe(noopMailer);
+    expect(mailerFromEnv({ RESEND_API_KEY: "k", EMAIL_FROM: "a@example.test" })).not.toBe(
+      noopMailer,
+    );
+  });
+
+  it("refuses to start with an API key but no sender", () => {
+    expect(() => mailerFromEnv({ RESEND_API_KEY: "k" })).toThrow(/EMAIL_FROM/);
   });
 });
