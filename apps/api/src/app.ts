@@ -22,6 +22,7 @@ import { corsOriginPolicy, trustedOriginList } from "./origins.js";
 import { userRoutes } from "./routes/users.js";
 import { internalRoutes } from "./routes/internal.js";
 import { mailerFromEnv, type Mailer } from "./mailer.js";
+import { subscriberRoutes } from "./routes/subscribers.js";
 import { createCapsuleEvents, type CapsuleEvents } from "./capsule-publishing.js";
 
 export type AppOptions = {
@@ -43,6 +44,15 @@ export type AppOptions = {
   contactBotCheck?: BotCheck;
   /** Sends the site's email. Defaults to Resend when RESEND_API_KEY is set, else a no-op. */
   mailer?: Mailer;
+  /** Public email signup. Secret and API URL default to the auth ones; webUrl to SITE_URL. */
+  signup?: {
+    secret?: string;
+    apiUrl?: string;
+    /** Public URL of the web site, where confirm and unsubscribe links redirect. */
+    webUrl?: string;
+    /** Bot check for the signup form (Cloudflare Turnstile); unset accepts every signup. */
+    botCheck?: BotCheck;
+  };
 };
 
 export function createApp(
@@ -57,6 +67,7 @@ export function createApp(
     trustedProxyHops,
     contactBotCheck,
     mailer = auth.mailer ?? mailerFromEnv(),
+    signup = {},
   }: AppOptions = {},
 ) {
   const origin = corsOriginPolicy(corsOrigins, allowLocalhostOrigins);
@@ -94,7 +105,7 @@ export function createApp(
             c.req.path === "/users" ||
             c.req.path.startsWith("/users/")
           ? adminCors(c, next)
-          : c.req.path === "/contact"
+          : c.req.path === "/contact" || c.req.path === "/subscribers"
             ? contactCors(c, next)
             : publicCors(c, next),
     )
@@ -105,6 +116,17 @@ export function createApp(
     .route("/books", bookRoutes(db))
     .route("/capsules", capsuleRoutes(db))
     .route("/contact", contactRoutes(db, trustedProxyHops, contactBotCheck, mailer))
+    .route(
+      "/subscribers",
+      subscriberRoutes(db, {
+        secret: signup.secret ?? auth.secret ?? process.env.BETTER_AUTH_SECRET ?? "",
+        apiUrl: signup.apiUrl ?? auth.baseURL ?? process.env.BETTER_AUTH_URL ?? "",
+        webUrl: signup.webUrl ?? process.env.SITE_URL ?? "",
+        mailer,
+        botCheck: signup.botCheck,
+        trustedProxyHops,
+      }),
+    )
     .route("/events", eventRoutes(db))
     .route("/settings", settingsRoutes(db))
     .route("/search", searchRoutes(db, trustedProxyHops))

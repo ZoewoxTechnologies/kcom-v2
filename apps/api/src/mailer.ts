@@ -15,6 +15,12 @@ export type Mailer = {
   sendPasswordReset(to: Recipient, url: string): Promise<void>;
   /** Link for a user invited by an admin, who sets a first password with it. */
   sendInvite(to: Recipient, url: string): Promise<void>;
+  /** Asks a new subscriber to confirm their address; the unsubscribe link is for later emails too. */
+  sendSubscriberConfirmation(
+    email: string,
+    confirmUrl: string,
+    unsubscribeUrl: string,
+  ): Promise<void>;
   /** Tells the team a contact message arrived. Does nothing without a notification address. */
   sendContactAlert(message: ContactAlert): Promise<void>;
 };
@@ -26,6 +32,9 @@ export const noopMailer: Mailer = {
   },
   async sendInvite() {
     console.warn("invite requested but no mailer is configured");
+  },
+  async sendSubscriberConfirmation() {
+    console.warn("subscriber confirmation requested but no mailer is configured");
   },
   async sendContactAlert() {},
 };
@@ -82,6 +91,13 @@ export function createResendMailer({
         "You have been invited to the admin site",
         "You have been invited to the Kingdom Capstone admin site. Use the link below to set your password.",
       ),
+    sendSubscriberConfirmation: (email, confirmUrl, unsubscribeUrl) =>
+      send({
+        to: email,
+        subject: "Confirm your subscription",
+        text: `Please confirm your subscription to Kingdom Capstone Outreach Ministries:\n\n${confirmUrl}\n\nThe link expires in 48 hours. If you did not sign up, ignore this email, or opt out: ${unsubscribeUrl}`,
+        html: `<p>Please confirm your subscription to Kingdom Capstone Outreach Ministries:</p><p><a href="${escapeHtml(confirmUrl)}">Confirm my subscription</a></p><p>The link expires in 48 hours. If you did not sign up, ignore this email or <a href="${escapeHtml(unsubscribeUrl)}">opt out</a>.</p>`,
+      }),
     async sendContactAlert(m) {
       if (!contactNotificationEmail) return;
       await send({

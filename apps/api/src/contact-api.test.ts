@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { contactMessages, rateLimits } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp, type AppOptions } from "./app.js";
+import { noopMailer } from "./mailer.js";
 import { clientIp, parseTrustedProxyHops } from "./client-ip.js";
 
 const ok = { topic: "prayer", name: "Grace", email: "grace@example.org", message: "Please pray." };
@@ -213,7 +214,7 @@ describe("POST /contact notification", () => {
   const withMailer = (sendContactAlert: () => Promise<void>) =>
     createApp(db, {
       corsOrigins: ["http://web.test"],
-      mailer: { sendPasswordReset: vi.fn(), sendInvite: vi.fn(), sendContactAlert },
+      mailer: { ...noopMailer, sendContactAlert },
     });
 
   it("sends an alert for a stored message", async () => {

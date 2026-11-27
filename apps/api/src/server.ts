@@ -3,6 +3,7 @@ import { serve } from "@hono/node-server";
 import { createDb } from "@kcom/db";
 import { createApp } from "./app.js";
 import { parseTrustedProxyHops } from "./client-ip.js";
+import { turnstileFromEnv } from "./turnstile.js";
 import { cloudinaryFromEnv } from "./uploads/cloudinary.js";
 
 initSentry();
@@ -18,6 +19,7 @@ const app = createApp(createDb(), {
   cloudinary: cloudinaryFromEnv(),
   trustedProxyHops: parseTrustedProxyHops(process.env.TRUSTED_PROXY_HOPS),
   internalToken: process.env.INTERNAL_JOB_TOKEN || undefined,
+  signup: { botCheck: turnstileFromEnv() },
   auth: {
     cookies: {
       secure: process.env.COOKIE_SECURE !== "false",
