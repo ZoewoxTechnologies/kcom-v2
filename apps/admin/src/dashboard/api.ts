@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
 import { apiJson } from "../api/client";
-import { listCapsulesBetween, listDrafts } from "../capsules/api";
-import { addDays, lagosDay, lagosMidnight } from "../capsules/days";
-import type { CapsuleSummary } from "../capsules/api";
-import { upcomingEventsSummary } from "../events/api";
+import { listCapsulesBetween } from "../capsules/api";
+import { addDays, lagosMidnight } from "../capsules/days";
+import type { DayKey } from "../capsules/days";
 
 /** Days listed under Coming up, today included. */
 export const COMING_UP_DAYS = 4;
@@ -13,36 +11,19 @@ export interface SubscriberCount {
   addedThisMonth: number;
 }
 
-export interface DashboardData {
-  /** Today and the next few Lagos days. */
-  capsules: CapsuleSummary[];
-  drafts: CapsuleSummary[];
-  events: { total: number; next: string | null };
-  subscribers: SubscriberCount;
+export interface ActivityItem {
+  at: string;
+  text: string;
+  href: string | null;
+  badge: "New" | null;
 }
 
-/** Everything the dashboard shows, loaded together. */
-export function useDashboard() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
-
-  const load = useCallback(() => {
-    setState("loading");
-    const today = lagosDay(new Date());
-    Promise.all([
-      listCapsulesBetween(lagosMidnight(today), lagosMidnight(addDays(today, COMING_UP_DAYS))),
-      listDrafts(),
-      upcomingEventsSummary(),
-      apiJson<SubscriberCount>("/admin/subscribers/count"),
-    ]).then(
-      ([capsules, drafts, events, subscribers]) => {
-        setData({ capsules, drafts, events, subscribers });
-        setState("ready");
-      },
-      () => setState("error"),
-    );
-  }, []);
-  useEffect(load, [load]);
-
-  return { data, state, reload: load };
-}
+/** Each dashboard panel loads its own data, so one failing request only breaks that panel. */
+export const loadSubscribers = () => apiJson<SubscriberCount>("/admin/subscribers/count");
+export const loadActivity = () =>
+  apiJson<{ items: ActivityItem[] }>("/admin/activity").then((r) => r.items);
+export const loadUpcomingCapsules = (today: DayKey) =>
+  listCapsulesBetween(lagosMidnight(today), lagosMidnight(addDays(today, COMING_UP_DAYS)));
+/** The capsule(s) due on one Lagos day. */
+export const loadCapsulesOn = (day: DayKey) =>
+  listCapsulesBetween(lagosMidnight(day), lagosMidnight(addDays(day, 1)));

@@ -66,8 +66,7 @@ export function CalendarPage() {
   /** Moves a capsule; returns why it could not be moved, or null on success. */
   async function moveTo(capsule: CapsuleSummary, day: DayKey): Promise<string | null> {
     if (lagosDay(capsule.publishAt) === day) return null;
-    if (!canScheduleOn(day))
-      return "Pick a day after today. Capsules publish at midnight Lagos time.";
+    if (!canScheduleOn(day)) return "Pick a day after today. Capsules publish at midnight WAT.";
     // One capsule per day: drafts do not hold a day.
     const taken = byDay.get(day)?.find((c) => c.id !== capsule.id && c.status !== "draft");
     if (taken) return `${shortDayLabel(day)} already has “${taken.title}”`;
@@ -233,10 +232,10 @@ export function CalendarPage() {
             setMoveError(null);
           }}
           title="Move to date"
-          description={`“${moving.title}” will publish at midnight Lagos time on the day you choose.`}
+          description={`“${moving.title}” will publish at midnight WAT on the day you choose.`}
         >
           <TextField
-            label="Day (Lagos)"
+            label="Day (WAT)"
             type="date"
             min={minDay}
             value={moveDay}

@@ -46,6 +46,7 @@ export const adminBlogRoutes = (db: CapsuleDb) =>
     db,
     table: blogPosts,
     label: "post",
+    entity: "blog",
     createBody,
     updateBody,
     orderBy: [desc(blogPosts.date), desc(blogPosts.createdAt)],

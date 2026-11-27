@@ -47,10 +47,16 @@
     text-decoration: underline;
     text-decoration-color: var(--color-gold);
     text-underline-offset: 3px;
-    transition: color var(--dur-fast) var(--ease-out);
+    text-decoration-thickness: 1px;
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      text-decoration-color var(--dur-fast) var(--ease-out),
+      text-decoration-thickness var(--dur-fast) var(--ease-out);
 
     &:hover {
-      text-decoration-color: var(--color-primary);
+      color: var(--color-primary-hover);
+      text-decoration-color: currentColor;
+      text-decoration-thickness: 2px;
     }
   }
 

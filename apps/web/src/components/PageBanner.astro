@@ -1,0 +1,125 @@
+---
+/**
+ * Page header band: title, intro and an optional kicker over a photo with a shared teal grade.
+ * `section` picks the photo from /banners (credits in /banners/CREDITS.md); `image` swaps in an
+ * item's own picture. `size="compact"` is the shorter band used on detail pages.
+ */
+import BannerBackdrop from "./BannerBackdrop.astro";
+import type { BannerSection } from "./BannerBackdrop.astro";
+export type { BannerSection };
+interface Props {
+  title: string;
+  intro?: string;
+  kicker?: string;
+  section: BannerSection;
+  image?: string | null;
+  size?: "default" | "compact";
+  /** For pages without a layout container: keeps the text in a narrow centred column. */
+  contain?: "narrow";
+}
+const { title, intro, kicker, section, image, size = "default", contain } = Astro.props;
+---
+
+<section
+  class:list={[
+    "banner",
+    `s-${section}`,
+    { compact: size === "compact", narrow: contain === "narrow" },
+  ]}
+>
+  <BannerBackdrop section={section} image={image} />
+  <div class="inner">
+    {kicker && <span class="kicker">{kicker}</span>}
+    <h1>{title}</h1>
+    {intro && <p class="intro">{intro}</p>}
+    <slot />
+  </div>
+</section>
+<style>
+  .banner {
+    position: relative;
+    isolation: isolate;
+    color: var(--banner-text);
+    margin-block-start: calc(var(--space-6) * -1);
+    box-shadow: 0 0 0 100vmax var(--banner-start);
+    clip-path: inset(0 -100vmax);
+    min-block-size: 200px;
+    display: flex;
+    align-items: center;
+    padding-block: var(--space-6);
+  }
+  .inner {
+    position: relative;
+    max-inline-size: 38rem;
+    margin-inline-end: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .kicker {
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    font-variant: small-caps;
+    font-weight: 700;
+    color: var(--banner-gold);
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-weight: 500;
+    font-size: clamp(2.25rem, 7vw, 3.75rem);
+    line-height: 1.05;
+    color: inherit;
+  }
+  .intro {
+    margin: 0;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--banner-text) 92%, transparent);
+  }
+  @media (min-width: 48rem) {
+    .banner:not(.compact) {
+      min-block-size: 320px;
+    }
+    .intro {
+      font-size: 1.1875rem;
+    }
+  }
+  /* buttons placed in the banner slot sit on the photo, so they use the banner colours */
+  .inner :global(.kc-btn) {
+    color: var(--banner-text);
+    background: color-mix(in srgb, var(--banner-text) 14%, transparent);
+    border-color: color-mix(in srgb, var(--banner-text) 55%, transparent);
+  }
+  .narrow .inner {
+    inline-size: 100%;
+    max-inline-size: calc(45rem + 2 * var(--space-5));
+    box-sizing: border-box;
+    padding-inline: var(--space-5);
+    margin-inline: auto;
+  }
+  .compact {
+    min-block-size: 150px;
+    /* the band tucks up under the header by one space-6, so add it back to the top */
+    padding-block: calc(var(--space-5) + var(--space-6)) var(--space-5);
+  }
+  .compact h1 {
+    font-size: clamp(1.75rem, 5vw, 2.75rem);
+  }
+  @media (min-width: 48rem) {
+    .compact {
+      min-block-size: 242px;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .inner {
+      animation: banner-in 500ms var(--ease-out, ease-out) both;
+    }
+  }
+  @keyframes banner-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+</style>

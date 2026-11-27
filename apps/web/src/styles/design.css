@@ -10,6 +10,39 @@
   --d-cover-3: #e3ece6;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --d-kicker: var(--color-gold-text); --d-card-line: var(--color-gold); --d-body: var(--color-muted); --d-input-text: var(--color-text); --d-field-line: var(--color-field); --d-cover-1: var(--color-wash); --d-cover-2: var(--color-sandstone); --d-cover-3: var(--color-surface); }
+  :root:not([data-theme="light"]) {
+    --d-kicker: var(--color-gold-text);
+    --d-card-line: var(--color-gold);
+    --d-body: var(--color-muted);
+    --d-input-text: var(--color-text);
+    --d-field-line: var(--color-field);
+    --d-cover-1: var(--color-wash);
+    --d-cover-2: var(--color-sandstone);
+    --d-cover-3: var(--color-surface);
+  }
 }
-:root[data-theme="dark"] { --d-kicker: var(--color-gold-text); --d-card-line: var(--color-gold); --d-body: var(--color-muted); --d-input-text: var(--color-text); --d-field-line: var(--color-field); --d-cover-1: var(--color-wash); --d-cover-2: var(--color-sandstone); --d-cover-3: var(--color-surface); }
+:root[data-theme="dark"] {
+  --d-kicker: var(--color-gold-text);
+  --d-card-line: var(--color-gold);
+  --d-body: var(--color-muted);
+  --d-input-text: var(--color-text);
+  --d-field-line: var(--color-field);
+  --d-cover-1: var(--color-wash);
+  --d-cover-2: var(--color-sandstone);
+  --d-cover-3: var(--color-surface);
+}
+
+/* A linked book tile (cover + title): the cover border and title turn primary on hover and keyboard focus. */
+.book-link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: inherit;
+  text-decoration: none;
+}
+.book-link:is(:hover, :focus-visible) .cover {
+  border-color: var(--color-primary);
+}
+.book-link:is(:hover, :focus-visible) .book-title {
+  color: var(--color-primary);
+}

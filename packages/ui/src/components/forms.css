@@ -106,7 +106,7 @@
       content: "";
       position: absolute;
       top: 50%;
-      right: 1.1rem;
+      inset-inline-end: var(--space-4);
       width: 0.5rem;
       height: 0.5rem;
       border-right: 2px solid var(--color-muted);
@@ -117,7 +117,7 @@
   }
 
   .kc-select__control {
-    padding-right: 2.5rem;
+    padding-inline-end: calc(var(--space-4) + 0.5rem + var(--space-3));
     appearance: none;
     cursor: pointer;
 

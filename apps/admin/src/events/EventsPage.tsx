@@ -478,7 +478,7 @@ function EventEditor({ event, guard, onClose, onSaved, onDelete }: EditorProps) 
           onChange={(e) => set({ allDay: e.target.checked })}
         />
         <p className="kc-events__hint">
-          Times are in Lagos time.{v.allDay && " Times are hidden on the public page."}
+          Times are in WAT.{v.allDay && " Times are hidden on the public page."}
         </p>
         <TextField
           label="Venue"

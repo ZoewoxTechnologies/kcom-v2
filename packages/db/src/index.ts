@@ -4,6 +4,7 @@ export {
   capsuleByRange,
   capsuleNeighbours,
   capsuleBySlug,
+  earliestCapsule,
   isLive,
   latestCapsule,
   listLiveSeries,

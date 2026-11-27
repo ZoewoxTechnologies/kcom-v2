@@ -60,6 +60,28 @@ To restore into a new Neon branch or project, replace `kcom_restore` with its co
 
 Use `--clean --if-exists` only when restoring over an existing database you intend to overwrite.
 
+## Activity log retention
+
+The admin dashboard's "Recent activity" reads the `activity_log` table. The workflow
+`.github/workflows/activity-archive.yml` keeps it small. It runs at 03:30 UTC on the 1st of each month
+and on manual trigger (Actions → activity-archive → Run workflow), using the same bucket, secrets and
+variables as the nightly backup:
+
+- A calendar month (UTC) that has turned 6 months old is saved once as `activity/activity-YYYY-MM.json`.
+  The file is never overwritten. A run that finds a month already archived leaves it alone.
+- A month that has turned 12 months old is deleted from the database, but only when its archive file
+  exists and holds at least as many rows as the database. Otherwise the rows stay and the run fails.
+- Every run catches up on all months that are due, so a missed month is picked up the next time.
+- The run logs the row counts per month and fails if anything goes wrong. Unlike the nightly backup it
+  fails (rather than skips) when the bucket or database is not configured.
+- The files hold ids and labels only (who, what, when), not the content. They are plain JSON, not
+  encrypted by us, but the upload requests server-side encryption (`AES256`) so they are encrypted at
+  rest. If a bucket rejects that header the run fails; set the repository variable `BACKUP_S3_SSE` to
+  `none` to skip it (R2 already encrypts every object at rest).
+
+To run it by hand: `DATABASE_URL=... S3_ENDPOINT=... S3_BUCKET=... pnpm --filter @kcom/db db:archive-activity`
+(needs the AWS CLI and its credentials in the environment).
+
 ## Neon usage alert (manual, in the Neon console)
 
 1. Open the project → Settings → Usage / Billing.

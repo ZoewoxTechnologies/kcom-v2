@@ -1,9 +1,25 @@
 import { hc } from "hono/client";
 import type { App } from "@kcom/api/app";
 import { inSeriesOrder, toSeriesSummary } from "./series";
-import { dataMethods, type BlogPostSummary, type Capsule, type CapsuleListItem, type CapsuleSummary, type DataSource } from "./types";
+import {
+  dataMethods,
+  type BlogPostSummary,
+  type Capsule,
+  type CapsuleListItem,
+  type CapsuleSummary,
+  type DataSource,
+} from "./types";
 
-const BLOCKS = new Set(["paragraph", "heading", "blockquote", "listItem", "bulletList", "orderedList", "codeBlock", "doc"]);
+const BLOCKS = new Set([
+  "paragraph",
+  "heading",
+  "blockquote",
+  "listItem",
+  "bulletList",
+  "orderedList",
+  "codeBlock",
+  "doc",
+]);
 
 /** Plain text of a rich-text document: inline text joins with no separator, blocks with a space. */
 export function richTextToPlain(node: unknown): string {
@@ -12,7 +28,9 @@ export function richTextToPlain(node: unknown): string {
     const o = n as { text?: unknown; content?: unknown; type?: unknown };
     if (typeof o.text === "string") return o.text;
     const kids = Array.isArray(o.content) ? o.content : [];
-    const blockKids = kids.some((k) => k && typeof k === "object" && BLOCKS.has((k as { type?: string }).type ?? ""));
+    const blockKids = kids.some(
+      (k) => k && typeof k === "object" && BLOCKS.has((k as { type?: string }).type ?? ""),
+    );
     return kids.map(walk).join(blockKids ? " " : "");
   };
   return walk(node).replace(/\s+/g, " ").trim();
@@ -27,7 +45,12 @@ export function pageBody(sections: { type: string; props: unknown }[]): Record<s
   for (const s of sections) {
     if (s.type !== "richText") continue;
     const { heading, body } = s.props as { heading?: string; body?: { content?: unknown[] } };
-    if (heading) content.push({ type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: heading }] });
+    if (heading)
+      content.push({
+        type: "heading",
+        attrs: { level: 2 },
+        content: [{ type: "text", text: heading }],
+      });
     content.push(...(body?.content ?? []));
   }
   return { type: "doc", content };
@@ -37,7 +60,14 @@ type Fetch = typeof fetch;
 const PAGE = 100;
 const SERIES_TTL_MS = 5000;
 
-const toBlogSummary = (p: { slug: string; title: string; date: string; excerpt: string | null; heroImageUrl: string | null; tags: string[] }): BlogPostSummary => ({
+const toBlogSummary = (p: {
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string | null;
+  heroImageUrl: string | null;
+  tags: string[];
+}): BlogPostSummary => ({
   slug: p.slug,
   title: p.title,
   date: p.date,
@@ -50,7 +80,11 @@ const toBlogSummary = (p: { slug: string; title: string; date: string; excerpt: 
  * Reads the public API through its own route types, so response shapes cannot drift.
  * A 404 is null; other failures throw.
  */
-export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: () => Date = () => new Date()): DataSource {
+export function createApiSource(
+  baseUrl: string,
+  fetchImpl: Fetch = fetch,
+  now: () => Date = () => new Date(),
+): DataSource {
   const client = hc<App>(baseUrl.replace(/\/+$/, ""), { fetch: fetchImpl });
   const signal = () => ({ init: { signal: AbortSignal.timeout(10000) } });
 
@@ -68,7 +102,10 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
   async function allCapsules(query: { month?: string; series?: string }): Promise<Row[]> {
     const out: Row[] = [];
     for (let offset = 0; ; offset += PAGE) {
-      const res = await client.capsules.$get({ query: { ...query, limit: String(PAGE), offset: String(offset) } }, signal());
+      const res = await client.capsules.$get(
+        { query: { ...query, limit: String(PAGE), offset: String(offset) } },
+        signal(),
+      );
       if (!res.ok) throw new Error(`API /capsules responded ${res.status}`);
       const rows = await res.json();
       out.push(...rows);
@@ -88,12 +125,16 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
     if (!seriesCache || t - seriesCache.at > SERIES_TTL_MS) {
       const rows = fetchSeries();
       seriesCache = { at: t, rows };
-      rows.catch(() => { if (seriesCache?.rows === rows) seriesCache = null; });
+      rows.catch(() => {
+        if (seriesCache?.rows === rows) seriesCache = null;
+      });
     }
     return seriesCache.rows;
   }
 
-  type Full = Awaited<ReturnType<Awaited<ReturnType<(typeof client.capsules)[":slug"]["$get"]>>["json"]>>;
+  type Full = Awaited<
+    ReturnType<Awaited<ReturnType<(typeof client.capsules)[":slug"]["$get"]>>["json"]>
+  >;
   async function toCapsule(c: Full): Promise<Capsule> {
     const series = c.seriesId ? (await allSeries()).find((s) => s.id === c.seriesId) : undefined;
     return {
@@ -134,12 +175,15 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       return res.json();
     },
     async latestCapsule(): Promise<CapsuleSummary | null> {
-      const res = await client.capsules.latest.$get(undefined, { init: { signal: AbortSignal.timeout(3000) } });
+      const res = await client.capsules.latest.$get(undefined, {
+        init: { signal: AbortSignal.timeout(3000) },
+      });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`API /capsules/latest responded ${res.status}`);
       const c = await res.json();
       // The verse bar renders this on every page: a malformed body must read as no capsule, never as "Invalid Date".
-      if (!c || typeof c.slug !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(String(c.displayDate))) return null;
+      if (!c || typeof c.slug !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(String(c.displayDate)))
+        return null;
       return {
         slug: c.slug,
         title: c.title,
@@ -147,6 +191,16 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
         scriptureRef: c.scriptureRef,
         scriptureText: richTextToPlain(c.scriptureText) || null,
       };
+    },
+    async earliestCapsuleDate() {
+      const res = await client.capsules.earliest.$get(undefined, {
+        init: { signal: AbortSignal.timeout(3000) },
+      });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`API /capsules/earliest responded ${res.status}`);
+      const c = await res.json();
+      const day = c && String(c.displayDate);
+      return day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
     },
     async listCapsulesInMonth(month) {
       const [rows, series] = await Promise.all([allCapsules({ month }), allSeries()]);
@@ -156,7 +210,9 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
     async listAllCapsules() {
       const [rows, series] = await Promise.all([allCapsules({}), allSeries()]);
       const titleOf = new Map(series.map((s) => [s.id, s.title]));
-      return rows.map((c) => toItem(c, titleOf)).sort((a, b) => b.displayDate.localeCompare(a.displayDate));
+      return rows
+        .map((c) => toItem(c, titleOf))
+        .sort((a, b) => b.displayDate.localeCompare(a.displayDate));
     },
     async listSeries() {
       return (await allSeries()).map((s) => toSeriesSummary(s, now()));
@@ -173,7 +229,10 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       };
     },
     async listBlogPosts({ limit = 20, offset = 0 } = {}) {
-      const res = await client.blog.$get({ query: { limit: String(limit), offset: String(offset) } }, signal());
+      const res = await client.blog.$get(
+        { query: { limit: String(limit), offset: String(offset) } },
+        signal(),
+      );
       if (!res.ok) throw new Error(`API /blog responded ${res.status}`);
       return (await res.json()).map(toBlogSummary);
     },
@@ -194,6 +253,24 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
       if (!res.ok) throw new Error(`API /homepage responded ${res.status}`);
       return (await res.json()).sections.map((s) => s.key);
     },
+    async contactDetails() {
+      const res = await client.settings.$get(undefined, signal());
+      if (!res.ok) throw new Error(`API /settings responded ${res.status}`);
+      // The route's inferred type drops the grouped settings, so the shape is stated here.
+      const { contact, social } = (await res.json()) as {
+        contact?: { email?: string | null; phone?: string | null; address?: string | null };
+        social?: { facebook?: string | null; youtube?: string | null };
+      };
+      return {
+        email: contact?.email ?? null,
+        phone: contact?.phone ?? null,
+        address: contact?.address ?? null,
+        social: [
+          { label: "Facebook", href: social?.facebook },
+          { label: "YouTube", href: social?.youtube },
+        ].flatMap((l) => (l.href ? [{ label: l.label, href: l.href }] : [])),
+      };
+    },
     async listBooks() {
       const res = await client.books.$get({ query: { limit: "100", offset: "0" } }, signal());
       if (!res.ok) throw new Error(`API /books responded ${res.status}`);
@@ -209,8 +286,11 @@ export function createApiSource(baseUrl: string, fetchImpl: Fetch = fetch, now: 
         sampleUrl: null,
       }));
     },
-    async listEvents(when) {
-      const res = await client.events.$get({ query: { when, limit: "100", offset: "0" } }, signal());
+    async listEvents(when, limit = 100) {
+      const res = await client.events.$get(
+        { query: { when, limit: String(limit), offset: "0" } },
+        signal(),
+      );
       if (!res.ok) throw new Error(`API /events responded ${res.status}`);
       return (await res.json()).map((e) => ({
         slug: e.slug,
@@ -266,17 +346,30 @@ function build(make: (method: (typeof dataMethods)[number]) => Fn): DataSource {
  */
 export const emptySource: DataSource = build((m) => async () => (isList(m) ? [] : null));
 
+/** Lookups of one capsule: when the API answers cleanly that none exists, that miss stands. */
+const cleanMissStands = new Set<string>([
+  "capsuleByDate",
+  "capsuleBySlug",
+  "capsuleNeighbours",
+  "earliestCapsuleDate",
+]);
+
 /**
  * Wraps every method of a source so failures never throw. On failure or an empty result
  * (null or empty list) the same method of `fallback` is used; with no fallback, the empty
- * value from `emptySource`.
+ * value from `emptySource`. The exception is a capsule lookup the API answered with a clean
+ * miss: sample data must not invent a capsule the real source says does not exist.
  */
-export function withFallback(primary: DataSource, fallback: DataSource | null, onError?: (e: unknown) => void): DataSource {
+export function withFallback(
+  primary: DataSource,
+  fallback: DataSource | null,
+  onError?: (e: unknown) => void,
+): DataSource {
   const backup = fallback ?? emptySource;
   return build((m) => async (...args) => {
     try {
       const v = await (primary[m] as Fn)(...args);
-      if (!isEmpty(v)) return v;
+      if (!isEmpty(v) || cleanMissStands.has(m)) return v;
     } catch (e) {
       onError?.(e);
     }

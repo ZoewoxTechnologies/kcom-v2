@@ -13,20 +13,61 @@ interface Props {
 const { title, more, empty, isEmpty = false, level = 2, moreBelow = false } = Astro.props;
 const Heading = `h${level}` as const;
 ---
+
 <div class="sec">
   <div class="head">
     <Heading>{title}</Heading>
-    {more && !isEmpty && !moreBelow && <a class="more" href={more.href}>{more.label}</a>}
+    {more && !isEmpty && !moreBelow && (
+      <a class="more" href={more.href}>
+        {more.label}
+      </a>
+    )}
   </div>
   {isEmpty ? <p class="empty">{empty}</p> : <slot />}
-  {more && !isEmpty && moreBelow && <a class="more below" href={more.href}>{more.label}</a>}
+  {more && !isEmpty && moreBelow && (
+    <a class="more below" href={more.href}>
+      {more.label}
+    </a>
+  )}
 </div>
 <style>
-  .sec { display: flex; flex-direction: column; gap: var(--space-4); min-inline-size: 0; }
-  .head { display: flex; align-items: baseline; gap: var(--space-4); flex-wrap: wrap; }
-  h2, h3 { margin: 0; font: 600 1.875rem / 1.65 var(--font-title); }
-  .more { margin-inline-start: auto; font-weight: 600; color: var(--color-primary); text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 5px; }
-  .below { margin: 0; inline-size: max-content; }
-  .empty { margin: 0; color: var(--color-muted); }
-  @media (min-width: 48rem) { h2, h3 { font-size: var(--sec-title, 2.5rem); } .sec { gap: var(--space-5); } }
+  .sec {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-inline-size: 0;
+  }
+  .head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+  h2,
+  h3 {
+    margin: 0;
+    font: 600 1.875rem / 1.65 var(--font-title);
+  }
+  .more {
+    margin-inline-start: auto;
+    font-weight: 600;
+    text-underline-offset: 5px;
+  }
+  .below {
+    margin: 0;
+    inline-size: max-content;
+  }
+  .empty {
+    margin: 0;
+    color: var(--color-muted);
+  }
+  @media (min-width: 48rem) {
+    h2,
+    h3 {
+      font-size: var(--sec-title, 2.5rem);
+    }
+    .sec {
+      gap: var(--space-5);
+    }
+  }
 </style>

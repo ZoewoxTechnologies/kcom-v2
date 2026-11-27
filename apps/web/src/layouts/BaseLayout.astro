@@ -1,6 +1,7 @@
 ---
 import { publicOrigin } from "../lib/site-origin";
 import "@kcom/ui/styles.css";
+import "../styles/design.css";
 import "@kcom/ui/button.css";
 import "@kcom/ui/forms.css";
 import "@kcom/ui/menu.css";
@@ -10,6 +11,7 @@ import { fontsHref } from "@kcom/ui/fonts";
 import Analytics from "../components/Analytics.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import SignupBand from "../components/SignupBand.astro";
 import { pageTitle, siteName } from "../lib/site";
 import { absoluteUrl, siteDescription, truncate } from "../lib/seo";
 
@@ -19,7 +21,7 @@ interface Props {
   current?: string;
   /** Let the page run edge to edge (banners, tinted bands). */
   bleed?: boolean;
-  /** The page already renders its own email signup, so the footer omits its one. */
+  /** The page already renders its own email signup (or is part of the signup flow), so the shared band is left out. */
   hideSignup?: boolean;
   /** Open Graph type: "article" for capsules and posts. */
   ogType?: "website" | "article";
@@ -32,14 +34,28 @@ interface Props {
   /** schema.org JSON-LD objects to embed. */
   jsonLd?: object[];
 }
-const { title, description, current = Astro.url.pathname, bleed = false, hideSignup = false, ogType = "website", image = "/og/default.png", noindex = false, canonicalPath, jsonLd = [] } = Astro.props;
+const {
+  title,
+  description,
+  current = Astro.url.pathname,
+  bleed = false,
+  hideSignup = false,
+  ogType = "website",
+  image = "/og/default.png",
+  noindex = false,
+  canonicalPath,
+  jsonLd = [],
+} = Astro.props;
 const origin = publicOrigin(Astro.url);
 const pageNo = Number(Astro.url.searchParams.get("page"));
-const canonical = absoluteUrl(origin, canonicalPath ?? Astro.url.pathname) + (!canonicalPath && pageNo > 1 ? `?page=${Math.floor(pageNo)}` : "");
+const canonical =
+  absoluteUrl(origin, canonicalPath ?? Astro.url.pathname) +
+  (!canonicalPath && pageNo > 1 ? `?page=${Math.floor(pageNo)}` : "");
 const imageUrl = /^https?:/.test(image) ? image : absoluteUrl(origin, image);
 const desc = truncate(description ?? siteDescription);
 const fullTitle = pageTitle(title);
 ---
+
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -60,36 +76,113 @@ const fullTitle = pageTitle(title);
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={desc} />
     <meta name="twitter:image" content={imageUrl} />
-    <link rel="alternate" type="application/rss+xml" title={`${siteName}: capsules`} href="/rss.xml" />
-    <link rel="alternate" type="application/rss+xml" title={`${siteName}: blog`} href="/blog/rss.xml" />
-    {jsonLd.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o).replace(/</g, "\\u003c")} />)}
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${siteName}: capsules`}
+      href="/rss.xml"
+    />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${siteName}: blog`}
+      href="/blog/rss.xml"
+    />
+    {jsonLd.map((o) => (
+      <script type="application/ld+json" set:html={JSON.stringify(o).replace(/</g, "\\u003c")} />
+    ))}
     <link rel="icon" href="/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <script is:inline>
-      try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch {}
+      try {
+        const t = localStorage.getItem("theme");
+        if (t) document.documentElement.dataset.theme = t;
+      } catch {}
     </script>
     <slot name="head" />
     <Analytics />
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
     <SiteHeader current={current} />
-    <main id="main" class:list={{ bleed }}><slot /></main>
-    <SiteFooter hideSignup={hideSignup} />
+    <main id="main" class:list={{ bleed }}>
+      <slot />
+    </main>
+    {!hideSignup && (
+      <div class="signup-slot">
+        <SignupBand />
+      </div>
+    )}
+    <SiteFooter />
   </body>
 </html>
 <style is:global>
-  .skip-link { position: absolute; left: var(--space-4); top: -4rem; z-index: 20; background: var(--color-primary); color: var(--color-on-primary); padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); }
-  .skip-link:focus { top: var(--space-2); }
-  main h1 { font-size: clamp(2.25rem, 8vw, var(--text-3xl)); overflow-wrap: anywhere; }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  main.bleed { max-width: none; padding: 0; }
+  .skip-link {
+    position: absolute;
+    left: var(--space-4);
+    top: -4rem;
+    z-index: 20;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+  }
+  .skip-link:focus {
+    top: var(--space-2);
+  }
+  main h1 {
+    font-size: clamp(2.25rem, 8vw, var(--text-3xl));
+    overflow-wrap: anywhere;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  main.bleed {
+    max-width: none;
+    padding: 0;
+  }
   /* Slide-in panels never create a sideways scroll. */
-  html { overflow-x: clip; }
+  html {
+    overflow-x: clip;
+  }
   /* Stand-alone text links get a 44px hit area; the text stays where it is. */
-  .site-footer a, footer a, main a.more, main a.cta, main a.link, main a.pill { display: inline-flex; align-items: center; min-block-size: var(--touch-target); }
-  body { min-height: 100dvh; display: flex; flex-direction: column; }
-  main { flex: 1; width: 100%; box-sizing: border-box; max-width: var(--page-max); margin-inline: auto; padding: var(--space-6) var(--gutter) 0; }
+  .site-footer a,
+  footer a,
+  main a.more,
+  main a.cta,
+  main a.link,
+  main a.pill {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--touch-target);
+  }
+  .signup-slot {
+    inline-size: 100%;
+    box-sizing: border-box;
+    max-inline-size: var(--page-max);
+    margin: var(--space-7) auto;
+    padding-inline: var(--gutter);
+  }
+  body {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  main {
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: var(--page-max);
+    margin-inline: auto;
+    padding: var(--space-6) var(--gutter) 0;
+  }
 </style>

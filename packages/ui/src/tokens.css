@@ -34,6 +34,20 @@
     --color-gold: #c4a15a; /* rules, underlines, focus ring: never body text */
     --color-gold-text: #7a5c1c; /* gold used as text on the page and white surfaces */
     --color-gold-text-tint: #775a1c; /* gold text on sandstone, wash and hover surfaces: 4.5:1 on all of them */
+    /* Page header banners: photo grade and text on it, the same white and gold in both themes */
+    --banner-start: #1d4558;
+    --banner-end: #2b6178;
+    --banner-text: #ffffff;
+    --banner-gold: #f5e6bd;
+    /* Home hero: its own ground with a faint arch lattice; text uses the site colours. */
+    /* The kicker on this ground and lattice measures 4.65:1, just above AA: re-check contrast after any change to the background, pattern or opacity. */
+    --color-hero-bg: #dfe6ec;
+    --color-hero-text: var(--color-text);
+    --color-hero-muted: var(--color-muted);
+    --color-hero-kicker: var(--color-gold-text);
+    --color-hero-pattern: #2b6178;
+    --hero-pattern-opacity: 0.11;
+    --hero-frame-shadow: 0 30px 60px -30px rgb(11 19 22 / 0.45);
     --color-sandstone: #f6eedd;
     --color-sandstone-hover: #efe2c6;
     --color-sandstone-active: #e8d7b2;
@@ -162,6 +176,12 @@
       --color-focus: #d4b46e;
       --color-gold-text: #d9bc7a;
       --color-gold-text-tint: #d9bc7a;
+      --banner-start: #0b1316;
+      --banner-end: #16303a;
+      --color-hero-bg: #0b1316;
+      --color-hero-pattern: #8cc0d4;
+      --hero-pattern-opacity: 0.08;
+      --hero-frame-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.8);
       --color-sandstone: #2a2519;
       --color-sandstone-hover: #342d1e;
       --color-sandstone-active: #3d3523;
@@ -214,6 +234,12 @@
     --color-focus: #d4b46e;
     --color-gold-text: #d9bc7a;
     --color-gold-text-tint: #d9bc7a;
+    --banner-start: #0b1316;
+    --banner-end: #16303a;
+    --color-hero-bg: #0b1316;
+    --color-hero-pattern: #8cc0d4;
+    --hero-pattern-opacity: 0.08;
+    --hero-frame-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.8);
     --color-sandstone: #2a2519;
     --color-sandstone-hover: #342d1e;
     --color-sandstone-active: #3d3523;

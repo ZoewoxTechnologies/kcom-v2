@@ -14,7 +14,7 @@
     "audit:perf": "node audit/perf.mjs"
   },
   "dependencies": {
-    "@astrojs/node": "^11.1.12",
+    "@astrojs/node": "^11.1.14",
     "@fontsource/cormorant-garamond": "^5.3.0",
     "@fontsource/nunito-sans": "^5.3.0",
     "@kcom/content": "workspace:*",
@@ -22,10 +22,11 @@
     "@kcom/media": "workspace:*",
     "@kcom/ui": "workspace:*",
     "@resvg/resvg-js": "^2.6.2",
-    "@sentry/astro": "^11.12.0",
-    "astro": "^7.4.11",
-    "hono": "^4.6.14",
-    "posthog-js": "^1.449.2",
+    "@sentry/astro": "^11.15.0",
+    "astro": "^7.4.13",
+    "hono": "^4.13.19",
+    "libphonenumber-js": "^1.13.17",
+    "posthog-js": "^1.453.0",
     "satori": "^0.63.2"
   },
   "devDependencies": {
@@ -33,10 +34,10 @@
     "@axe-core/playwright": "^4.14.0",
     "@kcom/api": "workspace:*",
     "@kcom/config": "workspace:*",
-    "eslint": "^10.14.0",
+    "eslint": "^10.15.0",
     "playwright": "^1.65.1",
     "typescript": "^5.7.2",
-    "vitest": "^5.1.0",
+    "vitest": "^5.1.1",
     "wait-on": "^9.5.1"
   }
 }

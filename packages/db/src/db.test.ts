@@ -1,9 +1,16 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { createTestDb } from "./test-db.js";
-import { latestCapsule } from "./queries.js";
+import { earliestCapsule, latestCapsule } from "./queries.js";
 import { seed } from "./seed-data.js";
 import { eq } from "drizzle-orm";
-import { capsules, homepageSections, redirects, series, siteSettings, subscribers } from "./schema.js";
+import {
+  capsules,
+  homepageSections,
+  redirects,
+  series,
+  siteSettings,
+  subscribers,
+} from "./schema.js";
 
 let db: Awaited<ReturnType<typeof createTestDb>>;
 beforeAll(async () => {
@@ -65,6 +72,45 @@ describe("latestCapsule visibility", () => {
       },
     ]);
     expect((await latestCapsule(d))?.slug).toBe("ok");
+  });
+});
+
+describe("earliestCapsule", () => {
+  const base = { body: {}, decrees: [] as string[] };
+  it("is the oldest live published capsule, ignoring drafts and the future", async () => {
+    const d = await createTestDb();
+    expect(await earliestCapsule(d)).toBeNull();
+    await d.insert(capsules).values([
+      {
+        ...base,
+        title: "draft",
+        slug: "draft",
+        status: "draft",
+        publishAt: new Date("2014-01-01T00:00:00Z"),
+      },
+      {
+        ...base,
+        title: "future",
+        slug: "future",
+        status: "published",
+        publishAt: new Date(Date.now() + 86_400_000),
+      },
+      {
+        ...base,
+        title: "b",
+        slug: "b",
+        status: "published",
+        publishAt: new Date("2016-05-01T00:00:00Z"),
+      },
+      {
+        ...base,
+        title: "a",
+        slug: "a",
+        status: "published",
+        publishAt: new Date("2015-01-01T00:00:00Z"),
+      },
+    ]);
+    expect((await earliestCapsule(d))?.slug).toBe("a");
   });
 });
 
@@ -179,6 +225,29 @@ describe("constraints", () => {
     await db
       .update(siteSettings)
       .set({ facebookUrl: "https://facebook.com/x", contactEmail: "a@b.org" });
+  });
+
+  it("accepts real URLs and emails that contain the letter s, rejects whitespace", async () => {
+    const urls = {
+      facebookUrl: "https://www.facebook.com/kingdomcapstone",
+      youtubeUrl: "https://www.youtube.com/@kingdomcapstone/videos",
+      instagramUrl: "https://www.instagram.com/kingdomcapstone/",
+      xUrl: "https://x.com/kingdomcapstone",
+      whatsappChannelUrl: "https://whatsapp.com/channel/0029VaAbCdEfGh",
+      telegramUrl: "https://t.me/kingdomcapstone",
+    };
+    await db.update(siteSettings).set({ ...urls, contactEmail: "info@kingdomcapstone.org" });
+    const [row] = await db.select().from(siteSettings);
+    expect(row).toMatchObject({ ...urls, contactEmail: "info@kingdomcapstone.org" });
+    for (const column of Object.keys(urls)) {
+      await expect(
+        db.update(siteSettings).set({ [column]: "https://example.com/a b" }),
+        column,
+      ).rejects.toThrow();
+    }
+    await expect(
+      db.update(siteSettings).set({ contactEmail: "a b@example.org" }),
+    ).rejects.toThrow();
   });
 
   it("keeps site settings a singleton", async () => {

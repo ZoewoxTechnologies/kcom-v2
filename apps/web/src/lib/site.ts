@@ -19,13 +19,6 @@ export const footerColumns = [
     links: [
       { label: "About", href: "/about" },
       { label: "Partner With Us", href: "/partner" },
-      { label: "Contact", href: "/contact" },
     ],
   },
-] as const;
-
-/** Placeholders until the real social links are supplied. */
-export const socialLinks = [
-  { label: "Facebook", href: "#facebook-placeholder" },
-  { label: "YouTube", href: "#youtube-placeholder" },
 ] as const;
