@@ -294,6 +294,15 @@ const bank = bankRows(sampleSettings);
     justify-content: space-between;
     gap: var(--space-3);
   }
+  /* Keep the copy button a full tap target: without this the flex row squeezes it to ~13px
+     when the value wraps onto two lines. */
+  dd .kc-tooltip {
+    flex: none;
+  }
+  .copy {
+    min-inline-size: 44px;
+    min-block-size: 44px;
+  }
   .note {
     font-size: 15px;
     color: var(--color-muted);
