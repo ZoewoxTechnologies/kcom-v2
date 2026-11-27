@@ -27,7 +27,7 @@ export function Avatar({ name, src, size = "md", className }: AvatarProps) {
   return (
     <Root className={classes}>
       {src && <Image className="kc-avatar__image" src={src} alt={name} />}
-      <Fallback className="kc-avatar__fallback" aria-label={name} delayMs={0}>
+      <Fallback className="kc-avatar__fallback" role="img" aria-label={name} delayMs={0}>
         <span aria-hidden="true">{initialsOf(name)}</span>
       </Fallback>
     </Root>

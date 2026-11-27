@@ -128,6 +128,20 @@ describe("cross-cutting", () => {
     });
     expect(res.headers.get("access-control-allow-methods")).toContain("PUT");
   });
+
+  it("lets the admin UI make credentialed users calls", async () => {
+    const cors = createApp(await createTestDb(), { corsOrigins: ["http://localhost:5173"] });
+    const res = await cors.request("/users", {
+      method: "OPTIONS",
+      headers: {
+        Origin: "http://localhost:5173",
+        "Access-Control-Request-Method": "PATCH",
+        "Access-Control-Request-Headers": "content-type",
+      },
+    });
+    expect(res.headers.get("access-control-allow-credentials")).toBe("true");
+    expect(res.headers.get("access-control-allow-methods")).toContain("PATCH");
+  });
 });
 
 describe("visibility and errors", () => {

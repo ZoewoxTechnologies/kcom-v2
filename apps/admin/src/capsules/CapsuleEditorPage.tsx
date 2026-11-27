@@ -388,7 +388,7 @@ function CapsuleForm({
       triggerClassName="kc-capsule-editor__more"
       triggerLabel="More actions"
       hideChevron
-      align="start"
+      align="end"
     >
       {items}
     </Menu>
