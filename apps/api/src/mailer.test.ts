@@ -42,6 +42,7 @@ describe("resend mailer", () => {
   it("alerts the notification address and escapes the message", async () => {
     await createResendMailer({
       apiKey: "k",
+      from: "Site <hi@example.test>",
       contactNotificationEmail: "team@example.test",
     }).sendContactAlert({
       topic: "prayer",
