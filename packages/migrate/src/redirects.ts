@@ -80,7 +80,9 @@ export function buildRedirects(
     add({ from: `/node/${node.nid}`, to: target.to, kind: "node" });
   }
 
-  const months = new Set(capsules.map((c) => lagosMonth(c.publishAt)));
+  const months = new Set(
+    capsules.filter((c) => c.status === "published").map((c) => lagosMonth(c.publishAt)),
+  );
   for (const m of [...months].sort())
     add({ from: `/archive/${m.replace("-", "")}`, to: `/capsules/month/${m}`, kind: "archive" });
   add({ from: "/daily-digest", to: "/capsules", kind: "listing" });

@@ -121,9 +121,9 @@ describe("buildRedirects", () => {
       }),
     ];
     const c = transformCapsules(list).capsules.map((x) => ({ ...x, status: "draft" as const }));
-    expect(buildRedirects(list, c, []).redirects.find((r) => r.from === "/content/dup")?.to).toBe(
-      "/capsules",
-    );
+    const m = buildRedirects(list, c, []);
+    expect(m.redirects.find((r) => r.from === "/content/dup")?.to).toBe("/capsules");
+    expect(m.redirects.some((r) => r.from === "/archive/202004")).toBe(false);
   });
 
   it("sends unimported nodes to the closest page or listing", () => {
@@ -195,15 +195,13 @@ describe("importContent", () => {
     const db = await createTestDb();
     const data = input();
     const post = data.posts[0]!;
-    await db
-      .insert(blogPosts)
-      .values({
-        slug: post.slug,
-        title: "Editor post",
-        date: "2024-01-01",
-        body: post.body as never,
-        status: "draft",
-      });
+    await db.insert(blogPosts).values({
+      slug: post.slug,
+      title: "Editor post",
+      date: "2024-01-01",
+      body: post.body as never,
+      status: "draft",
+    });
     await expect(importContent(db, data)).rejects.toThrow(`"${post.slug}"`);
     expect(await db.select().from(capsules)).toHaveLength(0);
   });
