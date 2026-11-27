@@ -25,6 +25,18 @@
     grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
     gap: var(--space-3);
   }
+  /* Name, Role and Status fit side by side at tablet width; the shared 36rem minimum would scroll. */
+  .kc-users .kc-table {
+    min-inline-size: 0;
+
+    th,
+    td {
+      padding-inline: var(--space-2);
+    }
+  }
+  .kc-users__role {
+    min-inline-size: 7.5rem;
+  }
   .kc-users__person {
     display: flex;
     align-items: center;
@@ -40,9 +52,19 @@
     font-weight: 700;
     overflow-wrap: anywhere;
   }
+  /* One line with an ellipsis; the full address is in the title. The tight cap below 64rem keeps
+     Name, Role and Status side by side; wider screens have room for a long address. */
   .kc-users__email {
     color: var(--color-muted);
-    overflow-wrap: anywhere;
+    max-inline-size: 24rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 64rem) {
+    .kc-users__email {
+      max-inline-size: 7rem;
+    }
   }
   .kc-users__actions {
     display: flex;

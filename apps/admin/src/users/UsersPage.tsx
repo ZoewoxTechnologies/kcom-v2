@@ -246,7 +246,9 @@ export function UsersPage() {
           <Avatar name={u.name} size="sm" />
           <span className="kc-users__who">
             <span className="kc-users__name">{u.name}</span>
-            <span className="kc-users__email">{u.email}</span>
+            <span className="kc-users__email" title={u.email}>
+              {u.email}
+            </span>
           </span>
         </span>
       ),

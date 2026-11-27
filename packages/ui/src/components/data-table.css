@@ -6,6 +6,9 @@
 @layer reset, tokens, base, components, utilities;
 @layer components {
   .kc-table-wrap {
+    /* Containing block for the visually hidden labels inside, so they scroll with the table
+       instead of widening the page. */
+    position: relative;
     overflow-x: auto;
     border: 1px solid var(--color-line);
     border-radius: var(--radius);

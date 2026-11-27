@@ -85,7 +85,9 @@ export function createApp(
     .use((c, next) =>
       c.req.path.startsWith("/api/auth/")
         ? authCors(c, next)
-        : c.req.path.startsWith("/admin/")
+        : c.req.path.startsWith("/admin/") ||
+            c.req.path === "/users" ||
+            c.req.path.startsWith("/users/")
           ? adminCors(c, next)
           : c.req.path === "/contact"
             ? contactCors(c, next)
