@@ -4,8 +4,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { data } from "../lib/data";
 import { richTextToHtml } from "../lib/rich-text";
 
-// The text is edited in the admin as the "privacy-policy" page.
-const page = await data.pageBySlug("privacy-policy");
+// The text is edited in the admin as the "privacy" page.
+const page = await data.pageBySlug("privacy");
 if (!page) return Astro.rewrite("/404");
 Astro.response.headers.set("cache-control", "public, max-age=0, s-maxage=300");
 ---
