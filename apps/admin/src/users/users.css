@@ -52,14 +52,19 @@
     font-weight: 700;
     overflow-wrap: anywhere;
   }
-  /* One line with an ellipsis; the full address is in the title. The cap keeps the table cell
-     from growing to the longest address. */
+  /* One line with an ellipsis; the full address is in the title. The tight cap below 64rem keeps
+     Name, Role and Status side by side; wider screens have room for a long address. */
   .kc-users__email {
     color: var(--color-muted);
-    max-inline-size: 7rem;
+    max-inline-size: 24rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  @media (max-width: 64rem) {
+    .kc-users__email {
+      max-inline-size: 7rem;
+    }
   }
   .kc-users__actions {
     display: flex;
