@@ -25,6 +25,18 @@
     grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
     gap: var(--space-3);
   }
+  /* Name, Role and Status fit side by side at tablet width; the shared 36rem minimum would scroll. */
+  .kc-users .kc-table {
+    min-inline-size: 0;
+
+    th,
+    td {
+      padding-inline: var(--space-2);
+    }
+  }
+  .kc-users__role {
+    min-inline-size: 7.5rem;
+  }
   .kc-users__person {
     display: flex;
     align-items: center;
@@ -44,7 +56,7 @@
      from growing to the longest address. */
   .kc-users__email {
     color: var(--color-muted);
-    max-inline-size: 12rem;
+    max-inline-size: 7rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -53,9 +65,6 @@
     display: flex;
     justify-content: flex-end;
     gap: var(--space-1);
-  }
-  .kc-users__role {
-    min-inline-size: 9rem;
   }
   /* The role select sits in a table cell; its label is for screen readers only. */
   .kc-users__role .kc-label {
