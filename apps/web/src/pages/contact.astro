@@ -23,7 +23,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   />
   <div class="page">
     <div class="body">
-      <form id="contact-form" novalidate>
+      <form id="contact-form" method="post" novalidate>
         <fieldset class="kc-fieldset" aria-describedby="topic-error">
           <legend>I’m writing about</legend>
           {topics.map((t) => (
@@ -122,7 +122,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   </div>
 </BaseLayout>
 <script>
-  import { submitContact, validateContact } from "../lib/contact";
+  import { resetTurnstile, submitContact, validateContact } from "../lib/contact";
   // One Turnstile script per page.
   if (
     document.querySelector(".cf-turnstile") &&
@@ -202,6 +202,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
         botToken: form.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value,
       },
     );
+    resetTurnstile();
     sending = false;
     sendBtn.removeAttribute("aria-busy");
     if (!result.ok) {

@@ -69,6 +69,13 @@ export interface SpamFields {
   botToken?: string;
 }
 
+export const VERIFY_FAILED = "Please complete the check and try again.";
+
+/** Turnstile tokens are single-use: ask the widget for a fresh one after every submit that reached the API. */
+export function resetTurnstile(w: { turnstile?: { reset(): void } } = globalThis as never): void {
+  w.turnstile?.reset();
+}
+
 export const SEND_FAILED = "Sorry, your message could not be sent. Please try again in a moment.";
 
 /** POST the message to the API. Only a 2xx response is `ok`; everything else, including network errors, is a failure. */
@@ -102,8 +109,9 @@ export async function submitContact(
     if (res.ok) return { ok: true };
     if (res.status === 400) {
       const data = (await res.json().catch(() => null)) as {
-        error?: { details?: { path: string; message: string }[] };
+        error?: { code?: string; details?: { path: string; message: string }[] };
       } | null;
+      if (data?.error?.code === "verification_failed") return fail({}, VERIFY_FAILED);
       const fieldErrors: ContactErrors = {};
       for (const d of data?.error?.details ?? []) {
         if (d.path === "topic" || d.path === "name" || d.path === "email" || d.path === "message")

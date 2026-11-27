@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { RATE_LIMITED, contactRows, submitContact, validateContact } from "./contact";
+import {
+  RATE_LIMITED,
+  VERIFY_FAILED,
+  contactRows,
+  resetTurnstile,
+  submitContact,
+  validateContact,
+} from "./contact";
 
 const ok = { topic: "prayer", name: "Grace", email: "grace@example.org", message: "Hi" };
 
@@ -73,6 +80,19 @@ describe("submitContact", () => {
     await submitContact("http://api.test", input, false, {}, g);
     const [, init2] = g.mock.calls[0] as unknown as [string, RequestInit];
     expect(JSON.parse(init2.body as string)).not.toHaveProperty("botToken");
+  });
+  it("maps a failed bot check to a prompt to complete it", async () => {
+    const f = reply(400, { error: { code: "verification_failed" } });
+    expect(await submitContact("http://api.test", input, false, {}, f)).toMatchObject({
+      ok: false,
+      message: VERIFY_FAILED,
+    });
+  });
+  it("resets the Turnstile widget when present and tolerates its absence", () => {
+    const reset = vi.fn();
+    resetTurnstile({ turnstile: { reset } });
+    expect(reset).toHaveBeenCalledOnce();
+    expect(() => resetTurnstile({})).not.toThrow();
   });
   it("explains rate limiting", async () => {
     expect(await submitContact("http://api.test", input, false, {}, reply(429))).toMatchObject({
