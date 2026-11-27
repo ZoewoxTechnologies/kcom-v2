@@ -27,24 +27,24 @@ export const noopMailer: Mailer = {
   async sendInvite() {
     console.warn("invite requested but no mailer is configured");
   },
-  async sendContactAlert() {},
+  async sendContactAlert() {
+    console.warn("contact message received but no mailer is configured");
+  },
 };
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
-/** Test sender that Resend accepts before a domain is verified. */
-const DEFAULT_FROM = "Kingdom Capstone Outreach Ministries <onboarding@resend.dev>";
-
 export type ResendMailerOptions = {
   apiKey: string;
-  from?: string;
+  /** Sender address; its domain must be verified in Resend. */
+  from: string;
   /** Where contact message alerts go. Unset disables them. */
   contactNotificationEmail?: string;
 };
 
 export function createResendMailer({
   apiKey,
-  from = DEFAULT_FROM,
+  from,
   contactNotificationEmail,
 }: ResendMailerOptions): Mailer {
   const resend = new Resend(apiKey);
@@ -98,9 +98,11 @@ export function createResendMailer({
 /** Resend when RESEND_API_KEY is set, otherwise the no-op mailer (dev, tests). */
 export function mailerFromEnv(env: NodeJS.ProcessEnv = process.env): Mailer {
   if (!env.RESEND_API_KEY) return noopMailer;
+  if (!env.EMAIL_FROM)
+    throw new Error("EMAIL_FROM must be set when RESEND_API_KEY is set (a verified Resend sender)");
   return createResendMailer({
     apiKey: env.RESEND_API_KEY,
-    from: env.EMAIL_FROM || undefined,
+    from: env.EMAIL_FROM,
     contactNotificationEmail: env.CONTACT_NOTIFICATION_EMAIL || undefined,
   });
 }

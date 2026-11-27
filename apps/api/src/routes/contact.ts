@@ -89,9 +89,9 @@ export const contactRoutes = (
         .insert(contactMessages)
         .values({ topic, name, email, message: text, keepPrivate })
         .returning({ id: contactMessages.id });
-      // The message is saved; a failed alert must not turn that into an error.
+      // Not awaited: the message is saved, and a slow or failed alert must not delay or fail the reply.
       if (mailer)
-        await mailer.sendContactAlert({ topic, name, email, message: text }).catch((err) => {
+        void mailer.sendContactAlert({ topic, name, email, message: text }).catch((err) => {
           console.error("[contact] notification email failed:", err);
         });
       return c.json({ id: row!.id }, 201);
