@@ -83,14 +83,6 @@ const bank = bankRows(sampleSettings);
           </p>
         </section>
       )}
-      <section class="panel soon" aria-labelledby="online">
-        <span class="kicker">Coming soon</span>
-        <h2 id="online">Give online</h2>
-        <p>Card and recurring giving will appear here, using the gold Give button.</p>
-        <button type="button" class="kc-btn kc-btn--give kc-btn--sm" disabled>
-          Give
-        </button>
-      </section>
     </div>
     <section id="join" class="join" aria-labelledby="join-h">
       <form>
@@ -249,26 +241,8 @@ const bank = bankRows(sampleSettings);
     line-height: 1.65;
     margin-block-start: 4px;
   }
-  .give .soon {
-    flex: 2 1 320px;
-    background: var(--color-surface);
-    border: 1px dashed var(--color-gold);
-    justify-content: center;
-    gap: 14px;
-  }
-  .soon .kc-btn {
-    align-self: flex-start;
-  }
   .panel .kicker {
     align-self: flex-start;
-  }
-  .soon h2 {
-    font-size: 30px;
-    line-height: 1.65;
-    margin: 0;
-  }
-  .soon p {
-    color: var(--color-muted);
   }
   dl {
     margin: 0;
