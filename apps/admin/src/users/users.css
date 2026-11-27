@@ -40,14 +40,22 @@
     font-weight: 700;
     overflow-wrap: anywhere;
   }
+  /* One line with an ellipsis; the full address is in the title. The cap keeps the table cell
+     from growing to the longest address. */
   .kc-users__email {
     color: var(--color-muted);
-    overflow-wrap: anywhere;
+    max-inline-size: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .kc-users__actions {
     display: flex;
     justify-content: flex-end;
     gap: var(--space-1);
+  }
+  .kc-users__role {
+    min-inline-size: 9rem;
   }
   /* The role select sits in a table cell; its label is for screen readers only. */
   .kc-users__role .kc-label {
