@@ -3,9 +3,16 @@ import { serve } from "@hono/node-server";
 import { createDb } from "@kcom/db";
 import { createApp } from "./app.js";
 import { parseTrustedProxyHops } from "./client-ip.js";
+import { assertSignupConfig } from "./routes/subscribers.js";
+import { turnstileFromEnv } from "./turnstile.js";
 import { cloudinaryFromEnv } from "./uploads/cloudinary.js";
 
 initSentry();
+
+assertSignupConfig(
+  { secret: process.env.BETTER_AUTH_SECRET, webUrl: process.env.SITE_URL },
+  process.env.NODE_ENV === "production",
+);
 
 const port = Number(process.env.PORT ?? 8787);
 const app = createApp(createDb(), {
@@ -18,6 +25,7 @@ const app = createApp(createDb(), {
   cloudinary: cloudinaryFromEnv(),
   trustedProxyHops: parseTrustedProxyHops(process.env.TRUSTED_PROXY_HOPS),
   internalToken: process.env.INTERNAL_JOB_TOKEN || undefined,
+  signup: { botCheck: turnstileFromEnv() },
   auth: {
     cookies: {
       secure: process.env.COOKIE_SECURE !== "false",
