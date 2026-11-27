@@ -35,5 +35,6 @@ describe("footer links", () => {
     const page = await source.pageBySlug("privacy");
     expect(page?.title).toBe("Privacy policy");
     expect(JSON.stringify(page?.body)).toContain("What we collect");
-  });
+    // Migrating an in-memory database takes several seconds on a CI runner.
+  }, 30_000);
 });
