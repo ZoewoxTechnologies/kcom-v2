@@ -94,7 +94,7 @@ export function userRoutes(db: CapsuleDb, auth: Auth) {
         .then(([row]) => ({ ...row!, invitePending: true }))
         .catch((err) => rethrowWriteError(err, { label: "user with this email" }));
       // The invitee sets a password through the password-reset flow. Delivery
-      // goes through the auth Mailer (see `sendPasswordReset`), so wiring an
+      // goes through the auth Mailer (see `sendInvite`), so wiring an
       // email provider needs no change here. A delivery failure must not undo
       // the invite: the user exists and the admin can resend.
       try {

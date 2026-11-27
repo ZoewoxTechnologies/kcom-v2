@@ -21,6 +21,7 @@ import type { CloudinaryConfig } from "./uploads/cloudinary.js";
 import { corsOriginPolicy, trustedOriginList } from "./origins.js";
 import { userRoutes } from "./routes/users.js";
 import { internalRoutes } from "./routes/internal.js";
+import { mailerFromEnv, type Mailer } from "./mailer.js";
 import { createCapsuleEvents, type CapsuleEvents } from "./capsule-publishing.js";
 
 export type AppOptions = {
@@ -40,6 +41,8 @@ export type AppOptions = {
   trustedProxyHops?: number;
   /** Bot check for the public contact form; unset accepts every submission. */
   contactBotCheck?: BotCheck;
+  /** Sends the site's email. Defaults to Resend when RESEND_API_KEY is set, else a no-op. */
+  mailer?: Mailer;
 };
 
 export function createApp(
@@ -53,6 +56,7 @@ export function createApp(
     cloudinary,
     trustedProxyHops,
     contactBotCheck,
+    mailer = auth.mailer ?? mailerFromEnv(),
   }: AppOptions = {},
 ) {
   const origin = corsOriginPolicy(corsOrigins, allowLocalhostOrigins);
@@ -80,6 +84,7 @@ export function createApp(
   const authInstance = createAuth(db, {
     trustedOrigins: trustedOriginList(corsOrigins, allowLocalhostOrigins),
     ...auth,
+    mailer,
   });
   return new Hono()
     .use((c, next) =>
@@ -99,7 +104,7 @@ export function createApp(
     .route("/blog", blogRoutes(db))
     .route("/books", bookRoutes(db))
     .route("/capsules", capsuleRoutes(db))
-    .route("/contact", contactRoutes(db, trustedProxyHops, contactBotCheck))
+    .route("/contact", contactRoutes(db, trustedProxyHops, contactBotCheck, mailer))
     .route("/events", eventRoutes(db))
     .route("/settings", settingsRoutes(db))
     .route("/search", searchRoutes(db, trustedProxyHops))

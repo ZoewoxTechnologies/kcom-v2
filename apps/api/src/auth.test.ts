@@ -3,7 +3,7 @@ import { sessions } from "@kcom/db";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
 import { seedUser } from "./seed-users.js";
-import type { Mailer } from "./auth.js";
+import { noopMailer, type Mailer } from "./mailer.js";
 
 const EMAIL = "admin@example.test";
 const PASSWORD = "correct horse battery";
@@ -17,7 +17,10 @@ beforeEach(async () => {
   db = await createTestDb();
   await seedUser(db, { email: EMAIL, password: PASSWORD, role: "admin" });
   resets = [];
-  const mailer: Mailer = { sendPasswordReset: async (_to, url) => void resets.push(url) };
+  const mailer: Mailer = {
+    ...noopMailer,
+    sendPasswordReset: async (_to, url) => void resets.push(url),
+  };
   app = createApp(db, {
     corsOrigins: [ORIGIN],
     auth: { secret: "x".repeat(40), baseURL: "http://api.test", mailer },

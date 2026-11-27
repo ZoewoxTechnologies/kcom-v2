@@ -4,6 +4,7 @@ import { contactMessages, type CapsuleDb } from "@kcom/db";
 import { contactTopics } from "@kcom/db/contact-topics";
 import { validate } from "../validate.js";
 import { DEFAULT_TRUSTED_PROXY_HOPS, requestClientIp } from "../client-ip.js";
+import type { Mailer } from "../mailer.js";
 import { overRateLimit } from "../contact-spam.js";
 
 // Mirrors the web form's rules (apps/web/src/lib/contact.ts), plus length caps.
@@ -43,6 +44,7 @@ export const contactRoutes = (
   db: CapsuleDb,
   trustedProxyHops = DEFAULT_TRUSTED_PROXY_HOPS,
   botCheck?: BotCheck,
+  mailer?: Mailer,
 ) =>
   new Hono()
     // Honeypot first, before validation, so a bot cannot tell it was caught.
@@ -87,5 +89,10 @@ export const contactRoutes = (
         .insert(contactMessages)
         .values({ topic, name, email, message: text, keepPrivate })
         .returning({ id: contactMessages.id });
+      // The message is saved; a failed alert must not turn that into an error.
+      if (mailer)
+        await mailer.sendContactAlert({ topic, name, email, message: text }).catch((err) => {
+          console.error("[contact] notification email failed:", err);
+        });
       return c.json({ id: row!.id }, 201);
     });

@@ -1,21 +1,12 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
-import { eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { CLIENT_IP_HEADER } from "./client-ip.js";
+import { noopMailer, type Mailer } from "./mailer.js";
 import { accounts, rateLimits, sessions, users, verifications, type CapsuleDb } from "@kcom/db";
 
-/** Delivers auth emails. The provider is undecided, so production wiring is a later swap. */
-export type Mailer = {
-  sendPasswordReset(to: { email: string; name: string }, url: string): Promise<void>;
-};
-
-/** Drops the message: reset links are bearer tokens and must not land in logs. */
-export const noopMailer: Mailer = {
-  async sendPasswordReset() {
-    console.warn("password reset requested but no mailer is configured");
-  },
-};
+export type { Mailer } from "./mailer.js";
 
 export type AuthOptions = {
   /** Signs cookies and tokens. At least 32 chars. */
@@ -82,7 +73,15 @@ export function createAuth(db: CapsuleDb, opts: AuthOptions = {}) {
       minPasswordLength: 12,
       resetPasswordTokenExpiresIn: 60 * 60,
       revokeSessionsOnPasswordReset: true,
-      sendResetPassword: ({ user, url }) => mailer.sendPasswordReset(user, url),
+      // A user with no password yet was invited by an admin and gets the invite wording.
+      sendResetPassword: async ({ user, url }) => {
+        const [hasPassword] = await db
+          .select({ id: accounts.id })
+          .from(accounts)
+          .where(and(eq(accounts.userId, user.id), isNotNull(accounts.password)))
+          .limit(1);
+        await (hasPassword ? mailer.sendPasswordReset(user, url) : mailer.sendInvite(user, url));
+      },
     },
     session: { expiresIn: 60 * 60 * 24 * SESSION_DAYS },
     rateLimit: {

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
-import type { Mailer } from "./auth.js";
+import { noopMailer, type Mailer } from "./mailer.js";
 import { seedUser } from "./seed-users.js";
 
 const PASSWORD = "correct horse battery";
@@ -20,6 +20,7 @@ let admin: string;
 let editor: string;
 let resets: string[];
 let mailerFails = false;
+let invites: string[];
 
 async function signInRes(email: string) {
   return app.request("/api/auth/sign-in/email", {
@@ -53,11 +54,18 @@ const idOf = async (email: string) => (await listUsers()).find((u) => u.email ==
 beforeEach(async () => {
   const db = await createTestDb();
   resets = [];
+  invites = [];
   mailerFails = false;
+  const record = async (_to: unknown, url: string) => {
+    if (mailerFails) throw new Error("mail down");
+    resets.push(url);
+  };
   const mailer: Mailer = {
-    sendPasswordReset: async (_to, url) => {
-      if (mailerFails) throw new Error("mail down");
-      resets.push(url);
+    ...noopMailer,
+    sendPasswordReset: record,
+    sendInvite: async (to, url) => {
+      await record(to, url);
+      invites.push(url);
     },
   };
   await seedUser(db, { email: "admin@example.test", password: PASSWORD, role: "admin" });
@@ -130,6 +138,7 @@ describe("invite failures", () => {
     mailerFails = false;
     expect((await call(`/users/${id}/resend-invite`, admin, "POST")).status).toBe(204);
     expect(resets).toHaveLength(1);
+    expect(invites).toHaveLength(1);
     expect((await call(`/users/${id}/resend-invite`, editor, "POST")).status).toBe(403);
   });
 });

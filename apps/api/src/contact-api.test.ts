@@ -208,3 +208,34 @@ describe("parseTrustedProxyHops", () => {
     warn.mockRestore();
   });
 });
+
+describe("POST /contact notification", () => {
+  const withMailer = (sendContactAlert: () => Promise<void>) =>
+    createApp(db, {
+      corsOrigins: ["http://web.test"],
+      mailer: { sendPasswordReset: vi.fn(), sendInvite: vi.fn(), sendContactAlert },
+    });
+
+  it("sends an alert for a stored message", async () => {
+    const alert = vi.fn().mockResolvedValue(undefined);
+    const res = await post(ok, "203.0.113.20", withMailer(alert));
+    expect(res.status).toBe(201);
+    expect(alert).toHaveBeenCalledWith({
+      topic: "prayer",
+      name: "Grace",
+      email: "grace@example.org",
+      message: "Please pray.",
+    });
+  });
+
+  it("still returns 201 when the alert fails", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await post(
+      ok,
+      "203.0.113.21",
+      withMailer(() => Promise.reject(new Error("down"))),
+    );
+    expect(res.status).toBe(201);
+    err.mockRestore();
+  });
+});
