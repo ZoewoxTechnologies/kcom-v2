@@ -3,9 +3,18 @@ import type { RedirectRule } from "./data/types";
 /** Old-site paths to their new paths. Keys are normalised paths, see `normalisePath`. */
 export type RedirectMap = Map<string, { to: string; status: number }>;
 
-/** Lowercase, no trailing slash (except the root), no query string: how old paths are keyed. */
+/** Percent-decoded where valid, so `/content/god%E2%80%99s-word` finds the key `/content/god’s-word`. */
+function decodePath(pathname: string): string {
+  try {
+    return decodeURIComponent(pathname);
+  } catch {
+    return pathname;
+  }
+}
+
+/** Decoded, NFC, lowercase, no trailing slash (except the root), no query string: how old paths are keyed. */
 export function normalisePath(pathname: string): string {
-  const p = pathname.toLowerCase().replace(/\/+$/, "");
+  const p = decodePath(pathname).normalize("NFC").toLowerCase().replace(/\/+$/, "");
   return p === "" ? "/" : p;
 }
 
@@ -29,7 +38,12 @@ export function buildMap(rules: RedirectRule[]): RedirectMap {
   for (const [key, rule] of [...map]) {
     let to = rule.to;
     let hops = 0;
-    for (let next = original.get(normalisePath(to)); next !== undefined && hops <= MAX_HOPS; next = original.get(normalisePath(to)), hops++) to = next;
+    for (
+      let next = original.get(normalisePath(to));
+      next !== undefined && hops <= MAX_HOPS;
+      next = original.get(normalisePath(to)), hops++
+    )
+      to = next;
     if (hops > MAX_HOPS || normalisePath(to) === key) map.delete(key);
     else rule.to = to;
   }
@@ -38,7 +52,8 @@ export function buildMap(rules: RedirectRule[]): RedirectMap {
 
 /** Legacy prefixes that never match a live page, so their redirect is checked before rendering a 404. */
 export const LEGACY_PREFIXES = ["/node/", "/content/", "/archive/"];
-export const isLegacyPath = (pathname: string) => LEGACY_PREFIXES.some((p) => pathname.toLowerCase().startsWith(p));
+export const isLegacyPath = (pathname: string) =>
+  LEGACY_PREFIXES.some((p) => pathname.toLowerCase().startsWith(p));
 
 export interface RedirectLookup {
   find(pathname: string): Promise<{ to: string; status: number } | null>;
@@ -51,7 +66,11 @@ export interface RedirectLookup {
  */
 export function createRedirectLookup(
   load: () => Promise<RedirectRule[]>,
-  { ttlMs = 5 * 60_000, retryMs = 30_000, now = Date.now }: { ttlMs?: number; retryMs?: number; now?: () => number } = {},
+  {
+    ttlMs = 5 * 60_000,
+    retryMs = 30_000,
+    now = Date.now,
+  }: { ttlMs?: number; retryMs?: number; now?: () => number } = {},
 ): RedirectLookup {
   let map: RedirectMap = new Map();
   let expires = 0;
