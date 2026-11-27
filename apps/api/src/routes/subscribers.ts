@@ -43,6 +43,21 @@ export type SubscriberRouteOptions = {
   trustedProxyHops?: number;
 };
 
+/**
+ * Startup check for the signup settings. Throws when the token secret is empty, or in
+ * production when SITE_URL is missing (links would redirect nowhere); warns in development.
+ */
+export function assertSignupConfig(
+  { secret, webUrl }: { secret?: string; webUrl?: string },
+  production: boolean,
+) {
+  if (!secret) throw new Error("BETTER_AUTH_SECRET must be set: it signs subscriber links");
+  if (!webUrl) {
+    if (production) throw new Error("SITE_URL must be set in production: links redirect to it");
+    console.warn("SITE_URL is not set: subscriber links will redirect to relative paths");
+  }
+}
+
 export function subscriberRoutes(
   db: CapsuleDb,
   {
@@ -56,104 +71,125 @@ export function subscriberRoutes(
 ) {
   const api = apiUrl.replace(/\/+$/, "");
   const web = webUrl.replace(/\/+$/, "");
-  return new Hono()
-    .post("/", validate("json", body), async (c) => {
-      const { email, turnstileToken, hp_url } = c.req.valid("json");
-      // Answers like a real signup so a bot cannot tell it was caught.
-      if (hp_url) {
-        console.warn("[subscribers] honeypot triggered; signup discarded");
-        return c.body(null, 202);
-      }
-      const ip = requestClientIp(c, trustedProxyHops);
-      if (ip && (await overLimit(db, `signup-ip:${ip}`, IP_LIMIT))) {
-        console.warn(`[subscribers] rate limit exceeded (ip: ${ip})`);
-        return c.json(
-          { error: { code: "rate_limited", message: "Too many signups. Try again later." } },
-          429,
-        );
-      }
-      if (botCheck && !(await botCheck({ token: turnstileToken, ip }))) {
-        console.warn("[subscribers] bot check failed; signup discarded");
-        return c.json(
-          { error: { code: "verification_failed", message: "Could not verify you are human." } },
-          400,
-        );
-      }
-      // Over the per-address limit still answers 202, so the response never depends on the address.
-      if (await overLimit(db, `signup-email:${email.toLowerCase()}`, EMAIL_LIMIT))
-        return c.body(null, 202);
+  return (
+    new Hono()
+      // Tokens signed with an empty secret would be forgeable: refuse until one is configured.
+      .use(async (c, next) => {
+        if (secret) return next();
+        return c.json({ error: { code: "unavailable", message: "signup unavailable" } }, 503);
+      })
+      .post("/", validate("json", body), async (c) => {
+        const { email, turnstileToken, hp_url } = c.req.valid("json");
+        // Answers like a real signup so a bot cannot tell it was caught.
+        if (hp_url) {
+          console.warn("[subscribers] honeypot triggered; signup discarded");
+          return c.body(null, 202);
+        }
+        const ip = requestClientIp(c, trustedProxyHops);
+        if (ip && (await overLimit(db, `signup-ip:${ip}`, IP_LIMIT))) {
+          console.warn(`[subscribers] rate limit exceeded (ip: ${ip})`);
+          return c.json(
+            { error: { code: "rate_limited", message: "Too many signups. Try again later." } },
+            429,
+          );
+        }
+        if (botCheck && !(await botCheck({ token: turnstileToken, ip }))) {
+          console.warn("[subscribers] bot check failed; signup discarded");
+          return c.json(
+            { error: { code: "verification_failed", message: "Could not verify you are human." } },
+            400,
+          );
+        }
+        // Over the per-address limit still answers 202, so the response never depends on the address.
+        if (await overLimit(db, `signup-email:${email.toLowerCase()}`, EMAIL_LIMIT))
+          return c.body(null, 202);
 
-      const [existing] = await db
-        .select({ id: subscribers.id, status: subscribers.status })
-        .from(subscribers)
-        .where(sql`lower(${subscribers.email}) = ${email.toLowerCase()}`);
-      if (existing?.status === "confirmed") return c.body(null, 202);
+        const [existing] = await db
+          .select({ id: subscribers.id, status: subscribers.status })
+          .from(subscribers)
+          .where(sql`lower(${subscribers.email}) = ${email.toLowerCase()}`);
+        if (existing?.status === "confirmed") return c.body(null, 202);
 
-      const id = existing?.id ?? crypto.randomUUID();
-      const token = signSubscriberToken(secret, "confirm", id);
-      if (existing) {
+        const id = existing?.id ?? crypto.randomUUID();
+        const token = signSubscriberToken(secret, "confirm", id);
+        if (existing) {
+          await db
+            .update(subscribers)
+            .set({
+              status: "pending",
+              confirmToken: token,
+              unsubscribedAt: null,
+              updatedAt: new Date(),
+            })
+            .where(eq(subscribers.id, id));
+        } else {
+          await db
+            .insert(subscribers)
+            .values({ id, email, status: "pending", confirmToken: token, source: "website" })
+            .onConflictDoNothing();
+        }
+        // Not awaited, so a new address and an already-confirmed one answer in the same time.
+        void mailer
+          .sendSubscriberConfirmation(
+            email,
+            `${api}/subscribers/confirm?token=${encodeURIComponent(token)}`,
+          )
+          .catch((err) => console.error("[subscribers] confirmation email failed:", err));
+        return c.body(null, 202);
+      })
+      // Confirming by GET can be triggered by email link scanners. That is accepted: a scanner
+      // can only confirm an address that was already asked to confirm, and the owner can opt out.
+      .get("/confirm", async (c) => {
+        const token = c.req.query("token") ?? "";
+        const id = verifySubscriberToken(secret, "confirm", token);
+        if (!id) return c.redirect(web + pages.expired);
+        const [row] = await db
+          .select({ status: subscribers.status, confirmToken: subscribers.confirmToken })
+          .from(subscribers)
+          .where(eq(subscribers.id, id));
+        if (row?.status === "confirmed") return c.redirect(web + pages.confirmed);
+        // Only the newest emailed token works; a later signup or unsubscribe replaces or clears it.
+        if (!row || row.status !== "pending" || row.confirmToken !== token)
+          return c.redirect(web + pages.expired);
         await db
           .update(subscribers)
           .set({
-            status: "pending",
-            confirmToken: token,
-            unsubscribedAt: null,
+            status: "confirmed",
+            confirmedAt: new Date(),
+            confirmToken: null,
             updatedAt: new Date(),
           })
           .where(eq(subscribers.id, id));
-      } else {
-        await db
-          .insert(subscribers)
-          .values({ id, email, status: "pending", confirmToken: token, source: "website" })
-          .onConflictDoNothing();
-      }
-      try {
-        await mailer.sendSubscriberConfirmation(
-          email,
-          `${api}/subscribers/confirm?token=${encodeURIComponent(token)}`,
-          `${api}/subscribers/unsubscribe?token=${encodeURIComponent(signSubscriberToken(secret, "unsubscribe", id))}`,
+        return c.redirect(web + pages.confirmed);
+      })
+      // A GET only shows a button: link scanners follow links but do not submit forms, so they
+      // cannot unsubscribe anyone. The POST does the work and also serves RFC 8058 one-click
+      // (List-Unsubscribe-Post) from mail clients.
+      .get("/unsubscribe", (c) => {
+        const token = c.req.query("token") ?? "";
+        if (!verifySubscriberToken(secret, "unsubscribe", token))
+          return c.redirect(web + pages.expired);
+        return c.html(
+          `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribe</title>` +
+            `<body style="font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem">` +
+            `<h1>Unsubscribe</h1><p>Stop receiving email from Kingdom Capstone Outreach Ministries?</p>` +
+            `<form method="post" action="${api}/subscribers/unsubscribe?token=${encodeURIComponent(token)}"><button type="submit">Unsubscribe</button></form></body>`,
         );
-      } catch (err) {
-        console.error("[subscribers] confirmation email failed:", err);
-      }
-      return c.body(null, 202);
-    })
-    .get("/confirm", async (c) => {
-      const token = c.req.query("token") ?? "";
-      const id = verifySubscriberToken(secret, "confirm", token);
-      if (!id) return c.redirect(web + pages.expired);
-      const [row] = await db
-        .select({ status: subscribers.status, confirmToken: subscribers.confirmToken })
-        .from(subscribers)
-        .where(eq(subscribers.id, id));
-      if (row?.status === "confirmed") return c.redirect(web + pages.confirmed);
-      // Only the newest emailed token works; a later signup or unsubscribe replaces or clears it.
-      if (!row || row.status !== "pending" || row.confirmToken !== token)
-        return c.redirect(web + pages.expired);
-      await db
-        .update(subscribers)
-        .set({
-          status: "confirmed",
-          confirmedAt: new Date(),
-          confirmToken: null,
-          updatedAt: new Date(),
-        })
-        .where(eq(subscribers.id, id));
-      return c.redirect(web + pages.confirmed);
-    })
-    .get("/unsubscribe", async (c) => {
-      const id = verifySubscriberToken(secret, "unsubscribe", c.req.query("token") ?? "");
-      if (!id) return c.redirect(web + pages.expired);
-      const [row] = await db
-        .update(subscribers)
-        .set({
-          status: "unsubscribed",
-          unsubscribedAt: new Date(),
-          confirmToken: null,
-          updatedAt: new Date(),
-        })
-        .where(eq(subscribers.id, id))
-        .returning({ id: subscribers.id });
-      return c.redirect(web + (row ? pages.unsubscribed : pages.expired));
-    });
+      })
+      .post("/unsubscribe", async (c) => {
+        const id = verifySubscriberToken(secret, "unsubscribe", c.req.query("token") ?? "");
+        if (!id) return c.redirect(web + pages.expired, 303);
+        const [row] = await db
+          .update(subscribers)
+          .set({
+            status: "unsubscribed",
+            unsubscribedAt: new Date(),
+            confirmToken: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(subscribers.id, id))
+          .returning({ id: subscribers.id });
+        return c.redirect(web + (row ? pages.unsubscribed : pages.expired), 303);
+      })
+  );
 }

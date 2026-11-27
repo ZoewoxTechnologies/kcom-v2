@@ -3,10 +3,16 @@ import { serve } from "@hono/node-server";
 import { createDb } from "@kcom/db";
 import { createApp } from "./app.js";
 import { parseTrustedProxyHops } from "./client-ip.js";
+import { assertSignupConfig } from "./routes/subscribers.js";
 import { turnstileFromEnv } from "./turnstile.js";
 import { cloudinaryFromEnv } from "./uploads/cloudinary.js";
 
 initSentry();
+
+assertSignupConfig(
+  { secret: process.env.BETTER_AUTH_SECRET, webUrl: process.env.SITE_URL },
+  process.env.NODE_ENV === "production",
+);
 
 const port = Number(process.env.PORT ?? 8787);
 const app = createApp(createDb(), {

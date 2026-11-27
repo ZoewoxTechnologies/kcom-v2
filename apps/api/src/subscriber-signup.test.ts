@@ -5,12 +5,13 @@ import { createTestDb } from "@kcom/db/test-db";
 import { createApp } from "./app.js";
 import { noopMailer } from "./mailer.js";
 import { signSubscriberToken, verifySubscriberToken } from "./subscriber-tokens.js";
+import { assertSignupConfig } from "./routes/subscribers.js";
 import { turnstileBotCheck } from "./turnstile.js";
 
 const SECRET = "s".repeat(40);
 const WEB = "http://web.test";
 let db: Awaited<ReturnType<typeof createTestDb>>;
-let sent: { email: string; confirmUrl: string; unsubscribeUrl: string }[];
+let sent: { email: string; confirmUrl: string }[];
 let app: ReturnType<typeof createApp>;
 
 function makeApp(botCheck?: (i: { token?: string; ip?: string }) => boolean | Promise<boolean>) {
@@ -18,8 +19,8 @@ function makeApp(botCheck?: (i: { token?: string; ip?: string }) => boolean | Pr
     corsOrigins: [WEB],
     mailer: {
       ...noopMailer,
-      sendSubscriberConfirmation: async (email, confirmUrl, unsubscribeUrl) => {
-        sent.push({ email, confirmUrl, unsubscribeUrl });
+      sendSubscriberConfirmation: async (email, confirmUrl) => {
+        sent.push({ email, confirmUrl });
       },
     },
     signup: { secret: SECRET, apiUrl: "http://api.test", webUrl: WEB, botCheck },
@@ -40,6 +41,8 @@ const signup = (body: unknown, ip = "203.0.113.1", target = app) =>
   });
 const path = (url: string) => url.replace("http://api.test", "");
 const rows = () => db.select().from(subscribers);
+const unsubscribeUrl = async () =>
+  `/subscribers/unsubscribe?token=${signSubscriberToken(SECRET, "unsubscribe", (await rows())[0]!.id)}`;
 
 describe("POST /subscribers", () => {
   it("creates a pending subscriber and emails a confirm link", async () => {
@@ -83,7 +86,7 @@ describe("POST /subscribers", () => {
 
   it("lets an unsubscribed address sign up again", async () => {
     await signup({ email: "a@example.org" });
-    await app.request(path(sent[0]!.unsubscribeUrl));
+    await app.request(await unsubscribeUrl(), { method: "POST" });
     await signup({ email: "a@example.org" });
     expect((await rows())[0]).toMatchObject({ status: "pending", unsubscribedAt: null });
   });
@@ -158,11 +161,42 @@ describe("confirm and unsubscribe links", () => {
     expect(res.headers.get("location")).toBe(`${WEB}/subscribe/expired`);
   });
 
-  it("unsubscribes and redirects", async () => {
+  it("shows a button on GET without unsubscribing, so link scanners are harmless", async () => {
     await signup({ email: "a@example.org" });
-    const res = await app.request(path(sent[0]!.unsubscribeUrl));
+    await app.request(path(sent[0]!.confirmUrl));
+    const res = await app.request(await unsubscribeUrl());
+    expect(res.status).toBe(200);
+    expect(await res.text()).toContain('method="post"');
+    expect((await rows())[0]!.status).toBe("confirmed");
+  });
+
+  it("unsubscribes on POST and redirects", async () => {
+    await signup({ email: "a@example.org" });
+    const res = await app.request(await unsubscribeUrl(), { method: "POST" });
+    expect(res.status).toBe(303);
     expect(res.headers.get("location")).toBe(`${WEB}/subscribe/unsubscribed`);
     expect((await rows())[0]).toMatchObject({ status: "unsubscribed", confirmToken: null });
+  });
+
+  it("sends a bad unsubscribe token to the expired page", async () => {
+    const get = await app.request("/subscribers/unsubscribe?token=junk");
+    expect(get.headers.get("location")).toBe(`${WEB}/subscribe/expired`);
+    const post = await app.request("/subscribers/unsubscribe?token=junk", { method: "POST" });
+    expect(post.headers.get("location")).toBe(`${WEB}/subscribe/expired`);
+  });
+
+  it("refuses signups without a token secret", async () => {
+    const bare = createApp(db, { signup: { secret: "", webUrl: WEB } });
+    expect((await signup({ email: "a@example.org" }, "1.1.1.1", bare)).status).toBe(503);
+  });
+
+  it("checks startup config", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(() => assertSignupConfig({ webUrl: WEB }, false)).toThrow(/BETTER_AUTH_SECRET/);
+    expect(() => assertSignupConfig({ secret: SECRET }, true)).toThrow(/SITE_URL/);
+    expect(() => assertSignupConfig({ secret: SECRET }, false)).not.toThrow();
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it("does not accept a token for the wrong purpose", () => {
