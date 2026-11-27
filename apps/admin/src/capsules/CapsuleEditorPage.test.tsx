@@ -152,7 +152,7 @@ describe("CapsuleEditorPage", () => {
     });
     expect(body).not.toHaveProperty("prayer");
     expect(body).not.toHaveProperty("scriptureText");
-    expect(await screen.findByRole("status")).toHaveTextContent(/Saved/);
+    expect(await screen.findByText(/^Saved /)).toBeInTheDocument();
   });
 
   it("defaults a new capsule to the next Lagos midnight and lets the editor change it", async () => {
