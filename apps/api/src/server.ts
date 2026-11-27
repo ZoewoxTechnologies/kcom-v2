@@ -25,6 +25,7 @@ const app = createApp(createDb(), {
   cloudinary: cloudinaryFromEnv(),
   trustedProxyHops: parseTrustedProxyHops(process.env.TRUSTED_PROXY_HOPS),
   internalToken: process.env.INTERNAL_JOB_TOKEN || undefined,
+  contactBotCheck: turnstileFromEnv(),
   signup: { botCheck: turnstileFromEnv() },
   auth: {
     cookies: {

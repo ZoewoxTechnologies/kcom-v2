@@ -63,9 +63,10 @@ export type ContactResult =
   { ok: true } | { ok: false; fieldErrors: ContactErrors; message: string };
 
 export const RATE_LIMITED = "You have sent several messages recently. Please try again later.";
-/** Spam-protection field sent with the message: the hidden honeypot. */
+/** Spam-protection fields sent with the message: the hidden honeypot and the Turnstile token. */
 export interface SpamFields {
   hp_url?: string;
+  botToken?: string;
 }
 
 export const SEND_FAILED = "Sorry, your message could not be sent. Please try again in a moment.";
@@ -95,6 +96,7 @@ export async function submitContact(
         message: input.message.trim(),
         keepPrivate,
         ...(spam.hp_url ? { hp_url: spam.hp_url } : {}),
+        ...(spam.botToken ? { botToken: spam.botToken } : {}),
       }),
     });
     if (res.ok) return { ok: true };

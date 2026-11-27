@@ -64,6 +64,16 @@ describe("submitContact", () => {
     const [, init] = f.mock.calls[0] as unknown as [string, RequestInit];
     expect(JSON.parse(init.body as string)).toMatchObject({ hp_url: "spam" });
   });
+  it("sends the bot-check token only when present", async () => {
+    const f = reply(201);
+    await submitContact("http://api.test", input, false, { botToken: "tok" }, f);
+    const [, init] = f.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(init.body as string)).toMatchObject({ botToken: "tok" });
+    const g = reply(201);
+    await submitContact("http://api.test", input, false, {}, g);
+    const [, init2] = g.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(init2.body as string)).not.toHaveProperty("botToken");
+  });
   it("explains rate limiting", async () => {
     expect(await submitContact("http://api.test", input, false, {}, reply(429))).toMatchObject({
       ok: false,

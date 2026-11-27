@@ -8,6 +8,7 @@ import { footerContact } from "../lib/footer-contact";
 const details = await footerContact.get();
 const rows = contactRows(details);
 const social = details?.social ?? [];
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
 <BaseLayout
@@ -80,6 +81,9 @@ const social = details?.social ?? [];
             <input type="text" name="hp_url" tabindex="-1" autocomplete="off" />
           </label>
         </div>
+        {siteKey && (
+          <div class="cf-turnstile" data-sitekey={siteKey} data-appearance="interaction-only" />
+        )}
         <p class="kc-field__error" id="submit-error" role="alert" hidden></p>
         <div class="actions">
           <button class="kc-btn kc-btn--primary kc-btn--sm" type="submit">
@@ -119,6 +123,17 @@ const social = details?.social ?? [];
 </BaseLayout>
 <script>
   import { submitContact, validateContact } from "../lib/contact";
+  // One Turnstile script per page.
+  if (
+    document.querySelector(".cf-turnstile") &&
+    !document.querySelector("script[data-turnstile]")
+  ) {
+    const s = document.createElement("script");
+    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    s.async = true;
+    s.dataset.turnstile = "";
+    document.head.append(s);
+  }
   const form = document.getElementById("contact-form") as HTMLFormElement;
   const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
   const keys = ["topic", "name", "email", "message"] as const;
@@ -182,7 +197,10 @@ const social = details?.social ?? [];
       import.meta.env.PUBLIC_API_URL,
       values(),
       field("private").checked && !priv.hidden,
-      { hp_url: field("hp_url").value },
+      {
+        hp_url: field("hp_url").value,
+        botToken: form.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value,
+      },
     );
     sending = false;
     sendBtn.removeAttribute("aria-busy");
